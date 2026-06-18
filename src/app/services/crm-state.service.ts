@@ -306,22 +306,22 @@ export class CrmStateService {
     },
     {
       title: 'Create Proposal for Prospect',
-      description: 'Youssef El Alami contacts the prospect and creates a Proposal on the CRM using a template (e.g. Standard Cloud Hosting Services).',
+      description: 'Youssef El Alami contacts the prospect and creates a Proposal on the CRM using a template (e.g. Standard Cloud Hosting Services). The proposal starts as a Draft.',
       route: '/sales',
-      actionLabel: 'Auto-Create Proposal',
+      actionLabel: 'Auto-Create Proposal (Draft)',
       action: () => {
-        // Mark t2 (or latest pending Sales task) completed
+        // Mark latest pending Sales task completed
         const pendingSalesTask = this.tasks().find(t => t.assignedTo === 'Youssef El Alami' && t.status === 'Pending');
         if (pendingSalesTask) {
           this.updateTaskStatus(pendingSalesTask.id, 'Completed');
         }
         
-        // Add Proposal
+        // Add Proposal as Draft (not yet sent)
         const prop = this.addProposal({
           title: 'Proposition Cloud Hosting - Atlas Digital',
           partnerId: 'p1', // Atlas Digital
           amount: 15000,
-          status: 'Sent',
+          status: 'Draft',
           templateId: 'temp1',
           lines: [
             { product: 'Serveur Dédié Maroc Cloud', description: 'Serveur Haute Performance localisé à Casablanca', qty: 2, unitPrice: 4500, total: 9000 },
@@ -329,10 +329,10 @@ export class CrmStateService {
           ]
         });
 
-        // Add task to wait for confirmation
+        // Add task to review and send the proposal
         this.addTask({
-          title: 'Follow up & wait for Proposal confirmation',
-          description: 'Wait for the signed Bon de commande from Atlas Digital.',
+          title: 'Review & send Proposal to Atlas Digital',
+          description: 'Review the drafted proposal and send it officially to the prospect for review and signature.',
           assignedTeam: 'Sales',
           assignedTo: 'Youssef El Alami',
           status: 'Pending',
@@ -343,12 +343,39 @@ export class CrmStateService {
       }
     },
     {
-      title: 'Wait & Confirm Proposal',
-      description: 'The prospect Atlas Digital confirms the proposal (signs the Bon de commande). Status moves to Confirmed.',
+      title: 'Send Proposal to Prospect',
+      description: 'Youssef reviews the drafted proposal and sends it officially to Atlas Digital S.A.R.L. for their review and approval. Proposal status moves from Draft → Sent.',
       route: '/sales',
-      actionLabel: 'Confirm Proposal',
+      actionLabel: 'Send Proposal to Prospect',
       action: () => {
-        const prop = this.proposals().find(p => p.partnerId === 'p1');
+        const prop = this.proposals().find(p => p.partnerId === 'p1' && p.status === 'Draft');
+        if (prop) {
+          this.updateProposalStatus(prop.id, 'Sent');
+        }
+        // Complete the send task
+        const sendTask = this.tasks().find(t => t.status === 'Pending' && t.title.includes('send Proposal'));
+        if (sendTask) {
+          this.updateTaskStatus(sendTask.id, 'Completed');
+        }
+        // Add follow-up task to wait for prospect's confirmation
+        this.addTask({
+          title: 'Follow up & wait for Proposal confirmation',
+          description: 'Wait for the signed Bon de commande from Atlas Digital.',
+          assignedTeam: 'Sales',
+          assignedTo: 'Youssef El Alami',
+          status: 'Pending',
+          relatedTo: 'Proposal: Proposition Cloud Hosting - Atlas Digital'
+        });
+        this.walkthroughStep.set(3);
+      }
+    },
+    {
+      title: 'Confirm Proposal',
+      description: 'The prospect Atlas Digital signs the Bon de commande and confirms the proposal. Proposal status moves from Sent → Confirmed.',
+      route: '/sales',
+      actionLabel: 'Confirm Proposal (BC Signed)',
+      action: () => {
+        const prop = this.proposals().find(p => p.partnerId === 'p1' && p.status === 'Sent');
         if (prop) {
           this.updateProposalStatus(prop.id, 'Confirmed');
         }
@@ -356,34 +383,28 @@ export class CrmStateService {
         if (pendingTask) {
           this.updateTaskStatus(pendingTask.id, 'Completed');
         }
-        this.walkthroughStep.set(3);
-      }
-    },
-    {
-      title: 'Convert Prospect to Customer',
-      description: 'Since the proposal is confirmed, the sales person converts the prospect "Atlas Digital S.A.R.L." to a Customer.',
-      route: '/partners',
-      actionLabel: 'Convert to Customer',
-      action: () => {
-        this.convertToCustomer('p1');
         this.walkthroughStep.set(4);
       }
     },
     {
-      title: 'Create Deal',
-      description: 'Under Sales > Deals, create a Deal with customer information, email exchange log, order lines, and price discounts.',
+      title: 'Convert Proposal → Deal & Prospect → Customer',
+      description: 'Since the proposal is confirmed, two conversions happen simultaneously: (1) The Proposal is converted into a Deal — automatically inheriting all items, quantities and prices; (2) The Prospect "Atlas Digital S.A.R.L." is promoted to a Customer.',
       route: '/sales',
-      actionLabel: 'Auto-Create Deal',
+      actionLabel: 'Convert to Deal & Customer',
       action: () => {
-        const prop = this.proposals().find(p => p.partnerId === 'p1');
+        // 1. Convert prospect → customer
+        this.convertToCustomer('p1');
+
+        // 2. Convert confirmed proposal into a Deal, inheriting all lines & amount from the proposal
+        const prop = this.proposals().find(p => p.partnerId === 'p1' && p.status === 'Confirmed');
         const deal = this.addDeal({
           title: 'Atlas Digital Cloud Migration Deal',
           partnerId: 'p1',
-          amount: 13500, // 10% discount on 15000
+          amount: 13500, // 10% discount applied on proposal total of 15000
           stage: 'New',
           comments: 'Client requested a 10% discount which was approved. Delivery requested before next month.',
           proposalId: prop?.id,
-          orderLines: prop?.lines || [],
+          orderLines: prop?.lines || [], // lines inherited directly from the confirmed proposal
           discount: 10,
           emailExchange: 'De: contact@atlasdigital.ma\nÀ: y.alami@acme.ma\nSujet: Bon de commande signé\n\nBonjour Youssef,\nVous trouverez ci-joint le BC signé. Merci de procéder à la livraison des serveurs.'
         });

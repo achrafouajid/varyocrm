@@ -2,10 +2,11 @@ import { Component, inject, signal, computed } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { CrmStateService } from '../services/crm-state.service';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [MatIconModule, CommonModule],
+  imports: [MatIconModule, CommonModule, RouterModule],
   template: `
     <div class="max-w-6xl mx-auto space-y-8">
       <div class="flex justify-between items-end">
@@ -21,22 +22,30 @@ import { CommonModule } from '@angular/common';
 
       <!-- Quick Actions -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <button class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 p-5 rounded-2xl flex flex-col items-center justify-center transition-all group shadow-sm border border-indigo-100/50">
-          <div class="bg-white text-indigo-600 p-3 rounded-full mb-3 shadow-sm group-hover:scale-110 transition-transform"><mat-icon class="leading-none!">add_business</mat-icon></div>
+        <a routerLink="/sales" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 p-5 rounded-2xl flex flex-col items-center justify-center transition-all group shadow-sm border border-indigo-100/50 cursor-pointer no-underline">
+          <div class="bg-white text-indigo-600 w-12 h-12 rounded-full mb-3 shadow-sm group-hover:scale-110 transition-transform flex items-center justify-center">
+            <mat-icon class="leading-none! flex items-center justify-center w-6 h-6 text-[24px]!">add_business</mat-icon>
+          </div>
           <span class="font-medium text-sm">New Deal</span>
-        </button>
-        <button class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 p-5 rounded-2xl flex flex-col items-center justify-center transition-all group shadow-sm border border-emerald-100/50">
-          <div class="bg-white text-emerald-600 p-3 rounded-full mb-3 shadow-sm group-hover:scale-110 transition-transform"><mat-icon class="leading-none!">person_add</mat-icon></div>
+        </a>
+        <a routerLink="/partners" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 p-5 rounded-2xl flex flex-col items-center justify-center transition-all group shadow-sm border border-emerald-100/50 cursor-pointer no-underline">
+          <div class="bg-white text-emerald-600 w-12 h-12 rounded-full mb-3 shadow-sm group-hover:scale-110 transition-transform flex items-center justify-center">
+            <mat-icon class="leading-none! flex items-center justify-center w-6 h-6 text-[24px]!">person_add</mat-icon>
+          </div>
           <span class="font-medium text-sm">Add Partner</span>
-        </button>
-        <button class="bg-amber-50 hover:bg-amber-100 text-amber-700 p-5 rounded-2xl flex flex-col items-center justify-center transition-all group shadow-sm border border-amber-100/50">
-          <div class="bg-white text-amber-500 p-3 rounded-full mb-3 shadow-sm group-hover:scale-110 transition-transform"><mat-icon class="leading-none!">campaign</mat-icon></div>
+        </a>
+        <a routerLink="/marketing" class="bg-amber-50 hover:bg-amber-100 text-amber-700 p-5 rounded-2xl flex flex-col items-center justify-center transition-all group shadow-sm border border-amber-100/50 cursor-pointer no-underline">
+          <div class="bg-white text-amber-500 w-12 h-12 rounded-full mb-3 shadow-sm group-hover:scale-110 transition-transform flex items-center justify-center">
+            <mat-icon class="leading-none! flex items-center justify-center w-6 h-6 text-[24px]!">campaign</mat-icon>
+          </div>
           <span class="font-medium text-sm">New Campaign</span>
-        </button>
-        <button class="bg-rose-50 hover:bg-rose-100 text-rose-700 p-5 rounded-2xl flex flex-col items-center justify-center transition-all group shadow-sm border border-rose-100/50">
-          <div class="bg-white text-rose-500 p-3 rounded-full mb-3 shadow-sm group-hover:scale-110 transition-transform"><mat-icon class="leading-none!">support_agent</mat-icon></div>
+        </a>
+        <a routerLink="/tickets" class="bg-rose-50 hover:bg-rose-100 text-rose-700 p-5 rounded-2xl flex flex-col items-center justify-center transition-all group shadow-sm border border-rose-100/50 cursor-pointer no-underline">
+          <div class="bg-white text-rose-500 w-12 h-12 rounded-full mb-3 shadow-sm group-hover:scale-110 transition-transform flex items-center justify-center">
+            <mat-icon class="leading-none! flex items-center justify-center w-6 h-6 text-[24px]!">support_agent</mat-icon>
+          </div>
           <span class="font-medium text-sm">Create Ticket</span>
-        </button>
+        </a>
       </div>
 
       @if (isCustomizing()) {

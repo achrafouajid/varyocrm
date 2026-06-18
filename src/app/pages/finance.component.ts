@@ -14,8 +14,8 @@ import { FormsModule } from '@angular/forms';
           <h2 class="text-3xl font-semibold tracking-tight text-slate-900">Finance / المالية</h2>
           <p class="text-slate-500 mt-1">Manage customer invoices, vendor invoices, and late payment recovery.</p>
         </div>
-        <button (click)="openCreateInvoiceModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center shadow-sm">
-          <mat-icon class="mr-2 text-sm! w-5 h-5 leading-none!">receipt_long</mat-icon>
+        <button (click)="openCreateInvoiceModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm">
+          <mat-icon class="w-5 h-5 text-[20px]! leading-none! flex items-center justify-center">receipt_long</mat-icon>
           New Invoice
         </button>
       </div>

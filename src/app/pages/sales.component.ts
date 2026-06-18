@@ -16,18 +16,18 @@ import { FormsModule } from '@angular/forms';
         </div>
         <div class="flex gap-2">
           @if (activeTab() === 'deals') {
-            <button (click)="openCreateDealModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center shadow-sm">
-              <mat-icon class="mr-2 text-sm! w-5 h-5 leading-none!">add</mat-icon>
+            <button (click)="openCreateDealModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm">
+              <mat-icon class="w-5 h-5 text-[20px]! leading-none! flex items-center justify-center">add</mat-icon>
               New Deal
             </button>
           } @else if (activeTab() === 'proposals') {
-            <button (click)="openCreateProposalModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center shadow-sm">
-              <mat-icon class="mr-2 text-sm! w-5 h-5 leading-none!">add</mat-icon>
+            <button (click)="openCreateProposalModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm">
+              <mat-icon class="w-5 h-5 text-[20px]! leading-none! flex items-center justify-center">add</mat-icon>
               New Proposal
             </button>
           } @else if (activeTab() === 'tasks') {
-            <button (click)="openCreateTaskModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center shadow-sm">
-              <mat-icon class="mr-2 text-sm! w-5 h-5 leading-none!">add</mat-icon>
+            <button (click)="openCreateTaskModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm">
+              <mat-icon class="w-5 h-5 text-[20px]! leading-none! flex items-center justify-center">add</mat-icon>
               New Task
             </button>
           }
