@@ -8,43 +8,51 @@ import { FormsModule } from '@angular/forms';
   selector: 'app-finance',
   imports: [MatIconModule, CommonModule, FormsModule],
   template: `
-    <div class="max-w-6xl mx-auto space-y-8">
-      <div class="flex justify-between items-end">
-        <div>
-          <h2 class="text-3xl font-semibold tracking-tight text-slate-900">Finance / المالية</h2>
-          <p class="text-slate-500 mt-1">Manage customer invoices, vendor invoices, and late payment recovery.</p>
-        </div>
-        <button (click)="openCreateInvoiceModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm">
-          <mat-icon class="w-5 h-5 text-[20px]! leading-none! flex items-center justify-center">receipt_long</mat-icon>
-          New Invoice
-        </button>
-      </div>
+    <div class="flex gap-6">
+      <!-- Left Sidebar Navigation -->
+      <aside class="w-44 shrink-0 hidden lg:block">
+        <nav class="space-y-1 sticky top-24">
+          <button 
+            (click)="activeTab.set('Customer')" 
+            [class]="activeTab() === 'Customer' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-transparent'"
+            class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors border flex items-center gap-2">
+            <mat-icon class="text-[18px] w-[18px] h-[18px]">receipt</mat-icon>
+            Customer
+            <span class="ml-auto text-xs bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full">{{ state.customerInvoices().length }}</span>
+          </button>
+          <button 
+            (click)="activeTab.set('Vendor')" 
+            [class]="activeTab() === 'Vendor' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-transparent'"
+            class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors border flex items-center gap-2">
+            <mat-icon class="text-[18px] w-[18px] h-[18px]">receipt_long</mat-icon>
+            Vendor
+            <span class="ml-auto text-xs bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full">{{ state.vendorInvoices().length }}</span>
+          </button>
+          <button 
+            (click)="activeTab.set('Recovery')" 
+            [class]="activeTab() === 'Recovery' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-transparent'"
+            class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors border flex items-center gap-2">
+            <mat-icon class="text-[18px] w-[18px] h-[18px]">healing</mat-icon>
+            Recovery
+            @if (state.overdueInvoices().length > 0) {
+              <span class="ml-auto text-xs bg-rose-100 text-rose-600 px-1.5 py-0.5 rounded-full font-bold">{{ state.overdueInvoices().length }}</span>
+            }
+          </button>
+        </nav>
+      </aside>
 
-      <div class="flex space-x-1 border-b border-slate-200">
-        <button 
-          (click)="activeTab.set('Customer')" 
-          [class]="activeTab() === 'Customer' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'"
-          class="px-4 py-3 border-b-2 font-medium text-sm transition-colors">
-          Customer Invoices ({{ state.customerInvoices().length }})
-        </button>
-        <button 
-          (click)="activeTab.set('Vendor')" 
-          [class]="activeTab() === 'Vendor' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'"
-          class="px-4 py-3 border-b-2 font-medium text-sm transition-colors">
-          Vendor Invoices ({{ state.vendorInvoices().length }})
-        </button>
-        <button 
-          (click)="activeTab.set('Recovery')" 
-          [class]="activeTab() === 'Recovery' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'"
-          class="px-4 py-3 border-b-2 font-medium text-sm transition-colors flex items-center gap-1.5">
-          <mat-icon class="text-[18px] w-4.5 h-4.5">healing</mat-icon> Recovery & Reminders
-          @if (state.overdueInvoices().length > 0) {
-            <span class="bg-rose-500 text-white px-1.5 py-0.5 rounded-full text-[10px] font-bold">
-              {{ state.overdueInvoices().length }}
-            </span>
-          }
-        </button>
-      </div>
+      <!-- Main Content -->
+      <div class="flex-1 min-w-0 space-y-8">
+        <div class="flex justify-between items-end">
+          <div>
+            <h2 class="text-3xl font-semibold tracking-tight text-slate-900">Finance / المالية</h2>
+            <p class="text-slate-500 mt-1">Manage customer invoices, vendor invoices, and late payment recovery.</p>
+          </div>
+          <button (click)="openCreateInvoiceModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm">
+            <mat-icon class="w-5 h-5 text-[20px]! leading-none! flex items-center justify-center">receipt_long</mat-icon>
+            New Invoice
+          </button>
+        </div>
 
       <!-- Invoices View -->
       @if (activeTab() !== 'Recovery') {
@@ -202,6 +210,7 @@ import { FormsModule } from '@angular/forms';
           </div>
         </div>
       }
+      </div>
     </div>
 
     <!-- Create Invoice Modal -->

@@ -1,4 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { CrmStateService, Partner } from '../services/crm-state.service';
 import { CommonModule } from '@angular/common';
@@ -8,38 +9,49 @@ import { FormsModule } from '@angular/forms';
   selector: 'app-partners',
   imports: [MatIconModule, CommonModule, FormsModule],
   template: `
-    <div class="max-w-6xl mx-auto space-y-8">
-      <div class="flex justify-between items-end">
-        <div>
-          <h2 class="text-3xl font-semibold tracking-tight text-slate-900">Partners / شركاء</h2>
-          <p class="text-slate-500 mt-1">Directory of customers, prospects, and vendors in Morocco.</p>
-        </div>
-        <button (click)="showCreateModal.set(true)" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm">
-          <mat-icon class="w-5 h-5 text-[20px]! leading-none! flex items-center justify-center">person_add</mat-icon>
-          New Partner
-        </button>
-      </div>
+    <div class="flex gap-6">
+      <!-- Left Sidebar Navigation -->
+      <aside class="w-44 shrink-0 hidden lg:block">
+        <nav class="space-y-1 sticky top-24">
+          <button 
+            (click)="activeTab.set('Customer')" 
+            [class]="activeTab() === 'Customer' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-transparent'"
+            class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors border flex items-center gap-2">
+            <mat-icon class="text-[18px] w-[18px] h-[18px]">people</mat-icon>
+            Customers
+            <span class="ml-auto text-xs bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full">{{ state.customers().length }}</span>
+          </button>
+          <button 
+            (click)="activeTab.set('Prospect')" 
+            [class]="activeTab() === 'Prospect' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-transparent'"
+            class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors border flex items-center gap-2">
+            <mat-icon class="text-[18px] w-[18px] h-[18px]">person_search</mat-icon>
+            Prospects
+            <span class="ml-auto text-xs bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full">{{ state.prospects().length }}</span>
+          </button>
+          <button 
+            (click)="activeTab.set('Vendor')" 
+            [class]="activeTab() === 'Vendor' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-transparent'"
+            class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors border flex items-center gap-2">
+            <mat-icon class="text-[18px] w-[18px] h-[18px]">store</mat-icon>
+            Vendors
+            <span class="ml-auto text-xs bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full">{{ state.vendors().length }}</span>
+          </button>
+        </nav>
+      </aside>
 
-      <div class="flex space-x-1 border-b border-slate-200">
-        <button 
-          (click)="activeTab.set('Customer')" 
-          [class]="activeTab() === 'Customer' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'"
-          class="px-4 py-3 border-b-2 font-medium text-sm transition-colors">
-          Customers ({{ state.customers().length }})
-        </button>
-        <button 
-          (click)="activeTab.set('Prospect')" 
-          [class]="activeTab() === 'Prospect' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'"
-          class="px-4 py-3 border-b-2 font-medium text-sm transition-colors">
-          Prospects ({{ state.prospects().length }})
-        </button>
-        <button 
-          (click)="activeTab.set('Vendor')" 
-          [class]="activeTab() === 'Vendor' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'"
-          class="px-4 py-3 border-b-2 font-medium text-sm transition-colors">
-          Vendors ({{ state.vendors().length }})
-        </button>
-      </div>
+      <!-- Main Content -->
+      <div class="flex-1 min-w-0 space-y-8">
+        <div class="flex justify-between items-end">
+          <div>
+            <h2 class="text-3xl font-semibold tracking-tight text-slate-900">Partners / شركاء</h2>
+            <p class="text-slate-500 mt-1">Directory of customers, prospects, and vendors in Morocco.</p>
+          </div>
+          <button (click)="openCreateModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm">
+            <mat-icon class="w-5 h-5 text-[20px]! leading-none! flex items-center justify-center">person_add</mat-icon>
+            New {{activeTab()}}
+          </button>
+        </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         @for (partner of filteredPartners(); track partner.id) {
@@ -97,9 +109,15 @@ import { FormsModule } from '@angular/forms';
 
             <div class="mt-6 pt-4 border-t border-slate-100 flex gap-2">
               @if(partner.type === 'Prospect') {
-                <button (click)="state.convertToCustomer(partner.id)" class="w-full bg-slate-50 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200 text-indigo-600 border border-slate-200 px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center">
+                <button (click)="openCustomerCard(partner.id)" class="w-full bg-slate-50 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200 text-indigo-600 border border-slate-200 px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center">
                   <mat-icon class="mr-2 text-[16px] w-4 h-4">published_with_changes</mat-icon>
                   Convert to Customer
+                </button>
+              }
+              @if(partner.type === 'Customer') {
+                <button (click)="openCustomerCard(partner.id)" class="w-full bg-slate-50 hover:bg-indigo-50 text-indigo-600 border border-slate-200 px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center">
+                  <mat-icon class="mr-2 text-[16px] w-4 h-4">visibility</mat-icon>
+                  View Customer Card
                 </button>
               }
             </div>
@@ -116,7 +134,7 @@ import { FormsModule } from '@angular/forms';
         <div class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
           <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-6 shadow-xl border border-slate-100">
             <div class="flex justify-between items-center pb-2 border-b border-slate-100">
-              <h3 class="text-lg font-semibold text-slate-950">Add New Partner</h3>
+              <h3 class="text-lg font-semibold text-slate-950">Add New {{newPartner.type}}</h3>
               <button (click)="showCreateModal.set(false)" class="text-slate-400 hover:text-slate-600">
                 <mat-icon>close</mat-icon>
               </button>
@@ -171,13 +189,24 @@ import { FormsModule } from '@angular/forms';
           </div>
         </div>
       }
+      </div>
     </div>
   `
 })
 export class PartnersComponent {
   state = inject(CrmStateService);
+  router = inject(Router);
   activeTab = signal<'Customer' | 'Prospect' | 'Vendor'>('Customer');
   showCreateModal = signal(false);
+
+  openCreateModal() {
+    this.newPartner.type = this.activeTab();
+    this.showCreateModal.set(true);
+  }
+
+  openCustomerCard(partnerId: string) {
+    this.router.navigate(['/partners', partnerId, 'customer-card']);
+  }
 
   newPartner = {
     name: '',

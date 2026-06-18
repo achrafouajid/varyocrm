@@ -7,54 +7,65 @@ import { CommonModule } from '@angular/common';
   selector: 'app-marketing',
   imports: [MatIconModule, CommonModule],
   template: `
-    <div class="max-w-6xl mx-auto space-y-8">
-      <div class="flex justify-between items-end">
-        <div>
-          <h2 class="text-3xl font-semibold tracking-tight text-slate-900">Marketing</h2>
-          <p class="text-slate-500 mt-1">Automated campaigns across WhatsApp, SMS, and Email.</p>
-        </div>
-        <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm">
-          <mat-icon class="w-5 h-5 text-[20px]! leading-none! flex items-center justify-center">add</mat-icon>
-          New Campaign
-        </button>
-      </div>
+    <div class="flex gap-6">
+      <!-- Left Sidebar Navigation -->
+      <aside class="w-44 shrink-0 hidden lg:block">
+        <nav class="space-y-1 sticky top-24">
+          <button 
+            (click)="activeTab.set('Email')" 
+            [class]="activeTab() === 'Email' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-transparent'"
+            class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors border flex items-center gap-2">
+            <mat-icon class="text-[18px] w-[18px] h-[18px]">email</mat-icon>
+            Email
+            <span class="ml-auto text-xs bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full">{{ filteredByType('Email').length }}</span>
+          </button>
+          <button 
+            (click)="activeTab.set('WhatsApp')" 
+            [class]="activeTab() === 'WhatsApp' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-transparent'"
+            class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors border flex items-center gap-2">
+            <mat-icon class="text-[18px] w-[18px] h-[18px]">chat</mat-icon>
+            WhatsApp
+            <span class="ml-auto text-xs bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full">{{ filteredByType('WhatsApp').length }}</span>
+          </button>
+          <button 
+            (click)="activeTab.set('SMS')" 
+            [class]="activeTab() === 'SMS' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-transparent'"
+            class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors border flex items-center gap-2">
+            <mat-icon class="text-[18px] w-[18px] h-[18px]">sms</mat-icon>
+            SMS
+            <span class="ml-auto text-xs bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full">{{ filteredByType('SMS').length }}</span>
+          </button>
+        </nav>
+      </aside>
 
-      <!-- Overview Stats -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-white border text-center border-slate-200 rounded-xl p-5 shadow-sm">
-          <div class="text-4xl font-semibold text-slate-900 mb-1">3</div>
-          <div class="text-xs font-bold tracking-wider text-slate-500 uppercase">Active Campaigns</div>
+      <!-- Main Content -->
+      <div class="flex-1 min-w-0 space-y-8">
+        <div class="flex justify-between items-end">
+          <div>
+            <h2 class="text-3xl font-semibold tracking-tight text-slate-900">Marketing</h2>
+            <p class="text-slate-500 mt-1">Automated campaigns across WhatsApp, SMS, and Email.</p>
+          </div>
+          <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm">
+            <mat-icon class="w-5 h-5 text-[20px]! leading-none! flex items-center justify-center">add</mat-icon>
+            New Campaign
+          </button>
         </div>
-        <div class="bg-white border text-center border-slate-200 rounded-xl p-5 shadow-sm">
-          <div class="text-4xl font-semibold text-slate-900 mb-1">165</div>
-          <div class="text-xs font-bold tracking-wider text-slate-500 uppercase">Messages Sent</div>
-        </div>
-        <div class="bg-white border text-center border-slate-200 rounded-xl p-5 shadow-sm">
-          <div class="text-4xl font-semibold text-slate-900 mb-1">12%</div>
-          <div class="text-xs font-bold tracking-wider text-slate-500 uppercase">Conversion Target</div>
-        </div>
-      </div>
 
-      <div class="flex space-x-1 border-b border-slate-200">
-        <button 
-          (click)="activeTab.set('Email')" 
-          [class]="activeTab() === 'Email' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'"
-          class="px-4 py-3 border-b-2 font-medium text-sm transition-colors flex items-center gap-2">
-          <mat-icon class="text-[18px] w-[18px] h-[18px]">email</mat-icon> Email
-        </button>
-        <button 
-          (click)="activeTab.set('WhatsApp')" 
-          [class]="activeTab() === 'WhatsApp' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'"
-          class="px-4 py-3 border-b-2 font-medium text-sm transition-colors flex items-center gap-2">
-          <mat-icon class="text-[18px] w-[18px] h-[18px]">chat</mat-icon> WhatsApp
-        </button>
-        <button 
-          (click)="activeTab.set('SMS')" 
-          [class]="activeTab() === 'SMS' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'"
-          class="px-4 py-3 border-b-2 font-medium text-sm transition-colors flex items-center gap-2">
-          <mat-icon class="text-[18px] w-[18px] h-[18px]">sms</mat-icon> SMS
-        </button>
-      </div>
+        <!-- Overview Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="bg-white border text-center border-slate-200 rounded-xl p-5 shadow-sm">
+            <div class="text-4xl font-semibold text-slate-900 mb-1">3</div>
+            <div class="text-xs font-bold tracking-wider text-slate-500 uppercase">Active Campaigns</div>
+          </div>
+          <div class="bg-white border text-center border-slate-200 rounded-xl p-5 shadow-sm">
+            <div class="text-4xl font-semibold text-slate-900 mb-1">165</div>
+            <div class="text-xs font-bold tracking-wider text-slate-500 uppercase">Messages Sent</div>
+          </div>
+          <div class="bg-white border text-center border-slate-200 rounded-xl p-5 shadow-sm">
+            <div class="text-4xl font-semibold text-slate-900 mb-1">12%</div>
+            <div class="text-xs font-bold tracking-wider text-slate-500 uppercase">Conversion Target</div>
+          </div>
+        </div>
 
       <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         <table class="min-w-full divide-y divide-slate-200">
@@ -92,6 +103,7 @@ import { CommonModule } from '@angular/common';
           </tbody>
         </table>
       </div>
+      </div>
     </div>
   `
 })
@@ -100,6 +112,8 @@ export class MarketingComponent {
   activeTab = signal<'Email' | 'WhatsApp' | 'SMS'>('Email');
 
   filteredCampaigns = () => this.state.campaigns().filter(c => c.type === this.activeTab());
+
+  filteredByType = (type: string) => this.state.campaigns().filter(c => c.type === type);
 
   getStatusColor(status: string) {
     switch(status) {

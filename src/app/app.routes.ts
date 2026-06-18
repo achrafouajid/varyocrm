@@ -7,6 +7,7 @@ export const routes: Routes = [
   { path: 'marketing', loadComponent: () => import('./pages/marketing.component').then(m => m.MarketingComponent) },
   { path: 'partners', loadComponent: () => import('./pages/partners.component').then(m => m.PartnersComponent) },
   { path: 'finance', loadComponent: () => import('./pages/finance.component').then(m => m.FinanceComponent) },
-  { path: 'tickets', loadComponent: () => import('./pages/tickets.component').then(m => m.TicketsComponent) }
+  { path: 'tickets', loadComponent: () => import('./pages/tickets.component').then(m => m.TicketsComponent) },
+  { path: 'partners/:id/customer-card', loadComponent: () => import('./pages/customer-card.component').then(m => m.CustomerCardComponent) }
 ];
 

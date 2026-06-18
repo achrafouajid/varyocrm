@@ -33,6 +33,7 @@ export interface ProposalLine {
   qty: number;
   unitPrice: number;
   total: number;
+  vendor?: string;
 }
 
 export interface Proposal {
@@ -57,6 +58,38 @@ export interface Deal {
   discount?: number;
   emailExchange?: string;
   estimatedDeliveryDate?: string;
+
+  // Identification & Dates
+  orderNumber?: string;
+  dealNumber?: string;
+  orderDate?: string;
+  requestedDeliveryDate?: string;
+  orderStatus?: string;
+
+  // Customer & Delivery
+  customerAccount?: string;
+  billingAddress?: string;
+  deliveryAddress?: string;
+  contactPerson?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+
+  // Sales & Ownership
+  salesPerson?: string;
+  salesRegion?: string;
+
+  // Commercial Basics
+  currency?: string;
+  paymentTerms?: string;
+  orderTotalAmount?: number;
+
+  // Vendor / Partner
+  vendorAccount?: string;
+  purchaseOrderRef?: string;
+  warehouseAddress?: string;
+  transportationService?: string;
+  expectedDeliveryDateVendor?: string;
+  deliveryDate?: string;
 }
 
 export interface PurchaseOrder {
@@ -97,6 +130,53 @@ export interface Ticket {
   assignedTo: string;
   status: TicketStatus;
   priority: 'Low' | 'Medium' | 'High';
+}
+
+export type RecordType = 'Organization' | 'Individual';
+export type OrgType = 'Headquarter' | 'Subsidiary' | 'Branch';
+export type AddressType = 'Siège Social / Fiscal' | 'Delivery' | 'Warehouse' | 'Billing';
+export type VatStatus = 'Standard' | 'No VAT' | 'Export Trade';
+
+export interface CustomerAddress {
+  id: string;
+  addressType: AddressType;
+  streetAddress: string;
+  industrialZone: string;
+  postalCode: string;
+  city: string;
+  isPrimary: boolean;
+}
+
+export interface CustomerPersonnel {
+  id: string;
+  fullName: string;
+  jobTitle: string;
+  directMobile: string;
+  directEmail: string;
+  isPrimary: boolean;
+}
+
+export interface CustomerCard {
+  id: string;
+  partnerId: string;
+  accountId: string;
+  recordType: RecordType;
+  name: string;
+  searchName: string;
+  erpAccount: string;
+  ice: string;
+  ifField: string;
+  rc: string;
+  rcCity: string;
+  tp: string;
+  vatStatus: VatStatus[];
+  orgType: OrgType;
+  parentAccountId: string | null;
+  addresses: CustomerAddress[];
+  mainPhone: string;
+  corporateEmail: string;
+  websiteUrl: string;
+  personnel: CustomerPersonnel[];
 }
 
 export interface ProposalTemplate {
@@ -170,6 +250,8 @@ export class CrmStateService {
     { id: 'tk1', title: 'Problème accès console Cloud', partnerId: 'p3', assignedTo: 'Fatima Chraibi', status: 'In Progress', priority: 'High' }
   ]);
 
+  customerCards = signal<CustomerCard[]>([]);
+
   // Derived states
   customers = computed(() => this.partners().filter(p => p.type === 'Customer'));
   vendors = computed(() => this.partners().filter(p => p.type === 'Vendor'));
@@ -192,6 +274,27 @@ export class CrmStateService {
     this.partners.update(partners =>
       partners.map(p => p.id === partnerId ? { ...p, type: 'Customer' } : p)
     );
+  }
+
+  getCustomerCard(partnerId: string): CustomerCard | undefined {
+    return this.customerCards().find(c => c.partnerId === partnerId);
+  }
+
+  saveCustomerCard(card: CustomerCard) {
+    this.customerCards.update(cards => {
+      const existing = cards.findIndex(c => c.id === card.id);
+      if (existing >= 0) {
+        const updated = [...cards];
+        updated[existing] = card;
+        return updated;
+      }
+      return [...cards, card];
+    });
+  }
+
+  generateAccountId(): string {
+    const count = this.customerCards().length + 1;
+    return 'ACC-' + String(count).padStart(5, '0');
   }
 
   addPartner(partner: Omit<Partner, 'id'>) {
@@ -395,6 +498,48 @@ export class CrmStateService {
         // 1. Convert prospect → customer
         this.convertToCustomer('p1');
 
+        // Auto-create a basic CustomerCard for the wizard flow
+        const existingCard = this.getCustomerCard('p1');
+        if (!existingCard) {
+          this.saveCustomerCard({
+            id: 'cc-p1',
+            partnerId: 'p1',
+            accountId: this.generateAccountId(),
+            recordType: 'Organization',
+            name: 'Atlas Digital S.A.R.L.',
+            searchName: 'Atlas Digital',
+            erpAccount: 'ERP-ATLAS-001',
+            ice: '123456789012345',
+            ifField: 'IF987654',
+            rc: 'RC123456',
+            rcCity: 'Casablanca',
+            tp: 'TP789012',
+            vatStatus: ['Standard'],
+            orgType: 'Headquarter',
+            parentAccountId: null,
+            addresses: [{
+              id: 'addr-wiz-1',
+              addressType: 'Siège Social / Fiscal',
+              streetAddress: '120 Boulevard d\'Anfa',
+              industrialZone: '',
+              postalCode: '20000',
+              city: 'Casablanca',
+              isPrimary: true,
+            }],
+            mainPhone: '+212 522 458 922',
+            corporateEmail: 'contact@atlasdigital.ma',
+            websiteUrl: 'https://www.atlasdigital.ma',
+            personnel: [{
+              id: 'per-wiz-1',
+              fullName: 'Karim Atlas',
+              jobTitle: 'CEO',
+              directMobile: '+212 661 234 567',
+              directEmail: 'k.atlas@atlasdigital.ma',
+              isPrimary: true,
+            }],
+          });
+        }
+
         // 2. Convert confirmed proposal into a Deal, inheriting all lines & amount from the proposal
         const prop = this.proposals().find(p => p.partnerId === 'p1' && p.status === 'Confirmed');
         const deal = this.addDeal({
@@ -406,7 +551,34 @@ export class CrmStateService {
           proposalId: prop?.id,
           orderLines: prop?.lines || [], // lines inherited directly from the confirmed proposal
           discount: 10,
-          emailExchange: 'De: contact@atlasdigital.ma\nÀ: y.alami@acme.ma\nSujet: Bon de commande signé\n\nBonjour Youssef,\nVous trouverez ci-joint le BC signé. Merci de procéder à la livraison des serveurs.'
+          emailExchange: 'De: contact@atlasdigital.ma\nÀ: y.alami@acme.ma\nSujet: Bon de commande signé\n\nBonjour Youssef,\nVous trouverez ci-joint le BC signé. Merci de procéder à la livraison des serveurs.',
+          
+          orderNumber: 'ORD-2026-0087',
+          dealNumber: 'DL-2026-0045',
+          orderDate: '2026-06-18',
+          requestedDeliveryDate: '2026-07-10',
+          orderStatus: 'Confirmed',
+          
+          customerAccount: 'ACT-ATLAS-99',
+          billingAddress: '120 Boulevard d\'Anfa, Casablanca, Maroc',
+          deliveryAddress: 'Sidi Maârouf Technopark, Bâtiment B, Casablanca, Maroc',
+          contactPerson: 'Karim Atlas',
+          contactEmail: 'contact@atlasdigital.ma',
+          contactPhone: '+212-522-458922',
+          
+          salesPerson: 'Youssef El Alami',
+          salesRegion: 'Grand Casablanca / Maroc',
+          
+          currency: 'MAD',
+          paymentTerms: '30 Days Net',
+          orderTotalAmount: 13500,
+          
+          vendorAccount: 'VND-CASA-04',
+          purchaseOrderRef: 'PO-2026-0021',
+          warehouseAddress: 'Zone Industrielle Sapino, Nouaceur, Maroc',
+          transportationService: 'Maroc Express Logistics',
+          expectedDeliveryDateVendor: '2026-07-02',
+          deliveryDate: '2026-07-05'
         });
 
         // Add task for Operations Team to create PO and deliver
@@ -418,6 +590,11 @@ export class CrmStateService {
           status: 'Pending',
           relatedTo: 'Deal: ' + deal.title
         });
+
+        // Remove the proposal so it disappears from Proposals tab
+        if (prop) {
+          this.proposals.update(props => props.filter(p => p.id !== prop.id));
+        }
 
         this.walkthroughStep.set(5);
       }

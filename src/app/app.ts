@@ -19,91 +19,106 @@ import { CrmStateService } from './services/crm-state.service';
                 <img src="/crm.webp" alt="MarocCRM" class="h-20 w-auto">
               </a>
               
-              <nav class="hidden md:flex space-x-1" (mouseleave)="activeDropdown.set(null)">
+              <nav class="hidden md:flex items-center space-x-0.5">
                 <!-- Sales Dropdown -->
-                <div class="relative group" (mouseenter)="activeDropdown.set('sales')">
-                  <a routerLink="/sales" [class.bg-slate-50]="activeDropdown() === 'sales'" [class.text-slate-900]="activeDropdown() === 'sales'"
-                          class="text-slate-600 hover:text-slate-900 hover:bg-slate-50 px-3 py-2 rounded-md text-sm font-medium transition-colors inline-flex items-center">
+                <div class="relative" (mouseenter)="activeDropdown.set('sales')" (mouseleave)="activeDropdown.set(null)">
+                  <a routerLink="/sales" [class.bg-slate-100]="activeDropdown() === 'sales'" [class.text-slate-900]="activeDropdown() === 'sales'"
+                          class="text-slate-600 hover:text-slate-900 hover:bg-slate-100 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 inline-flex items-center gap-1">
                     Sales
-                    <mat-icon class="ml-1 text-[16px] w-4 h-4 transition-transform duration-200" [class.rotate-180]="activeDropdown() === 'sales'">expand_more</mat-icon>
+                    <mat-icon class="text-[16px] w-4 h-4 transition-transform duration-200" [class.rotate-180]="activeDropdown() === 'sales'">expand_more</mat-icon>
                   </a>
                   @if (activeDropdown() === 'sales') {
-                    <div class="absolute left-0 mt-1 w-48 rounded-xl bg-white shadow-lg shadow-slate-200/50 ring-1 ring-slate-200/50 focus:outline-none overflow-hidden origin-top-left animate-in fade-in slide-in-from-top-2 duration-200">
-                      <div class="py-1">
-                        <a routerLink="/sales" (click)="activeDropdown.set(null)" class="group flex items-center px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-indigo-600">
-                          <mat-icon class="mr-3 text-slate-400 group-hover:text-indigo-600 text-[18px] w-[18px] h-[18px]">monetization_on</mat-icon>
-                          Deals & Proposals
-                        </a>
-                        <a routerLink="/sales" (click)="activeDropdown.set(null)" class="group flex items-center px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-indigo-600">
-                          <mat-icon class="mr-3 text-slate-400 group-hover:text-indigo-600 text-[18px] w-[18px] h-[18px]">task</mat-icon>
-                          Tasks
-                        </a>
+                    <div class="absolute left-1/2 -translate-x-1/2 pt-2 w-52">
+                      <div class="bg-white rounded-xl shadow-xl shadow-slate-200/50 ring-1 ring-black/5 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150 ease-out">
+                        <div class="px-4 py-2 border-b border-slate-100">
+                          <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Sales</span>
+                        </div>
+                        <div class="py-1">
+                          <a routerLink="/sales" (click)="activeDropdown.set(null)" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors">
+                            <mat-icon class="text-slate-400 text-[18px] w-[18px] h-[18px]">monetization_on</mat-icon>
+                            <span class="font-medium">Deals & Proposals</span>
+                          </a>
+                          <a routerLink="/sales" (click)="activeDropdown.set(null)" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors">
+                            <mat-icon class="text-slate-400 text-[18px] w-[18px] h-[18px]">task</mat-icon>
+                            <span class="font-medium">Tasks</span>
+                          </a>
+                        </div>
                       </div>
                     </div>
                   }
                 </div>
 
                 <!-- Marketing Dropdown -->
-                <div class="relative group" (mouseenter)="activeDropdown.set('marketing')">
-                  <a routerLink="/marketing" [class.bg-slate-50]="activeDropdown() === 'marketing'" [class.text-slate-900]="activeDropdown() === 'marketing'"
-                          class="text-slate-600 hover:text-slate-900 hover:bg-slate-50 px-3 py-2 rounded-md text-sm font-medium transition-colors inline-flex items-center">
+                <div class="relative" (mouseenter)="activeDropdown.set('marketing')" (mouseleave)="activeDropdown.set(null)">
+                  <a routerLink="/marketing" [class.bg-slate-100]="activeDropdown() === 'marketing'" [class.text-slate-900]="activeDropdown() === 'marketing'"
+                          class="text-slate-600 hover:text-slate-900 hover:bg-slate-100 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 inline-flex items-center gap-1">
                     Marketing
-                    <mat-icon class="ml-1 text-[16px] w-4 h-4 transition-transform duration-200" [class.rotate-180]="activeDropdown() === 'marketing'">expand_more</mat-icon>
+                    <mat-icon class="text-[16px] w-4 h-4 transition-transform duration-200" [class.rotate-180]="activeDropdown() === 'marketing'">expand_more</mat-icon>
                   </a>
                   @if (activeDropdown() === 'marketing') {
-                    <div class="absolute left-0 mt-1 w-48 rounded-xl bg-white shadow-lg shadow-slate-200/50 ring-1 ring-slate-200/50 focus:outline-none origin-top-left animate-in fade-in slide-in-from-top-2 duration-200 overflow-hidden">
-                      <div class="py-1">
-                        <a routerLink="/marketing" (click)="activeDropdown.set(null)" class="group flex items-center px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-indigo-600">
-                          <mat-icon class="mr-3 text-slate-400 group-hover:text-indigo-600 text-[18px] w-[18px] h-[18px]">email</mat-icon>
-                          Email
-                        </a>
-                        <a routerLink="/marketing" (click)="activeDropdown.set(null)" class="group flex items-center px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-indigo-600">
-                          <mat-icon class="mr-3 text-slate-400 group-hover:text-indigo-600 text-[18px] w-[18px] h-[18px]">chat</mat-icon>
-                          WhatsApp
-                        </a>
-                        <a routerLink="/marketing" (click)="activeDropdown.set(null)" class="group flex items-center px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-indigo-600">
-                          <mat-icon class="mr-3 text-slate-400 group-hover:text-indigo-600 text-[18px] w-[18px] h-[18px]">sms</mat-icon>
-                          SMS
-                        </a>
+                    <div class="absolute left-1/2 -translate-x-1/2 pt-2 w-52">
+                      <div class="bg-white rounded-xl shadow-xl shadow-slate-200/50 ring-1 ring-black/5 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150 ease-out">
+                        <div class="px-4 py-2 border-b border-slate-100">
+                          <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Channels</span>
+                        </div>
+                        <div class="py-1">
+                          <a routerLink="/marketing" (click)="activeDropdown.set(null)" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors">
+                            <mat-icon class="text-slate-400 text-[18px] w-[18px] h-[18px]">email</mat-icon>
+                            <span class="font-medium">Email</span>
+                          </a>
+                          <a routerLink="/marketing" (click)="activeDropdown.set(null)" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors">
+                            <mat-icon class="text-slate-400 text-[18px] w-[18px] h-[18px]">chat</mat-icon>
+                            <span class="font-medium">WhatsApp</span>
+                          </a>
+                          <a routerLink="/marketing" (click)="activeDropdown.set(null)" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors">
+                            <mat-icon class="text-slate-400 text-[18px] w-[18px] h-[18px]">sms</mat-icon>
+                            <span class="font-medium">SMS</span>
+                          </a>
+                        </div>
                       </div>
                     </div>
                   }
                 </div>
 
                 <!-- Inbox Dropdown -->
-                <div class="relative group" (mouseenter)="activeDropdown.set('inbox')">
-                  <a routerLink="/tickets" [class.bg-slate-50]="activeDropdown() === 'inbox'" [class.text-slate-900]="activeDropdown() === 'inbox'"
-                          class="text-slate-600 hover:text-slate-900 hover:bg-slate-50 px-3 py-2 rounded-md text-sm font-medium transition-colors inline-flex items-center">
+                <div class="relative" (mouseenter)="activeDropdown.set('inbox')" (mouseleave)="activeDropdown.set(null)">
+                  <a routerLink="/tickets" [class.bg-slate-100]="activeDropdown() === 'inbox'" [class.text-slate-900]="activeDropdown() === 'inbox'"
+                          class="text-slate-600 hover:text-slate-900 hover:bg-slate-100 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 inline-flex items-center gap-1">
                     Inbox
-                    <mat-icon class="ml-1 text-[16px] w-4 h-4 transition-transform duration-200" [class.rotate-180]="activeDropdown() === 'inbox'">expand_more</mat-icon>
+                    <mat-icon class="text-[16px] w-4 h-4 transition-transform duration-200" [class.rotate-180]="activeDropdown() === 'inbox'">expand_more</mat-icon>
                   </a>
                   @if (activeDropdown() === 'inbox') {
-                    <div class="absolute left-0 mt-1 w-48 rounded-xl bg-white shadow-lg shadow-slate-200/50 ring-1 ring-slate-200/50 focus:outline-none origin-top-left animate-in fade-in slide-in-from-top-2 duration-200 overflow-hidden">
-                      <div class="py-1">
-                        <a routerLink="/tickets" (click)="activeDropdown.set(null)" class="group flex items-center px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-indigo-600">
-                          <mat-icon class="mr-3 text-slate-400 group-hover:text-indigo-600 text-[18px] w-[18px] h-[18px]">inbox</mat-icon>
-                          My tickets
-                        </a>
+                    <div class="absolute left-1/2 -translate-x-1/2 pt-2 w-52">
+                      <div class="bg-white rounded-xl shadow-xl shadow-slate-200/50 ring-1 ring-black/5 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150 ease-out">
+                        <div class="px-4 py-2 border-b border-slate-100">
+                          <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Support</span>
+                        </div>
+                        <div class="py-1">
+                          <a routerLink="/tickets" (click)="activeDropdown.set(null)" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors">
+                            <mat-icon class="text-slate-400 text-[18px] w-[18px] h-[18px]">inbox</mat-icon>
+                            <span class="font-medium">My tickets</span>
+                          </a>
+                        </div>
                       </div>
                     </div>
                   }
                 </div>
 
                 <!-- Analytics -->
-                <a routerLink="/analytics" routerLinkActive="bg-slate-50 text-slate-900 font-medium"
-                   class="text-slate-600 hover:text-slate-900 hover:bg-slate-50 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                <a routerLink="/analytics" routerLinkActive="bg-slate-100 text-slate-900 font-medium"
+                   class="text-slate-600 hover:text-slate-900 hover:bg-slate-100 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150">
                   Analytics
                 </a>
 
                 <!-- Partners -->
-                <a routerLink="/partners" routerLinkActive="bg-slate-50 text-slate-900 font-medium"
-                   class="text-slate-600 hover:text-slate-900 hover:bg-slate-50 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                <a routerLink="/partners" routerLinkActive="bg-slate-100 text-slate-900 font-medium"
+                   class="text-slate-600 hover:text-slate-900 hover:bg-slate-100 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150">
                   Partners
                 </a>
                 
                 <!-- Finance -->
-                <a routerLink="/finance" routerLinkActive="bg-slate-50 text-slate-900 font-medium"
-                   class="text-slate-600 hover:text-slate-900 hover:bg-slate-50 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                <a routerLink="/finance" routerLinkActive="bg-slate-100 text-slate-900 font-medium"
+                   class="text-slate-600 hover:text-slate-900 hover:bg-slate-100 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150">
                   Finance
                 </a>
               </nav>

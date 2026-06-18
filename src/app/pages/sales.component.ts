@@ -8,59 +8,71 @@ import { FormsModule } from '@angular/forms';
   selector: 'app-sales',
   imports: [MatIconModule, CommonModule, FormsModule],
   template: `
-    <div class="max-w-6xl mx-auto space-y-8">
-      <div class="flex justify-between items-end">
-        <div>
-          <h2 class="text-3xl font-semibold tracking-tight text-slate-900">Sales & Operations</h2>
-          <p class="text-slate-500 mt-1">Manage proposals, deals, purchase orders, and team tasks.</p>
-        </div>
-        <div class="flex gap-2">
-          @if (activeTab() === 'deals') {
-            <button (click)="openCreateDealModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm">
-              <mat-icon class="w-5 h-5 text-[20px]! leading-none! flex items-center justify-center">add</mat-icon>
-              New Deal
-            </button>
-          } @else if (activeTab() === 'proposals') {
-            <button (click)="openCreateProposalModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm">
-              <mat-icon class="w-5 h-5 text-[20px]! leading-none! flex items-center justify-center">add</mat-icon>
-              New Proposal
-            </button>
-          } @else if (activeTab() === 'tasks') {
-            <button (click)="openCreateTaskModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm">
-              <mat-icon class="w-5 h-5 text-[20px]! leading-none! flex items-center justify-center">add</mat-icon>
-              New Task
-            </button>
-          }
-        </div>
-      </div>
+    <div class="flex gap-6">
+      <!-- Left Sidebar Navigation -->
+      <aside class="w-44 shrink-0 hidden lg:block">
+        <nav class="space-y-1 sticky top-24">
+          <button 
+            (click)="activeTab.set('deals')" 
+            [class]="activeTab() === 'deals' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-transparent'"
+            class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors border flex items-center gap-2">
+            <mat-icon class="text-[18px] w-[18px] h-[18px]">monetization_on</mat-icon>
+            Deals
+            <span class="ml-auto text-xs bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full">{{ state.deals().length }}</span>
+          </button>
+          <button 
+            (click)="activeTab.set('proposals')" 
+            [class]="activeTab() === 'proposals' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-transparent'"
+            class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors border flex items-center gap-2">
+            <mat-icon class="text-[18px] w-[18px] h-[18px]">description</mat-icon>
+            Proposals
+            <span class="ml-auto text-xs bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full">{{ state.proposals().length }}</span>
+          </button>
+          <button 
+            (click)="activeTab.set('tasks')" 
+            [class]="activeTab() === 'tasks' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-transparent'"
+            class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors border flex items-center gap-2">
+            <mat-icon class="text-[18px] w-[18px] h-[18px]">task</mat-icon>
+            Tasks
+            <span class="ml-auto text-xs bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full">{{ state.tasks().length }}</span>
+          </button>
+          <button 
+            (click)="activeTab.set('pos')" 
+            [class]="activeTab() === 'pos' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-transparent'"
+            class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors border flex items-center gap-2">
+            <mat-icon class="text-[18px] w-[18px] h-[18px]">shopping_cart</mat-icon>
+            Purchase Orders
+            <span class="ml-auto text-xs bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full">{{ state.purchaseOrders().length }}</span>
+          </button>
+        </nav>
+      </aside>
 
-      <!-- Tabs -->
-      <div class="flex space-x-1 border-b border-slate-200">
-        <button 
-          (click)="activeTab.set('deals')" 
-          [class]="activeTab() === 'deals' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'"
-          class="px-4 py-3 border-b-2 font-medium text-sm transition-colors">
-          Deals ({{ state.deals().length }})
-        </button>
-        <button 
-          (click)="activeTab.set('proposals')" 
-          [class]="activeTab() === 'proposals' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'"
-          class="px-4 py-3 border-b-2 font-medium text-sm transition-colors">
-          Proposals ({{ state.proposals().length }})
-        </button>
-        <button 
-          (click)="activeTab.set('tasks')" 
-          [class]="activeTab() === 'tasks' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'"
-          class="px-4 py-3 border-b-2 font-medium text-sm transition-colors">
-          Tasks & Assignments ({{ state.tasks().length }})
-        </button>
-        <button 
-          (click)="activeTab.set('pos')" 
-          [class]="activeTab() === 'pos' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'"
-          class="px-4 py-3 border-b-2 font-medium text-sm transition-colors">
-          Purchase Orders ({{ state.purchaseOrders().length }})
-        </button>
-      </div>
+      <!-- Main Content -->
+      <div class="flex-1 min-w-0 space-y-8">
+        <div class="flex justify-between items-end">
+          <div>
+            <h2 class="text-3xl font-semibold tracking-tight text-slate-900">Sales & Operations</h2>
+            <p class="text-slate-500 mt-1">Manage proposals, deals, purchase orders, and team tasks.</p>
+          </div>
+          <div class="flex gap-2">
+            @if (activeTab() === 'deals') {
+              <button (click)="openCreateDealModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm">
+                <mat-icon class="w-5 h-5 text-[20px]! leading-none! flex items-center justify-center">add</mat-icon>
+                New Deal
+              </button>
+            } @else if (activeTab() === 'proposals') {
+              <button (click)="openCreateProposalModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm">
+                <mat-icon class="w-5 h-5 text-[20px]! leading-none! flex items-center justify-center">add</mat-icon>
+                New Proposal
+              </button>
+            } @else if (activeTab() === 'tasks') {
+              <button (click)="openCreateTaskModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm">
+                <mat-icon class="w-5 h-5 text-[20px]! leading-none! flex items-center justify-center">add</mat-icon>
+                New Task
+              </button>
+            }
+          </div>
+        </div>
 
       <!-- Deals View -->
       @if (activeTab() === 'deals') {
@@ -119,9 +131,95 @@ import { FormsModule } from '@angular/forms';
                 </div>
               }
 
+              <!-- Expanded Deal Details -->
+              @if (expandedDeals()[deal.id]) {
+                <div class="pt-4 border-t border-slate-100 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-xs bg-slate-50/50 p-4 rounded-xl border border-slate-100 animate-in slide-in-from-top-2 duration-200">
+                  <!-- Identification & Dates -->
+                  <div class="space-y-2">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block border-b border-slate-200/60 pb-1">1. Identification & Dates</span>
+                    <div class="grid grid-cols-2 gap-y-1 text-slate-600">
+                      <span class="font-medium">Order Number:</span> <span class="font-mono text-slate-900 font-semibold">{{ deal.orderNumber || 'N/A' }}</span>
+                      <span class="font-medium">Deal Number:</span> <span class="font-mono text-slate-900 font-semibold">{{ deal.dealNumber || 'N/A' }}</span>
+                      <span class="font-medium">Order Date:</span> <span class="text-slate-900 font-mono">{{ deal.orderDate || 'N/A' }}</span>
+                      <span class="font-medium">Req. Delivery:</span> <span class="text-slate-900 font-mono">{{ deal.requestedDeliveryDate || 'N/A' }}</span>
+                      <span class="font-medium">Order Status:</span> 
+                      <span>
+                        <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">
+                          {{ deal.orderStatus || 'N/A' }}
+                        </span>
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Customer & Delivery -->
+                  <div class="space-y-2">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block border-b border-slate-200/60 pb-1">2. Customer & Delivery</span>
+                    <div class="grid grid-cols-3 gap-y-1 text-slate-600">
+                      <span class="font-medium col-span-1">Account:</span> <span class="col-span-2 text-slate-900 font-mono">{{ deal.customerAccount || 'N/A' }}</span>
+                      <span class="font-medium col-span-1">Contact:</span> <span class="col-span-2 text-slate-900 font-medium">{{ deal.contactPerson || 'N/A' }}</span>
+                      <span class="font-medium col-span-1">Email:</span> <span class="col-span-2 text-slate-900 font-mono truncate" [title]="deal.contactEmail">{{ deal.contactEmail || 'N/A' }}</span>
+                      <span class="font-medium col-span-1">Phone:</span> <span class="col-span-2 text-slate-900 font-mono">{{ deal.contactPhone || 'N/A' }}</span>
+                    </div>
+                    <div class="mt-1.5 pt-1.5 border-t border-slate-200/60 text-[11px] text-slate-600 space-y-1">
+                      <div><strong class="text-slate-700">Billing:</strong> {{ deal.billingAddress || 'N/A' }}</div>
+                      <div><strong class="text-slate-700">Delivery:</strong> {{ deal.deliveryAddress || 'N/A' }}</div>
+                    </div>
+                  </div>
+
+                  <!-- Sales & Commercial -->
+                  <div class="space-y-2">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block border-b border-slate-200/60 pb-1">3. Sales & Commercial</span>
+                    <div class="grid grid-cols-2 gap-y-1 text-slate-600">
+                      <span class="font-medium">Sales Person:</span> <span class="text-slate-900 font-medium">{{ deal.salesPerson || 'N/A' }}</span>
+                      <span class="font-medium">Region:</span> <span class="text-slate-900">{{ deal.salesRegion || 'N/A' }}</span>
+                      <span class="font-medium">Currency:</span> <span class="text-slate-900 font-bold font-mono">{{ deal.currency || 'MAD' }}</span>
+                      <span class="font-medium">Payment Terms:</span> <span class="text-slate-900">{{ deal.paymentTerms || 'N/A' }}</span>
+                      <span class="font-medium">Total Amount:</span> <span class="text-slate-900 font-mono font-bold">{{ formatCurrency(deal.orderTotalAmount || deal.amount) }}</span>
+                    </div>
+                  </div>
+
+                  <!-- Vendor & Logistics -->
+                  @if (deal.vendorAccount || deal.purchaseOrderRef || deal.warehouseAddress) {
+                    <div class="col-span-1 md:col-span-2 lg:col-span-3 space-y-2 pt-2 border-t border-slate-200/60">
+                      <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">4. Vendor & Logistics (if applicable)</span>
+                      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-slate-600">
+                        <div>
+                          <span class="font-medium block text-[10px] uppercase text-slate-400">Vendor Account</span>
+                          <span class="text-slate-900 font-mono font-semibold">{{ deal.vendorAccount || 'N/A' }}</span>
+                        </div>
+                        <div>
+                          <span class="font-medium block text-[10px] uppercase text-slate-400">PO Reference</span>
+                          <span class="text-slate-900 font-mono font-semibold">{{ deal.purchaseOrderRef || 'N/A' }}</span>
+                        </div>
+                        <div>
+                          <span class="font-medium block text-[10px] uppercase text-slate-400">Warehouse Address</span>
+                          <span class="text-slate-900">{{ deal.warehouseAddress || 'N/A' }}</span>
+                        </div>
+                        <div>
+                          <span class="font-medium block text-[10px] uppercase text-slate-400">Transport / Expected Dates</span>
+                          <div class="text-[11px]">
+                            <div class="text-slate-900 font-semibold">{{ deal.transportationService || 'N/A' }}</div>
+                            <div class="text-[10px] font-mono mt-0.5 text-slate-500">
+                              Vendor Est: {{ deal.expectedDeliveryDateVendor || 'N/A' }}<br>
+                              Customer Del: {{ deal.deliveryDate || 'N/A' }}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+
               <!-- Action buttons for Operations / Delivery -->
               <div class="flex justify-between items-center pt-4 border-t border-slate-100">
-                <span class="text-xs text-slate-400">Lines: {{ deal.orderLines?.length || 0 }} items</span>
+                <div class="flex items-center gap-4">
+                  <span class="text-xs text-slate-400">Lines: {{ deal.orderLines?.length || 0 }} items</span>
+                  <button (click)="toggleDealDetails(deal.id)" class="text-indigo-600 hover:text-indigo-700 text-xs font-semibold flex items-center gap-0.5 transition-colors">
+                    <mat-icon class="text-[16px] w-4 h-4">{{ expandedDeals()[deal.id] ? 'expand_less' : 'expand_more' }}</mat-icon>
+                    {{ expandedDeals()[deal.id] ? 'Hide Full Details' : 'View Full Details' }}
+                  </button>
+                </div>
                 <div class="flex gap-2">
                   <!-- Create PO trigger if none exists for this deal -->
                   @if (!hasPOForDeal(deal.id)) {
@@ -185,9 +283,11 @@ import { FormsModule } from '@angular/forms';
                     <mat-icon class="text-[16px] w-4 h-4">task_alt</mat-icon> Confirm (Signs BC)
                   </button>
                 } @else {
-                  <span class="text-xs text-emerald-600 font-semibold py-2 flex items-center justify-center w-full">
-                    <mat-icon class="text-[16px] w-4 h-4 mr-1">check_circle</mat-icon> Confirmed & Ready to Convert
-                  </span>
+                  <button (click)="convertProposalToDeal(prop)"
+                    class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-xs font-bold py-2.5 rounded-lg transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-1.5 group">
+                    <mat-icon class="text-[16px] w-4 h-4 transition-transform group-hover:scale-110">swap_horiz</mat-icon>
+                    Convert to Deal &amp; Customer
+                  </button>
                 }
               </div>
             </div>
@@ -317,6 +417,7 @@ import { FormsModule } from '@angular/forms';
           </table>
         </div>
       }
+      </div>
     </div>
 
     <!-- Modals -->
@@ -407,59 +508,296 @@ import { FormsModule } from '@angular/forms';
     <!-- Create Deal Modal -->
     @if (dealModalOpen()) {
       <div class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-xl border border-slate-100 animate-in zoom-in-95 duration-200">
-          <h3 class="text-lg font-bold text-slate-950">Create Deal</h3>
+        <div class="bg-white rounded-2xl max-w-7xl w-full p-6 space-y-4 shadow-xl border border-slate-100 animate-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col">
+          <div class="flex justify-between items-center border-b border-slate-100 pb-3 shrink-0">
+            <h3 class="text-xl font-bold text-slate-950">Create Deal</h3>
+            <span class="text-xs text-indigo-600 bg-indigo-50 px-2 py-1 rounded-full font-medium">Extended Fields Active</span>
+          </div>
           
-          <div class="space-y-3">
-            <div>
-              <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Select Client (Must be Customer)</label>
-              <select [(ngModel)]="newDeal.partnerId" class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
-                @for (c of state.customers(); track c.id) {
-                  <option [value]="c.id">{{c.name}}</option>
-                }
-              </select>
-            </div>
+          <!-- HEADER SECTION: All form fields in scrollable 2-column grid -->
+          <div class="overflow-y-auto pr-2 shrink-0 max-h-[35vh]">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <!-- Left Column: Core Deal info, Customer details, Commercials -->
+              <div class="space-y-6">
+                <!-- SECTION 1: Identification & Dates -->
+                <div class="space-y-3">
+                  <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-1 flex items-center gap-1.5">
+                    <mat-icon class="text-[16px] w-4 h-4">tag</mat-icon> Identification & Dates
+                  </h4>
+                  <div class="grid grid-cols-2 gap-3">
+                    <div>
+                      <label class="block text-xs font-semibold text-slate-500 mb-1">Select Client (Must be Customer)</label>
+                      <select [(ngModel)]="newDeal.partnerId" (change)="onPartnerChange()" class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                        @for (c of state.customers(); track c.id) {
+                          <option [value]="c.id">{{c.name}}</option>
+                        }
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block text-xs font-semibold text-slate-500 mb-1">Linked Proposal</label>
+                      <select [(ngModel)]="newDeal.proposalId" (change)="onProposalChange()" class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                        <option value="">None</option>
+                        @for (p of state.proposals(); track p.id) {
+                          <option [value]="p.id">#{{p.id}} - {{p.title}}</option>
+                        }
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div class="grid grid-cols-2 gap-3">
+                    <div>
+                      <label class="block text-xs font-semibold text-slate-500 mb-1">Deal Title</label>
+                      <input [(ngModel)]="newDeal.title" type="text" placeholder="e.g. Atlas Cloud Migration Project" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
+                    </div>
+                    <div>
+                      <label class="block text-xs font-semibold text-slate-500 mb-1">Order Status</label>
+                      <select [(ngModel)]="newDeal.orderStatus" class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                        <option value="Draft">Draft</option>
+                        <option value="Confirmed">Confirmed</option>
+                        <option value="Processing">Processing</option>
+                        <option value="Delivered">Delivered</option>
+                      </select>
+                    </div>
+                  </div>
 
-            <div>
-              <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Deal Title</label>
-              <input [(ngModel)]="newDeal.title" type="text" placeholder="e.g. Atlas Cloud Migration Project" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
-            </div>
+                  <div class="grid grid-cols-4 gap-3">
+                    <div class="col-span-2">
+                      <label class="block text-xs font-semibold text-slate-500 mb-1">Order Number</label>
+                      <input [(ngModel)]="newDeal.orderNumber" type="text" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600 font-mono">
+                    </div>
+                    <div class="col-span-2">
+                      <label class="block text-xs font-semibold text-slate-500 mb-1">Deal Number</label>
+                      <input [(ngModel)]="newDeal.dealNumber" type="text" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600 font-mono">
+                    </div>
+                  </div>
 
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Amount (MAD)</label>
-                <input [(ngModel)]="newDeal.amount" type="number" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600 font-mono">
+                  <div class="grid grid-cols-2 gap-3">
+                    <div>
+                      <label class="block text-xs font-semibold text-slate-500 mb-1">Order Date</label>
+                      <input [(ngModel)]="newDeal.orderDate" type="date" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600 font-mono">
+                    </div>
+                    <div>
+                      <label class="block text-xs font-semibold text-slate-500 mb-1">Requested Delivery Date</label>
+                      <input [(ngModel)]="newDeal.requestedDeliveryDate" type="date" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600 font-mono">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- SECTION 2: Customer & Delivery -->
+                <div class="space-y-3">
+                  <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-1 flex items-center gap-1.5">
+                    <mat-icon class="text-[16px] w-4 h-4">business</mat-icon> Customer & Delivery
+                  </h4>
+                  <div class="grid grid-cols-3 gap-3">
+                    <div class="col-span-1">
+                      <label class="block text-xs font-semibold text-slate-500 mb-1">Customer Account</label>
+                      <input [(ngModel)]="newDeal.customerAccount" type="text" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600 font-mono">
+                    </div>
+                    <div class="col-span-2">
+                      <label class="block text-xs font-semibold text-slate-500 mb-1">Contact Person</label>
+                      <input [(ngModel)]="newDeal.contactPerson" type="text" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
+                    </div>
+                  </div>
+                  <div class="grid grid-cols-2 gap-3">
+                    <div>
+                      <label class="block text-xs font-semibold text-slate-500 mb-1">Contact Email</label>
+                      <input [(ngModel)]="newDeal.contactEmail" type="email" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600 font-mono">
+                    </div>
+                    <div>
+                      <label class="block text-xs font-semibold text-slate-500 mb-1">Contact Phone Number</label>
+                      <input [(ngModel)]="newDeal.contactPhone" type="text" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600 font-mono">
+                    </div>
+                  </div>
+                  <div class="grid grid-cols-2 gap-3">
+                    <div>
+                      <label class="block text-xs font-semibold text-slate-500 mb-1">Billing Address</label>
+                      <textarea [(ngModel)]="newDeal.billingAddress" rows="2" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600"></textarea>
+                    </div>
+                    <div>
+                      <label class="block text-xs font-semibold text-slate-500 mb-1">Delivery Address</label>
+                      <textarea [(ngModel)]="newDeal.deliveryAddress" rows="2" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600"></textarea>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- SECTION 3: Sales & Ownership -->
+                <div class="space-y-3">
+                  <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-1 flex items-center gap-1.5">
+                    <mat-icon class="text-[16px] w-4 h-4">person</mat-icon> Sales & Ownership
+                  </h4>
+                  <div class="grid grid-cols-2 gap-3">
+                    <div>
+                      <label class="block text-xs font-semibold text-slate-500 mb-1">Sales Person</label>
+                      <select [(ngModel)]="newDeal.salesPerson" class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                        @for (u of state.users(); track u.name) {
+                          @if (u.team === 'Sales') {
+                            <option [value]="u.name">{{u.name}}</option>
+                          }
+                        }
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block text-xs font-semibold text-slate-500 mb-1">Sales Organization / Region</label>
+                      <input [(ngModel)]="newDeal.salesRegion" type="text" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- SECTION 4: Commercial Basics -->
+                <div class="space-y-3">
+                  <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-1 flex items-center gap-1.5">
+                    <mat-icon class="text-[16px] w-4 h-4">monetization_on</mat-icon> Commercial Basics
+                  </h4>
+                  <div class="grid grid-cols-4 gap-3">
+                    <div>
+                      <label class="block text-xs font-semibold text-slate-500 mb-1">Currency</label>
+                      <select [(ngModel)]="newDeal.currency" class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                        <option value="MAD">MAD</option>
+                        <option value="USD">USD</option>
+                        <option value="EUR">EUR</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block text-xs font-semibold text-slate-500 mb-1">Amount (Raw)</label>
+                      <input [(ngModel)]="newDeal.amount" type="number" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600 font-mono">
+                    </div>
+                    <div>
+                      <label class="block text-xs font-semibold text-slate-500 mb-1">Discount (%)</label>
+                      <input [(ngModel)]="newDeal.discount" type="number" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600 font-mono">
+                    </div>
+                    <div>
+                      <label class="block text-xs font-semibold text-slate-500 mb-1">Payment Terms</label>
+                      <input [(ngModel)]="newDeal.paymentTerms" type="text" placeholder="e.g. 30 Days Net" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div>
-                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Discount (%)</label>
-                <input [(ngModel)]="newDeal.discount" type="number" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600 font-mono">
+
+              <!-- Right Column: Vendor/Partner & Logs/Comments -->
+              <div class="space-y-6">
+                <!-- SECTION 5: Vendor / Partner (Logistics) -->
+                <div class="space-y-3">
+                  <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-1 flex items-center gap-1.5">
+                    <mat-icon class="text-[16px] w-4 h-4">local_shipping</mat-icon> Vendor / Partner (Logistics)
+                  </h4>
+                  <div class="grid grid-cols-2 gap-3">
+                    <div>
+                      <label class="block text-xs font-semibold text-slate-500 mb-1">Vendor Account</label>
+                      <input [(ngModel)]="newDeal.vendorAccount" type="text" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600 font-mono">
+                    </div>
+                    <div>
+                      <label class="block text-xs font-semibold text-slate-500 mb-1">Purchase Order Reference</label>
+                      <input [(ngModel)]="newDeal.purchaseOrderRef" type="text" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600 font-mono">
+                    </div>
+                  </div>
+                  <div class="grid grid-cols-2 gap-3">
+                    <div>
+                      <label class="block text-xs font-semibold text-slate-500 mb-1">Warehouse Address</label>
+                      <input [(ngModel)]="newDeal.warehouseAddress" type="text" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
+                    </div>
+                    <div>
+                      <label class="block text-xs font-semibold text-slate-500 mb-1">Transportation Service</label>
+                      <input [(ngModel)]="newDeal.transportationService" type="text" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
+                    </div>
+                  </div>
+                  <div class="grid grid-cols-2 gap-3">
+                    <div>
+                      <label class="block text-xs font-semibold text-slate-500 mb-1">Expected Delivery Date (Vendor)</label>
+                      <input [(ngModel)]="newDeal.expectedDeliveryDateVendor" type="date" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600 font-mono">
+                    </div>
+                    <div>
+                      <label class="block text-xs font-semibold text-slate-500 mb-1">Delivery Date (Customer)</label>
+                      <input [(ngModel)]="newDeal.deliveryDate" type="date" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600 font-mono">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- SECTION 6: Logs & Comments -->
+                <div class="space-y-3">
+                  <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-1 flex items-center gap-1.5">
+                    <mat-icon class="text-[16px] w-4 h-4">notes</mat-icon> Logs & Comments
+                  </h4>
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Email Exchange logs & Confirmations</label>
+                    <textarea [(ngModel)]="newDeal.emailExchange" rows="3" placeholder="Paste copy of signed email confirmations..." class="w-full border border-slate-200 rounded-lg p-2 text-[11px] font-mono focus:outline-indigo-600"></textarea>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Customer Comments</label>
+                    <textarea [(ngModel)]="newDeal.comments" rows="2" placeholder="Comments..." class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600"></textarea>
+                  </div>
+                </div>
               </div>
-            </div>
-
-            <div>
-              <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Linked Proposal</label>
-              <select [(ngModel)]="newDeal.proposalId" class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
-                <option value="">None</option>
-                @for (p of state.proposals(); track p.id) {
-                  <option [value]="p.id">#{{p.id}} - {{p.title}}</option>
-                }
-              </select>
-            </div>
-
-            <div>
-              <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Email Exchange logs & Confirmations</label>
-              <textarea [(ngModel)]="newDeal.emailExchange" rows="3" placeholder="Paste copy of signed email confirmations..." class="w-full border border-slate-200 rounded-lg p-2 text-[11px] font-mono focus:outline-indigo-600"></textarea>
-            </div>
-
-            <div>
-              <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Customer Comments</label>
-              <textarea [(ngModel)]="newDeal.comments" rows="2" placeholder="Comments..." class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600"></textarea>
             </div>
           </div>
 
-          <div class="flex justify-end gap-2 pt-4 border-t border-slate-100">
-            <button (click)="dealModalOpen.set(false)" class="px-4 py-2 border border-slate-200 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-50">Cancel</button>
-            <button (click)="saveDeal()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm">Save Deal</button>
+          <!-- Horizontal Divider -->
+          <hr class="border-slate-200 shrink-0">
+
+          <!-- LINE ITEMS SECTION: Full-width data table -->
+          <div class="space-y-3 min-h-0 flex flex-col overflow-hidden">
+            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5 shrink-0">
+              <mat-icon class="text-[16px] w-4 h-4">list</mat-icon> Line Items
+            </h4>
+            <div class="overflow-x-auto border border-slate-200 rounded-xl flex-1">
+              <table class="min-w-full divide-y divide-slate-200">
+                <thead class="bg-slate-50">
+                  <tr>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider w-12">#</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Item Description</th>
+                    <th class="px-4 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider w-28">Quantity</th>
+                    <th class="px-4 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider w-36">Unit Price</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider w-52">Vendor</th>
+                    <th class="px-4 py-3 text-center w-12"></th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-slate-200">
+                  @for (line of newDeal.lines; track $index) {
+                    <tr class="hover:bg-slate-50/50">
+                      <td class="px-4 py-2 text-sm text-slate-400 font-mono text-center">{{$index + 1}}</td>
+                      <td class="px-4 py-2">
+                        <input class="w-full border border-slate-200 rounded-lg p-1.5 text-sm focus:outline-indigo-600" [(ngModel)]="line.description" placeholder="Item description">
+                      </td>
+                      <td class="px-4 py-2">
+                        <input class="w-full border border-slate-200 rounded-lg p-1.5 text-sm focus:outline-indigo-600 text-right font-mono" type="number" [(ngModel)]="line.qty" (change)="recalcDealLine(line)">
+                      </td>
+                      <td class="px-4 py-2">
+                        <input class="w-full border border-slate-200 rounded-lg p-1.5 text-sm focus:outline-indigo-600 text-right font-mono" type="number" [(ngModel)]="line.unitPrice" (change)="recalcDealLine(line)">
+                      </td>
+                      <td class="px-4 py-2">
+                        <select class="w-full border border-slate-200 rounded-lg p-1.5 text-sm bg-white focus:outline-indigo-600" [(ngModel)]="line.vendor">
+                          <option value="">-- Select Vendor --</option>
+                          @for (v of state.vendors(); track v.id) {
+                            <option [value]="v.name">{{v.name}}</option>
+                          }
+                        </select>
+                      </td>
+                      <td class="px-4 py-2 text-center">
+                        <button type="button" (click)="removeDealLine($index)" class="text-rose-500 hover:bg-rose-50 p-1 rounded">
+                          <mat-icon class="text-[16px] w-4 h-4 leading-none">delete</mat-icon>
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            <button (click)="addDealLineItem()" class="text-indigo-600 hover:text-indigo-700 text-xs font-semibold flex items-center shrink-0">
+              <mat-icon class="text-[16px] w-4 h-4 mr-0.5">add_circle</mat-icon> Add Line Item
+            </button>
+          </div>
+
+          <!-- Footer -->
+          <div class="flex justify-between items-center border-t border-slate-100 pt-4 shrink-0">
+            <div class="text-sm">
+              <span class="text-slate-500">Calculated Total:</span>
+              <strong class="ml-1 text-slate-900 font-mono">
+                {{ formatCurrency(newDeal.amount - (newDeal.amount * (newDeal.discount / 100))) }}
+              </strong>
+            </div>
+            <div class="flex gap-2">
+              <button (click)="dealModalOpen.set(false)" class="px-4 py-2 border border-slate-200 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-50">Cancel</button>
+              <button (click)="saveDeal()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm">Save Deal</button>
+            </div>
           </div>
         </div>
       </div>
@@ -619,19 +957,87 @@ export class SalesComponent {
   newProposal = {
     title: '',
     partnerId: '',
-    lines: [] as { product: string; description: string; qty: number; unitPrice: number; total: number }[]
+    lines: [] as { product: string; description: string; qty: number; unitPrice: number; total: number; vendor: string }[]
   };
   selectedTemplateId = '';
 
   newDeal = {
     title: '',
     partnerId: '',
-    amount: 15000,
+    amount: 0,
     discount: 0,
     proposalId: '',
     emailExchange: '',
-    comments: ''
+    comments: '',
+    lines: [] as { product: string; description: string; qty: number; unitPrice: number; total: number; vendor: string }[],
+
+    // Identification & Dates
+    orderNumber: '',
+    dealNumber: '',
+    orderDate: '',
+    requestedDeliveryDate: '',
+    orderStatus: 'Draft',
+
+    // Customer & Delivery
+    customerAccount: '',
+    billingAddress: '',
+    deliveryAddress: '',
+    contactPerson: '',
+    contactEmail: '',
+    contactPhone: '',
+
+    // Sales & Ownership
+    salesPerson: '',
+    salesRegion: '',
+
+    // Commercial Basics
+    currency: 'MAD',
+    paymentTerms: '',
+    orderTotalAmount: 0,
+
+    // Vendor / Partner
+    vendorAccount: '',
+    purchaseOrderRef: '',
+    warehouseAddress: '',
+    transportationService: '',
+    expectedDeliveryDateVendor: '',
+    deliveryDate: ''
   };
+
+  expandedDeals = signal<{ [key: string]: boolean }>({});
+
+  toggleDealDetails(dealId: string) {
+    this.expandedDeals.update(val => ({ ...val, [dealId]: !val[dealId] }));
+  }
+
+  onPartnerChange() {
+    const partner = this.state.partners().find(p => p.id === this.newDeal.partnerId);
+    if (partner) {
+      this.newDeal.customerAccount = 'ACC-' + partner.name.substring(0, 5).toUpperCase().replace(/[^A-Z]/g, '') + '-' + partner.id.toUpperCase();
+      
+      let baseCity = partner.city || 'Casablanca';
+      this.newDeal.billingAddress = `N° 45 Boulevard de la Résistance, ${baseCity}, Morocco`;
+      this.newDeal.deliveryAddress = `Zone Industrielle, ${baseCity}, Morocco`;
+      this.newDeal.contactPerson = partner.name.includes(' ') ? partner.name.split(' ')[0] + ' Sefrioui' : 'Karim ' + partner.name;
+      this.newDeal.contactEmail = partner.email || 'contact@company.ma';
+      this.newDeal.contactPhone = partner.phone || '+212-661-000000';
+    }
+  }
+
+  onProposalChange() {
+    const prop = this.state.proposals().find(p => p.id === this.newDeal.proposalId);
+    if (prop) {
+      this.newDeal.amount = prop.amount;
+      this.newDeal.orderTotalAmount = prop.amount;
+      this.newDeal.lines = prop.lines.map(l => ({ ...l, vendor: l.vendor || '' }));
+      if (prop.partnerId) {
+        this.newDeal.partnerId = prop.partnerId;
+        this.onPartnerChange();
+      }
+    } else {
+      this.newDeal.lines = [];
+    }
+  }
 
   newTaskData = {
     title: '',
@@ -690,7 +1096,7 @@ export class SalesComponent {
       title: '',
       partnerId: this.state.partners()[0]?.id || '',
       lines: [
-        { product: '', description: '', qty: 1, unitPrice: 0, total: 0 }
+        { product: '', description: '', qty: 1, unitPrice: 0, total: 0, vendor: '' }
       ]
     };
     this.selectedTemplateId = '';
@@ -702,13 +1108,13 @@ export class SalesComponent {
       const template = this.state.proposalTemplates().find(t => t.id === this.selectedTemplateId);
       if (template) {
         this.newProposal.title = template.name;
-        this.newProposal.lines = template.lines.map(l => ({ ...l }));
+        this.newProposal.lines = template.lines.map(l => ({ ...l, vendor: l.vendor || '' }));
       }
     }
   }
 
   addLineItem() {
-    this.newProposal.lines.push({ product: '', description: '', qty: 1, unitPrice: 0, total: 0 });
+    this.newProposal.lines.push({ product: '', description: '', qty: 1, unitPrice: 0, total: 0, vendor: '' });
   }
 
   removeLine(index: number) {
@@ -739,6 +1145,12 @@ export class SalesComponent {
   // Deal Creation
   openCreateDealModal() {
     const defaultCust = this.state.customers()[0]?.id || '';
+    const today = new Date().toISOString().split('T')[0];
+    const deliveryDate = new Date();
+    deliveryDate.setDate(deliveryDate.getDate() + 30);
+    const formattedDeliveryDate = deliveryDate.toISOString().split('T')[0];
+    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+
     this.newDeal = {
       title: '',
       partnerId: defaultCust,
@@ -746,14 +1158,66 @@ export class SalesComponent {
       discount: 0,
       proposalId: '',
       emailExchange: '',
-      comments: ''
+      comments: '',
+    lines: [] as { product: string; description: string; qty: number; unitPrice: number; total: number; vendor: string }[],
+
+      orderNumber: 'ORD-2026-' + randomSuffix,
+      dealNumber: 'DL-2026-' + randomSuffix,
+      orderDate: today,
+      requestedDeliveryDate: formattedDeliveryDate,
+      orderStatus: 'Draft',
+
+      customerAccount: '',
+      billingAddress: '',
+      deliveryAddress: '',
+      contactPerson: '',
+      contactEmail: '',
+      contactPhone: '',
+
+      salesPerson: this.state.users().find(u => u.team === 'Sales')?.name || 'Youssef El Alami',
+      salesRegion: 'Casablanca-Settat / Maroc',
+
+      currency: 'MAD',
+      paymentTerms: '30 Days Net',
+      orderTotalAmount: 0,
+
+      vendorAccount: 'VND-CASA-04',
+      purchaseOrderRef: 'PO-2026-' + randomSuffix,
+      warehouseAddress: 'Zone Industrielle Sapino, Nouaceur, Maroc',
+      transportationService: 'Maroc Express Logistics',
+      expectedDeliveryDateVendor: formattedDeliveryDate,
+      deliveryDate: formattedDeliveryDate
     };
+
+    if (defaultCust) {
+      this.onPartnerChange();
+    }
     this.dealModalOpen.set(true);
+  }
+
+  addDealLineItem() {
+    this.newDeal.lines.push({ product: '', description: '', qty: 1, unitPrice: 0, total: 0, vendor: '' });
+    this.recalcDealTotal();
+  }
+
+  removeDealLine(index: number) {
+    this.newDeal.lines.splice(index, 1);
+    this.recalcDealTotal();
+  }
+
+  recalcDealLine(line: any) {
+    line.total = line.qty * line.unitPrice;
+    this.recalcDealTotal();
+  }
+
+  recalcDealTotal() {
+    const total = this.newDeal.lines.reduce((acc, line) => acc + (line.qty * line.unitPrice), 0);
+    this.newDeal.amount = total;
+    this.newDeal.orderTotalAmount = total;
   }
 
   saveDeal() {
     const finalAmount = this.newDeal.amount - (this.newDeal.amount * (this.newDeal.discount / 100));
-    const prop = this.state.proposals().find(p => p.id === this.newDeal.proposalId);
     this.state.addDeal({
       title: this.newDeal.title || 'New Deal',
       partnerId: this.newDeal.partnerId,
@@ -763,7 +1227,39 @@ export class SalesComponent {
       proposalId: this.newDeal.proposalId || undefined,
       discount: this.newDeal.discount || undefined,
       emailExchange: this.newDeal.emailExchange || undefined,
-      orderLines: prop?.lines || []
+      orderLines: this.newDeal.lines,
+
+      // Identification & Dates
+      orderNumber: this.newDeal.orderNumber,
+      dealNumber: this.newDeal.dealNumber,
+      orderDate: this.newDeal.orderDate,
+      requestedDeliveryDate: this.newDeal.requestedDeliveryDate,
+      orderStatus: this.newDeal.orderStatus,
+
+      // Customer & Delivery
+      customerAccount: this.newDeal.customerAccount,
+      billingAddress: this.newDeal.billingAddress,
+      deliveryAddress: this.newDeal.deliveryAddress,
+      contactPerson: this.newDeal.contactPerson,
+      contactEmail: this.newDeal.contactEmail,
+      contactPhone: this.newDeal.contactPhone,
+
+      // Sales & Ownership
+      salesPerson: this.newDeal.salesPerson,
+      salesRegion: this.newDeal.salesRegion,
+
+      // Commercial Basics
+      currency: this.newDeal.currency,
+      paymentTerms: this.newDeal.paymentTerms,
+      orderTotalAmount: finalAmount,
+
+      // Vendor / Partner
+      vendorAccount: this.newDeal.vendorAccount,
+      purchaseOrderRef: this.newDeal.purchaseOrderRef,
+      warehouseAddress: this.newDeal.warehouseAddress,
+      transportationService: this.newDeal.transportationService,
+      expectedDeliveryDateVendor: this.newDeal.expectedDeliveryDateVendor,
+      deliveryDate: this.newDeal.deliveryDate
     });
     this.dealModalOpen.set(false);
   }
@@ -875,5 +1371,44 @@ export class SalesComponent {
       relatedTo: this.newTaskData.relatedTo || undefined
     });
     this.taskModalOpen.set(false);
+  }
+
+  // Convert a Confirmed Proposal → Deal + Prospect → Customer
+  convertProposalToDeal(prop: Proposal) {
+    const today = new Date().toISOString().split('T')[0];
+    const deliveryDate = new Date();
+    deliveryDate.setDate(deliveryDate.getDate() + 30);
+    const formattedDelivery = deliveryDate.toISOString().split('T')[0];
+    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+
+    // (A) Promote the associated Prospect → Customer
+    this.state.convertToCustomer(prop.partnerId);
+
+    // (B) Create a Deal inheriting all line items from the Proposal
+    this.state.addDeal({
+      title: prop.title + ' — Deal',
+      partnerId: prop.partnerId,
+      amount: prop.amount,
+      stage: 'New',
+      comments: 'Converted automatically from confirmed proposal #' + prop.id,
+      proposalId: prop.id,
+      orderLines: prop.lines.map(l => ({ ...l })),
+      orderNumber: 'ORD-' + new Date().getFullYear() + '-' + randomSuffix,
+      dealNumber: 'DL-' + new Date().getFullYear() + '-' + randomSuffix,
+      orderDate: today,
+      requestedDeliveryDate: formattedDelivery,
+      orderStatus: 'Confirmed',
+      currency: 'MAD',
+      paymentTerms: '30 Days Net',
+      orderTotalAmount: prop.amount,
+      salesPerson: this.state.users().find(u => u.team === 'Sales')?.name || '',
+      salesRegion: 'Casablanca-Settat / Maroc'
+    });
+
+    // Remove the proposal from the list (moves to Deals tab)
+    this.state.proposals.update(props => props.filter(p => p.id !== prop.id));
+
+    // Switch to Deals tab so the user sees the result immediately
+    this.activeTab.set('deals');
   }
 }
