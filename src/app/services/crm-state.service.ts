@@ -693,6 +693,13 @@ export interface Invoice {
   dueDate: string;
   dealId?: string;
   purchaseOrderId?: string;
+  // Customer administrative information
+  customerAccount?: string;   // Unique account code / ERP ID
+  customerName?: string;      // Official corporate name
+  deliveryAddress?: string;   // Full delivery location
+  vatNumber?: string;         // VAT registration string
+  // Line items (inherited from deal + custom additions)
+  lines?: { item: string; description?: string; qty: number; unitPrice: number; type: 'software' | 'hardware' | 'service' }[];
 }
 
 export interface Campaign {
@@ -791,6 +798,9 @@ export class CrmStateService {
   groupMessages = signal<GroupMessage[]>(SEED_MESSAGES);
   groupMeetings = signal<GroupMeeting[]>(SEED_MEETINGS);
   currentUserId = signal<string>('usr_rachid');
+
+  // Global currency setting — readable by all components, togglable from settings
+  globalCurrency = signal<string>('MAD');
 
   // Computeds
   activeUsers = computed(() => this.users().filter(u => u.isActive));
@@ -1498,7 +1508,7 @@ export class CrmStateService {
 
   automationExecutions = signal<AutomationExecutionLog[]>([]);
 
-  leads = signal<Lead[]>([
+  leadsData = signal<Lead[]>([
     {
       id: 'LEAD-10254',
       name: 'Ahmed Benali',
@@ -1786,7 +1796,7 @@ export class CrmStateService {
               case 'AssignSalesperson':
                 if (action.params.assignee) {
                   if (trigger.startsWith('Lead')) {
-                    this.leads.update(list => list.map(l =>
+                    this.leadsData.update(list => list.map(l =>
                       l.id === entity['id'] ? { ...l, assignedSalesperson: action.params.assignee } : l
                     ));
                   } else if (trigger.startsWith('Deal')) {
@@ -1861,7 +1871,7 @@ export class CrmStateService {
                   const key = action.params.fieldKey;
                   const value = action.params.fieldValue;
                   if (trigger.startsWith('Lead')) {
-                    this.leads.update(list => list.map(l =>
+                    this.leadsData.update(list => list.map(l =>
                       l.id === entity['id'] ? { ...l, [key]: value } : l
                     ));
                   } else if (trigger.startsWith('Deal')) {
@@ -1879,7 +1889,7 @@ export class CrmStateService {
               case 'ChangeStage':
                 if (action.params.targetStage) {
                   if (trigger.startsWith('Lead')) {
-                    this.leads.update(list => list.map(l =>
+                    this.leadsData.update(list => list.map(l =>
                       l.id === entity['id'] ? { ...l, stage: action.params.targetStage! } : l
                     ));
                   } else if (trigger.startsWith('Deal')) {
@@ -1927,7 +1937,7 @@ export class CrmStateService {
               case 'AddTag':
                 if (action.params.tagName) {
                   if (trigger.startsWith('Lead')) {
-                    this.leads.update(list => list.map(l => {
+                    this.leadsData.update(list => list.map(l => {
                       if (l.id === entity['id']) {
                         const existingNotes = l.notes || '';
                         const tagStr = `[Tag: ${action.params.tagName}]`;
@@ -2067,7 +2077,7 @@ export class CrmStateService {
   // Lead CRUD (automation-aware)
   // ────────────────────────────────────────────────────────
   addLead(lead: Omit<Lead, 'id' | 'createdDate' | 'createdBy' | 'modifiedDate' | 'modifiedBy' | 'statusHistory'>) {
-    const newId = 'LEAD-' + String(this.leads().length + 1).padStart(6, '0');
+    const newId = 'LEAD-' + String(this.leadsData().length + 1).padStart(6, '0');
     const nowStr = new Date().toISOString().split('T')[0];
     const newLead: Lead = {
       ...lead,
@@ -2089,14 +2099,14 @@ export class CrmStateService {
       productInterests: lead.productInterests || [],
       campaigns: lead.campaigns || []
     };
-    this.leads.update(list => [...list, newLead]);
+    this.leadsData.update(list => [...list, newLead]);
     // Fire automation rules after lead is persisted
     setTimeout(() => this.evaluateRules('LeadCreated', newLead as unknown as Record<string, any>, `Lead: ${newLead.name} (${newLead.companyName})`), 0);
     return newLead;
   }
 
   updateLeadStatus(leadId: string, status: Lead['status']) {
-    this.leads.update(list => list.map(l => {
+    this.leadsData.update(list => list.map(l => {
       if (l.id === leadId) {
         const history = l.statusHistory || [];
         return {
@@ -2119,7 +2129,7 @@ export class CrmStateService {
   }
 
   updateLead(leadId: string, updates: Partial<Lead>) {
-    this.leads.update(list => list.map(l => {
+    this.leadsData.update(list => list.map(l => {
       if (l.id === leadId) {
         const updated = {
           ...l,
@@ -2142,14 +2152,14 @@ export class CrmStateService {
       }
       return l;
     }));
-    const updatedLead = this.leads().find(l => l.id === leadId);
+    const updatedLead = this.leadsData().find(l => l.id === leadId);
     if (updatedLead) {
       setTimeout(() => this.evaluateRules('LeadUpdated', updatedLead as unknown as Record<string, any>, `Lead: ${updatedLead.name} (${updatedLead.companyName})`), 0);
     }
   }
 
   addLeadActivity(leadId: string, activity: Omit<LeadActivity, 'id'>) {
-    this.leads.update(list => list.map(l => {
+    this.leadsData.update(list => list.map(l => {
       if (l.id === leadId) {
         const activities = l.activities || [];
         const newAct = {
@@ -2168,7 +2178,7 @@ export class CrmStateService {
   }
 
   addLeadAttachment(leadId: string, attachment: Omit<LeadAttachment, 'id'>) {
-    this.leads.update(list => list.map(l => {
+    this.leadsData.update(list => list.map(l => {
       if (l.id === leadId) {
         const attachments = l.attachments || [];
         const newAtt = {
@@ -2197,6 +2207,7 @@ export class CrmStateService {
   customers = computed(() => this.partners().filter(p => p.type === 'Customer'));
   vendors = computed(() => this.partners().filter(p => p.type === 'Vendor'));
   prospects = computed(() => this.partners().filter(p => p.type === 'Prospect'));
+  leads = computed(() => this.partners().filter(p => p.type === 'Lead'));
 
   allCustomers360 = computed(() =>
     this.partners()

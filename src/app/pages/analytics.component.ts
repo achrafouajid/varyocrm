@@ -52,6 +52,106 @@ declare var Chart: any;
            ──────────────────────────────────────────────────────── -->
       <div [class.hidden]="activeTab() !== 'overview'" class="space-y-8">
 
+        <!-- New KPI Row — Deal & Prospect Intelligence -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+
+          <!-- Card 1: New Deals -->
+          <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-6 flex flex-col justify-between hover:shadow-md transition-all">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-sans">New Deals</h3>
+              <div class="h-9 w-9 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center border border-indigo-100">
+                <mat-icon class="text-base" style="width:18px;height:18px;font-size:18px;display:flex;align-items:center">handshake</mat-icon>
+              </div>
+            </div>
+            <div class="text-2xl font-bold text-slate-900 font-mono">{{ newDealsKPI().count }} <span class="text-sm font-semibold text-slate-400 font-sans">deals</span></div>
+            <div class="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
+              <div class="text-[10px] text-indigo-600 font-bold flex items-center gap-0.5 font-sans">
+                <mat-icon class="text-[12px]" style="width:12px;height:12px;font-size:12px;display:flex;align-items:center">trending_up</mat-icon> This month's profit
+              </div>
+              <span class="text-[11px] font-bold font-mono text-slate-700">{{ newDealsKPI().profit | number:'1.0-0' }} <span class="text-slate-400 font-normal">{{ state.globalCurrency() }}</span></span>
+            </div>
+          </div>
+
+          <!-- Card 2: New Prospects -->
+          <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-6 flex flex-col justify-between hover:shadow-md transition-all">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-sans">New Prospects</h3>
+              <div class="h-9 w-9 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center border border-emerald-100">
+                <mat-icon class="text-base" style="width:18px;height:18px;font-size:18px;display:flex;align-items:center">group_add</mat-icon>
+              </div>
+            </div>
+            <div class="text-2xl font-bold text-slate-900 font-mono">{{ newProspectsKPI().count }} <span class="text-sm font-semibold text-slate-400 font-sans">prospects</span></div>
+            <div class="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
+              <div class="text-[10px] text-emerald-600 font-bold flex items-center gap-0.5 font-sans">
+                <mat-icon class="text-[12px]" style="width:12px;height:12px;font-size:12px;display:flex;align-items:center">insights</mat-icon> Pipeline potential
+              </div>
+              <span class="text-[11px] font-bold font-mono text-slate-700">{{ newProspectsKPI().potential | number:'1.0-0' }} <span class="text-slate-400 font-normal">{{ state.globalCurrency() }}</span></span>
+            </div>
+          </div>
+
+          <!-- Card 3: Lost Prospects -->
+          <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-6 flex flex-col justify-between hover:shadow-md transition-all">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-sans">Lost Prospects</h3>
+              <div class="h-9 w-9 bg-red-50 text-red-500 rounded-xl flex items-center justify-center border border-red-100">
+                <mat-icon class="text-base" style="width:18px;height:18px;font-size:18px;display:flex;align-items:center">do_not_disturb_on</mat-icon>
+              </div>
+            </div>
+            <div class="text-2xl font-bold text-slate-900 font-mono">{{ lostProspectsKPI().count }} <span class="text-sm font-semibold text-slate-400 font-sans">closed lost</span></div>
+            <div class="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
+              <div class="text-[10px] text-red-500 font-bold flex items-center gap-0.5 font-sans">
+                <mat-icon class="text-[12px]" style="width:12px;height:12px;font-size:12px;display:flex;align-items:center">trending_down</mat-icon> Value lost
+              </div>
+              <span class="text-[11px] font-bold font-mono text-slate-700">{{ lostProspectsKPI().potentialLost | number:'1.0-0' }} <span class="text-slate-400 font-normal">{{ state.globalCurrency() }}</span></span>
+            </div>
+          </div>
+
+          <!-- Card 4: Today's Deal -->
+          <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-6 flex flex-col justify-between hover:shadow-md transition-all">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-sans">Today's Deal</h3>
+              <div class="h-9 w-9 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center border border-amber-100">
+                <mat-icon class="text-base" style="width:18px;height:18px;font-size:18px;display:flex;align-items:center">star</mat-icon>
+              </div>
+            </div>
+            @if (todaysDealKPI(); as deal) {
+              <div class="text-base font-bold text-slate-900 font-sans truncate" [title]="deal.name">{{ deal.name }}</div>
+              <div class="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
+                <div class="text-[10px] text-amber-600 font-bold flex items-center gap-0.5 font-sans">
+                  <mat-icon class="text-[12px]" style="width:12px;height:12px;font-size:12px;display:flex;align-items:center">bolt</mat-icon> Deal value
+                </div>
+                <span class="text-[11px] font-bold font-mono text-slate-700">{{ deal.profit | number:'1.0-0' }} <span class="text-slate-400 font-normal">{{ state.globalCurrency() }}</span></span>
+              </div>
+            } @else {
+              <div class="text-sm font-semibold text-slate-400 font-sans">No transactions today</div>
+              <div class="mt-2 pt-2 border-t border-slate-100">
+                <div class="text-[10px] text-slate-300 font-bold flex items-center gap-0.5 font-sans">
+                  <mat-icon class="text-[12px]" style="width:12px;height:12px;font-size:12px;display:flex;align-items:center">bolt</mat-icon> Check back later
+                </div>
+              </div>
+            }
+          </div>
+
+        </div><!-- /new KPI row -->
+
+        <!-- Currency Toggle — matches tab switcher style -->
+        <div class="flex items-center gap-2">
+          <span class="text-[10px] text-slate-400 font-mono uppercase tracking-wider mr-1">Currency</span>
+          <div class="flex gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
+            @for (cur of ['MAD', 'USD', 'EUR']; track cur) {
+              <button
+                id="currency-toggle-{{ cur }}"
+                (click)="state.globalCurrency.set(cur)"
+                [class]="state.globalCurrency() === cur
+                  ? 'bg-white text-indigo-700 shadow-sm border border-slate-200'
+                  : 'text-slate-500 hover:text-slate-700'"
+                class="px-3 py-1.5 rounded-lg text-[11px] font-bold font-mono transition-all duration-150 cursor-pointer focus:outline-none"
+              >{{ cur }}</button>
+            }
+          </div>
+        </div>
+
+
         <!-- KPI Summary Cards (4 Columns) -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <!-- Sales This Month -->
@@ -478,6 +578,59 @@ export class AnalyticsComponent implements AfterViewInit {
     return id ? this.state.getCustomer360(id) : null;
   });
 
+  // ── New KPI Computed Signals ────────────────────────────────
+
+  /** Deals created in the current calendar month */
+  newDealsKPI = computed(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const periodDeals = this.state.deals().filter(d => {
+      if (!d.orderDate) return false;
+      const dt = new Date(d.orderDate);
+      return dt.getFullYear() === year && dt.getMonth() === month;
+    });
+    return {
+      count: periodDeals.length,
+      profit: periodDeals.reduce((s, d) => s + d.amount, 0)
+    };
+  });
+
+  /** Partners with type === 'Prospect', aggregating linked proposal opportunity values */
+  newProspectsKPI = computed(() => {
+    const prospects = this.state.partners().filter(p => p.type === 'Prospect');
+    const proposals = this.state.proposals();
+    const potential = prospects.reduce((sum, p) => {
+      const linked = proposals.filter(pr => pr.partnerId === p.id);
+      const val = linked.reduce((s, pr) => s + (pr.opportunityValue ?? pr.amount ?? 0), 0);
+      return sum + val;
+    }, 0);
+    return { count: prospects.length, potential };
+  });
+
+  /** Deals with stage 'Closed Lost' — count and total value lost */
+  lostProspectsKPI = computed(() => {
+    const lost = this.state.deals().filter(d => d.stage === 'Closed Lost');
+    return {
+      count: lost.length,
+      potentialLost: lost.reduce((s, d) => s + d.amount, 0)
+    };
+  });
+
+  /** Highest-value deal with an orderDate matching today */
+  todaysDealKPI = computed((): { name: string; profit: number } | null => {
+    const today = new Date().toISOString().split('T')[0];
+    const todays = this.state.deals()
+      .filter(d => d.orderDate === today)
+      .sort((a, b) => b.amount - a.amount);
+    if (!todays.length) return null;
+    const top = todays[0];
+    return {
+      name: top.customerAccount || top.title,
+      profit: top.amount
+    };
+  });
+
   // ── Chart refs ─────────────────────────────────────────────
   @ViewChild('forecastChart') forecastCanvas!: ElementRef<HTMLCanvasElement>;
   @ViewChild('regionChart') regionCanvas!: ElementRef<HTMLCanvasElement>;
@@ -657,13 +810,17 @@ export class AnalyticsComponent implements AfterViewInit {
 
   // ── Formatters ─────────────────────────────────────────────
   formatCurrency(value: number) {
-    return new Intl.NumberFormat('fr-MA', { style: 'currency', currency: 'MAD', maximumFractionDigits: 0 }).format(value);
+    const cur = this.state.globalCurrency();
+    const locale = cur === 'MAD' ? 'fr-MA' : cur === 'EUR' ? 'fr-FR' : 'en-US';
+    return new Intl.NumberFormat(locale, { style: 'currency', currency: cur, maximumFractionDigits: 0 }).format(value);
   }
 
   formatCompactMAD(value: number) {
-    if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M DH';
-    if (value >= 1000) return (value / 1000).toFixed(0) + 'k DH';
-    return value + ' DH';
+    const cur = this.state.globalCurrency();
+    const suffix = cur === 'MAD' ? ' DH' : cur === 'EUR' ? ' €' : ' $';
+    if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M' + suffix;
+    if (value >= 1000) return (value / 1000).toFixed(0) + 'k' + suffix;
+    return value + suffix;
   }
 
   getPartnerName(id: string) {

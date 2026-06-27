@@ -50,15 +50,53 @@ import { FormsModule } from '@angular/forms';
 
       <!-- Main Content -->
       <div class="flex-1 min-w-0 space-y-8">
-        <div class="flex justify-between items-end">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
           <div>
             <h2 class="text-3xl font-semibold tracking-tight text-slate-900">Partners / شركاء</h2>
-            <p class="text-slate-500 mt-1">Directory of customers, prospects, and vendors in Morocco.</p>
+            <p class="text-slate-500 mt-1">Directory of leads, customers, prospects, and vendors in Morocco.</p>
           </div>
           <button (click)="openCreateModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm">
             <mat-icon class="w-5 h-5 text-[20px]! leading-none! flex items-center justify-center">person_add</mat-icon>
             New {{activeTab()}}
           </button>
+        </div>
+
+        <!-- Main Header Menu Row (Tabs switcher for mobile/tablet) -->
+        <div class="lg:hidden border-b border-slate-200">
+          <nav class="flex gap-4 -mb-px overflow-x-auto pb-2">
+            <button 
+              (click)="activeTab.set('Lead')" 
+              [class]="activeTab() === 'Lead' ? 'border-indigo-600 text-indigo-600 font-semibold' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'"
+              class="whitespace-nowrap pb-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2">
+              <mat-icon class="text-[18px] w-[18px] h-[18px]">filter_alt</mat-icon>
+              Leads
+              <span class="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full text-xs">{{ state.leads().length }}</span>
+            </button>
+            <button 
+              (click)="activeTab.set('Customer')" 
+              [class]="activeTab() === 'Customer' ? 'border-indigo-600 text-indigo-600 font-semibold' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'"
+              class="whitespace-nowrap pb-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2">
+              <mat-icon class="text-[18px] w-[18px] h-[18px]">people</mat-icon>
+              Customers
+              <span class="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full text-xs">{{ state.customers().length }}</span>
+            </button>
+            <button 
+              (click)="activeTab.set('Prospect')" 
+              [class]="activeTab() === 'Prospect' ? 'border-indigo-600 text-indigo-600 font-semibold' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'"
+              class="whitespace-nowrap pb-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2">
+              <mat-icon class="text-[18px] w-[18px] h-[18px]">person_search</mat-icon>
+              Prospects
+              <span class="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full text-xs">{{ state.prospects().length }}</span>
+            </button>
+            <button 
+              (click)="activeTab.set('Vendor')" 
+              [class]="activeTab() === 'Vendor' ? 'border-indigo-600 text-indigo-600 font-semibold' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'"
+              class="whitespace-nowrap pb-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2">
+              <mat-icon class="text-[18px] w-[18px] h-[18px]">store</mat-icon>
+              Vendors
+              <span class="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full text-xs">{{ state.vendors().length }}</span>
+            </button>
+          </nav>
         </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -320,7 +358,12 @@ export class PartnersComponent {
     assignedTo: ''
   };
 
-  filteredPartners = () => this.state.partners().filter(p => p.type === this.activeTab());
+  filteredPartners = () => {
+    if (this.activeTab() === 'Lead') {
+      return this.state.leads();
+    }
+    return this.state.partners().filter(p => p.type === this.activeTab());
+  };
 
   getPartnerInvoices(partnerId: string) {
     return this.state.invoices().filter(i => i.partnerId === partnerId);

@@ -383,7 +383,7 @@ export class AutomationComponent {
   loadMockEntityList() {
     const type = this.sandboxEntityType();
     if (type === 'Lead') {
-      const leads = this.state.leads();
+      const leads = this.state.leadsData();
       this.sandboxEntityId.set(leads[0]?.id || '');
       this.updateSandboxPayload();
     } else if (type === 'Deal') {
@@ -403,7 +403,7 @@ export class AutomationComponent {
     let entity: any = null;
 
     if (type === 'Lead') {
-      entity = this.state.leads().find(l => l.id === id);
+      entity = this.state.leadsData().find(l => l.id === id);
     } else if (type === 'Deal') {
       entity = this.state.deals().find(d => d.id === id);
     } else if (type === 'Ticket') {

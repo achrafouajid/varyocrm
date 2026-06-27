@@ -1,8 +1,10 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { CrmStateService, Partner, Task, Proposal, Deal, PurchaseOrder } from '../services/crm-state.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+
+export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Proposal Sent' | 'Negotiation' | 'Won / Lost';
 
 @Component({
   selector: 'app-sales',
@@ -665,20 +667,68 @@ import { FormsModule } from '@angular/forms';
                     <span>{{formatCurrency(prop.amount)}}</span>
                   </div>
                 </div>
+
+                <!-- Sales Intelligence / Funnel Metadata -->
+                <div class="border-t border-slate-100 pt-3">
+                  <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Sales Intelligence</span>
+                  <div class="grid grid-cols-2 gap-3 bg-slate-50/50 p-3 rounded-xl border border-slate-150/60 text-xs">
+                    <div>
+                      <span class="text-slate-400 block text-[10px] font-medium">Opportunity Value</span>
+                      <span class="font-bold text-slate-900 font-mono">{{ formatCurrency(prop.opportunityValue || 0) }}</span>
+                    </div>
+                    <div>
+                      <span class="text-slate-400 block text-[10px] font-medium">Probability</span>
+                      <div class="flex items-center gap-1.5 mt-0.5">
+                        <div class="w-full bg-slate-200 rounded-full h-1.5 max-w-[60px]">
+                          <div class="bg-indigo-600 h-1.5 rounded-full" [style.width.%]="prop.closingProbability || 0"></div>
+                        </div>
+                        <span class="font-bold text-slate-900 font-mono">{{ prop.closingProbability || 0 }}%</span>
+                      </div>
+                    </div>
+                    <div>
+                      <span class="text-slate-400 block text-[10px] font-medium">Expected Close</span>
+                      <span class="font-semibold text-slate-700 font-mono">{{ prop.expectedClosingDate || 'TBD' }}</span>
+                    </div>
+                    <div>
+                      <span class="text-slate-400 block text-[10px] font-medium">Sales Stage</span>
+                      <span class="inline-block px-2 py-0.5 text-[10px] font-bold rounded border uppercase mt-0.5" [class]="getStageBadgeClass(prop.stage)">
+                        {{ prop.stage || 'New Lead' }}
+                      </span>
+                    </div>
+                    <div class="col-span-2">
+                      <span class="text-slate-400 block text-[10px] font-medium">Competitors</span>
+                      @if (prop.competitors && prop.competitors.length > 0) {
+                        <div class="flex flex-wrap gap-1 mt-1">
+                          @for (comp of prop.competitors; track comp) {
+                            <span class="bg-slate-100 text-slate-600 border border-slate-200 px-1.5 py-0.5 rounded text-[10px] font-medium">{{comp}}</span>
+                          }
+                        </div>
+                      } @else {
+                        <span class="text-slate-500 font-medium italic">No competitors logged.</span>
+                      }
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div class="mt-5 pt-3 border-t border-slate-100 flex justify-between gap-2">
+                <button (click)="openEditProposalModal(prop)" class="bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-650 p-2 rounded-lg transition-colors flex items-center justify-center shrink-0" title="Edit Proposal">
+                  <mat-icon class="text-[18px] w-[18px] h-[18px] flex items-center justify-center">edit</mat-icon>
+                </button>
+                <button (click)="openTaskModalForProposal(prop.id)" class="bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-650 p-2 rounded-lg transition-colors flex items-center justify-center shrink-0" title="Create Task">
+                  <mat-icon class="text-[18px] w-[18px] h-[18px] flex items-center justify-center">add_task</mat-icon>
+                </button>
                 @if (prop.status === 'Draft') {
-                  <button (click)="state.updateProposalStatus(prop.id, 'Sent')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold py-2 rounded-lg transition-colors">
+                  <button (click)="openSendProposalModal(prop)" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold py-2 rounded-lg transition-colors">
                     Send to Prospect
                   </button>
                 } @else if (prop.status === 'Sent') {
-                  <button (click)="state.updateProposalStatus(prop.id, 'Confirmed')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold py-2 rounded-lg transition-colors flex items-center justify-center gap-1">
+                  <button (click)="state.updateProposalStatus(prop.id, 'Confirmed')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold py-2 rounded-lg transition-colors flex items-center justify-center gap-1">
                     <mat-icon class="text-[16px] w-4 h-4">task_alt</mat-icon> Confirm (Signs BC)
                   </button>
                 } @else {
                   <button (click)="convertProposalToDeal(prop)"
-                    class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-xs font-bold py-2.5 rounded-lg transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-1.5 group">
+                    class="flex-1 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-xs font-bold py-2.5 rounded-lg transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-1.5 group">
                     <mat-icon class="text-[16px] w-4 h-4 transition-transform group-hover:scale-110">swap_horiz</mat-icon>
                     Convert to Deal &amp; Customer
                   </button>
@@ -836,63 +886,185 @@ import { FormsModule } from '@angular/forms';
       </div>
     }
 
+    <!-- Send Proposal Modal -->
+    @if (sendingProposalId()) {
+      <div class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-xl border border-slate-100 animate-in zoom-in-95 duration-200">
+          <h3 class="text-lg font-bold text-slate-950">Send Proposal</h3>
+          
+          <div class="bg-gray-50 border border-gray-100 rounded-xl p-3 mb-4">
+            <span class="text-xs text-gray-500 font-medium block uppercase tracking-wider">Target Prospect</span>
+            <span class="text-sm font-bold text-gray-800">{{ currentProposalPartnerName() }}</span>
+          </div>
+
+          @if (!selectedChannel()) {
+            <div class="space-y-3">
+              <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Choose Sending Channel</label>
+              <div class="grid grid-cols-2 gap-3">
+                <button type="button" (click)="selectChannel('email')" class="flex flex-col items-center justify-center p-4 border border-slate-200 rounded-xl hover:border-indigo-650 hover:bg-slate-50/50 hover:text-indigo-600 transition-all gap-2 text-slate-700">
+                  <mat-icon class="text-3xl w-8 h-8 flex items-center justify-center">email</mat-icon>
+                  <span class="text-sm font-semibold">Email</span>
+                </button>
+                <button type="button" (click)="selectChannel('whatsapp')" class="flex flex-col items-center justify-center p-4 border border-slate-200 rounded-xl hover:border-indigo-650 hover:bg-slate-50/50 hover:text-indigo-600 transition-all gap-2 text-slate-700">
+                  <mat-icon class="text-3xl w-8 h-8 flex items-center justify-center">chat</mat-icon>
+                  <span class="text-sm font-semibold">WhatsApp</span>
+                </button>
+              </div>
+            </div>
+            
+            <div class="flex justify-end pt-2">
+              <button (click)="sendingProposalId.set(null)" class="px-4 py-2 border border-slate-250 border-slate-200 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-50">Cancel</button>
+            </div>
+          } @else {
+            <div class="space-y-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Include other prospects in this send:</label>
+                <select (change)="addProspectToRecipients($event)" class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                  <option value="">-- Select Prospect --</option>
+                  @for (prospect of availableProspects(); track prospect.id) {
+                    <option [value]="prospect.id">{{prospect.name}}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="space-y-2">
+                <label class="block text-xs font-semibold text-slate-500 uppercase">Recipients ({{ selectedChannel() === 'email' ? 'Emails' : 'Phone Numbers' }})</label>
+                @for (recipient of recipients(); track $index) {
+                  <div class="flex gap-2">
+                    <input [value]="recipient" (input)="updateRecipient($index, $event)" type="text" class="flex-1 border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
+                    <button type="button" (click)="removeRecipient($index)" class="text-rose-500 hover:bg-rose-50 p-2 rounded">
+                      <mat-icon class="text-base w-4 h-4">delete</mat-icon>
+                    </button>
+                  </div>
+                }
+                <button type="button" (click)="addManualRecipient()" class="text-indigo-600 hover:text-indigo-700 text-xs font-semibold flex items-center gap-1">
+                  <mat-icon class="text-base w-4 h-4">add_circle</mat-icon> Add Recipient
+                </button>
+              </div>
+            </div>
+
+            <div class="flex justify-between gap-2 pt-2 border-t border-slate-100">
+              <button (click)="selectedChannel.set(null)" class="px-4 py-2 border border-slate-200 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-50">Back</button>
+              <div class="flex gap-2">
+                <button (click)="sendingProposalId.set(null)" class="px-4 py-2 border border-slate-200 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-50">Cancel</button>
+                <button (click)="submitSendProposal()" [disabled]="recipients().length === 0" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm disabled:opacity-50">Send</button>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
     <!-- Create Proposal Modal -->
     @if (proposalModalOpen()) {
       <div class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-xl border border-slate-100 animate-in zoom-in-95 duration-200">
-          <h3 class="text-lg font-bold text-slate-950">Create Proposal</h3>
+        <div class="bg-white rounded-2xl max-w-xl w-full p-6 space-y-4 shadow-xl border border-slate-100 animate-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col">
+          <h3 class="text-lg font-bold text-slate-950 shrink-0">{{ editingProposalId() ? 'Edit Proposal' : 'Create Proposal' }}</h3>
           
-          <div class="space-y-3">
-            <div>
-              <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Select Prospect / Client</label>
-              <select [(ngModel)]="newProposal.partnerId" class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
-                @for (p of state.partners(); track p.id) {
-                  <option [value]="p.id">{{p.name}} ({{p.type}})</option>
-                }
-              </select>
-            </div>
+          <div class="space-y-4 overflow-y-auto pr-1 flex-1">
+            <div class="space-y-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Select Prospect / Client</label>
+                <select [(ngModel)]="newProposal.partnerId" class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                  @for (partner of salesEligiblePartners(); track partner.id) {
+                    <option [value]="partner.id">{{ partner.name }} ({{ partner.type }})</option>
+                  }
+                </select>
+              </div>
 
-            <div>
-              <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Proposal Title</label>
-              <input [(ngModel)]="newProposal.title" type="text" placeholder="e.g. Standard Enterprise Cloud Infrastructure" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
-            </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Proposal Title</label>
+                <input [(ngModel)]="newProposal.title" type="text" placeholder="e.g. Standard Enterprise Cloud Infrastructure" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
+              </div>
 
-            <div>
-              <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Select Template</label>
-              <select [(ngModel)]="selectedTemplateId" (change)="applyTemplate()" class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
-                <option value="">-- Manual/No Template --</option>
-                @for (temp of state.proposalTemplates(); track temp.id) {
-                  <option [value]="temp.id">{{temp.name}}</option>
-                }
-              </select>
-            </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Select Template</label>
+                <select [(ngModel)]="selectedTemplateId" (change)="applyTemplate()" class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                  <option value="">-- Manual/No Template --</option>
+                  @for (temp of state.proposalTemplates(); track temp.id) {
+                    <option [value]="temp.id">{{temp.name}}</option>
+                  }
+                </select>
+              </div>
 
-            <!-- Line Items -->
-            <div class="space-y-2 border-t border-slate-100 pt-2">
-              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Line Items</span>
-              @for (line of newProposal.lines; track $index) {
-                <div class="grid grid-cols-12 gap-2 items-center">
-                  <input class="col-span-4 border border-slate-200 rounded-lg p-1.5 text-xs focus:outline-indigo-600" [(ngModel)]="line.product" placeholder="Product">
-                  <input class="col-span-4 border border-slate-200 rounded-lg p-1.5 text-xs focus:outline-indigo-600" [(ngModel)]="line.description" placeholder="Description">
-                  <input class="col-span-1 border border-slate-200 rounded-lg p-1.5 text-xs focus:outline-indigo-600 text-center" type="number" [(ngModel)]="line.qty" (change)="recalcLine(line)">
-                  <input class="col-span-2 border border-slate-200 rounded-lg p-1.5 text-xs focus:outline-indigo-600 font-mono text-right" type="number" [(ngModel)]="line.unitPrice" (change)="recalcLine(line)">
-                  <button type="button" (click)="removeLine($index)" class="col-span-1 text-rose-500 hover:bg-rose-50 p-1 rounded"><mat-icon class="text-[16px] w-4 h-4 leading-none">delete</mat-icon></button>
+              <!-- Sales Funnel & Intelligence Section -->
+              <div class="border-t border-slate-100 pt-3 space-y-3">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Sales Intelligence</span>
+                
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Opportunity Value</label>
+                    <div class="relative rounded-lg shadow-xs">
+                      <input [(ngModel)]="newProposal.opportunityValue" type="number" placeholder="0" class="w-full border border-slate-200 rounded-lg p-2 pr-12 text-sm focus:outline-indigo-600 font-mono">
+                      <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <span class="text-gray-400 text-xs font-semibold">MAD</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Probability of Closing</label>
+                    <div class="relative rounded-lg shadow-xs">
+                      <input [(ngModel)]="newProposal.closingProbability" type="number" min="0" max="100" placeholder="50" class="w-full border border-slate-200 rounded-lg p-2 pr-8 text-sm focus:outline-indigo-600 font-mono">
+                      <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <span class="text-gray-400 text-xs font-semibold">%</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              }
-              <button (click)="addLineItem()" class="text-indigo-600 hover:text-indigo-700 text-xs font-semibold flex items-center mt-1">
-                <mat-icon class="text-[16px] w-4 h-4 mr-0.5">add_circle</mat-icon> Add Line Item
-              </button>
+
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Expected Closing Date</label>
+                    <input [(ngModel)]="newProposal.expectedClosingDate" type="date" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600 font-mono">
+                  </div>
+                  
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Sales Stage</label>
+                    <select [(ngModel)]="newProposal.stage" class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                      <option value="New Lead">New Lead</option>
+                      <option value="Qualified">Qualified</option>
+                      <option value="Meeting Scheduled">Meeting Scheduled</option>
+                      <option value="Proposal Sent">Proposal Sent</option>
+                      <option value="Negotiation">Negotiation</option>
+                      <option value="Won / Lost">Won / Lost</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-semibold text-slate-500 mb-1">Competitors (comma separated)</label>
+                  <input [(ngModel)]="newProposal.competitors" type="text" placeholder="e.g. AWS, Azure, Local Telecom" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
+                </div>
+              </div>
+
+              <!-- Line Items -->
+              <div class="space-y-2 border-t border-slate-100 pt-2">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Line Items</span>
+                @for (line of newProposal.lines; track $index) {
+                  <div class="grid grid-cols-12 gap-2 items-center">
+                    <input class="col-span-4 border border-slate-200 rounded-lg p-1.5 text-xs focus:outline-indigo-600" [(ngModel)]="line.product" placeholder="Product">
+                    <input class="col-span-4 border border-slate-200 rounded-lg p-1.5 text-xs focus:outline-indigo-600" [(ngModel)]="line.description" placeholder="Description">
+                    <input class="col-span-1 border border-slate-200 rounded-lg p-1.5 text-xs focus:outline-indigo-600 text-center" type="number" [(ngModel)]="line.qty" (change)="recalcLine(line)">
+                    <input class="col-span-2 border border-slate-200 rounded-lg p-1.5 text-xs focus:outline-indigo-600 font-mono text-right" type="number" [(ngModel)]="line.unitPrice" (change)="recalcLine(line)">
+                    <button type="button" (click)="removeLine($index)" class="col-span-1 text-rose-500 hover:bg-rose-50 p-1 rounded"><mat-icon class="text-[16px] w-4 h-4 leading-none">delete</mat-icon></button>
+                  </div>
+                }
+                <button (click)="addLineItem()" class="text-indigo-600 hover:text-indigo-700 text-xs font-semibold flex items-center mt-1">
+                  <mat-icon class="text-[16px] w-4 h-4 mr-0.5">add_circle</mat-icon> Add Line Item
+                </button>
+              </div>
             </div>
           </div>
 
-          <div class="flex justify-between items-center border-t border-slate-100 pt-4">
+          <div class="flex justify-between items-center border-t border-slate-100 pt-4 shrink-0">
             <div class="text-sm">
               <span class="text-slate-500">Total Amount:</span>
               <strong class="ml-1 text-slate-900 font-mono">{{formatCurrency(getNewProposalTotal())}}</strong>
             </div>
             <div class="flex gap-2">
               <button (click)="proposalModalOpen.set(false)" class="px-4 py-2 border border-slate-200 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-50">Cancel</button>
-              <button (click)="saveProposal()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm">Create Proposal</button>
+              <button (click)="saveProposal()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm">{{ editingProposalId() ? 'Save Changes' : 'Create Proposal' }}</button>
             </div>
           </div>
         </div>
@@ -1200,11 +1372,11 @@ import { FormsModule } from '@angular/forms';
     <!-- Create PO Modal (Operations) -->
     @if (poModalOpen()) {
       <div class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-xl border border-slate-100 animate-in zoom-in-95 duration-200">
-          <h3 class="text-lg font-bold text-slate-950">Create Purchase Order</h3>
-          <p class="text-xs text-slate-500">Creating Purchase Order linked to: <strong>{{selectedDealForPO()?.title}}</strong></p>
+        <div class="bg-white rounded-2xl max-w-3xl w-full p-6 space-y-4 shadow-xl border border-slate-100 animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+          <h3 class="text-lg font-bold text-slate-950 shrink-0">Create Purchase Order</h3>
+          <p class="text-xs text-slate-500 shrink-0">Creating Purchase Order linked to: <strong>{{selectedDealForPO()?.title}}</strong></p>
           
-          <div class="space-y-3">
+          <div class="space-y-4 overflow-y-auto pr-1 flex-1">
             <div>
               <div class="flex justify-between items-center mb-1">
                 <label class="block text-xs font-semibold text-slate-500 uppercase">Vendor</label>
@@ -1215,27 +1387,87 @@ import { FormsModule } from '@angular/forms';
               
               @if (showNewVendorForm()) {
                 <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-2.5 animate-in slide-in-from-top-2 duration-200">
-                  <input [(ngModel)]="newVendorData.name" placeholder="Vendor Company Name" class="w-full border border-slate-200 rounded-lg p-1.5 text-xs bg-white">
-                  <input [(ngModel)]="newVendorData.email" placeholder="Vendor Email" class="w-full border border-slate-200 rounded-lg p-1.5 text-xs bg-white">
-                  <input [(ngModel)]="newVendorData.phone" placeholder="Vendor Phone" class="w-full border border-slate-200 rounded-lg p-1.5 text-xs bg-white">
-                  <select [(ngModel)]="newVendorData.city" class="w-full border border-slate-200 rounded-lg p-1.5 text-xs bg-white">
+                  <input [(ngModel)]="newVendorData.name" placeholder="Vendor Company Name" class="w-full border border-slate-200 rounded-lg p-1.5 text-xs bg-white focus:outline-indigo-600">
+                  <input [(ngModel)]="newVendorData.email" placeholder="Vendor Email" class="w-full border border-slate-200 rounded-lg p-1.5 text-xs bg-white focus:outline-indigo-600 font-mono">
+                  <input [(ngModel)]="newVendorData.phone" placeholder="Vendor Phone" class="w-full border border-slate-200 rounded-lg p-1.5 text-xs bg-white focus:outline-indigo-600 font-mono">
+                  <select [(ngModel)]="newVendorData.city" class="w-full border border-slate-200 rounded-lg p-1.5 text-xs bg-white focus:outline-indigo-600">
                     <option value="Casablanca">Casablanca</option>
                     <option value="Rabat">Rabat</option>
                     <option value="Marrakech">Marrakech</option>
                   </select>
                 </div>
               } @else {
-                <select [(ngModel)]="selectedVendorId" class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
-                  @for (v of state.vendors(); track v.id) {
-                    <option [value]="v.id">{{v.name}} ({{v.city}})</option>
+                <select [ngModel]="selectedVendorId()" (ngModelChange)="selectedVendorId.set($event)" class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                  @for (vendor of state.vendors(); track vendor.id) {
+                    <option [value]="vendor.id">{{vendor.name}}</option>
                   }
                 </select>
               }
             </div>
 
-            <div>
-              <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">PO Total Cost (MAD)</label>
-              <input [(ngModel)]="newPoCost" type="number" class="w-full border border-slate-200 rounded-lg p-2 text-sm font-mono focus:outline-indigo-600">
+            <!-- Order Lines Section -->
+            <div class="space-y-2 border-t border-slate-100 pt-3">
+              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Order Line Items</span>
+              
+              <div class="space-y-3">
+                @for (line of poLines(); track $index; let i = $index) {
+                  <div class="bg-slate-50/50 hover:bg-slate-50 border border-slate-150 rounded-xl p-3.5 space-y-2.5 relative transition-all">
+                    <!-- Line Header -->
+                    <div class="flex justify-between items-center">
+                      <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Line #{{ i + 1 }}</span>
+                      @if (poLines().length > 1) {
+                        <button type="button" (click)="removePoLine(i)" class="text-rose-500 hover:text-rose-600 hover:bg-rose-50 p-1.5 rounded-lg transition-colors flex items-center justify-center" title="Remove Line">
+                          <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">delete</mat-icon>
+                        </button>
+                      }
+                    </div>
+
+                    <!-- Row Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
+                      <!-- Item Name -->
+                      <div class="md:col-span-4">
+                        <label class="block text-[10px] font-semibold text-slate-400 mb-1">Item Name</label>
+                        <input [(ngModel)]="line.item" type="text" placeholder="e.g. Dell PowerEdge Server" class="w-full border border-slate-200 rounded-lg p-1.5 text-xs bg-white focus:outline-indigo-600">
+                      </div>
+
+                      <!-- Description -->
+                      <div class="md:col-span-8">
+                        <label class="block text-[10px] font-semibold text-slate-400 mb-1">Description (Optional)</label>
+                        <input [(ngModel)]="line.description" type="text" placeholder="e.g. Core i7, 32GB RAM" class="w-full border border-slate-200 rounded-lg p-1.5 text-xs bg-white focus:outline-indigo-600">
+                      </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
+                      <!-- Quantity -->
+                      <div class="md:col-span-3">
+                        <label class="block text-[10px] font-semibold text-slate-400 mb-1">Quantity</label>
+                        <input [(ngModel)]="line.qty" type="number" min="1" class="w-full border border-slate-200 rounded-lg p-1.5 text-xs bg-white text-center font-semibold focus:outline-indigo-600 font-mono">
+                      </div>
+
+                      <!-- Unit Price -->
+                      <div class="md:col-span-5">
+                        <label class="block text-[10px] font-semibold text-slate-400 mb-1">Unit Price (MAD)</label>
+                        <input [(ngModel)]="line.unitPrice" type="number" class="w-full border border-slate-200 rounded-lg p-1.5 text-xs bg-white font-mono text-right focus:outline-indigo-600">
+                      </div>
+
+                      <!-- Item Type -->
+                      <div class="md:col-span-4">
+                        <label class="block text-[10px] font-semibold text-slate-400 mb-1">Item Type</label>
+                        <select [(ngModel)]="line.type" class="w-full border border-slate-200 rounded-lg p-1.5 text-xs bg-white focus:outline-indigo-600">
+                          <option value="software">Software</option>
+                          <option value="hardware">Hardware</option>
+                          <option value="service">Service</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+
+              <button type="button" (click)="addPoLineItem()" class="w-full py-2 border border-dashed border-indigo-200 hover:border-indigo-400 bg-indigo-50/20 hover:bg-indigo-50/40 text-indigo-600 hover:text-indigo-700 text-xs font-semibold rounded-xl transition-all flex items-center justify-center gap-1.5 mt-2">
+                <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">add_circle</mat-icon>
+                + Add Item Line
+              </button>
             </div>
 
             <div>
@@ -1244,9 +1476,15 @@ import { FormsModule } from '@angular/forms';
             </div>
           </div>
 
-          <div class="flex justify-end gap-2 pt-4 border-t border-slate-100">
-            <button (click)="poModalOpen.set(false)" class="px-4 py-2 border border-slate-200 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-50">Cancel</button>
-            <button (click)="savePurchaseOrder()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm">Send PO via Email</button>
+          <div class="flex justify-between items-center border-t border-slate-100 pt-4 shrink-0">
+            <div class="text-sm font-semibold text-slate-700">
+              PO Total: <span class="font-mono text-indigo-600 font-bold ml-1">{{ formatCurrency(getPoTotal()) }}</span>
+            </div>
+            <div class="flex gap-2">
+              <button (click)="poModalOpen.set(false)" class="px-4 py-2 border border-slate-200 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-50">Cancel</button>
+              <button (click)="saveDraftPO()" class="px-4 py-2 border border-slate-200 text-indigo-600 hover:bg-indigo-50 text-sm font-semibold rounded-lg shadow-sm">Create Draft</button>
+              <button (click)="savePurchaseOrder()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm">Send PO via Email</button>
+            </div>
           </div>
         </div>
       </div>
@@ -1314,7 +1552,7 @@ import { FormsModule } from '@angular/forms';
           </div>
 
           <div class="flex justify-end gap-2 pt-4 border-t border-slate-100">
-            <button (click)="taskModalOpen.set(false)" class="px-4 py-2 border border-slate-200 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-50 font-sans">Cancel</button>
+            <button (click)="closeTaskModal()" class="px-4 py-2 border border-slate-200 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-50 font-sans">Cancel</button>
             <button (click)="saveTask()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm font-sans">Save Task</button>
           </div>
         </div>
@@ -1520,8 +1758,25 @@ export class SalesComponent {
   state = inject(CrmStateService);
   activeTab = signal<'leads' | 'deals' | 'proposals' | 'tasks' | 'pos'>('leads');
 
+  salesEligiblePartners = computed(() => 
+    this.state.partners().filter(p => p.type === 'Prospect' || p.type === 'Customer')
+  );
+
   // Modals state
   assignModalOpen = signal(false);
+  sendingProposalId = signal<string | null>(null);
+  selectedChannel = signal<'email' | 'whatsapp' | null>(null);
+  recipients = signal<string[]>([]);
+
+  currentProposalPartnerName = computed(() => {
+    const prop = this.state.proposals().find(p => p.id === this.sendingProposalId());
+    const partner = this.state.partners().find(p => p.id === prop?.partnerId);
+    return partner ? partner.name : 'Unknown Prospect';
+  });
+
+  availableProspects = computed(() => this.state.partners().filter(p => p.type === 'Prospect'));
+  editingProposalId = signal<string | null>(null);
+  taskContextProposalId = signal<string | null>(null);
   proposalModalOpen = signal(false);
   dealModalOpen = signal(false);
   poModalOpen = signal(false);
@@ -1562,9 +1817,9 @@ export class SalesComponent {
 
   selectedDealForPO = signal<Deal | null>(null);
   showNewVendorForm = signal(false);
-  selectedVendorId = '';
+  selectedVendorId = signal<string>('');
   newVendorData = { name: '', email: '', phone: '', city: 'Casablanca' };
-  newPoCost = 9000;
+  poLines = signal<{ item: string; description?: string; qty: number; unitPrice: number; type: 'software' | 'hardware' | 'service' }[]>([{ item: '', qty: 1, unitPrice: 0, type: 'software' }]);
   newPoDeliveryDate = '';
 
   selectedPOForDelivery = signal<PurchaseOrder | null>(null);
@@ -1573,7 +1828,12 @@ export class SalesComponent {
   newProposal = {
     title: '',
     partnerId: '',
-    lines: [] as { product: string; description: string; qty: number; unitPrice: number; total: number; vendor: string }[]
+    lines: [] as { product: string; description: string; qty: number; unitPrice: number; total: number; vendor: string }[],
+    opportunityValue: 0,
+    closingProbability: 50,
+    expectedClosingDate: '',
+    competitors: '',
+    stage: 'New Lead' as SalesStage
   };
   selectedTemplateId = '';
 
@@ -1687,6 +1947,25 @@ export class SalesComponent {
     }
   }
 
+  getStageBadgeClass(stage?: string) {
+    switch (stage) {
+      case 'New Lead':
+        return 'bg-blue-50 text-blue-700 border-blue-100';
+      case 'Qualified':
+        return 'bg-purple-50 text-purple-700 border-purple-100';
+      case 'Meeting Scheduled':
+        return 'bg-amber-50 text-amber-700 border-amber-100';
+      case 'Proposal Sent':
+        return 'bg-indigo-50 text-indigo-700 border-indigo-100';
+      case 'Negotiation':
+        return 'bg-fuchsia-50 text-fuchsia-700 border-fuchsia-100';
+      case 'Won / Lost':
+        return 'bg-emerald-50 text-emerald-700 border-emerald-100';
+      default:
+        return 'bg-slate-50 text-slate-600 border-slate-100';
+    }
+  }
+
   hasPOForDeal(dealId: string) {
     return this.state.purchaseOrders().some(po => po.dealId === dealId);
   }
@@ -1707,15 +1986,102 @@ export class SalesComponent {
   }
 
   // Proposal Creation
+  openSendProposalModal(prop: Proposal) {
+    this.sendingProposalId.set(prop.id);
+    this.selectedChannel.set(null);
+    this.recipients.set([]);
+  }
+
+  selectChannel(channel: 'email' | 'whatsapp') {
+    this.selectedChannel.set(channel);
+    
+    // Extract info from primary prospect
+    const prop = this.state.proposals().find(p => p.id === this.sendingProposalId());
+    const partner = this.state.partners().find(p => p.id === prop?.partnerId);
+    
+    let contactInfo = '';
+    if (channel === 'email') {
+      contactInfo = partner?.email || '';
+    } else {
+      contactInfo = partner?.phone || '';
+    }
+    
+    this.recipients.set(contactInfo ? [contactInfo] : []);
+  }
+
+  addProspectToRecipients(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    const partnerId = target.value;
+    if (!partnerId) return;
+
+    const partner = this.state.partners().find(p => p.id === partnerId);
+    if (partner) {
+      const channel = this.selectedChannel();
+      const extractedContact = channel === 'email' ? partner.email : partner.phone;
+      if (extractedContact) {
+        this.recipients.update(arr => [...arr, extractedContact]);
+      }
+    }
+    target.value = '';
+  }
+
+  updateRecipient(index: number, event: Event) {
+    const input = event.target as HTMLInputElement;
+    const val = input.value;
+    this.recipients.update(arr => {
+      const copy = [...arr];
+      copy[index] = val;
+      return copy;
+    });
+  }
+
+  removeRecipient(index: number) {
+    this.recipients.update(arr => arr.filter((_, i) => i !== index));
+  }
+
+  addManualRecipient() {
+    this.recipients.update(arr => [...arr, '']);
+  }
+
+  submitSendProposal() {
+    const propId = this.sendingProposalId();
+    if (propId) {
+      this.state.updateProposalStatus(propId, 'Sent');
+    }
+    this.sendingProposalId.set(null);
+  }
+
   openCreateProposalModal() {
+    this.editingProposalId.set(null);
     this.newProposal = {
       title: '',
-      partnerId: this.state.partners()[0]?.id || '',
+      partnerId: this.salesEligiblePartners()[0]?.id || '',
       lines: [
         { product: '', description: '', qty: 1, unitPrice: 0, total: 0, vendor: '' }
-      ]
+      ],
+      opportunityValue: 0,
+      closingProbability: 50,
+      expectedClosingDate: new Date().toISOString().split('T')[0],
+      competitors: '',
+      stage: 'New Lead' as SalesStage
     };
     this.selectedTemplateId = '';
+    this.proposalModalOpen.set(true);
+  }
+
+  openEditProposalModal(prop: Proposal) {
+    this.editingProposalId.set(prop.id);
+    this.newProposal = {
+      title: prop.title,
+      partnerId: prop.partnerId,
+      lines: prop.lines.map(l => ({ ...l, vendor: l.vendor || '' })),
+      opportunityValue: prop.opportunityValue || 0,
+      closingProbability: prop.closingProbability ?? 50,
+      expectedClosingDate: prop.expectedClosingDate || '',
+      competitors: prop.competitors ? prop.competitors.join(', ') : '',
+      stage: prop.stage || 'New Lead'
+    };
+    this.selectedTemplateId = prop.templateId || '';
     this.proposalModalOpen.set(true);
   }
 
@@ -1747,15 +2113,34 @@ export class SalesComponent {
 
   saveProposal() {
     const total = this.getNewProposalTotal();
-    this.state.addProposal({
+    const propId = this.editingProposalId();
+    const competitorsArray = this.newProposal.competitors
+      ? this.newProposal.competitors.split(',').map(c => c.trim()).filter(Boolean)
+      : [];
+
+    const payload = {
       title: this.newProposal.title || 'Draft Proposal',
       partnerId: this.newProposal.partnerId,
       amount: total,
-      status: 'Draft',
       templateId: this.selectedTemplateId || undefined,
-      lines: this.newProposal.lines
-    });
+      lines: this.newProposal.lines,
+      opportunityValue: this.newProposal.opportunityValue,
+      closingProbability: this.newProposal.closingProbability,
+      expectedClosingDate: this.newProposal.expectedClosingDate,
+      competitors: competitorsArray,
+      stage: this.newProposal.stage
+    };
+
+    if (propId) {
+      this.state.updateProposal(propId, payload);
+    } else {
+      this.state.addProposal({
+        ...payload,
+        status: 'Draft'
+      });
+    }
     this.proposalModalOpen.set(false);
+    this.editingProposalId.set(null);
   }
 
   // Deal Creation
@@ -1880,22 +2265,21 @@ export class SalesComponent {
     this.dealModalOpen.set(false);
   }
 
-  // Purchase Order
-  openCreatePOModal(deal: Deal) {
-    this.selectedDealForPO.set(deal);
-    this.selectedVendorId = this.state.vendors()[0]?.id || '';
-    this.showNewVendorForm.set(false);
-    this.newPoCost = Math.round(deal.amount * 0.7); // Estimate 70% cost of goods
-    this.newPoDeliveryDate = '';
-    this.poModalOpen.set(true);
+  // Purchase Order Helpers & Mutators
+  addPoLineItem() {
+    this.poLines.update(lines => [...lines, { item: '', qty: 1, unitPrice: 0, type: 'software' }]);
   }
 
-  savePurchaseOrder() {
-    const deal = this.selectedDealForPO();
-    if (!deal) return;
+  removePoLine(index: number) {
+    this.poLines.update(lines => lines.filter((_, i) => i !== index));
+  }
 
-    let vendorId = this.selectedVendorId;
+  getPoTotal(): number {
+    return this.poLines().reduce((acc, line) => acc + (line.qty * line.unitPrice), 0);
+  }
 
+  getPOVendorId(): string | null {
+    let vendorId = this.selectedVendorId();
     if (this.showNewVendorForm()) {
       if (this.newVendorData.name.trim()) {
         const newVendor = this.state.addPartner({
@@ -1907,30 +2291,108 @@ export class SalesComponent {
           comments: 'Created inline from PO generation.'
         });
         vendorId = newVendor.id;
+        this.selectedVendorId.set(vendorId);
+        this.showNewVendorForm.set(false);
       } else {
         alert('Please specify a vendor name');
-        return;
+        return null;
       }
     }
+    return vendorId;
+  }
+
+  clearPoLocalState() {
+    this.poLines.set([{ item: '', qty: 1, unitPrice: 0, type: 'software' }]);
+    this.selectedVendorId.set('');
+    this.showNewVendorForm.set(false);
+    this.newVendorData = { name: '', email: '', phone: '', city: 'Casablanca' };
+    this.newPoDeliveryDate = '';
+    this.selectedDealForPO.set(null);
+  }
+
+  openCreatePOModal(deal: Deal) {
+    this.selectedDealForPO.set(deal);
+    this.selectedVendorId.set(this.state.vendors()[0]?.id || '');
+    this.showNewVendorForm.set(false);
+    
+    // Auto-populate poLines with deal lines if available, estimating 70% cost of goods
+    if (deal.orderLines && deal.orderLines.length > 0) {
+      this.poLines.set(deal.orderLines.map(l => ({
+        item: l.product,
+        description: l.description || '',
+        qty: l.qty,
+        unitPrice: Math.round(l.unitPrice * 0.7),
+        type: 'software' as const
+      })));
+    } else {
+      this.poLines.set([{ item: '', qty: 1, unitPrice: 0, type: 'software' }]);
+    }
+    
+    this.newPoDeliveryDate = '';
+    this.poModalOpen.set(true);
+  }
+
+  savePurchaseOrder() {
+    const deal = this.selectedDealForPO();
+    if (!deal) return;
+
+    const vendorId = this.getPOVendorId();
+    if (!vendorId) return;
+
+    const totalAmount = this.getPoTotal();
 
     // Add PO
     this.state.addPurchaseOrder({
       dealId: deal.id,
       vendorId: vendorId,
-      amount: this.newPoCost,
+      amount: totalAmount,
       status: 'Sent',
       deliveryDate: this.newPoDeliveryDate || undefined,
       sentVia: 'Email via CRM',
-      lines: [
-        { product: 'Goods for ' + deal.title, qty: 1, cost: this.newPoCost }
-      ]
+      lines: this.poLines().map(line => ({
+        product: line.item,
+        description: line.description,
+        qty: line.qty,
+        cost: line.unitPrice,
+        type: line.type
+      }))
     });
 
     // Automatically update deal stage to PO Sent
     this.state.updateDealStage(deal.id, 'Confirmed');
 
+    this.clearPoLocalState();
     this.poModalOpen.set(false);
     this.activeTab.set('pos');
+  }
+
+  saveDraftPO() {
+    const deal = this.selectedDealForPO();
+    if (!deal) return;
+
+    const vendorId = this.getPOVendorId();
+    if (!vendorId) return;
+
+    const totalAmount = this.getPoTotal();
+
+    // Add PO with status Draft
+    this.state.addPurchaseOrder({
+      dealId: deal.id,
+      vendorId: vendorId,
+      amount: totalAmount,
+      status: 'Draft',
+      deliveryDate: this.newPoDeliveryDate || undefined,
+      lines: this.poLines().map(line => ({
+        product: line.item,
+        description: line.description,
+        qty: line.qty,
+        cost: line.unitPrice,
+        type: line.type
+      }))
+    });
+
+    this.clearPoLocalState();
+    this.poModalOpen.set(false);
   }
 
   // PO Delivery Dates
@@ -1967,6 +2429,7 @@ export class SalesComponent {
 
   // Create Task manually
   openCreateTaskModal() {
+    this.taskContextProposalId.set(null);
     this.newTaskData = {
       title: '',
       description: '',
@@ -1977,16 +2440,44 @@ export class SalesComponent {
     this.taskModalOpen.set(true);
   }
 
+  openTaskModalForProposal(proposalId: string) {
+    this.taskContextProposalId.set(proposalId);
+    const prop = this.state.proposals().find(p => p.id === proposalId);
+    this.newTaskData = {
+      title: '',
+      description: '',
+      assignedTeam: 'Sales',
+      assignedTo: '',
+      relatedTo: prop ? 'Proposal: ' + prop.title : ''
+    };
+    this.taskModalOpen.set(true);
+  }
+
+  closeTaskModal() {
+    this.taskModalOpen.set(false);
+    this.taskContextProposalId.set(null);
+  }
+
   saveTask() {
+    let relatedTo = this.newTaskData.relatedTo || undefined;
+    const proposalId = this.taskContextProposalId();
+    if (proposalId) {
+      const prop = this.state.proposals().find(p => p.id === proposalId);
+      if (prop) {
+        relatedTo = 'Proposal: ' + prop.title;
+      }
+    }
+
     this.state.addTask({
       title: this.newTaskData.title,
       description: this.newTaskData.description,
       assignedTeam: this.newTaskData.assignedTeam,
       assignedTo: this.newTaskData.assignedTo || undefined,
       status: 'Pending',
-      relatedTo: this.newTaskData.relatedTo || undefined
+      relatedTo: relatedTo
     });
     this.taskModalOpen.set(false);
+    this.taskContextProposalId.set(null);
   }
 
   // Activity Hub Helpers

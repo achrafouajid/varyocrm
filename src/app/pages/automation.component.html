@@ -708,7 +708,7 @@
               <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Load Existing Record</label>
               <select [(ngModel)]="sandboxEntityId" (change)="updateSandboxPayload()" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm">
                 @if (sandboxEntityType() === 'Lead') {
-                  @for (l of state.leads(); track l.id) {
+                  @for (l of state.leadsData(); track l.id) {
                     <option [value]="l.id">{{ l.companyName }} ({{ l.name }})</option>
                   }
                 } @else if (sandboxEntityType() === 'Deal') {

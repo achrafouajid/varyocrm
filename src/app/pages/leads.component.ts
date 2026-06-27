@@ -107,7 +107,7 @@ import { CrmStateService, Lead, LeadActivity, LeadAttachment } from '../services
             </select>
           </div>
           <div class="text-xs text-slate-400 font-semibold uppercase">
-            Showing {{ filteredLeads().length }} of {{ state.leads().length }} leads
+            Showing {{ filteredLeads().length }} of {{ state.leadsData().length }} leads
           </div>
         </div>
 
@@ -738,23 +738,23 @@ export class LeadsComponent {
   };
 
   // KPI Computations
-  totalLeadsCount = computed(() => this.state.leads().length);
-  qualifiedLeadsCount = computed(() => this.state.leads().filter(l => l.status === 'Qualified').length);
+  totalLeadsCount = computed(() => this.state.leadsData().length);
+  qualifiedLeadsCount = computed(() => this.state.leadsData().filter(l => l.status === 'Qualified').length);
   avgLeadScore = computed(() => {
-    const list = this.state.leads();
+    const list = this.state.leadsData();
     if (list.length === 0) return 0;
     const total = list.reduce((sum, l) => sum + l.score, 0);
     return Math.round(total / list.length);
   });
   pipelineValue = computed(() => {
-    return this.state.leads()
+    return this.state.leadsData()
       .filter(l => ['New', 'Contacted', 'Attempted Contact', 'Meeting Scheduled', 'Qualified', 'Proposal Requested'].includes(l.status))
       .reduce((sum, l) => sum + (l.estimatedDealValue || 0), 0);
   });
 
   // Filtered Leads list
   filteredLeads = computed(() => {
-    let list = this.state.leads();
+    let list = this.state.leadsData();
 
     if (this.statusFilter) {
       list = list.filter(l => l.status === this.statusFilter);
@@ -794,7 +794,7 @@ export class LeadsComponent {
   onStatusChange(leadId: string, status: Lead['status']) {
     this.state.updateLeadStatus(leadId, status);
     // Refresh details reference in signals
-    const updated = this.state.leads().find(l => l.id === leadId);
+    const updated = this.state.leadsData().find(l => l.id === leadId);
     if (updated) {
       this.selectedLead.set(updated);
     }
@@ -812,7 +812,7 @@ export class LeadsComponent {
     });
 
     // Refresh details reference
-    const updated = this.state.leads().find(l => l.id === leadId);
+    const updated = this.state.leadsData().find(l => l.id === leadId);
     if (updated) {
       this.selectedLead.set(updated);
     }
@@ -835,7 +835,7 @@ export class LeadsComponent {
       uploadedAt: new Date().toISOString().split('T')[0]
     });
 
-    const updated = this.state.leads().find(l => l.id === leadId);
+    const updated = this.state.leadsData().find(l => l.id === leadId);
     if (updated) {
       this.selectedLead.set(updated);
     }
