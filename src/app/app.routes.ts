@@ -8,6 +8,21 @@ export const routes: Routes = [
   { path: 'partners', loadComponent: () => import('./pages/partners.component').then(m => m.PartnersComponent) },
   { path: 'finance', loadComponent: () => import('./pages/finance.component').then(m => m.FinanceComponent) },
   { path: 'tickets', loadComponent: () => import('./pages/tickets.component').then(m => m.TicketsComponent) },
-  { path: 'partners/:id/customer-card', loadComponent: () => import('./pages/customer-card.component').then(m => m.CustomerCardComponent) }
+  { path: 'leads', loadComponent: () => import('./pages/leads.component').then(m => m.LeadsComponent) },
+  { path: 'automation', loadComponent: () => import('./pages/automation.component').then(m => m.AutomationComponent) },
+  { path: 'partners/:id/customer-card', loadComponent: () => import('./pages/customer-card.component').then(m => m.CustomerCardComponent) },
+  {
+    path: 'settings',
+    loadComponent: () => import('./pages/settings-shell.component').then(m => m.SettingsShellComponent),
+    children: [
+      { path: '', redirectTo: 'organization', pathMatch: 'full' },
+      { path: 'organization', loadComponent: () => import('./pages/org-settings.component').then(m => m.OrgSettingsComponent) },
+      { path: 'users', loadComponent: () => import('./pages/users.component').then(m => m.UsersComponent) },
+      { path: 'users/:userId', loadComponent: () => import('./pages/user-profile.component').then(m => m.UserProfileComponent) },
+      { path: 'teams', loadComponent: () => import('./pages/teams.component').then(m => m.TeamsComponent) },
+      { path: 'groups', loadComponent: () => import('./pages/groups.component').then(m => m.GroupsComponent) }
+    ]
+  },
+  { path: 'groups', loadComponent: () => import('./pages/groups.component').then(m => m.GroupsComponent) }
 ];
 

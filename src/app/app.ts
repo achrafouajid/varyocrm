@@ -3,10 +3,11 @@ import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/rou
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { CrmStateService } from './services/crm-state.service';
+import { UserAvatarComponent } from './shared/user-avatar.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, MatIconModule, CommonModule],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, MatIconModule, CommonModule, UserAvatarComponent],
   template: `
     <div class="min-h-screen bg-[#FAFAFA] text-slate-900 font-sans flex flex-col">
       <!-- Top Navigation -->
@@ -14,12 +15,12 @@ import { CrmStateService } from './services/crm-state.service';
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div class="flex items-center justify-between h-16">
             <!-- Logo & Main Nav -->
-            <div class="flex items-center gap-8">
+            <div class="flex items-center gap-4 md:gap-8 min-w-0 flex-1">
               <a routerLink="/" class="flex shrink-0 items-center hover:opacity-80 transition-opacity">
-                <img src="/crm.webp" alt="MarocCRM" class="h-20 w-auto">
+                <img src="/crm.webp" alt="MarocCRM" class="h-16 md:h-20 w-auto">
               </a>
               
-              <nav class="hidden md:flex items-center space-x-0.5">
+              <nav class="flex items-center gap-1 overflow-x-auto whitespace-nowrap scrollbar-none py-1 pr-4 min-w-0 flex-1">
                 <!-- Sales Dropdown -->
                 <div class="relative" (mouseenter)="activeDropdown.set('sales')" (mouseleave)="activeDropdown.set(null)">
                   <a routerLink="/sales" [class.bg-slate-100]="activeDropdown() === 'sales'" [class.text-slate-900]="activeDropdown() === 'sales'"
@@ -80,29 +81,17 @@ import { CrmStateService } from './services/crm-state.service';
                   }
                 </div>
 
-                <!-- Inbox Dropdown -->
-                <div class="relative" (mouseenter)="activeDropdown.set('inbox')" (mouseleave)="activeDropdown.set(null)">
-                  <a routerLink="/tickets" [class.bg-slate-100]="activeDropdown() === 'inbox'" [class.text-slate-900]="activeDropdown() === 'inbox'"
-                          class="text-slate-600 hover:text-slate-900 hover:bg-slate-100 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 inline-flex items-center gap-1">
-                    Inbox
-                    <mat-icon class="text-[16px] w-4 h-4 transition-transform duration-200" [class.rotate-180]="activeDropdown() === 'inbox'">expand_more</mat-icon>
-                  </a>
-                  @if (activeDropdown() === 'inbox') {
-                    <div class="absolute left-1/2 -translate-x-1/2 pt-2 w-52">
-                      <div class="bg-white rounded-xl shadow-xl shadow-slate-200/50 ring-1 ring-black/5 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150 ease-out">
-                        <div class="px-4 py-2 border-b border-slate-100">
-                          <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Support</span>
-                        </div>
-                        <div class="py-1">
-                          <a routerLink="/tickets" (click)="activeDropdown.set(null)" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors">
-                            <mat-icon class="text-slate-400 text-[18px] w-[18px] h-[18px]">inbox</mat-icon>
-                            <span class="font-medium">My tickets</span>
-                          </a>
-                        </div>
-                      </div>
-                    </div>
-                  }
-                </div>
+                <!-- Leads -->
+                <a routerLink="/leads" routerLinkActive="bg-slate-100 text-slate-900 font-medium"
+                   class="text-slate-600 hover:text-slate-900 hover:bg-slate-100 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150">
+                  Leads
+                </a>
+
+                <!-- Tickets -->
+                <a routerLink="/tickets" routerLinkActive="bg-slate-100 text-slate-900 font-medium"
+                   class="text-slate-600 hover:text-slate-900 hover:bg-slate-100 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150">
+                  Tickets
+                </a>
 
                 <!-- Analytics -->
                 <a routerLink="/analytics" routerLinkActive="bg-slate-100 text-slate-900 font-medium"
@@ -121,6 +110,24 @@ import { CrmStateService } from './services/crm-state.service';
                    class="text-slate-600 hover:text-slate-900 hover:bg-slate-100 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150">
                   Finance
                 </a>
+
+                <!-- Automation -->
+                <a routerLink="/automation" routerLinkActive="bg-slate-100 text-slate-900 font-medium"
+                   class="text-slate-600 hover:text-slate-900 hover:bg-slate-100 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150">
+                  Automation
+                </a>
+
+                <!-- Groups -->
+                <a routerLink="/groups" routerLinkActive="bg-slate-100 text-slate-900 font-medium"
+                   class="text-slate-600 hover:text-slate-900 hover:bg-slate-100 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150">
+                  Groups
+                </a>
+
+                <!-- Settings -->
+                <a routerLink="/settings" routerLinkActive="bg-slate-100 text-slate-900 font-medium"
+                   class="text-slate-600 hover:text-slate-900 hover:bg-slate-100 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150">
+                  Settings
+                </a>
               </nav>
             </div>
 
@@ -134,9 +141,22 @@ import { CrmStateService } from './services/crm-state.service';
                 </span>
               </button>
               <div class="h-6 w-px bg-slate-200 mx-1"></div>
-              <button class="flex items-center gap-2 hover:bg-slate-50 p-1 rounded-full transition-colors focus:outline-none">
-                <img src="https://ui-avatars.com/api/?name=Achraf+Ouajid&background=4f46e5&color=fff&bold=true" alt="Profile" class="w-8 h-8 rounded-full shadow-sm ring-1 ring-slate-200">
-              </button>
+              
+              <!-- Pinned User Widget -->
+              @let currentUser = getCurrentUser();
+              @if (currentUser) {
+                <a
+                  [routerLink]="['/settings/users', state.currentUserId()]"
+                  class="flex items-center gap-2 hover:bg-slate-50 p-1.5 rounded-xl transition-colors border border-slate-200/40 bg-slate-55/30"
+                  title="View Profile Settings"
+                >
+                  <app-user-avatar [userId]="state.currentUserId()" [size]="36"></app-user-avatar>
+                  <div class="hidden sm:flex flex-col text-left shrink-0 max-w-[120px]">
+                    <span class="text-xs font-bold text-slate-800 leading-tight truncate">{{ currentUser.displayName }}</span>
+                    <span class="text-[10px] text-slate-500 font-semibold leading-none mt-0.5 truncate uppercase tracking-wider">{{ currentUser.roleId }}</span>
+                  </div>
+                </a>
+              }
             </div>
           </div>
         </div>
@@ -240,6 +260,10 @@ export class App {
 
   activeDropdown = signal<string | null>(null);
   isWizardOpen = signal(true);
+
+  getCurrentUser() {
+    return this.state.users().find(u => u.id === this.state.currentUserId());
+  }
 
   constructor(private elementRef: ElementRef) { }
 

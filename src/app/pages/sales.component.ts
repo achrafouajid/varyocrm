@@ -208,6 +208,400 @@ import { FormsModule } from '@angular/forms';
                       </div>
                     </div>
                   }
+
+                  <!-- Activity Hub -->
+                  <div class="col-span-1 md:col-span-2 lg:col-span-3 border-t border-slate-200/60 pt-4 mt-2">
+                    <h5 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1.5 font-sans">
+                      <mat-icon class="text-[16px] w-4 h-4 text-indigo-600 flex items-center justify-center">forum</mat-icon> Deal Activity Hub
+                    </h5>
+                    
+                    <!-- Tabs Header -->
+                    <div class="flex flex-wrap gap-1 border-b border-slate-200 mb-4 bg-slate-50/50 p-1 rounded-lg">
+                      <button type="button" (click)="setDealTab(deal.id, 'calls')"
+                        [class]="getDealTab(deal.id) === 'calls' ? 'bg-white text-indigo-600 shadow-xs border-slate-200' : 'text-slate-600 border-transparent hover:text-slate-900 hover:bg-slate-100'"
+                        class="px-3 py-1.5 rounded-md text-xs font-medium border transition-all flex items-center gap-1.5">
+                        <mat-icon class="text-[14px] w-3.5 h-3.5 leading-none flex items-center justify-center">call</mat-icon>
+                        Calls
+                        <span class="bg-indigo-50 text-indigo-600 px-1 py-0.2 rounded-full text-[9px] font-semibold">{{ deal.activityLog?.calls?.length || 0 }}</span>
+                      </button>
+                      <button type="button" (click)="setDealTab(deal.id, 'emails')"
+                        [class]="getDealTab(deal.id) === 'emails' ? 'bg-white text-indigo-600 shadow-xs border-slate-200' : 'text-slate-600 border-transparent hover:text-slate-900 hover:bg-slate-100'"
+                        class="px-3 py-1.5 rounded-md text-xs font-medium border transition-all flex items-center gap-1.5">
+                        <mat-icon class="text-[14px] w-3.5 h-3.5 leading-none flex items-center justify-center">email</mat-icon>
+                        Emails
+                        <span class="bg-indigo-50 text-indigo-600 px-1 py-0.2 rounded-full text-[9px] font-semibold">{{ deal.activityLog?.emails?.length || 0 }}</span>
+                      </button>
+                      <button type="button" (click)="setDealTab(deal.id, 'meetings')"
+                        [class]="getDealTab(deal.id) === 'meetings' ? 'bg-white text-indigo-600 shadow-xs border-slate-200' : 'text-slate-600 border-transparent hover:text-slate-900 hover:bg-slate-100'"
+                        class="px-3 py-1.5 rounded-md text-xs font-medium border transition-all flex items-center gap-1.5">
+                        <mat-icon class="text-[14px] w-3.5 h-3.5 leading-none flex items-center justify-center">groups</mat-icon>
+                        Meetings
+                        <span class="bg-indigo-50 text-indigo-600 px-1 py-0.2 rounded-full text-[9px] font-semibold">{{ deal.activityLog?.meetings?.length || 0 }}</span>
+                      </button>
+                      <button type="button" (click)="setDealTab(deal.id, 'recordings')"
+                        [class]="getDealTab(deal.id) === 'recordings' ? 'bg-white text-indigo-600 shadow-xs border-slate-200' : 'text-slate-600 border-transparent hover:text-slate-900 hover:bg-slate-100'"
+                        class="px-3 py-1.5 rounded-md text-xs font-medium border transition-all flex items-center gap-1.5">
+                        <mat-icon class="text-[14px] w-3.5 h-3.5 leading-none flex items-center justify-center">videocam</mat-icon>
+                        Teams Recordings
+                        <span class="bg-indigo-50 text-indigo-600 px-1 py-0.2 rounded-full text-[9px] font-semibold">{{ deal.activityLog?.recordings?.length || 0 }}</span>
+                      </button>
+                      <button type="button" (click)="setDealTab(deal.id, 'notes')"
+                        [class]="getDealTab(deal.id) === 'notes' ? 'bg-white text-indigo-600 shadow-xs border-slate-200' : 'text-slate-600 border-transparent hover:text-slate-900 hover:bg-slate-100'"
+                        class="px-3 py-1.5 rounded-md text-xs font-medium border transition-all flex items-center gap-1.5">
+                        <mat-icon class="text-[14px] w-3.5 h-3.5 leading-none flex items-center justify-center">note_alt</mat-icon>
+                        Notes
+                        <span class="bg-indigo-50 text-indigo-600 px-1 py-0.2 rounded-full text-[9px] font-semibold">{{ deal.activityLog?.notes?.length || 0 }}</span>
+                      </button>
+                      <button type="button" (click)="setDealTab(deal.id, 'tasks')"
+                        [class]="getDealTab(deal.id) === 'tasks' ? 'bg-white text-indigo-600 shadow-xs border-slate-200' : 'text-slate-600 border-transparent hover:text-slate-900 hover:bg-slate-100'"
+                        class="px-3 py-1.5 rounded-md text-xs font-medium border transition-all flex items-center gap-1.5">
+                        <mat-icon class="text-[14px] w-3.5 h-3.5 leading-none flex items-center justify-center">assignment</mat-icon>
+                        Tasks
+                        <span class="bg-indigo-50 text-indigo-600 px-1 py-0.2 rounded-full text-[9px] font-semibold">{{ getLinkedTasksCount(deal.title) }}</span>
+                      </button>
+                      <button type="button" (click)="setDealTab(deal.id, 'followups')"
+                        [class]="getDealTab(deal.id) === 'followups' ? 'bg-white text-indigo-600 shadow-xs border-slate-200' : 'text-slate-600 border-transparent hover:text-slate-900 hover:bg-slate-100'"
+                        class="px-3 py-1.5 rounded-md text-xs font-medium border transition-all flex items-center gap-1.5">
+                        <mat-icon class="text-[14px] w-3.5 h-3.5 leading-none flex items-center justify-center">notification_important</mat-icon>
+                        Follow-ups
+                        <span class="bg-indigo-50 text-indigo-600 px-1 py-0.2 rounded-full text-[9px] font-semibold">{{ deal.activityLog?.followUps?.length || 0 }}</span>
+                      </button>
+                      <button type="button" (click)="setDealTab(deal.id, 'calendar')"
+                        [class]="getDealTab(deal.id) === 'calendar' ? 'bg-white text-indigo-600 shadow-xs border-slate-200' : 'text-slate-600 border-transparent hover:text-slate-900 hover:bg-slate-100'"
+                        class="px-3 py-1.5 rounded-md text-xs font-medium border transition-all flex items-center gap-1.5">
+                        <mat-icon class="text-[14px] w-3.5 h-3.5 leading-none flex items-center justify-center">calendar_month</mat-icon>
+                        Calendar
+                      </button>
+                    </div>
+
+                    <!-- Active Tab Panel -->
+                    <div class="bg-slate-50/50 border border-slate-200/60 rounded-xl p-4 min-h-[180px]">
+                      
+                      <!-- CALLS TAB -->
+                      @if (getDealTab(deal.id) === 'calls') {
+                        <div class="space-y-4">
+                          <div class="flex justify-between items-center">
+                            <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Phone Calls History</span>
+                            <button type="button" (click)="openAddActivityModal(deal.id, 'calls')" class="text-indigo-600 hover:text-indigo-700 text-xs font-semibold flex items-center gap-0.5">
+                              <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">add</mat-icon> Log Call
+                            </button>
+                          </div>
+                          
+                          <div class="space-y-3">
+                            @for (call of deal.activityLog?.calls; track call.id) {
+                              <div class="bg-white border border-slate-150 rounded-lg p-3 shadow-xs space-y-1.5">
+                                <div class="flex justify-between items-start">
+                                  <div class="flex items-center gap-2">
+                                    <span class="font-bold text-slate-800">{{ call.callerName }}</span>
+                                    <span class="text-slate-400 font-mono text-[10px]">{{ call.date }} ({{ call.duration }} min)</span>
+                                  </div>
+                                  <span [class]="call.outcome === 'Interested' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 
+                                                 call.outcome === 'Follow-up' ? 'bg-amber-50 text-amber-700 border-amber-100' : 
+                                                 'bg-slate-100 text-slate-600 border-slate-200'"
+                                        class="px-2 py-0.5 rounded text-[10px] font-semibold border">
+                                    {{ call.outcome }}
+                                  </span>
+                                </div>
+                                <p class="text-[11px] text-slate-600 font-sans leading-relaxed">{{ call.summary }}</p>
+                              </div>
+                            } @empty {
+                              <div class="text-center py-6 text-slate-400 text-xs">No calls logged yet.</div>
+                            }
+                          </div>
+                        </div>
+                      }
+
+                      <!-- EMAILS TAB -->
+                      @if (getDealTab(deal.id) === 'emails') {
+                        <div class="space-y-4">
+                          <div class="flex justify-between items-center">
+                            <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Email Correspondence Thread</span>
+                            <button type="button" (click)="openAddActivityModal(deal.id, 'emails')" class="text-indigo-600 hover:text-indigo-700 text-xs font-semibold flex items-center gap-0.5">
+                              <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">add</mat-icon> Log Email
+                            </button>
+                          </div>
+
+                          <div class="space-y-3">
+                            @for (email of deal.activityLog?.emails; track email.id) {
+                              <div [class]="email.direction === 'sent' ? 'bg-indigo-50/40 border-indigo-100 ml-6' : 'bg-white border-slate-150 mr-6'"
+                                   class="border rounded-lg p-3 shadow-xs space-y-1.5 transition-all">
+                                <div class="flex justify-between items-start">
+                                  <div>
+                                    <span class="font-bold text-slate-800 text-xs">{{ email.subject }}</span>
+                                    <div class="text-[10px] text-slate-400 font-mono mt-0.5">
+                                      From: {{ email.from }} | To: {{ email.to }}
+                                    </div>
+                                  </div>
+                                  <span class="text-[10px] font-mono text-slate-400">{{ email.date }}</span>
+                                </div>
+                                <p class="text-[11px] text-slate-600 leading-relaxed font-sans whitespace-pre-wrap">{{ email.body }}</p>
+                              </div>
+                            }
+                            
+                            <!-- Legacy emails text snippet fallback -->
+                            @if (deal.emailExchange && (!deal.activityLog || deal.activityLog.emails.length === 0)) {
+                              <div class="bg-white border border-slate-150 rounded-lg p-3 shadow-xs font-mono text-[11px] text-slate-700 leading-relaxed">
+                                <div class="text-slate-400 font-sans font-bold flex items-center gap-1 mb-2">
+                                  <mat-icon class="text-[14px] w-3.5 h-3.5 leading-none">history</mat-icon> Imported Exchange Logs
+                                </div>
+                                <pre class="whitespace-pre-wrap text-[10px] font-sans leading-relaxed">{{ deal.emailExchange }}</pre>
+                              </div>
+                            }
+                            
+                            @if (!deal.emailExchange && (!deal.activityLog || deal.activityLog.emails.length === 0)) {
+                              <div class="text-center py-6 text-slate-400 text-xs">No email exchanges logged yet.</div>
+                            }
+                          </div>
+                        </div>
+                      }
+
+                      <!-- MEETINGS TAB -->
+                      @if (getDealTab(deal.id) === 'meetings') {
+                        <div class="space-y-4">
+                          <div class="flex justify-between items-center">
+                            <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Meetings & Technical Demos</span>
+                            <button type="button" (click)="openAddActivityModal(deal.id, 'meetings')" class="text-indigo-600 hover:text-indigo-700 text-xs font-semibold flex items-center gap-0.5">
+                              <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">add</mat-icon> Log Meeting
+                            </button>
+                          </div>
+
+                          <div class="space-y-3">
+                            @for (meeting of deal.activityLog?.meetings; track meeting.id) {
+                              <div class="bg-white border border-slate-150 rounded-lg p-3 shadow-xs space-y-2">
+                                <div class="flex justify-between items-start">
+                                  <div class="flex items-center gap-2">
+                                    <span class="font-bold text-slate-800 text-xs">{{ meeting.title }}</span>
+                                    <span [class]="meeting.type === 'teams' ? 'bg-blue-50 text-blue-700 border-blue-100' : 
+                                                   meeting.type === 'demo' ? 'bg-purple-50 text-purple-700 border-purple-100' : 
+                                                   'bg-slate-50 text-slate-700 border-slate-200'"
+                                          class="px-1.5 py-0.2 rounded text-[9px] font-semibold border uppercase">
+                                      {{ meeting.type }}
+                                    </span>
+                                  </div>
+                                  <span class="text-[10px] text-slate-400 font-mono">{{ meeting.date }} à {{ meeting.time }}</span>
+                                </div>
+                                
+                                <div class="text-[10px] text-slate-500">
+                                  <strong>Location:</strong> {{ meeting.location }} | 
+                                  <strong>Attendees:</strong> 
+                                  @for (att of meeting.attendees; track $index) {
+                                    <span class="inline-block bg-slate-100 text-slate-600 px-1.5 py-0.2 rounded-full mx-0.5">{{ att }}</span>
+                                  }
+                                </div>
+                                <p class="text-[11px] text-slate-600 font-sans leading-relaxed border-t border-slate-50 pt-1.5">{{ meeting.summary }}</p>
+                              </div>
+                            } @empty {
+                              <div class="text-center py-6 text-slate-400 text-xs">No meetings logged yet.</div>
+                            }
+                          </div>
+                        </div>
+                      }
+
+                      <!-- RECORDINGS TAB -->
+                      @if (getDealTab(deal.id) === 'recordings') {
+                        <div class="space-y-4">
+                          <div class="flex justify-between items-center">
+                            <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Teams Meeting Records</span>
+                            <button type="button" (click)="openAddActivityModal(deal.id, 'recordings')" class="text-indigo-600 hover:text-indigo-700 text-xs font-semibold flex items-center gap-0.5">
+                              <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">add</mat-icon> Add Link
+                            </button>
+                          </div>
+
+                          <div class="space-y-2">
+                            @for (rec of deal.activityLog?.recordings; track rec.id) {
+                              <div class="bg-white border border-slate-150 rounded-lg p-3 shadow-xs flex items-center justify-between gap-4">
+                                <div class="flex items-center gap-3">
+                                  <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100">
+                                    <mat-icon class="text-base w-4.5 h-4.5 flex items-center justify-center">videocam</mat-icon>
+                                  </div>
+                                  <div>
+                                    <span class="font-bold text-slate-800 text-xs block">{{ rec.title }}</span>
+                                    <span class="text-[10px] text-slate-400 font-mono">{{ rec.date }} | Duration: {{ rec.duration }}</span>
+                                  </div>
+                                </div>
+                                
+                                <div class="flex gap-2">
+                                  <a [href]="rec.meetingLink" target="_blank" class="px-2.5 py-1 text-[10px] font-semibold rounded bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200 flex items-center gap-0.5">
+                                    <mat-icon class="text-[12px] w-3 h-3">link</mat-icon> Teams
+                                  </a>
+                                  <a [href]="rec.recordingLink" target="_blank" class="px-2.5 py-1 text-[10px] font-semibold rounded bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 flex items-center gap-0.5">
+                                    <mat-icon class="text-[12px] w-3 h-3 flex items-center justify-center">play_arrow</mat-icon> Record
+                                  </a>
+                                </div>
+                              </div>
+                            } @empty {
+                              <div class="text-center py-6 text-slate-400 text-xs">No recording links added yet.</div>
+                            }
+                          </div>
+                        </div>
+                      }
+
+                      <!-- NOTES TAB -->
+                      @if (getDealTab(deal.id) === 'notes') {
+                        <div class="space-y-4">
+                          <div class="flex justify-between items-center">
+                            <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Sales Notes & Comments</span>
+                            <button type="button" (click)="openAddActivityModal(deal.id, 'notes')" class="text-indigo-600 hover:text-indigo-700 text-xs font-semibold flex items-center gap-0.5">
+                              <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">add</mat-icon> Add Note
+                            </button>
+                          </div>
+
+                          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            @for (note of deal.activityLog?.notes; track note.id) {
+                              <div class="bg-amber-50/50 border border-amber-100 rounded-lg p-3 shadow-xs space-y-1.5 relative overflow-hidden font-sans">
+                                <div class="absolute top-0 left-0 w-1 h-full bg-amber-400"></div>
+                                <div class="flex justify-between items-center text-[10px] text-slate-400 font-mono">
+                                  <span>By: {{ note.author }}</span>
+                                  <span>{{ note.date }}</span>
+                                </div>
+                                <p class="text-[11px] text-slate-700 leading-relaxed font-sans">{{ note.content }}</p>
+                              </div>
+                            } @empty {
+                              <div class="col-span-2 text-center py-6 text-slate-400 text-xs">No notes added yet.</div>
+                            }
+                          </div>
+                        </div>
+                      }
+
+                      <!-- TASKS TAB -->
+                      @if (getDealTab(deal.id) === 'tasks') {
+                        <div class="space-y-4">
+                          <div class="flex justify-between items-center">
+                            <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Operation & Hand-off Tasks</span>
+                            <button type="button" (click)="openCreateTaskForDeal(deal.title)" class="text-indigo-600 hover:text-indigo-700 text-xs font-semibold flex items-center gap-0.5">
+                              <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">add</mat-icon> New Task
+                            </button>
+                          </div>
+
+                          <div class="space-y-2">
+                            @for (t of getLinkedTasks(deal.title); track t.id) {
+                              <div class="bg-white border border-slate-150 rounded-lg p-3 shadow-xs flex items-center justify-between gap-4">
+                                <div class="flex items-center gap-3">
+                                  <button type="button" (click)="toggleTaskStatus(t.id, t.status)" class="text-slate-400 hover:text-indigo-600">
+                                    <mat-icon class="text-base w-4.5 h-4.5 flex items-center justify-center">{{ t.status === 'Completed' ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
+                                  </button>
+                                  <div>
+                                    <span [class.line-through]="t.status === 'Completed'" [class.text-slate-400]="t.status === 'Completed'" class="font-bold text-slate-800 text-xs block font-sans">{{ t.title }}</span>
+                                    <span class="text-[10px] text-slate-400 font-sans">Team: {{ t.assignedTeam }} | Assigned: {{ t.assignedTo || 'Unassigned' }}</span>
+                                  </div>
+                                </div>
+                                
+                                <span [class]="t.status === 'Completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-slate-100 text-slate-600 border-slate-200'" class="px-2 py-0.5 border text-[9px] font-bold uppercase rounded font-mono">
+                                  {{ t.status }}
+                                </span>
+                              </div>
+                            } @empty {
+                              <div class="text-center py-6 text-slate-400 text-xs">No tasks linked to this deal yet.</div>
+                            }
+                          </div>
+                        </div>
+                      }
+
+                      <!-- FOLLOW-UPS TAB -->
+                      @if (getDealTab(deal.id) === 'followups') {
+                        <div class="space-y-4">
+                          <div class="flex justify-between items-center">
+                            <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider font-sans">Upcoming Alerts & Action Reminders</span>
+                            <button type="button" (click)="openAddActivityModal(deal.id, 'followups')" class="text-indigo-600 hover:text-indigo-700 text-xs font-semibold flex items-center gap-0.5">
+                              <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">add</mat-icon> Add Follow-up
+                            </button>
+                          </div>
+
+                          <div class="space-y-2">
+                            @for (f of deal.activityLog?.followUps; track f.id) {
+                              <div class="bg-white border border-slate-150 rounded-lg p-3 shadow-xs flex items-center justify-between gap-4">
+                                <div class="flex items-center gap-3">
+                                  <button type="button" (click)="toggleFollowUpStatus(deal.id, f.id, f.status)" class="text-slate-400 hover:text-indigo-600">
+                                    <mat-icon class="text-base w-4.5 h-4.5 flex items-center justify-center">{{ f.status === 'done' ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+                                  </button>
+                                  <div>
+                                    <span [class.line-through]="f.status === 'done'" [class.text-slate-400]="f.status === 'done'" class="font-bold text-slate-800 text-xs block font-sans">{{ f.title }}</span>
+                                    <span class="text-[10px] text-slate-400 font-mono">Due date: {{ f.dueDate }} | Owner: {{ f.assignedTo }}</span>
+                                  </div>
+                                </div>
+                                
+                                <span [class]="f.status === 'done' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-rose-50 text-rose-700 border-rose-100'" class="px-2 py-0.5 border text-[9px] font-bold uppercase rounded font-mono">
+                                  {{ f.status === 'done' ? 'Completed' : 'Pending' }}
+                                </span>
+                              </div>
+                            } @empty {
+                              <div class="text-center py-6 text-slate-400 text-xs">No follow-ups scheduled yet.</div>
+                            }
+                          </div>
+                        </div>
+                      }
+
+                      <!-- CALENDAR TAB -->
+                      @if (getDealTab(deal.id) === 'calendar') {
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <div class="flex justify-between items-center mb-2 px-1">
+                              <span class="text-[11px] font-bold text-slate-700 uppercase">Juin 2026</span>
+                              <span class="text-[9px] text-slate-400 flex items-center gap-0.5 font-semibold">
+                                <span class="w-1.5 h-1.5 bg-indigo-600 rounded-full inline-block"></span> Outlook Sync TBD
+                              </span>
+                            </div>
+
+                            <!-- Calendar Grid -->
+                            <div class="bg-white border border-slate-200 rounded-xl p-2.5 shadow-xs">
+                              <div class="grid grid-cols-7 gap-1 text-center font-bold text-[9px] text-slate-400 mb-1 border-b border-slate-50 pb-1">
+                                @for (h of calendarHeaders; track h) {
+                                  <div>{{ h }}</div>
+                                }
+                              </div>
+                              <div class="grid grid-cols-7 gap-1.5">
+                                @for (day of calendarDays; track day) {
+                                  <button type="button" (click)="selectCalendarDay(deal.id, day)"
+                                          [class]="isSelectedCalendarDay(deal.id, day) ? 'bg-indigo-600 text-white font-bold' : 
+                                                   hasEventsOnDay(deal, day) ? 'bg-indigo-50 text-indigo-700 font-bold border-indigo-200' : 
+                                                   'bg-slate-50 text-slate-700 hover:bg-slate-100 border-slate-105 border-slate-100'"
+                                          class="w-full aspect-square rounded-lg text-[10px] font-semibold border flex flex-col items-center justify-center relative transition-all">
+                                    {{ day }}
+                                    @if (hasEventsOnDay(deal, day) && !isSelectedCalendarDay(deal.id, day)) {
+                                      <span class="absolute bottom-1 w-1.5 h-1.5 bg-indigo-600 rounded-full"></span>
+                                    }
+                                  </button>
+                                }
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- Selected Day Details -->
+                          <div class="flex flex-col justify-between">
+                            <div class="space-y-2">
+                              <span class="text-[11px] font-bold text-slate-700 block mb-2 uppercase">
+                                Events: {{ getSelectedCalendarDay(deal.id) ? 'Day ' + getSelectedCalendarDay(deal.id) + ' June' : 'Select a day' }}
+                              </span>
+
+                              <div class="space-y-2">
+                                @for (m of getEventsOnDay(deal, getSelectedCalendarDay(deal.id) || 15); track m.id) {
+                                  <div class="bg-white border border-indigo-100 rounded-lg p-2.5 shadow-xs">
+                                    <div class="flex justify-between items-center mb-1">
+                                      <span class="font-bold text-slate-900 text-xs">{{ m.title }}</span>
+                                      <span class="text-[9px] text-slate-400 font-mono">{{ m.time }}</span>
+                                    </div>
+                                    <div class="text-[9px] text-slate-500 uppercase tracking-wider mb-1 font-sans">
+                                      Type: {{ m.type }} | Location: {{ m.location }}
+                                    </div>
+                                    <p class="text-[10px] text-slate-600 line-clamp-2 leading-relaxed font-sans">{{ m.summary }}</p>
+                                  </div>
+                                } @empty {
+                                  <div class="text-center py-8 text-slate-400 text-[11px] bg-white border border-slate-150 rounded-xl font-sans">
+                                    No meetings scheduled on this day.
+                                  </div>
+                                }
+                              </div>
+                            </div>
+
+                            <div class="text-[10px] bg-slate-100 text-slate-500 rounded-lg p-2.5 border border-slate-150 mt-4 leading-relaxed font-sans">
+                              💡 <strong>Tip:</strong> Meetings logged in the <strong>Meetings</strong> tab automatically populate this calendar view.
+                            </div>
+                          </div>
+                        </div>
+                      }
+
+                    </div>
+                  </div>
                 </div>
               }
 
@@ -920,8 +1314,202 @@ import { FormsModule } from '@angular/forms';
           </div>
 
           <div class="flex justify-end gap-2 pt-4 border-t border-slate-100">
-            <button (click)="taskModalOpen.set(false)" class="px-4 py-2 border border-slate-200 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-50">Cancel</button>
-            <button (click)="saveTask()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm">Save Task</button>
+            <button (click)="taskModalOpen.set(false)" class="px-4 py-2 border border-slate-200 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-50 font-sans">Cancel</button>
+            <button (click)="saveTask()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm font-sans">Save Task</button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Quick Add Activity Modal -->
+    @if (addActivityModalOpen()) {
+      <div class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-xl border border-slate-100 animate-in zoom-in-95 duration-200">
+          <h3 class="text-lg font-bold text-slate-950 capitalize">Log New {{ addActivityModalOpen()?.type === 'followups' ? 'Follow-up' : addActivityModalOpen()?.type }}</h3>
+          
+          <!-- Calls Fields -->
+          @if (addActivityModalOpen()?.type === 'calls') {
+            <div class="space-y-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Date</label>
+                <input [(ngModel)]="newActivityInput.calls.date" type="date" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600 font-mono">
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Duration (mins)</label>
+                  <input [(ngModel)]="newActivityInput.calls.duration" type="number" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600 font-mono">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Caller Name</label>
+                  <input [(ngModel)]="newActivityInput.calls.callerName" type="text" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Outcome</label>
+                <select [(ngModel)]="newActivityInput.calls.outcome" class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                  <option value="Interested">Interested</option>
+                  <option value="Follow-up">Follow-up</option>
+                  <option value="No Answer">No Answer</option>
+                  <option value="Closed">Closed</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Summary / Log</label>
+                <textarea [(ngModel)]="newActivityInput.calls.summary" rows="3" placeholder="Describe the discussion..." class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600"></textarea>
+              </div>
+            </div>
+          }
+
+          <!-- Emails Fields -->
+          @if (addActivityModalOpen()?.type === 'emails') {
+            <div class="space-y-3">
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Date</label>
+                  <input [(ngModel)]="newActivityInput.emails.date" type="date" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600 font-mono">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Direction</label>
+                  <select [(ngModel)]="newActivityInput.emails.direction" class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                    <option value="sent">Sent to Client</option>
+                    <option value="received">Received from Client</option>
+                  </select>
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">From</label>
+                  <input [(ngModel)]="newActivityInput.emails.from" type="email" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600 font-mono">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">To</label>
+                  <input [(ngModel)]="newActivityInput.emails.to" type="email" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600 font-mono">
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Subject</label>
+                <input [(ngModel)]="newActivityInput.emails.subject" type="text" placeholder="Subject..." class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600 font-semibold font-sans">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Email Body</label>
+                <textarea [(ngModel)]="newActivityInput.emails.body" rows="4" placeholder="Body copy..." class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600 font-mono text-xs"></textarea>
+              </div>
+            </div>
+          }
+
+          <!-- Meetings Fields -->
+          @if (addActivityModalOpen()?.type === 'meetings') {
+            <div class="space-y-3 overflow-y-auto max-h-[50vh]">
+              <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Meeting Title</label>
+                <input [(ngModel)]="newActivityInput.meetings.title" type="text" placeholder="e.g. Technical Kickoff" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600 font-semibold">
+              </div>
+              <div class="grid grid-cols-3 gap-2">
+                <div class="col-span-2">
+                  <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Date</label>
+                  <input [(ngModel)]="newActivityInput.meetings.date" type="date" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600 font-mono">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Time</label>
+                  <input [(ngModel)]="newActivityInput.meetings.time" type="text" placeholder="10:00" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600 font-mono">
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Type</label>
+                  <select [(ngModel)]="newActivityInput.meetings.type" class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                    <option value="teams">Teams Meeting</option>
+                    <option value="demo">Product Demo</option>
+                    <option value="in-person">In-person Meeting</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Location</label>
+                  <input [(ngModel)]="newActivityInput.meetings.location" type="text" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Attendees (Comma Separated)</label>
+                <input [(ngModel)]="newActivityInput.meetings.attendees" type="text" placeholder="Youssef, Karim Atlas" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600 font-medium">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Minutes / Summary</label>
+                <textarea [(ngModel)]="newActivityInput.meetings.summary" rows="3" placeholder="Key outcomes..." class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600"></textarea>
+              </div>
+            </div>
+          }
+
+          <!-- Recordings Fields -->
+          @if (addActivityModalOpen()?.type === 'recordings') {
+            <div class="space-y-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Date</label>
+                <input [(ngModel)]="newActivityInput.recordings.date" type="date" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600 font-mono">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Title</label>
+                <input [(ngModel)]="newActivityInput.recordings.title" type="text" placeholder="e.g. Scoping Call Recording" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600 font-semibold font-sans">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Duration (e.g. '45 mins')</label>
+                <input [(ngModel)]="newActivityInput.recordings.duration" type="text" placeholder="45 mins" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Teams Meeting Link</label>
+                <input [(ngModel)]="newActivityInput.recordings.meetingLink" type="text" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600 font-mono text-xs">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Recording Share Link</label>
+                <input [(ngModel)]="newActivityInput.recordings.recordingLink" type="text" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600 font-mono text-xs">
+              </div>
+            </div>
+          }
+
+          <!-- Notes Fields -->
+          @if (addActivityModalOpen()?.type === 'notes') {
+            <div class="space-y-3">
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Date</label>
+                  <input [(ngModel)]="newActivityInput.notes.date" type="date" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600 font-mono">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Author</label>
+                  <input [(ngModel)]="newActivityInput.notes.author" type="text" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Note Content</label>
+                <textarea [(ngModel)]="newActivityInput.notes.content" rows="4" placeholder="Write internal notes..." class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600"></textarea>
+              </div>
+            </div>
+          }
+
+          <!-- Follow-ups Fields -->
+          @if (addActivityModalOpen()?.type === 'followups') {
+            <div class="space-y-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Due Date</label>
+                <input [(ngModel)]="newActivityInput.followups.dueDate" type="date" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600 font-mono">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Reminder Title</label>
+                <input [(ngModel)]="newActivityInput.followups.title" type="text" placeholder="e.g. Call client for feedback" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600 font-semibold font-sans">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Assigned Owner</label>
+                <select [(ngModel)]="newActivityInput.followups.assignedTo" class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                  @for (user of state.users(); track user.name) {
+                    <option [value]="user.name">{{ user.name }} ({{ user.team }})</option>
+                  }
+                </select>
+              </div>
+            </div>
+          }
+
+          <div class="flex justify-end gap-2 pt-4 border-t border-slate-100 shrink-0">
+            <button type="button" (click)="addActivityModalOpen.set(null)" class="px-4 py-2 border border-slate-200 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-50 font-sans">Cancel</button>
+            <button type="button" (click)="saveActivityEntry()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm font-sans">Save Entry</button>
           </div>
         </div>
       </div>
@@ -939,6 +1527,23 @@ export class SalesComponent {
   poModalOpen = signal(false);
   setDeliveryDateModalOpen = signal(false);
   taskModalOpen = signal(false);
+
+  // Activity Hub Signals
+  activeDealTabs = signal<Record<string, string>>({});
+  addActivityModalOpen = signal<{ dealId: string; type: 'calls' | 'emails' | 'meetings' | 'recordings' | 'notes' | 'followups' } | null>(null);
+  selectedCalendarDay = signal<Record<string, number>>({});
+
+  calendarDays = Array.from({ length: 30 }, (_, i) => i + 1);
+  calendarHeaders = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+  newActivityInput = {
+    calls: { date: '2026-06-27', duration: 15, callerName: 'Youssef El Alami', summary: '', outcome: 'Interested' },
+    emails: { date: '2026-06-27', from: 'youssef@acme.ma', to: 'contact@atlasdigital.ma', subject: '', body: '', direction: 'sent' as const },
+    meetings: { date: '2026-06-27', time: '10:00', title: '', type: 'teams' as const, attendees: '', location: 'Teams Meeting', summary: '' },
+    recordings: { date: '2026-06-27', title: '', meetingLink: 'https://teams.microsoft.com/l/meetup-join/123456', recordingLink: 'https://share.acme.ma/rec/recording-06-27', duration: '30 mins' },
+    notes: { date: '2026-06-27', author: 'Youssef El Alami', content: '' },
+    followups: { dueDate: '2026-06-27', title: '', assignedTo: 'Omar (Finance)' }
+  };
 
   // Modal data properties
   selectedTask = signal<Task | null>(null);
@@ -1371,6 +1976,113 @@ export class SalesComponent {
       relatedTo: this.newTaskData.relatedTo || undefined
     });
     this.taskModalOpen.set(false);
+  }
+
+  // Activity Hub Helpers
+  getDealTab(dealId: string): string {
+    return this.activeDealTabs()[dealId] || 'calls';
+  }
+
+  setDealTab(dealId: string, tab: string): void {
+    this.activeDealTabs.update(tabs => ({ ...tabs, [dealId]: tab }));
+  }
+
+  getLinkedTasksCount(dealTitle: string): number {
+    return this.state.tasks().filter(t => t.relatedTo === 'Deal: ' + dealTitle || t.relatedTo === dealTitle).length;
+  }
+
+  getLinkedTasks(dealTitle: string): Task[] {
+    return this.state.tasks().filter(t => t.relatedTo === 'Deal: ' + dealTitle || t.relatedTo === dealTitle);
+  }
+
+  openCreateTaskForDeal(dealTitle: string): void {
+    this.newTaskData = {
+      title: '',
+      description: '',
+      assignedTeam: 'Operations',
+      assignedTo: '',
+      relatedTo: 'Deal: ' + dealTitle
+    };
+    this.taskModalOpen.set(true);
+  }
+
+  toggleTaskStatus(taskId: string, currentStatus: string): void {
+    const nextStatus = currentStatus === 'Completed' ? 'Pending' : 'Completed';
+    this.state.updateTaskStatus(taskId, nextStatus);
+  }
+
+  toggleFollowUpStatus(dealId: string, followUpId: string, currentStatus: string): void {
+    const nextStatus = currentStatus === 'done' ? 'pending' : 'done';
+    this.state.updateFollowUpStatus(dealId, followUpId, nextStatus);
+  }
+
+  openAddActivityModal(dealId: string, type: 'calls' | 'emails' | 'meetings' | 'recordings' | 'notes' | 'followups') {
+    this.addActivityModalOpen.set({ dealId, type });
+    const me = this.state.users().find(u => u.team === 'Sales')?.name || 'Youssef El Alami';
+    const deal = this.state.deals().find(d => d.id === dealId);
+    const clientEmail = deal?.contactEmail || 'contact@client.ma';
+    
+    this.newActivityInput = {
+      calls: { date: '2026-06-27', duration: 15, callerName: me, summary: '', outcome: 'Interested' },
+      emails: { date: '2026-06-27', from: 'youssef@acme.ma', to: clientEmail, subject: 'Follow up: ' + (deal?.title || ''), body: '', direction: 'sent' },
+      meetings: { date: '2026-06-27', time: '10:00', title: '', type: 'teams', attendees: me, location: 'Teams Meeting', summary: '' },
+      recordings: { date: '2026-06-27', title: 'Meeting Recording', meetingLink: 'https://teams.microsoft.com/l/meetup-join/123456', recordingLink: 'https://share.acme.ma/rec/recording-06-27', duration: '30 mins' },
+      notes: { date: '2026-06-27', author: me, content: '' },
+      followups: { dueDate: '2026-06-27', title: '', assignedTo: me }
+    };
+  }
+
+  saveActivityEntry() {
+    const modal = this.addActivityModalOpen();
+    if (!modal) return;
+
+    const { dealId, type } = modal;
+    if (type === 'calls') {
+      this.state.addCallLog(dealId, { ...this.newActivityInput.calls });
+    } else if (type === 'emails') {
+      this.state.addEmailLog(dealId, { ...this.newActivityInput.emails });
+    } else if (type === 'meetings') {
+      const atts = this.newActivityInput.meetings.attendees.split(',').map(s => s.trim()).filter(Boolean);
+      this.state.addMeeting(dealId, {
+        ...this.newActivityInput.meetings,
+        attendees: atts
+      });
+    } else if (type === 'recordings') {
+      this.state.addRecording(dealId, { ...this.newActivityInput.recordings });
+    } else if (type === 'notes') {
+      this.state.addNote(dealId, { ...this.newActivityInput.notes });
+    } else if (type === 'followups') {
+      this.state.addFollowUp(dealId, {
+        ...this.newActivityInput.followups,
+        status: 'pending'
+      });
+    }
+
+    this.addActivityModalOpen.set(null);
+  }
+
+  selectCalendarDay(dealId: string, day: number): void {
+    this.selectedCalendarDay.update(days => ({ ...days, [dealId]: day }));
+  }
+
+  getSelectedCalendarDay(dealId: string): number {
+    return this.selectedCalendarDay()[dealId] || 15; // default to 15th
+  }
+
+  isSelectedCalendarDay(dealId: string, day: number): boolean {
+    return this.getSelectedCalendarDay(dealId) === day;
+  }
+
+  hasEventsOnDay(deal: Deal, day: number): boolean {
+    if (!deal.activityLog || !deal.activityLog.meetings) return false;
+    const dateStr = `2026-06-${String(day).padStart(2, '0')}`;
+    return deal.activityLog.meetings.some(m => m.date === dateStr);
+  }
+
+  getEventsOnDay(deal: Deal, day: number): any[] {
+    if (!deal.activityLog || !deal.activityLog.meetings) return [];
+    const dateStr = `2026-06-${String(day).padStart(2, '0')}`;
+    return deal.activityLog.meetings.filter(m => m.date === dateStr);
   }
 
   // Convert a Confirmed Proposal → Deal + Prospect → Customer
