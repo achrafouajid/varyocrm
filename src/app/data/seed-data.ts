@@ -1,3 +1,5 @@
+import type { RoleId } from '../services/crm-state.service';
+
 const AVATAR_COLORS = [
   '#7F77DD',  // purple
   '#1D9E75',  // teal
@@ -34,7 +36,7 @@ function mapTeamIdToTeam(teamId: string | null): 'Sales' | 'Operations' | 'Finan
   return null;
 }
 
-const rawUsers = [
+const rawUsers: Array<{ id: string; displayName: string; email: string; roleId: RoleId; teamId: string | null; jobTitle: string }> = [
   { id: 'usr_ahmed', displayName: 'Ahmed Bennani', email: 'a.bennani@acg.ma', roleId: 'manager', teamId: 'team_sales', jobTitle: 'Sales Director' },
   { id: 'usr_fatima', displayName: 'Fatima Zahra El Idrissi', email: 'fz.elidrissi@acg.ma', roleId: 'salesperson', teamId: 'team_sales', jobTitle: 'Senior Account Executive' },
   { id: 'usr_karim', displayName: 'Karim Tazi', email: 'k.tazi@acg.ma', roleId: 'salesperson', teamId: 'team_sales', jobTitle: 'Account Executive' },

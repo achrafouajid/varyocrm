@@ -10,7 +10,7 @@ import { MatIconModule } from '@angular/material/icon';
 @Component({
   selector: 'app-teams',
   standalone: true,
-  imports: [CommonModule, FormsModule, UserAvatarComponent, RoleBadgeComponent, AvatarStackComponent, MatIconModule],
+  imports: [CommonModule, FormsModule, UserAvatarComponent, AvatarStackComponent, MatIconModule],
   styles: [`
     .panel {
       max-height: 0;
