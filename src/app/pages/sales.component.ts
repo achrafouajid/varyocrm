@@ -1518,7 +1518,7 @@ import { FormsModule } from '@angular/forms';
 })
 export class SalesComponent {
   state = inject(CrmStateService);
-  activeTab = signal<'deals' | 'proposals' | 'tasks' | 'pos'>('deals');
+  activeTab = signal<'leads' | 'deals' | 'proposals' | 'tasks' | 'pos'>('leads');
 
   // Modals state
   assignModalOpen = signal(false);
@@ -1527,6 +1527,7 @@ export class SalesComponent {
   poModalOpen = signal(false);
   setDeliveryDateModalOpen = signal(false);
   taskModalOpen = signal(false);
+  leadModalOpen = signal(false);
 
   // Activity Hub Signals
   activeDealTabs = signal<Record<string, string>>({});
@@ -1546,6 +1547,16 @@ export class SalesComponent {
   };
 
   // Modal data properties
+  newLeadData = {
+    name: '',
+    email: '',
+    phone: '',
+    city: 'Casablanca',
+    score: 50,
+    source: 'Website form',
+    assignedTo: ''
+  };
+
   selectedTask = signal<Task | null>(null);
   reassignedUser = '';
 
@@ -2122,5 +2133,38 @@ export class SalesComponent {
 
     // Switch to Deals tab so the user sees the result immediately
     this.activeTab.set('deals');
+  }
+
+  openCreateLeadModal() {
+    this.newLeadData = {
+      name: '',
+      email: '',
+      phone: '',
+      city: 'Casablanca',
+      score: 50,
+      source: 'Website form',
+      assignedTo: ''
+    };
+    this.leadModalOpen.set(true);
+  }
+
+  saveLead() {
+    if (this.newLeadData.name.trim()) {
+      this.state.addPartner({
+        name: this.newLeadData.name,
+        type: 'Lead',
+        email: this.newLeadData.email,
+        phone: this.newLeadData.phone,
+        city: this.newLeadData.city,
+        score: this.newLeadData.score,
+        source: this.newLeadData.source as any,
+        assignedTo: this.newLeadData.assignedTo || undefined
+      });
+      this.leadModalOpen.set(false);
+    }
+  }
+
+  convertLeadToProspect(leadId: string) {
+    this.state.convertLeadToProspect(leadId);
   }
 }

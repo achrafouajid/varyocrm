@@ -176,7 +176,7 @@ const AVATAR_COLORS = [
   '#D4537E'   // pink
 ];
 
-export type PartnerType = 'Customer' | 'Prospect' | 'Vendor';
+export type PartnerType = 'Customer' | 'Prospect' | 'Vendor' | 'Lead';
 
 export interface Customer360Contact {
   name: string;
@@ -222,8 +222,10 @@ export interface Customer360View {
   tickets: Customer360Ticket[];
   invoices: Customer360Invoice[];
 }
+
 export type TaskStatus = 'Pending' | 'In Progress' | 'Completed';
-export type DealStage = 'New' | 'Proposal sent' | 'Confirmed' | 'Awaiting Invoicing' | 'Invoiced' | 'Closed Won' | 'Closed Lost';
+export type ProposalStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Proposal Sent' | 'Negotiation' | 'Won / Lost';
+export type DealStage = 'New' | 'Proposal sent' | 'Confirmed' | 'Awaiting Invoicing' | 'Invoiced' | 'Closed Won' | 'Closed Lost' | ProposalStage;
 export type InvoiceStatus = 'Pending' | 'Paid' | 'Overdue' | 'Draft';
 export type CampaignType = 'WhatsApp' | 'SMS' | 'Email';
 export type TicketStatus = 'Open' | 'In Progress' | 'Resolved' | 'Closed';
@@ -521,6 +523,9 @@ export interface Partner {
   phone?: string;
   comments?: string;
   city?: string;
+  score?: number;
+  source?: 'Website form' | 'Trade show' | 'LinkedIn' | 'Marketing campaign' | 'Referral';
+  assignedTo?: string;
 }
 
 export interface Task {
@@ -550,6 +555,12 @@ export interface Proposal {
   status: 'Draft' | 'Sent' | 'Confirmed' | 'Rejected';
   templateId?: string;
   lines: ProposalLine[];
+  deliveryMethod?: 'Email' | 'WhatsApp' | 'SMS';
+  opportunityValue?: number;
+  closingProbability?: number;
+  expectedClosingDate?: string;
+  competitors?: string[];
+  stage?: ProposalStage;
 }
 
 export interface CallLog {
@@ -669,7 +680,7 @@ export interface PurchaseOrder {
   amount: number;
   status: 'Draft' | 'Sent' | 'Delivered' | 'Invoiced';
   deliveryDate?: string;
-  lines: { product: string; qty: number; cost: number }[];
+  lines: { product: string; description?: string; qty: number; cost: number; type?: 'software' | 'hardware' | 'service' }[];
   sentVia?: string;
 }
 
@@ -700,7 +711,19 @@ export interface Ticket {
   assignedTo: string;
   status: TicketStatus;
   priority: 'Low' | 'Medium' | 'High';
+  type?: string;
+  resolution?: string;
 }
+
+export interface ActivityLog {
+  id: string;
+  targetId: string;
+  type: 'Call' | 'Email' | 'Meeting' | 'Note' | 'Task';
+  description: string;
+  timestamp: string;
+  link?: string;
+}
+
 
 export type RecordType = 'Organization' | 'Individual';
 export type OrgType = 'Headquarter' | 'Subsidiary' | 'Branch';
@@ -715,6 +738,7 @@ export interface CustomerAddress {
   postalCode: string;
   city: string;
   isPrimary: boolean;
+  country?: string;
 }
 
 export interface CustomerPersonnel {
@@ -1260,6 +1284,8 @@ export class CrmStateService {
     { id: 'tk-p5-1', title: 'ERP Login Issue', partnerId: 'p5', assignedTo: 'Fatima Chraibi', status: 'Open', priority: 'High' },
     { id: 'tk-p5-2', title: 'Hardware Delivery Delay', partnerId: 'p5', assignedTo: 'Khadija (Ops Manager)', status: 'Resolved', priority: 'Medium' }
   ]);
+
+  ticketTypes = signal<string[]>(['Software issue', 'Broken product', 'Billing issue']);
 
   customerCards = signal<CustomerCard[]>([
     {
@@ -2160,6 +2186,12 @@ export class CrmStateService {
     }));
   }
 
+  activityLogs = signal<ActivityLog[]>([
+    { id: 'act1', targetId: 'd1', type: 'Call', description: 'Initial discovery call with Atlas team.', timestamp: '2026-06-20' },
+    { id: 'act2', targetId: 'd1', type: 'Email', description: 'Sent technical proposal and pricing breakdown.', timestamp: '2026-06-21' }
+  ]);
+
+
 
   // Derived states
   customers = computed(() => this.partners().filter(p => p.type === 'Customer'));
@@ -2287,6 +2319,12 @@ export class CrmStateService {
     );
   }
 
+  convertLeadToProspect(partnerId: string) {
+    this.partners.update(partners =>
+      partners.map(p => p.id === partnerId ? { ...p, type: 'Prospect' } : p)
+    );
+  }
+
   getCustomerCard(partnerId: string): CustomerCard | undefined {
     return this.customerCards().find(c => c.partnerId === partnerId);
   }
@@ -2373,6 +2411,7 @@ export class CrmStateService {
     const newId = 'p' + (this.partners().length + 1);
     const newPartner = { ...partner, id: newId };
     this.partners.update(pList => [...pList, newPartner]);
+
     return newPartner;
   }
 
@@ -2409,6 +2448,12 @@ export class CrmStateService {
     );
   }
 
+  updateProposal(id: string, data: Partial<Proposal>) {
+    this.proposals.update(proposals =>
+      proposals.map(p => p.id === id ? { ...p, ...data } : p)
+    );
+  }
+
   addDeal(deal: Omit<Deal, 'id'>) {
     const newId = 'd' + (this.deals().length + 1);
     const newDeal = { ...deal, id: newId };
@@ -2419,12 +2464,18 @@ export class CrmStateService {
   }
 
   updateDealStage(dealId: string, stage: DealStage) {
+    let updatedDeal: Deal | undefined;
     this.deals.update(deals =>
-      deals.map(d => d.id === dealId ? { ...d, stage } : d)
+      deals.map(d => {
+        if (d.id === dealId) {
+          updatedDeal = { ...d, stage };
+          return updatedDeal;
+        }
+        return d;
+      })
     );
-    const updatedDeal = this.deals().find(d => d.id === dealId);
     if (updatedDeal) {
-      setTimeout(() => this.evaluateRules('DealUpdated', updatedDeal as unknown as Record<string, any>, `Deal: ${updatedDeal.title}`), 0);
+      setTimeout(() => this.evaluateRules('DealUpdated', (updatedDeal as Deal) as unknown as Record<string, any>, `Deal: ${(updatedDeal as Deal).title}`), 0);
     }
   }
 
@@ -2562,9 +2613,12 @@ export class CrmStateService {
 
 
 
-  addPurchaseOrder(po: Omit<PurchaseOrder, 'id'>) {
+  addPurchaseOrder(po: Omit<PurchaseOrder, 'id'>, vendorId?: string) {
     const newId = 'po' + (this.purchaseOrders().length + 1);
     const newPo = { ...po, id: newId };
+    if (vendorId) {
+      newPo.vendorId = vendorId;
+    }
     this.purchaseOrders.update(pos => [...pos, newPo]);
     return newPo;
   }
@@ -2594,6 +2648,32 @@ export class CrmStateService {
       invs.map(i => i.id === invoiceId ? { ...i, status } : i)
     );
   }
+
+  addTicket(ticket: Omit<Ticket, 'id'>) {
+    const newId = 'tk' + (this.tickets().length + 1);
+    const newTicket = { ...ticket, id: newId };
+    this.tickets.update(tList => [...tList, newTicket]);
+    return newTicket;
+  }
+
+  updateTicket(id: string, data: Partial<Ticket>) {
+    this.tickets.update(tickets =>
+      tickets.map(t => t.id === id ? { ...t, ...data } : t)
+    );
+  }
+
+  deleteTicket(id: string) {
+    this.tickets.update(tickets => tickets.filter(t => t.id !== id));
+  }
+
+  addActivityLog(log: Omit<ActivityLog, 'id'>) {
+    const newId = 'act' + (this.activityLogs().length + 1);
+    const newLog = { ...log, id: newId };
+    this.activityLogs.update(logs => [...logs, newLog]);
+    return newLog;
+  }
+
+
 
   // Walkthrough Wizard State
   walkthroughStep = signal<number>(0);

@@ -495,7 +495,9 @@ export class CustomerCardComponent implements OnInit {
   isValid(): boolean {
     const f = this.form();
     if (!f.name.trim()) return false;
-    if (f.ice && f.ice.length !== 15) return false;
+    if (!f.ice || f.ice.length !== 15) return false;
+    if (!f.ifField || !f.ifField.trim()) return false;
+    if (!f.rc || !f.rc.trim()) return false;
     return true;
   }
 
