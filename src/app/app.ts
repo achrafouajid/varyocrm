@@ -1,10 +1,11 @@
-import { Component, signal, ElementRef, inject, OnDestroy, OnInit, computed, HostListener, viewChild } from '@angular/core';
+import { Component, signal, ElementRef, inject, OnDestroy, OnInit, computed, HostListener, viewChild, ViewChild } from '@angular/core';
 import { RouterOutlet, RouterLink, Router, NavigationEnd } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon'
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CrmStateService } from './services/crm-state.service';
 import { UserAvatarComponent } from './shared/user-avatar.component';
+import { SupportModalComponent } from './shared/support-modal.component';
 import { filter } from 'rxjs/operators';
 
 interface NavItem {
@@ -69,7 +70,7 @@ const SEARCH_ITEMS: SearchItem[] = [
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, MatIconModule, CommonModule, FormsModule, UserAvatarComponent],
+  imports: [RouterOutlet, RouterLink, MatIconModule, CommonModule, FormsModule, UserAvatarComponent, SupportModalComponent],
   styles: [`
     .sidebar {
       width: 64px;
@@ -185,8 +186,16 @@ const SEARCH_ITEMS: SearchItem[] = [
           }
         </nav>
 
-        <!-- Bottom: User Profile -->
-        <div class="shrink-0 p-2 border-t border-slate-100">
+        <!-- Bottom: Help + User Profile -->
+        <div class="shrink-0 p-2 border-t border-slate-100 space-y-0.5">
+          <button
+            (click)="openSupportModal()"
+            class="w-full flex items-center gap-3 px-2.5 py-2 rounded-xl text-slate-500 hover:bg-indigo-50 hover:text-indigo-600 transition-all duration-150 cursor-pointer"
+            title="Help & Support"
+          >
+            <mat-icon class="text-[20px] w-5 h-5 shrink-0">help</mat-icon>
+            <span class="nav-label text-sm font-semibold tracking-tight">Help & Support</span>
+          </button>
           @let currentUser = getCurrentUser();
           @if (currentUser) {
             <a
@@ -280,11 +289,15 @@ const SEARCH_ITEMS: SearchItem[] = [
       </div>
 
     </div>
+
+    <app-support-modal></app-support-modal>
   `
 })
 export class App implements OnInit, OnDestroy {
   state = inject(CrmStateService);
   private router = inject(Router);
+
+  @ViewChild(SupportModalComponent) supportModal!: SupportModalComponent;
 
   // Global search
   readonly searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');
@@ -368,6 +381,10 @@ export class App implements OnInit, OnDestroy {
     this.searchQuery.set('');
     this.showSearchResults.set(false);
     this.searchInput()?.nativeElement.focus();
+  }
+
+  openSupportModal() {
+    this.supportModal?.openModal();
   }
 
   /** True when user has clicked the toggle to permanently pin the sidebar open */
