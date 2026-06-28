@@ -65,7 +65,7 @@ import { FormsModule } from '@angular/forms';
         <div class="lg:hidden border-b border-slate-200">
           <nav class="flex gap-4 -mb-px overflow-x-auto pb-2">
             <button 
-              (click)="activeTab.set('Lead')" 
+            (click)="activeTab.set('Lead'); state.breadcrumbLabel.set('Leads')" 
               [class]="activeTab() === 'Lead' ? 'border-indigo-600 text-indigo-600 font-semibold' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'"
               class="whitespace-nowrap pb-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2">
               <mat-icon class="text-[18px] w-[18px] h-[18px]">filter_alt</mat-icon>
@@ -73,7 +73,7 @@ import { FormsModule } from '@angular/forms';
               <span class="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full text-xs">{{ state.leads().length }}</span>
             </button>
             <button 
-              (click)="activeTab.set('Customer')" 
+            (click)="activeTab.set('Customer'); state.breadcrumbLabel.set('Customers')" 
               [class]="activeTab() === 'Customer' ? 'border-indigo-600 text-indigo-600 font-semibold' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'"
               class="whitespace-nowrap pb-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2">
               <mat-icon class="text-[18px] w-[18px] h-[18px]">people</mat-icon>
@@ -81,7 +81,7 @@ import { FormsModule } from '@angular/forms';
               <span class="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full text-xs">{{ state.customers().length }}</span>
             </button>
             <button 
-              (click)="activeTab.set('Prospect')" 
+            (click)="activeTab.set('Prospect'); state.breadcrumbLabel.set('Prospects')" 
               [class]="activeTab() === 'Prospect' ? 'border-indigo-600 text-indigo-600 font-semibold' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'"
               class="whitespace-nowrap pb-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2">
               <mat-icon class="text-[18px] w-[18px] h-[18px]">person_search</mat-icon>
@@ -89,7 +89,7 @@ import { FormsModule } from '@angular/forms';
               <span class="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full text-xs">{{ state.prospects().length }}</span>
             </button>
             <button 
-              (click)="activeTab.set('Vendor')" 
+            (click)="activeTab.set('Vendor'); state.breadcrumbLabel.set('Vendors')" 
               [class]="activeTab() === 'Vendor' ? 'border-indigo-600 text-indigo-600 font-semibold' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'"
               class="whitespace-nowrap pb-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2">
               <mat-icon class="text-[18px] w-[18px] h-[18px]">store</mat-icon>
@@ -312,6 +312,16 @@ export class PartnersComponent {
   router = inject(Router);
   activeTab = signal<'Lead' | 'Customer' | 'Prospect' | 'Vendor'>('Lead');
   showCreateModal = signal(false);
+
+  constructor() {
+    const tab = this.state.navigateTab();
+    if (tab) {
+      this.activeTab.set(tab as 'Lead' | 'Customer' | 'Prospect' | 'Vendor');
+      this.state.navigateTab.set(null);
+    }
+    const label = this.activeTab() === 'Lead' ? 'Leads' : this.activeTab() === 'Customer' ? 'Customers' : this.activeTab() === 'Prospect' ? 'Prospects' : 'Vendors';
+    this.state.breadcrumbLabel.set(label);
+  }
 
   openCreateModal() {
     this.newPartner.id = undefined;

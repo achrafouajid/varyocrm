@@ -1,15 +1,16 @@
-import { Component, signal, ElementRef, inject, OnDestroy } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
-import { MatIconModule } from '@angular/material/icon';
+import { Component, signal, ElementRef, inject, OnDestroy, OnInit, computed, HostListener, viewChild } from '@angular/core';
+import { RouterOutlet, RouterLink, Router, NavigationEnd } from '@angular/router';
+import { MatIconModule } from '@angular/material/icon'
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { CrmStateService } from './services/crm-state.service';
 import { UserAvatarComponent } from './shared/user-avatar.component';
+import { filter } from 'rxjs/operators';
 
 interface NavItem {
   label: string;
   icon: string;
   route: string;
-  children?: { label: string; icon: string; route: string }[];
 }
 
 const NAV_ITEMS: NavItem[] = [
@@ -27,9 +28,48 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Settings', icon: 'settings', route: '/settings' },
 ];
 
+interface SearchItem {
+  mainMenu: string;
+  mainIcon: string;
+  mainRoute: string;
+  submenu?: string;
+  subIcon?: string;
+  tab?: string;
+  action: string;
+  keywords: string;
+}
+
+const SEARCH_ITEMS: SearchItem[] = [
+  { mainMenu: 'Dashboard', mainIcon: 'home', mainRoute: '/', action: 'View your customizable daily summary and KPIs', keywords: 'dashboard home kpi summary' },
+  { mainMenu: 'Sales', mainIcon: 'monetization_on', mainRoute: '/sales', submenu: 'Deals', subIcon: 'monetization_on', tab: 'deals', action: 'Manage deals and sales pipeline', keywords: 'sales deals pipeline opportunities' },
+  { mainMenu: 'Sales', mainIcon: 'monetization_on', mainRoute: '/sales', submenu: 'Proposals', subIcon: 'description', tab: 'proposals', action: 'Create and manage proposals', keywords: 'sales proposals quotes estimates' },
+  { mainMenu: 'Sales', mainIcon: 'monetization_on', mainRoute: '/sales', submenu: 'Purchase Orders', subIcon: 'shopping_cart', tab: 'pos', action: 'Generate and track purchase orders', keywords: 'sales purchase orders po procurement' },
+  { mainMenu: 'Marketing', mainIcon: 'campaign', mainRoute: '/marketing', submenu: 'Email Campaigns', subIcon: 'email', tab: 'Email', action: 'Launch and manage email campaigns', keywords: 'marketing email campaigns' },
+  { mainMenu: 'Marketing', mainIcon: 'campaign', mainRoute: '/marketing', submenu: 'WhatsApp Campaigns', subIcon: 'chat', tab: 'WhatsApp', action: 'Send WhatsApp campaigns to prospects', keywords: 'marketing whatsapp campaigns' },
+  { mainMenu: 'Marketing', mainIcon: 'campaign', mainRoute: '/marketing', submenu: 'SMS Campaigns', subIcon: 'sms', tab: 'SMS', action: 'Send SMS campaigns to contacts', keywords: 'marketing sms campaigns' },
+  { mainMenu: 'Leads', mainIcon: 'person_search', mainRoute: '/leads', action: 'Qualify leads, track interactions, and manage pipeline', keywords: 'leads qualification pipeline opportunities tracking' },
+  { mainMenu: 'Tasks', mainIcon: 'task_alt', mainRoute: '/tasks', action: 'View tasks in list view', keywords: 'tasks assignments list view' },
+  { mainMenu: 'Tasks', mainIcon: 'view_column', mainRoute: '/tasks', submenu: 'Kanban Board', subIcon: 'view_column', tab: 'kanban', action: 'View tasks in Kanban board', keywords: 'tasks kanban board drag drop columns' },
+  { mainMenu: 'Tickets', mainIcon: 'support_agent', mainRoute: '/tickets', action: 'Manage customer support tickets and service requests', keywords: 'tickets support customer service' },
+  { mainMenu: 'Analytics', mainIcon: 'bar_chart', mainRoute: '/analytics', action: 'View performance indicators, forecasts, and sales insights', keywords: 'analytics reports insights forecasts charts' },
+  { mainMenu: 'Partners', mainIcon: 'handshake', mainRoute: '/partners', submenu: 'Leads', subIcon: 'filter_alt', tab: 'Lead', action: 'View and manage partner leads', keywords: 'partners leads directory' },
+  { mainMenu: 'Partners', mainIcon: 'handshake', mainRoute: '/partners', submenu: 'Customers', subIcon: 'people', tab: 'Customer', action: 'View customer profiles and account details', keywords: 'partners customers clients' },
+  { mainMenu: 'Partners', mainIcon: 'handshake', mainRoute: '/partners', submenu: 'Prospects', subIcon: 'person_search', tab: 'Prospect', action: 'Track and convert prospects to customers', keywords: 'partners prospects conversions' },
+  { mainMenu: 'Partners', mainIcon: 'handshake', mainRoute: '/partners', submenu: 'Vendors', subIcon: 'store', tab: 'Vendor', action: 'Manage vendor and supplier directory', keywords: 'partners vendors suppliers' },
+  { mainMenu: 'Finance', mainIcon: 'account_balance', mainRoute: '/finance', submenu: 'Customer Invoices', subIcon: 'receipt', tab: 'Customer', action: 'Manage customer invoices and billing', keywords: 'finance invoices customers billing' },
+  { mainMenu: 'Finance', mainIcon: 'account_balance', mainRoute: '/finance', submenu: 'Vendor Invoices', subIcon: 'receipt_long', tab: 'Vendor', action: 'Manage vendor invoices and payables', keywords: 'finance invoices vendors billing' },
+  { mainMenu: 'Finance', mainIcon: 'account_balance', mainRoute: '/finance', submenu: 'Recovery', subIcon: 'healing', tab: 'Recovery', action: 'Send payment reminders for overdue invoices', keywords: 'finance recovery reminders overdue invoices' },
+  { mainMenu: 'Automation', mainIcon: 'smart_toy', mainRoute: '/automation', action: 'Create and manage workflow automation rules', keywords: 'automation workflows rules triggers conditions' },
+  { mainMenu: 'Groups', mainIcon: 'group_work', mainRoute: '/groups', action: 'Collaborate with teams via chat, meetings, and file sharing', keywords: 'groups chat meetings collaboration teams' },
+  { mainMenu: 'Settings', mainIcon: 'settings', mainRoute: '/settings/organization', submenu: 'Organization', subIcon: 'business', action: 'Configure organization profile and settings', keywords: 'settings organization company profile' },
+  { mainMenu: 'Settings', mainIcon: 'settings', mainRoute: '/settings/users', submenu: 'Users', subIcon: 'people', action: 'Manage user accounts and permissions', keywords: 'settings users accounts permissions roles' },
+  { mainMenu: 'Settings', mainIcon: 'settings', mainRoute: '/settings/teams', submenu: 'Teams', subIcon: 'groups', action: 'Configure teams, departments, and assignments', keywords: 'settings teams departments groups' },
+  { mainMenu: 'Settings', mainIcon: 'settings', mainRoute: '/settings/groups', submenu: 'Groups', subIcon: 'forum', action: 'Manage collaboration group settings', keywords: 'settings groups collaboration' },
+];
+
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, MatIconModule, CommonModule, UserAvatarComponent],
+  imports: [RouterOutlet, RouterLink, MatIconModule, CommonModule, FormsModule, UserAvatarComponent],
   styles: [`
     .sidebar {
       width: 64px;
@@ -52,30 +92,7 @@ const NAV_ITEMS: NavItem[] = [
       opacity: 1;
       max-width: 160px;
     }
-    .sub-nav {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 220ms cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .sub-nav.open {
-      max-height: 200px;
-    }
-    .chevron {
-      opacity: 0;
-      max-width: 0;
-      overflow: hidden;
-      transition: opacity 140ms cubic-bezier(0.4, 0, 0.2, 1),
-                  max-width 180ms cubic-bezier(0.4, 0, 0.2, 1),
-                  transform 220ms cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .sidebar.expanded .chevron {
-      opacity: 1;
-      max-width: 20px;
-    }
-    .chevron.rotated {
-      transform: rotate(180deg);
-    }
-    /* Tooltip — only visible when collapsed and NOT hover-expanding */
+
     .sidebar-tooltip {
       position: absolute;
       left: calc(100% + 10px);
@@ -96,7 +113,6 @@ const NAV_ITEMS: NavItem[] = [
     .sidebar:not(.expanded) .nav-item-wrap:hover .sidebar-tooltip {
       opacity: 1;
     }
-    /* Hover-progress ring on the icon badge when collapsed */
     .sidebar:not(.expanded) .nav-item-wrap:hover .icon-badge {
       background: #eef2ff;
       color: #4f46e5;
@@ -107,7 +123,6 @@ const NAV_ITEMS: NavItem[] = [
     .toggle-btn.expanded {
       transform: rotate(180deg);
     }
-    /* Hover delay indicator bar */
     .hover-bar {
       position: absolute;
       bottom: 0;
@@ -155,50 +170,18 @@ const NAV_ITEMS: NavItem[] = [
         <!-- Nav Items -->
         <nav class="flex-1 overflow-y-auto overflow-x-hidden py-3 px-2 flex flex-col gap-0.5">
           @for (item of navItems; track item.route + item.label) {
-            @if (item.children) {
-              <!-- Expandable group -->
-              <div class="nav-item-wrap relative">
-                <button
-                  (click)="toggleSubnav(item.label)"
-                  class="w-full flex items-center gap-3 px-2.5 py-2.5 rounded-xl text-slate-500 hover:bg-indigo-50 hover:text-indigo-600 transition-all duration-150"
-                  [class.bg-indigo-50]="openSubnav() === item.label"
-                  [class.text-indigo-700]="openSubnav() === item.label"
-                >
-                  <mat-icon class="icon-badge text-[20px] w-5 h-5 shrink-0 rounded-lg transition-colors duration-150">{{ item.icon }}</mat-icon>
-                  <span class="nav-label text-sm font-semibold tracking-tight">{{ item.label }}</span>
-                  <mat-icon class="chevron text-[18px] ml-auto shrink-0" [class.rotated]="openSubnav() === item.label">expand_more</mat-icon>
-                </button>
-                <div class="sidebar-tooltip">{{ item.label }}</div>
-                <div class="hover-bar"></div>
-                <!-- Sub items -->
-                <div class="sub-nav pl-2" [class.open]="openSubnav() === item.label && isExpanded()">
-                  @for (child of item.children; track child.label) {
-                    <a
-                      [routerLink]="child.route"
-                      class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-slate-500 hover:bg-indigo-50 hover:text-indigo-600 transition-all duration-150 text-sm font-medium mt-0.5"
-                    >
-                      <mat-icon class="text-[16px] w-4 h-4 shrink-0">{{ child.icon }}</mat-icon>
-                      <span>{{ child.label }}</span>
-                    </a>
-                  }
-                </div>
-              </div>
-            } @else {
-              <!-- Simple link -->
-              <div class="nav-item-wrap relative">
-                <a
-                  [routerLink]="item.route"
-                  routerLinkActive="bg-indigo-50 !text-indigo-700 font-semibold"
-                  [routerLinkActiveOptions]="item.route === '/' ? { exact: true } : {}"
-                  class="flex items-center gap-3 px-2.5 py-2.5 rounded-xl text-slate-500 hover:bg-indigo-50 hover:text-indigo-600 transition-all duration-150"
-                >
-                  <mat-icon class="icon-badge text-[20px] w-5 h-5 shrink-0 rounded-lg transition-colors duration-150">{{ item.icon }}</mat-icon>
-                  <span class="nav-label text-sm font-semibold tracking-tight">{{ item.label }}</span>
-                </a>
-                <div class="sidebar-tooltip">{{ item.label }}</div>
-                <div class="hover-bar"></div>
-              </div>
-            }
+            <div class="nav-item-wrap relative">
+              <a
+                [routerLink]="item.route"
+                class="flex items-center gap-3 px-2.5 py-2.5 rounded-xl transition-all duration-150 cursor-pointer"
+                [class]="isNavActive(item) ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-slate-500 hover:bg-indigo-50 hover:text-indigo-600'"
+              >
+                <mat-icon class="icon-badge text-[20px] w-5 h-5 shrink-0 rounded-lg transition-colors duration-150">{{ item.icon }}</mat-icon>
+                <span class="nav-label text-sm font-semibold tracking-tight">{{ item.label }}</span>
+              </a>
+              <div class="sidebar-tooltip">{{ item.label }}</div>
+              <div class="hover-bar"></div>
+            </div>
           }
         </nav>
 
@@ -223,6 +206,74 @@ const NAV_ITEMS: NavItem[] = [
 
       <!-- Main Content -->
       <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <!-- Global Search Bar -->
+        <div class="shrink-0 px-6 lg:px-8 pt-4 pb-0 relative z-30 search-container">
+          <div class="relative max-w-xl">
+            <mat-icon class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px] w-5 h-5 pointer-events-none">search</mat-icon>
+            <input
+              #searchInput
+              [ngModel]="searchQuery()"
+              (ngModelChange)="onSearchInput($event)"
+              (focus)="showSearchResults.set(true)"
+              (keydown)="onSearchKeydown($event)"
+              type="text"
+              placeholder="Search menus and pages...  (Ctrl+K)"
+              class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-slate-400 shadow-xs"
+            />
+            @if (searchQuery()) {
+              <button (click)="clearSearch()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
+                <mat-icon class="text-[18px] w-4.5 h-4.5">close</mat-icon>
+              </button>
+            }
+            <!-- Results Dropdown -->
+            @if (showSearchResults() && searchQuery().length >= 1 && filteredSearchItems().length > 0) {
+              <div class="absolute left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-lg z-50 max-h-80 overflow-y-auto origin-top animate-in zoom-in-95 duration-150">
+                @for (item of filteredSearchItems(); track $index) {
+                  <button
+                    (click)="navigateToSearchItem(item)"
+                    (mouseenter)="selectedSearchIndex.set($index)"
+                    [class.bg-indigo-50]="selectedSearchIndex() === $index"
+                    class="w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-b-0 cursor-pointer"
+                  >
+                    <mat-icon class="text-slate-400 text-[18px] w-[18px] h-[18px] mt-0.5 shrink-0">{{ item.subIcon || item.mainIcon }}</mat-icon>
+                    <div class="min-w-0 flex-1">
+                      <div class="flex items-baseline gap-2">
+                        <span class="text-[11px] font-medium text-slate-400 shrink-0">{{ item.mainMenu }}</span>
+                        @if (item.submenu) {
+                          <span class="text-xs font-semibold text-slate-800 truncate">{{ item.submenu }}</span>
+                        } @else {
+                          <span class="text-xs font-semibold text-slate-800 truncate">{{ item.mainMenu }}</span>
+                        }
+                      </div>
+                      <p class="text-[11px] text-slate-500 mt-0.5 leading-tight">{{ item.action }}</p>
+                    </div>
+                    <mat-icon class="text-slate-300 text-[14px] w-3.5 h-3.5 mt-1 shrink-0">chevron_right</mat-icon>
+                  </button>
+                }
+              </div>
+            }
+            @if (showSearchResults() && searchQuery().length >= 1 && filteredSearchItems().length === 0) {
+              <div class="absolute left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-lg z-50 p-4 text-center">
+                <p class="text-sm text-slate-400">No results found for "{{ searchQuery() }}"</p>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Breadcrumbs -->
+        <div class="shrink-0 px-6 lg:px-8 pt-3 pb-0">
+          <nav class="flex items-center gap-1 text-xs font-medium text-slate-400" aria-label="Breadcrumb">
+            @for (crumb of breadcrumbs(); track crumb.label; let last = $last) {
+              @if (!last && crumb.route) {
+                <a [routerLink]="crumb.route" class="hover:text-indigo-600 transition-colors truncate max-w-[120px]">{{ crumb.label }}</a>
+                <mat-icon class="text-[14px] w-3.5 h-3.5 mx-0.5 shrink-0 text-slate-300">chevron_right</mat-icon>
+              } @else {
+                <span class="text-slate-700 font-semibold truncate max-w-[180px]">{{ crumb.label }}</span>
+              }
+            }
+          </nav>
+        </div>
+
         <main class="flex-1 overflow-y-auto p-6 lg:p-8">
           <router-outlet></router-outlet>
         </main>
@@ -231,8 +282,93 @@ const NAV_ITEMS: NavItem[] = [
     </div>
   `
 })
-export class App implements OnDestroy {
+export class App implements OnInit, OnDestroy {
   state = inject(CrmStateService);
+  private router = inject(Router);
+
+  // Global search
+  readonly searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');
+  searchQuery = signal('');
+  showSearchResults = signal(false);
+  selectedSearchIndex = signal(0);
+
+  filteredSearchItems = computed(() => {
+    const q = this.searchQuery().toLowerCase().trim();
+    if (!q) return [];
+    return SEARCH_ITEMS.filter(item =>
+      item.mainMenu.toLowerCase().includes(q) ||
+      item.action.toLowerCase().includes(q) ||
+      item.keywords.toLowerCase().includes(q) ||
+      (item.submenu && item.submenu.toLowerCase().includes(q))
+    ).slice(0, 12);
+  });
+
+  @HostListener('document:keydown.control.k', ['$event'])
+  @HostListener('document:keydown.meta.k', ['$event'])
+  handleKeyboardShortcut(event: Event) {
+    event.preventDefault();
+    this.openSearch();
+  }
+
+  @HostListener('document:click', ['$event'])
+  handleDocumentClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (this.showSearchResults() && !target.closest('.search-container')) {
+      this.showSearchResults.set(false);
+    }
+  }
+
+  openSearch() {
+    this.showSearchResults.set(true);
+    setTimeout(() => this.searchInput()?.nativeElement.focus(), 50);
+  }
+
+  onSearchInput(value: string) {
+    this.searchQuery.set(value);
+    this.selectedSearchIndex.set(0);
+    if (value.length >= 1) {
+      this.showSearchResults.set(true);
+    } else {
+      this.showSearchResults.set(false);
+    }
+  }
+
+  onSearchKeydown(event: KeyboardEvent) {
+    const items = this.filteredSearchItems();
+    if (items.length === 0) return;
+
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      this.selectedSearchIndex.update(i => (i + 1) % items.length);
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      this.selectedSearchIndex.update(i => (i - 1 + items.length) % items.length);
+    } else if (event.key === 'Enter') {
+      event.preventDefault();
+      const idx = this.selectedSearchIndex();
+      if (idx >= 0 && idx < items.length) {
+        this.navigateToSearchItem(items[idx]);
+      }
+    } else if (event.key === 'Escape') {
+      this.showSearchResults.set(false);
+      this.searchInput()?.nativeElement.blur();
+    }
+  }
+
+  navigateToSearchItem(item: SearchItem) {
+    this.showSearchResults.set(false);
+    this.searchQuery.set('');
+    if (item.tab) {
+      this.state.navigateTab.set(item.tab);
+    }
+    this.router.navigate([item.mainRoute]);
+  }
+
+  clearSearch() {
+    this.searchQuery.set('');
+    this.showSearchResults.set(false);
+    this.searchInput()?.nativeElement.focus();
+  }
 
   /** True when user has clicked the toggle to permanently pin the sidebar open */
   pinnedOpen = signal<boolean>(false);
@@ -245,43 +381,89 @@ export class App implements OnDestroy {
     return this.pinnedOpen() || this.hoverOpen();
   }
 
-  openSubnav = signal<string | null>(null);
   navItems = NAV_ITEMS;
 
+  /** Tracks which primary route is currently active */
+  activeRoute = signal<string>('/');
+
   private hoverTimer: ReturnType<typeof setTimeout> | null = null;
+  private routerSub: any;
+
+  ngOnInit() {
+    this.activeRoute.set(this.router.url.split('?')[0]);
+
+    this.routerSub = this.router.events
+      .pipe(filter(e => e instanceof NavigationEnd))
+      .subscribe((e: any) => {
+        const newRoute = e.urlAfterRedirects.split('?')[0];
+        this.activeRoute.set(newRoute);
+        this.state.breadcrumbLabel.set(null);
+      });
+  }
+
+  breadcrumbs = computed(() => {
+    const route = this.activeRoute();
+    const crumbs: { label: string; route?: string }[] = [];
+
+    if (route === '/') {
+      crumbs.push({ label: 'Dashboard' });
+      return crumbs;
+    }
+
+    // Find the matching parent nav item
+    const navItem = this.navItems.find(item => route.startsWith(item.route) && item.route !== '/');
+    if (navItem) {
+      crumbs.push({ label: navItem.label, route: navItem.route });
+
+      // Check for sub-label from service (set by section pages with sub-tabs)
+      const subLabel = this.state.breadcrumbLabel();
+      if (subLabel) {
+        crumbs.push({ label: subLabel });
+      } else {
+        // Derive sub-label from URL path segments beyond the nav route
+        const subPath = route.replace(navItem.route, '').replace(/^\//, '');
+        if (subPath) {
+          const segments = subPath.split('/');
+          segments.forEach(seg => {
+            const label = seg.charAt(0).toUpperCase() + seg.slice(1).replace(/-/g, ' ');
+            crumbs.push({ label });
+          });
+        }
+      }
+    }
+
+    return crumbs;
+  });
 
   onSidebarMouseEnter() {
-    if (this.pinnedOpen()) return; // already open, nothing to do
+    if (this.pinnedOpen()) return;
     this.hoverTimer = setTimeout(() => {
       this.hoverOpen.set(true);
     }, 1000);
   }
 
   onSidebarMouseLeave() {
-    // Cancel pending expand
     if (this.hoverTimer) {
       clearTimeout(this.hoverTimer);
       this.hoverTimer = null;
     }
-    // Collapse only if it was hover-expanded (not pinned)
     if (!this.pinnedOpen()) {
       this.hoverOpen.set(false);
-      this.openSubnav.set(null);
     }
   }
 
   togglePin() {
     const next = !this.pinnedOpen();
     this.pinnedOpen.set(next);
-    // If unpinning while hover was open, collapse immediately
     if (!next) {
       this.hoverOpen.set(false);
-      this.openSubnav.set(null);
     }
   }
 
-  toggleSubnav(label: string) {
-    this.openSubnav.set(this.openSubnav() === label ? null : label);
+  isNavActive(item: NavItem): boolean {
+    const route = this.activeRoute();
+    if (item.route === '/') return route === '/';
+    return route.startsWith(item.route);
   }
 
   getCurrentUser() {
@@ -290,7 +472,8 @@ export class App implements OnDestroy {
 
   ngOnDestroy() {
     if (this.hoverTimer) clearTimeout(this.hoverTimer);
+    if (this.routerSub) this.routerSub.unsubscribe();
   }
 
-  constructor(private elementRef: ElementRef) { }
+  constructor(private elementRef: ElementRef) {}
 }

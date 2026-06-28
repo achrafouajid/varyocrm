@@ -1,6 +1,6 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { CrmStateService, Partner, Task, Proposal, Deal, PurchaseOrder } from '../services/crm-state.service';
+import { CrmStateService, Partner, Proposal, Deal, PurchaseOrder } from '../services/crm-state.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -15,7 +15,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
       <aside class="w-44 shrink-0 hidden lg:block">
         <nav class="space-y-1 sticky top-24">
           <button 
-            (click)="activeTab.set('deals')" 
+            (click)="activeTab.set('deals'); state.breadcrumbLabel.set('Deals')" 
             [class]="activeTab() === 'deals' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-transparent'"
             class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors border flex items-center gap-2">
             <mat-icon class="text-[18px] w-[18px] h-[18px]">monetization_on</mat-icon>
@@ -23,23 +23,16 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
             <span class="ml-auto text-xs bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full">{{ state.deals().length }}</span>
           </button>
           <button 
-            (click)="activeTab.set('proposals')" 
+            (click)="activeTab.set('proposals'); state.breadcrumbLabel.set('Proposals')" 
             [class]="activeTab() === 'proposals' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-transparent'"
             class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors border flex items-center gap-2">
             <mat-icon class="text-[18px] w-[18px] h-[18px]">description</mat-icon>
             Proposals
             <span class="ml-auto text-xs bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full">{{ state.proposals().length }}</span>
           </button>
+
           <button 
-            (click)="activeTab.set('tasks')" 
-            [class]="activeTab() === 'tasks' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-transparent'"
-            class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors border flex items-center gap-2">
-            <mat-icon class="text-[18px] w-[18px] h-[18px]">task</mat-icon>
-            Tasks
-            <span class="ml-auto text-xs bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full">{{ state.tasks().length }}</span>
-          </button>
-          <button 
-            (click)="activeTab.set('pos')" 
+            (click)="activeTab.set('pos'); state.breadcrumbLabel.set('Purchase Orders')" 
             [class]="activeTab() === 'pos' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-transparent'"
             class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors border flex items-center gap-2">
             <mat-icon class="text-[18px] w-[18px] h-[18px]">shopping_cart</mat-icon>
@@ -54,7 +47,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
         <div class="flex justify-between items-end">
           <div>
             <h2 class="text-3xl font-semibold tracking-tight text-slate-900">Sales & Operations</h2>
-            <p class="text-slate-500 mt-1">Manage proposals, deals, purchase orders, and team tasks.</p>
+            <p class="text-slate-500 mt-1">Manage deals, proposals, and purchase orders.</p>
           </div>
           <div class="flex gap-2">
             @if (activeTab() === 'deals') {
@@ -66,11 +59,6 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
               <button (click)="openCreateProposalModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm">
                 <mat-icon class="w-5 h-5 text-[20px]! leading-none! flex items-center justify-center">add</mat-icon>
                 New Proposal
-              </button>
-            } @else if (activeTab() === 'tasks') {
-              <button (click)="openCreateTaskModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm">
-                <mat-icon class="w-5 h-5 text-[20px]! leading-none! flex items-center justify-center">add</mat-icon>
-                New Task
               </button>
             }
           </div>
@@ -257,9 +245,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                 <button (click)="openEditProposalModal(prop)" class="bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-650 p-2 rounded-lg transition-colors flex items-center justify-center shrink-0" title="Edit Proposal">
                   <mat-icon class="text-[18px] w-[18px] h-[18px] flex items-center justify-center">edit</mat-icon>
                 </button>
-                <button (click)="openTaskModalForProposal(prop.id)" class="bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-650 p-2 rounded-lg transition-colors flex items-center justify-center shrink-0" title="Create Task">
-                  <mat-icon class="text-[18px] w-[18px] h-[18px] flex items-center justify-center">add_task</mat-icon>
-                </button>
+
                 @if (prop.status === 'Draft') {
                   <button (click)="openSendProposalModal(prop)" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold py-2 rounded-lg transition-colors">
                     Send to Prospect
@@ -279,68 +265,6 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
             </div>
           } @empty {
             <div class="col-span-2 bg-white rounded-2xl p-8 text-center text-slate-500 shadow-sm border border-slate-200">No proposals found.</div>
-          }
-        </div>
-      }
-
-      <!-- Tasks View -->
-      @if (activeTab() === 'tasks') {
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          @for (task of state.tasks(); track task.id) {
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 flex flex-col justify-between hover:shadow-md transition-all">
-              <div>
-                <div class="flex justify-between items-start mb-3">
-                  <span [class]="getStatusColor(task.status)" class="px-2.5 py-1 text-[10px] font-bold uppercase rounded-full">
-                    {{task.status}}
-                  </span>
-                  <span class="text-xs text-slate-400 font-mono">#{{task.id}}</span>
-                </div>
-                <h4 class="text-slate-900 font-semibold text-base mb-1">{{task.title}}</h4>
-                <p class="text-xs text-slate-500 mb-3">{{task.description}}</p>
-
-                @if (task.relatedTo) {
-                  <div class="text-xs text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-lg p-1.5 px-2 mb-4 inline-flex items-center gap-1 font-medium">
-                    <mat-icon class="text-[14px] w-3.5 h-3.5 leading-none">link</mat-icon>
-                    {{task.relatedTo}}
-                  </div>
-                }
-              </div>
-
-              <div class="border-t border-slate-100 pt-3 flex flex-col gap-3 mt-4">
-                <div class="flex justify-between items-center text-xs">
-                  <span class="text-slate-400 font-medium">Assigned Team:</span>
-                  <span class="font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded">{{task.assignedTeam || 'Sales'}}</span>
-                </div>
-                <div class="flex justify-between items-center text-xs">
-                  <span class="text-slate-400 font-medium">Assigned Person:</span>
-                  <span class="font-bold text-slate-700">{{task.assignedTo || 'Unassigned'}}</span>
-                </div>
-                
-                <!-- Manual reassignment & status change -->
-                <div class="flex gap-2 pt-2 border-t border-slate-50">
-                  @if (task.status === 'Pending') {
-                    <button (click)="state.updateTaskStatus(task.id, 'In Progress')" class="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 text-indigo-600 py-1.5 rounded-lg text-xs font-semibold transition-colors">
-                      Start Task
-                    </button>
-                  } @else if (task.status === 'In Progress') {
-                    <button (click)="state.updateTaskStatus(task.id, 'Completed')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-1.5 rounded-lg text-xs font-semibold transition-colors">
-                      Complete Task
-                    </button>
-                  } @else {
-                    <span class="text-emerald-600 text-xs font-bold py-1.5 text-center w-full flex items-center justify-center">
-                      <mat-icon class="text-[16px] w-4 h-4 mr-0.5">check_circle</mat-icon> Completed
-                    </span>
-                  }
-                  
-                  <!-- Assign Option -->
-                  @if (task.status !== 'Completed') {
-                    <button (click)="openAssignModal(task)" class="bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 px-2 py-1.5 rounded-lg text-xs transition-colors flex items-center justify-center">
-                      <mat-icon class="text-[16px] w-4 h-4">person</mat-icon> Assign
-                    </button>
-                  }
-                </div>
-              </div>
-            </div>
           }
         </div>
       }
@@ -407,27 +331,6 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
     </div>
 
     <!-- Modals -->
-    <!-- Assign Modal -->
-    @if (assignModalOpen()) {
-      <div class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-xl border border-slate-100 animate-in zoom-in-95 duration-200">
-          <h3 class="text-lg font-bold text-slate-950">Assign Task: {{selectedTask()?.title}}</h3>
-          <div>
-            <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Select Assignee</label>
-            <select [(ngModel)]="reassignedUser" class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
-              @for (user of state.users(); track user.name) {
-                <option [value]="user.name">{{user.name}} ({{user.role}})</option>
-              }
-            </select>
-          </div>
-          <div class="flex justify-end gap-2 pt-2">
-            <button (click)="assignModalOpen.set(false)" class="px-4 py-2 border border-slate-200 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-50">Cancel</button>
-            <button (click)="saveAssignment()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm">Assign</button>
-          </div>
-        </div>
-      </div>
-    }
-
     <!-- Send Proposal Modal -->
     @if (sendingProposalId()) {
       <div class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
@@ -1091,58 +994,6 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
       </div>
     }
 
-    <!-- Create Task Modal -->
-    @if (taskModalOpen()) {
-      <div class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-xl border border-slate-100 animate-in zoom-in-95 duration-200">
-          <h3 class="text-lg font-bold text-slate-950">Create New Task</h3>
-          
-          <div class="space-y-3">
-            <div>
-              <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Task Title</label>
-              <input [(ngModel)]="newTaskData.title" type="text" placeholder="e.g. Generate Customer Invoice" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
-            </div>
-
-            <div>
-              <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Description</label>
-              <textarea [(ngModel)]="newTaskData.description" rows="2" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600"></textarea>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Assigned Team</label>
-                <select [(ngModel)]="newTaskData.assignedTeam" class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
-                  <option value="Sales">Sales</option>
-                  <option value="Operations">Operations</option>
-                  <option value="Finance">Finance</option>
-                  <option value="Support">Support</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Assigned Person</label>
-                <select [(ngModel)]="newTaskData.assignedTo" class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
-                  <option value="">Unassigned</option>
-                  @for (user of state.users(); track user.name) {
-                    <option [value]="user.name">{{user.name}}</option>
-                  }
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Related To</label>
-              <input [(ngModel)]="newTaskData.relatedTo" type="text" placeholder="e.g. Deal: Atlas Digital Project" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
-            </div>
-          </div>
-
-          <div class="flex justify-end gap-2 pt-4 border-t border-slate-100">
-            <button (click)="closeTaskModal()" class="px-4 py-2 border border-slate-200 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-50 font-sans">Cancel</button>
-            <button (click)="saveTask()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm font-sans">Save Task</button>
-          </div>
-        </div>
-      </div>
-    }
-
     <!-- Quick Add Activity Modal -->
     @if (addActivityModalOpen()) {
       <div class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
@@ -1402,6 +1253,13 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                     </button>
                   </div>
                 }
+
+                <div class="space-y-2">
+                  <label class="block text-xs font-semibold text-slate-650 uppercase">Note</label>
+                  <textarea [(ngModel)]="confirmNote" name="confirmNote" rows="3"
+                    placeholder="Add a note about this confirmation..."
+                    class="w-full border border-slate-200 rounded-xl p-3 text-xs focus:outline-indigo-650 bg-white placeholder-slate-400 shadow-sm"></textarea>
+                </div>
               </div>
             } @else {
               <div class="space-y-2">
@@ -1654,13 +1512,6 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                     Notes
                     <span class="bg-indigo-50 text-indigo-600 px-1 py-0.2 rounded-full text-[9px] font-semibold">{{ deal.activityLog?.notes?.length || 0 }}</span>
                   </button>
-                  <button type="button" (click)="setDealTab(deal.id, 'tasks')"
-                    [class]="getDealTab(deal.id) === 'tasks' ? 'bg-white text-indigo-600 shadow-xs border-slate-200' : 'text-slate-600 border-transparent hover:text-slate-900 hover:bg-slate-100'"
-                    class="px-3 py-1.5 rounded-md text-xs font-medium border transition-all flex items-center gap-1.5">
-                    <mat-icon class="text-[14px] w-3.5 h-3.5 leading-none flex items-center justify-center">assignment</mat-icon>
-                    Tasks
-                    <span class="bg-indigo-50 text-indigo-600 px-1 py-0.2 rounded-full text-[9px] font-semibold">{{ getLinkedTasksCount(deal.title) }}</span>
-                  </button>
                   <button type="button" (click)="setDealTab(deal.id, 'followups')"
                     [class]="getDealTab(deal.id) === 'followups' ? 'bg-white text-indigo-600 shadow-xs border-slate-200' : 'text-slate-600 border-transparent hover:text-slate-900 hover:bg-slate-100'"
                     class="px-3 py-1.5 rounded-md text-xs font-medium border transition-all flex items-center gap-1.5">
@@ -1865,40 +1716,6 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                     </div>
                   }
 
-                  <!-- TASKS TAB -->
-                  @if (getDealTab(deal.id) === 'tasks') {
-                    <div class="space-y-4">
-                      <div class="flex justify-between items-center">
-                        <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Operation & Hand-off Tasks</span>
-                        <button type="button" (click)="openCreateTaskForDeal(deal.title)" class="text-indigo-600 hover:text-indigo-700 text-xs font-semibold flex items-center gap-0.5">
-                          <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">add</mat-icon> New Task
-                        </button>
-                      </div>
-
-                      <div class="space-y-2">
-                        @for (t of getLinkedTasks(deal.title); track t.id) {
-                          <div class="bg-white border border-slate-150 rounded-lg p-3 shadow-xs flex items-center justify-between gap-4">
-                            <div class="flex items-center gap-3">
-                              <button type="button" (click)="toggleTaskStatus(t.id, t.status)" class="text-slate-400 hover:text-indigo-600">
-                                <mat-icon class="text-base w-4.5 h-4.5 flex items-center justify-center">{{ t.status === 'Completed' ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
-                              </button>
-                              <div>
-                                <span [class.line-through]="t.status === 'Completed'" [class.text-slate-400]="t.status === 'Completed'" class="font-bold text-slate-800 text-xs block font-sans">{{ t.title }}</span>
-                                <span class="text-[10px] text-slate-400 font-sans">Team: {{ t.assignedTeam }} | Assigned: {{ t.assignedTo || 'Unassigned' }}</span>
-                              </div>
-                            </div>
-                            
-                            <span [class]="t.status === 'Completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-slate-100 text-slate-600 border-slate-200'" class="px-2 py-0.5 border text-[9px] font-bold uppercase rounded font-mono">
-                              {{ t.status }}
-                            </span>
-                          </div>
-                        } @empty {
-                          <div class="text-center py-6 text-slate-400 text-xs">No tasks linked to this deal yet.</div>
-                        }
-                      </div>
-                    </div>
-                  }
-
                   <!-- FOLLOW-UPS TAB -->
                   @if (getDealTab(deal.id) === 'followups') {
                     <div class="space-y-4">
@@ -2034,7 +1851,17 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
 })
 export class SalesComponent {
   state = inject(CrmStateService);
-  activeTab = signal<'leads' | 'deals' | 'proposals' | 'tasks' | 'pos'>('leads');
+  activeTab = signal<'deals' | 'proposals' | 'pos'>('deals');
+
+  constructor() {
+    const tab = this.state.navigateTab();
+    if (tab) {
+      this.activeTab.set(tab as 'deals' | 'proposals' | 'pos');
+      this.state.navigateTab.set(null);
+    }
+    const label = this.activeTab() === 'deals' ? 'Deals' : this.activeTab() === 'proposals' ? 'Proposals' : 'Purchase Orders';
+    this.state.breadcrumbLabel.set(label);
+  }
 
   // Convert Proposal to Deal & Customer Modal State
   showConvertProposalModal = signal(false);
@@ -2060,7 +1887,6 @@ export class SalesComponent {
   );
 
   // Modals state
-  assignModalOpen = signal(false);
   sendingProposalId = signal<string | null>(null);
   selectedChannels = signal<Set<'email' | 'whatsapp'>>(new Set());
   recipients = signal<{ name: string; email?: string; phone?: string }[]>([]);
@@ -2093,12 +1919,10 @@ export class SalesComponent {
   /** All other partners of the same type (Prospect) for cross-org additions */
   availableProspects = computed(() => this.state.partners().filter(p => p.type === 'Prospect'));
   editingProposalId = signal<string | null>(null);
-  taskContextProposalId = signal<string | null>(null);
   proposalModalOpen = signal(false);
   dealModalOpen = signal(false);
   poModalOpen = signal(false);
   setDeliveryDateModalOpen = signal(false);
-  taskModalOpen = signal(false);
   leadModalOpen = signal(false);
 
   // Activity Hub Signals
@@ -2128,9 +1952,6 @@ export class SalesComponent {
     source: 'Website form',
     assignedTo: ''
   };
-
-  selectedTask = signal<Task | null>(null);
-  reassignedUser = '';
 
   selectedDealForPO = signal<Deal | null>(null);
   showNewVendorForm = signal(false);
@@ -2247,14 +2068,6 @@ export class SalesComponent {
     }
   }
 
-  newTaskData = {
-    title: '',
-    description: '',
-    assignedTeam: 'Sales' as 'Sales' | 'Operations' | 'Finance' | 'Support',
-    assignedTo: '',
-    relatedTo: ''
-  };
-
   getPartnerName(id: string) {
     return this.state.partners().find(p => p.id === id)?.name || 'Unknown';
   }
@@ -2300,21 +2113,6 @@ export class SalesComponent {
 
   hasPOForDeal(dealId: string) {
     return this.state.purchaseOrders().some(po => po.dealId === dealId);
-  }
-
-  // Task assignment
-  openAssignModal(task: Task) {
-    this.selectedTask.set(task);
-    this.reassignedUser = task.assignedTo || '';
-    this.assignModalOpen.set(true);
-  }
-
-  saveAssignment() {
-    const task = this.selectedTask();
-    if (task) {
-      this.state.updateTaskStatus(task.id, task.status, this.reassignedUser);
-      this.assignModalOpen.set(false);
-    }
   }
 
   // Proposal Creation
@@ -2435,6 +2233,40 @@ export class SalesComponent {
         confirmationNote: this.confirmNote(),
         confirmedAt: new Date().toISOString().split('T')[0]
       });
+
+      const deal = this.state.deals().find(d => d.proposalId === prop.id);
+      if (deal) {
+        const today = new Date().toISOString().split('T')[0];
+        const me = this.state.users().find(u => u.id === this.state.currentUserId());
+        const authorName = me?.displayName || 'System';
+        const partner = this.state.partners().find(p => p.id === prop.partnerId);
+        const method = this.confirmMethod();
+
+        if (method === 'Email') {
+          this.state.addEmailLog(deal.id, {
+            date: today,
+            from: me?.email || 'system@crm.ma',
+            to: partner?.email || '',
+            subject: `Proposal #${prop.id} Confirmed`,
+            body: this.confirmNote() || `Proposal confirmed via Email. Attachment: ${this.confirmAttachmentName()}`,
+            direction: 'sent'
+          });
+        } else if (method === 'WhatsApp') {
+          this.state.addNote(deal.id, {
+            date: today,
+            author: authorName,
+            content: this.confirmNote() || `Proposal #${prop.id} confirmed via WhatsApp. Attachment: ${this.confirmAttachmentName()}`
+          });
+        } else if (method === 'Call') {
+          this.state.addCallLog(deal.id, {
+            date: today,
+            duration: 0,
+            callerName: authorName,
+            summary: this.confirmNote() || 'Proposal confirmed via call.',
+            outcome: 'Confirmed'
+          });
+        }
+      }
     }
     this.showConfirmProposalModal.set(false);
     this.proposalToConfirm.set(null);
@@ -2816,59 +2648,6 @@ export class SalesComponent {
     }
   }
 
-  // Create Task manually
-  openCreateTaskModal() {
-    this.taskContextProposalId.set(null);
-    this.newTaskData = {
-      title: '',
-      description: '',
-      assignedTeam: 'Sales',
-      assignedTo: '',
-      relatedTo: ''
-    };
-    this.taskModalOpen.set(true);
-  }
-
-  openTaskModalForProposal(proposalId: string) {
-    this.taskContextProposalId.set(proposalId);
-    const prop = this.state.proposals().find(p => p.id === proposalId);
-    this.newTaskData = {
-      title: '',
-      description: '',
-      assignedTeam: 'Sales',
-      assignedTo: '',
-      relatedTo: prop ? 'Proposal: ' + prop.title : ''
-    };
-    this.taskModalOpen.set(true);
-  }
-
-  closeTaskModal() {
-    this.taskModalOpen.set(false);
-    this.taskContextProposalId.set(null);
-  }
-
-  saveTask() {
-    let relatedTo = this.newTaskData.relatedTo || undefined;
-    const proposalId = this.taskContextProposalId();
-    if (proposalId) {
-      const prop = this.state.proposals().find(p => p.id === proposalId);
-      if (prop) {
-        relatedTo = 'Proposal: ' + prop.title;
-      }
-    }
-
-    this.state.addTask({
-      title: this.newTaskData.title,
-      description: this.newTaskData.description,
-      assignedTeam: this.newTaskData.assignedTeam,
-      assignedTo: this.newTaskData.assignedTo || undefined,
-      status: 'Pending',
-      relatedTo: relatedTo
-    });
-    this.taskModalOpen.set(false);
-    this.taskContextProposalId.set(null);
-  }
-
   // Activity Hub Helpers
   getDealTab(dealId: string): string {
     return this.activeDealTabs()[dealId] || 'calls';
@@ -2876,30 +2655,6 @@ export class SalesComponent {
 
   setDealTab(dealId: string, tab: string): void {
     this.activeDealTabs.update(tabs => ({ ...tabs, [dealId]: tab }));
-  }
-
-  getLinkedTasksCount(dealTitle: string): number {
-    return this.state.tasks().filter(t => t.relatedTo === 'Deal: ' + dealTitle || t.relatedTo === dealTitle).length;
-  }
-
-  getLinkedTasks(dealTitle: string): Task[] {
-    return this.state.tasks().filter(t => t.relatedTo === 'Deal: ' + dealTitle || t.relatedTo === dealTitle);
-  }
-
-  openCreateTaskForDeal(dealTitle: string): void {
-    this.newTaskData = {
-      title: '',
-      description: '',
-      assignedTeam: 'Operations',
-      assignedTo: '',
-      relatedTo: 'Deal: ' + dealTitle
-    };
-    this.taskModalOpen.set(true);
-  }
-
-  toggleTaskStatus(taskId: string, currentStatus: string): void {
-    const nextStatus = currentStatus === 'Completed' ? 'Pending' : 'Completed';
-    this.state.updateTaskStatus(taskId, nextStatus);
   }
 
   toggleFollowUpStatus(dealId: string, followUpId: string, currentStatus: string): void {

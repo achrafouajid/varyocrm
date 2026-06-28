@@ -22,7 +22,7 @@ type InvoiceLine = {
       <aside class="w-44 shrink-0 hidden lg:block">
         <nav class="space-y-1 sticky top-24">
           <button
-            (click)="activeTab.set('Customer')"
+            (click)="activeTab.set('Customer'); state.breadcrumbLabel.set('Customer Invoices')"
             [class]="activeTab() === 'Customer' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-transparent'"
             class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors border flex items-center gap-2">
             <mat-icon class="text-[18px] w-[18px] h-[18px]">receipt</mat-icon>
@@ -30,7 +30,7 @@ type InvoiceLine = {
             <span class="ml-auto text-xs bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full">{{ state.customerInvoices().length }}</span>
           </button>
           <button
-            (click)="activeTab.set('Vendor')"
+            (click)="activeTab.set('Vendor'); state.breadcrumbLabel.set('Vendor Invoices')"
             [class]="activeTab() === 'Vendor' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-transparent'"
             class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors border flex items-center gap-2">
             <mat-icon class="text-[18px] w-[18px] h-[18px]">receipt_long</mat-icon>
@@ -38,7 +38,7 @@ type InvoiceLine = {
             <span class="ml-auto text-xs bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full">{{ state.vendorInvoices().length }}</span>
           </button>
           <button
-            (click)="activeTab.set('Recovery')"
+            (click)="activeTab.set('Recovery'); state.breadcrumbLabel.set('Recovery')"
             [class]="activeTab() === 'Recovery' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-transparent'"
             class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors border flex items-center gap-2">
             <mat-icon class="text-[18px] w-[18px] h-[18px]">healing</mat-icon>
@@ -651,6 +651,13 @@ export class FinanceComponent {
   autoFilledFields = signal<Set<string>>(new Set());
 
   constructor() {
+    const tab = this.state.navigateTab();
+    if (tab) {
+      this.activeTab.set(tab as 'Customer' | 'Vendor' | 'Recovery');
+      this.state.navigateTab.set(null);
+    }
+    const label = this.activeTab() === 'Customer' ? 'Customer Invoices' : this.activeTab() === 'Vendor' ? 'Vendor Invoices' : 'Recovery';
+    this.state.breadcrumbLabel.set(label);
     this.updateReminderTemplate();
     // When switching back to Manual, clear deal-bound locked fields and lines
     effect(() => {

@@ -12,7 +12,7 @@ import { CommonModule } from '@angular/common';
       <aside class="w-44 shrink-0 hidden lg:block">
         <nav class="space-y-1 sticky top-24">
           <button 
-            (click)="activeTab.set('Email')" 
+            (click)="activeTab.set('Email'); state.breadcrumbLabel.set('Email')" 
             [class]="activeTab() === 'Email' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-transparent'"
             class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors border flex items-center gap-2">
             <mat-icon class="text-[18px] w-[18px] h-[18px]">email</mat-icon>
@@ -20,7 +20,7 @@ import { CommonModule } from '@angular/common';
             <span class="ml-auto text-xs bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full">{{ filteredByType('Email').length }}</span>
           </button>
           <button 
-            (click)="activeTab.set('WhatsApp')" 
+            (click)="activeTab.set('WhatsApp'); state.breadcrumbLabel.set('WhatsApp')" 
             [class]="activeTab() === 'WhatsApp' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-transparent'"
             class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors border flex items-center gap-2">
             <mat-icon class="text-[18px] w-[18px] h-[18px]">chat</mat-icon>
@@ -28,7 +28,7 @@ import { CommonModule } from '@angular/common';
             <span class="ml-auto text-xs bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full">{{ filteredByType('WhatsApp').length }}</span>
           </button>
           <button 
-            (click)="activeTab.set('SMS')" 
+            (click)="activeTab.set('SMS'); state.breadcrumbLabel.set('SMS')" 
             [class]="activeTab() === 'SMS' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-transparent'"
             class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors border flex items-center gap-2">
             <mat-icon class="text-[18px] w-[18px] h-[18px]">sms</mat-icon>
@@ -110,6 +110,15 @@ import { CommonModule } from '@angular/common';
 export class MarketingComponent {
   state = inject(CrmStateService);
   activeTab = signal<'Email' | 'WhatsApp' | 'SMS'>('Email');
+
+  constructor() {
+    const tab = this.state.navigateTab();
+    if (tab) {
+      this.activeTab.set(tab as 'Email' | 'WhatsApp' | 'SMS');
+      this.state.navigateTab.set(null);
+    }
+    this.state.breadcrumbLabel.set(this.activeTab());
+  }
 
   filteredCampaigns = () => this.state.campaigns().filter(c => c.type === this.activeTab());
 

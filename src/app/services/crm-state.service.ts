@@ -804,6 +804,16 @@ export class CrmStateService {
   groupMeetings = signal<GroupMeeting[]>(SEED_MEETINGS);
   currentUserId = signal<string>('usr_rachid');
 
+  // Shared tab state for section pages
+  salesSubTab = signal<'deals' | 'proposals' | 'pos'>('deals');
+  breadcrumbLabel = signal<string | null>(null);
+  marketingSubTab = signal<'Email' | 'WhatsApp' | 'SMS'>('Email');
+  partnersSubTab = signal<'Lead' | 'Customer' | 'Prospect' | 'Vendor'>('Lead');
+  financeSubTab = signal<'Customer' | 'Vendor' | 'Recovery'>('Customer');
+
+  // Global search navigation target — set before navigating to deep-link a sub-tab
+  navigateTab = signal<string | null>(null);
+
   // Global currency setting — readable by all components, togglable from settings
   globalCurrency = signal<string>('MAD');
 
