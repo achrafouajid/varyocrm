@@ -317,70 +317,38 @@ type InvoiceLine = {
             <!-- ③ Two-column Admin Info -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
 
-              <!-- Document Direction -->
-              <div>
-                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Document Direction</label>
-                <select [(ngModel)]="newInvoiceData.type" name="type"
-                  class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
-                  <option value="Customer">Customer (Outbound)</option>
-                  <option value="Vendor">Vendor (Inbound)</option>
-                </select>
-              </div>
+              <!-- Document Direction hidden or removed from user view as per requirements -->
 
-              <!-- VAT Number -->
-              <div>
-                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">VAT Number</label>
-                <input [(ngModel)]="newInvoiceData.vatNumber" type="text"
-                  placeholder="e.g. MA-TVA-123456"
-                  class="w-full border border-slate-200 rounded-lg p-2 text-sm font-mono bg-white focus:outline-indigo-600">
-              </div>
-
-              <!-- Customer Account -->
-              <div>
-                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">
-                  Customer Account
-                  @if (invoiceType() === 'Deal') {
-                    <span class="ml-1 text-[10px] bg-amber-100 text-amber-700 border border-amber-200 px-1.5 py-0.5 rounded-full font-bold">Auto-filled</span>
-                  }
-                </label>
-                <input [(ngModel)]="newInvoiceData.customerAccount"
-                  [readonly]="invoiceType() === 'Deal'" type="text"
-                  placeholder="e.g. ACT-ATLAS-99"
-                  [class]="invoiceType() === 'Deal' ? 'bg-slate-50 text-slate-400 cursor-not-allowed' : 'bg-white'"
-                  class="w-full border border-slate-200 rounded-lg p-2 text-sm font-mono focus:outline-indigo-600">
-              </div>
-
-              <!-- Customer Name -->
-              <div>
-                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Customer Name</label>
-                <input [(ngModel)]="newInvoiceData.customerName"
-                  [readonly]="invoiceType() === 'Deal'" type="text"
-                  placeholder="Official corporate name"
-                  [class]="invoiceType() === 'Deal' ? 'bg-slate-50 text-slate-400 cursor-not-allowed' : 'bg-white'"
-                  class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
-              </div>
-
-              <!-- Partner Select — Customers ONLY, locked on Deal -->
+              <!-- ── Customer Selector (Manual + Outbound) ──────────────────────
+                   Shown prominently when type is Customer or any Manual pathway.
+                   When Deal is selected, this row is locked and auto-driven.
+              -->
               <div class="sm:col-span-2">
                 <label for="partner-select" class="block text-xs font-semibold text-slate-500 uppercase mb-1">
-                  Customer Account
+                  Select Customer
                   @if (invoiceType() === 'Deal') {
                     <span class="ml-1 text-[10px] bg-rose-100 text-rose-700 border border-rose-200 px-1.5 py-0.5 rounded-full font-bold">🔒 Locked by Deal</span>
+                  }
+                  @if (invoiceType() === 'Manual' && newInvoiceData.type === 'Customer') {
+                    <span class="ml-1 text-[10px] bg-indigo-100 text-indigo-700 border border-indigo-200 px-1.5 py-0.5 rounded-full font-bold">Fields auto-fill on selection</span>
                   }
                 </label>
                 <select id="partner-select"
                   [(ngModel)]="newInvoiceData.partnerId"
                   (ngModelChange)="onPartnerSelected($event)"
                   [disabled]="invoiceType() === 'Deal'"
-                  [class]="invoiceType() === 'Deal' ? 'bg-slate-50 text-slate-400 cursor-not-allowed opacity-70' : 'bg-white'"
-                  class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
-                  <option value="">— Select a Customer —</option>
+                  [class]="invoiceType() === 'Deal' ? 'bg-slate-50 text-slate-400 cursor-not-allowed opacity-70' : 'bg-white focus:ring-2 focus:ring-indigo-200'"
+                  class="w-full border border-slate-200 rounded-lg p-2.5 text-sm focus:outline-indigo-600 transition-colors">
+                  <option value="">— Select an existing Customer —</option>
                   @for (cust of invoiceEligibleCustomers(); track cust.id) {
                     <option [value]="cust.id">{{ cust.name }}</option>
                   }
                 </select>
                 @if (invoiceEligibleCustomers().length === 0) {
-                  <p class="text-amber-600 text-xs mt-1">No active Customers found. Convert a Prospect first.</p>
+                  <p class="text-amber-600 text-xs mt-1 flex items-center gap-1">
+                    <mat-icon class="text-[14px] w-3.5 h-3.5">warning</mat-icon>
+                    No active Customers found. Convert a Prospect first.
+                  </p>
                 }
                 @if (invoiceType() === 'Deal') {
                   <p class="text-slate-400 text-xs mt-1 flex items-center gap-1">
@@ -388,16 +356,90 @@ type InvoiceLine = {
                     Partner is auto-assigned from the selected Deal.
                   </p>
                 }
+                @if (invoiceType() === 'Manual' && newInvoiceData.partnerId && autoFilledFields().size > 0) {
+                  <div class="mt-2 bg-indigo-50 border border-indigo-200 rounded-lg px-3 py-2 flex items-center gap-2">
+                    <mat-icon class="text-indigo-500 text-[15px] w-4 h-4 shrink-0">auto_awesome</mat-icon>
+                    <span class="text-xs text-indigo-700 font-medium">Customer details auto-filled from account record. You can still edit any field below.</span>
+                  </div>
+                }
+              </div>
+
+              <!-- VAT Number -->
+              <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">
+                  VAT Number
+                  @if (autoFilledFields().has('vatNumber')) {
+                    <span class="ml-1 text-[10px] bg-emerald-100 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 rounded-full font-bold">Auto-filled</span>
+                  }
+                </label>
+                <input [(ngModel)]="newInvoiceData.vatNumber" type="text"
+                  placeholder="e.g. MA-ICE-123456789"
+                  [class]="autoFilledFields().has('vatNumber') ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-white'"
+                  class="w-full border rounded-lg p-2 text-sm font-mono focus:outline-indigo-600 transition-colors">
+              </div>
+
+              <!-- Customer Account -->
+              <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">
+                  Customer Account
+                  @if (invoiceType() === 'Deal' || autoFilledFields().has('customerAccount')) {
+                    <span class="ml-1 text-[10px] bg-emerald-100 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 rounded-full font-bold">Auto-filled</span>
+                  }
+                </label>
+                <input [(ngModel)]="newInvoiceData.customerAccount"
+                  [readonly]="invoiceType() === 'Deal'"
+                  type="text"
+                  placeholder="e.g. ERP-ATLAS-01"
+                  [class]="invoiceType() === 'Deal' ? 'bg-slate-50 text-slate-400 cursor-not-allowed' : autoFilledFields().has('customerAccount') ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-white'"
+                  class="w-full border border-slate-200 rounded-lg p-2 text-sm font-mono focus:outline-indigo-600 transition-colors">
+              </div>
+
+              <!-- Customer Name -->
+              <div class="sm:col-span-2">
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">
+                  Customer Name
+                  @if (invoiceType() === 'Deal' || autoFilledFields().has('customerName')) {
+                    <span class="ml-1 text-[10px] bg-emerald-100 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 rounded-full font-bold">Auto-filled</span>
+                  }
+                </label>
+                <input [(ngModel)]="newInvoiceData.customerName"
+                  [readonly]="invoiceType() === 'Deal'"
+                  type="text"
+                  placeholder="Official corporate name"
+                  [class]="invoiceType() === 'Deal' ? 'bg-slate-50 text-slate-400 cursor-not-allowed' : autoFilledFields().has('customerName') ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-white'"
+                  class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600 transition-colors">
+              </div>
+
+              <!-- Billing Address -->
+              <div class="sm:col-span-2">
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">
+                  Billing Address
+                  @if (invoiceType() === 'Deal' || autoFilledFields().has('billingAddress')) {
+                    <span class="ml-1 text-[10px] bg-emerald-100 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 rounded-full font-bold">Auto-filled</span>
+                  }
+                </label>
+                <input [(ngModel)]="newInvoiceData.billingAddress"
+                  [readonly]="invoiceType() === 'Deal'"
+                  type="text"
+                  placeholder="Registered billing / fiscal address"
+                  [class]="invoiceType() === 'Deal' ? 'bg-slate-50 text-slate-400 cursor-not-allowed' : autoFilledFields().has('billingAddress') ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-white'"
+                  class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600 transition-colors">
               </div>
 
               <!-- Delivery Address -->
               <div class="sm:col-span-2">
-                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Delivery Address</label>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">
+                  Delivery Address
+                  @if (invoiceType() === 'Deal' || autoFilledFields().has('deliveryAddress')) {
+                    <span class="ml-1 text-[10px] bg-emerald-100 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 rounded-full font-bold">Auto-filled</span>
+                  }
+                </label>
                 <input [(ngModel)]="newInvoiceData.deliveryAddress"
-                  [readonly]="invoiceType() === 'Deal'" type="text"
+                  [readonly]="invoiceType() === 'Deal'"
+                  type="text"
                   placeholder="Full delivery location"
-                  [class]="invoiceType() === 'Deal' ? 'bg-slate-50 text-slate-400 cursor-not-allowed' : 'bg-white'"
-                  class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
+                  [class]="invoiceType() === 'Deal' ? 'bg-slate-50 text-slate-400 cursor-not-allowed' : autoFilledFields().has('deliveryAddress') ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-white'"
+                  class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600 transition-colors">
               </div>
 
               <!-- Due Date -->
@@ -600,9 +642,13 @@ export class FinanceComponent {
     dueDate: string;
     customerAccount: string;
     customerName: string;
+    billingAddress: string;
     deliveryAddress: string;
     vatNumber: string;
   } = this.blankForm();
+
+  /** Tracks which fields were auto-filled from the CustomerCard. */
+  autoFilledFields = signal<Set<string>>(new Set());
 
   constructor() {
     this.updateReminderTemplate();
@@ -625,6 +671,7 @@ export class FinanceComponent {
       dueDate: '',
       customerAccount: '',
       customerName: '',
+      billingAddress: '',
       deliveryAddress: '',
       vatNumber: '',
     };
@@ -682,12 +729,74 @@ export class FinanceComponent {
 
   /**
    * Called when the user manually picks a Customer (Manual pathway).
-   * Auto-fills the customerName display field.
+   * Auto-fills Customer Name, VAT, Billing Address, and Delivery Address
+   * from the linked CustomerCard when available.
    */
   onPartnerSelected(partnerId: string) {
-    if (!partnerId) return;
+    if (!partnerId) {
+      // Clear auto-filled fields when selection is cleared
+      this.autoFilledFields.set(new Set());
+      this.newInvoiceData.customerName = '';
+      this.newInvoiceData.vatNumber = '';
+      this.newInvoiceData.billingAddress = '';
+      this.newInvoiceData.deliveryAddress = '';
+      return;
+    }
+
     const partner = this.state.partners().find(p => p.id === partnerId);
-    if (partner) this.newInvoiceData.customerName = partner.name;
+    if (!partner) return;
+
+    const filled = new Set<string>();
+
+    // ── Customer Name ──────────────────────────────────────────────────────
+    this.newInvoiceData.customerName = partner.name;
+    filled.add('customerName');
+
+    // ── Enrich from CustomerCard ───────────────────────────────────────────
+    const card = this.state.getCustomerCard(partnerId);
+    if (card) {
+      // VAT: use ICE field (Identifiant Commun de l'Entreprise — Morocco VAT)
+      if (card.ice) {
+        this.newInvoiceData.vatNumber = card.ice;
+        filled.add('vatNumber');
+      } else if (card.tp) {
+        this.newInvoiceData.vatNumber = card.tp;
+        filled.add('vatNumber');
+      }
+
+      // Billing Address: prefer 'Billing' or 'Siège Social / Fiscal' address type
+      const billingAddr = card.addresses.find(a =>
+        a.addressType === 'Billing' || a.addressType === 'Siège Social / Fiscal'
+      ) ?? card.addresses.find(a => a.isPrimary) ?? card.addresses[0];
+      if (billingAddr) {
+        this.newInvoiceData.billingAddress =
+          [billingAddr.streetAddress, billingAddr.industrialZone, billingAddr.postalCode, billingAddr.city]
+            .filter(Boolean).join(', ');
+        filled.add('billingAddress');
+      }
+
+      // Delivery Address: prefer 'Delivery' type, fall back to billing
+      const deliveryAddr = card.addresses.find(a => a.addressType === 'Delivery')
+        ?? billingAddr;
+      if (deliveryAddr) {
+        this.newInvoiceData.deliveryAddress =
+          [deliveryAddr.streetAddress, deliveryAddr.industrialZone, deliveryAddr.postalCode, deliveryAddr.city]
+            .filter(Boolean).join(', ');
+        filled.add('deliveryAddress');
+      }
+
+      // Customer Account from ERP account code
+      if (card.erpAccount) {
+        this.newInvoiceData.customerAccount = card.erpAccount;
+        filled.add('customerAccount');
+      } else if (card.accountId) {
+        this.newInvoiceData.customerAccount = card.accountId;
+        filled.add('customerAccount');
+      }
+    }
+
+    this.autoFilledFields.set(filled);
+    this.formValidationError.set('');
   }
 
   /** Append a blank custom line to the invoice. */
@@ -813,9 +922,12 @@ export class FinanceComponent {
 
   openCreateInvoiceModal() {
     this.newInvoiceData = this.blankForm();
+    // Default the type based on the active sidebar tab
+    this.newInvoiceData.type = this.activeTab() === 'Vendor' ? 'Vendor' : 'Customer';
     this.invoiceType.set('Manual');
     this.invoiceLines.set([]);
     this.formValidationError.set('');
+    this.autoFilledFields.set(new Set());
     this.invoiceModalOpen.set(true);
   }
 

@@ -78,562 +78,63 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
 
       <!-- Deals View -->
       @if (activeTab() === 'deals') {
-        <div class="grid grid-cols-1 gap-6">
-          @for (deal of state.deals(); track deal.id) {
-            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 hover:shadow-md transition-all space-y-4">
-              <div class="flex justify-between items-start">
-                <div>
-                  <h3 class="text-lg font-semibold text-slate-900">{{deal.title}}</h3>
-                  <p class="text-sm text-slate-500 mt-0.5">Client: {{getPartnerName(deal.partnerId)}}</p>
-                </div>
-                <div class="flex flex-col items-end gap-1.5">
-                  <span class="px-3 py-1 text-xs font-semibold rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
-                    {{deal.stage}}
-                  </span>
-                  @if (deal.estimatedDeliveryDate) {
-                    <span class="text-xs text-emerald-600 flex items-center font-medium">
-                      <mat-icon class="text-[14px] w-3.5 h-3.5 mr-0.5">local_shipping</mat-icon> Est. Delivery: {{deal.estimatedDeliveryDate}}
-                    </span>
-                  }
-                </div>
-              </div>
-
-              <!-- Deal Details -->
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2 border-t border-slate-100">
-                <div>
-                  <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Amount Details</span>
-                  <div class="mt-1">
-                    <span class="text-xl font-bold text-slate-900 font-mono">{{formatCurrency(deal.amount)}}</span>
-                    @if (deal.discount) {
-                      <span class="text-xs text-emerald-600 font-semibold ml-2">({{deal.discount}}% Discount applied)</span>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <table class="min-w-full divide-y divide-slate-200">
+            <thead class="bg-slate-50">
+              <tr>
+                <th scope="col" class="px-6 py-3 text-left font-semibold text-slate-500 uppercase tracking-wider text-xs">Deal Title</th>
+                <th scope="col" class="px-6 py-3 text-left font-semibold text-slate-500 uppercase tracking-wider text-xs">Client</th>
+                <th scope="col" class="px-6 py-3 text-left font-semibold text-slate-500 uppercase tracking-wider text-xs">Amount</th>
+                <th scope="col" class="px-6 py-3 text-left font-semibold text-slate-500 uppercase tracking-wider text-xs">Stage</th>
+                <th scope="col" class="px-6 py-3 text-left font-semibold text-slate-500 uppercase tracking-wider text-xs">Est. Delivery</th>
+                <th scope="col" class="px-6 py-3 text-left font-semibold text-slate-500 uppercase tracking-wider text-xs">Order Status</th>
+                <th scope="col" class="px-6 py-3 text-right font-semibold text-slate-500 uppercase tracking-wider text-xs">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-slate-100">
+              @for (deal of state.deals(); track deal.id) {
+                <tr (click)="openDealDrawer(deal)" class="hover:bg-slate-50/80 cursor-pointer transition-colors">
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm font-semibold text-slate-900">{{deal.title}}</div>
+                    @if (deal.dealNumber) {
+                      <div class="text-[10px] text-slate-400 font-mono font-medium">{{deal.dealNumber}}</div>
                     }
-                  </div>
-                </div>
-
-                <div>
-                  <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider font-sans">Comments / Notes</span>
-                  <p class="text-xs text-slate-600 mt-1 line-clamp-2">{{deal.comments || 'No comments.'}}</p>
-                </div>
-
-                <div>
-                  <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider font-sans">Attached Proposal</span>
-                  <div class="text-xs text-slate-600 mt-1">
-                    #{{deal.proposalId || 'N/A'}} - {{ getProposalTitle(deal.proposalId) }}
-                  </div>
-                </div>
-              </div>
-
-              <!-- Email Exchange Log -->
-              @if (deal.emailExchange) {
-                <div class="bg-slate-50 rounded-xl p-3 border border-slate-100 text-xs font-mono space-y-1">
-                  <div class="text-slate-400 font-sans font-bold flex items-center gap-1 mb-1">
-                    <mat-icon class="text-[14px] w-3.5 h-3.5 leading-none">email</mat-icon> Email Exchange & Confirmation Logs
-                  </div>
-                  <pre class="whitespace-pre-wrap text-[10px] text-slate-700 leading-relaxed font-sans">{{deal.emailExchange}}</pre>
-                </div>
-              }
-
-              <!-- Expanded Deal Details -->
-              @if (expandedDeals()[deal.id]) {
-                <div class="pt-4 border-t border-slate-100 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-xs bg-slate-50/50 p-4 rounded-xl border border-slate-100 animate-in slide-in-from-top-2 duration-200">
-                  <!-- Identification & Dates -->
-                  <div class="space-y-2">
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block border-b border-slate-200/60 pb-1">1. Identification & Dates</span>
-                    <div class="grid grid-cols-2 gap-y-1 text-slate-600">
-                      <span class="font-medium">Order Number:</span> <span class="font-mono text-slate-900 font-semibold">{{ deal.orderNumber || 'N/A' }}</span>
-                      <span class="font-medium">Deal Number:</span> <span class="font-mono text-slate-900 font-semibold">{{ deal.dealNumber || 'N/A' }}</span>
-                      <span class="font-medium">Order Date:</span> <span class="text-slate-900 font-mono">{{ deal.orderDate || 'N/A' }}</span>
-                      <span class="font-medium">Req. Delivery:</span> <span class="text-slate-900 font-mono">{{ deal.requestedDeliveryDate || 'N/A' }}</span>
-                      <span class="font-medium">Order Status:</span> 
-                      <span>
-                        <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">
-                          {{ deal.orderStatus || 'N/A' }}
-                        </span>
-                      </span>
-                    </div>
-                  </div>
-
-                  <!-- Customer & Delivery -->
-                  <div class="space-y-2">
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block border-b border-slate-200/60 pb-1">2. Customer & Delivery</span>
-                    <div class="grid grid-cols-3 gap-y-1 text-slate-600">
-                      <span class="font-medium col-span-1">Account:</span> <span class="col-span-2 text-slate-900 font-mono">{{ deal.customerAccount || 'N/A' }}</span>
-                      <span class="font-medium col-span-1">Contact:</span> <span class="col-span-2 text-slate-900 font-medium">{{ deal.contactPerson || 'N/A' }}</span>
-                      <span class="font-medium col-span-1">Email:</span> <span class="col-span-2 text-slate-900 font-mono truncate" [title]="deal.contactEmail">{{ deal.contactEmail || 'N/A' }}</span>
-                      <span class="font-medium col-span-1">Phone:</span> <span class="col-span-2 text-slate-900 font-mono">{{ deal.contactPhone || 'N/A' }}</span>
-                    </div>
-                    <div class="mt-1.5 pt-1.5 border-t border-slate-200/60 text-[11px] text-slate-600 space-y-1">
-                      <div><strong class="text-slate-700">Billing:</strong> {{ deal.billingAddress || 'N/A' }}</div>
-                      <div><strong class="text-slate-700">Delivery:</strong> {{ deal.deliveryAddress || 'N/A' }}</div>
-                    </div>
-                  </div>
-
-                  <!-- Sales & Commercial -->
-                  <div class="space-y-2">
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block border-b border-slate-200/60 pb-1">3. Sales & Commercial</span>
-                    <div class="grid grid-cols-2 gap-y-1 text-slate-600">
-                      <span class="font-medium">Sales Person:</span> <span class="text-slate-900 font-medium">{{ deal.salesPerson || 'N/A' }}</span>
-                      <span class="font-medium">Region:</span> <span class="text-slate-900">{{ deal.salesRegion || 'N/A' }}</span>
-                      <span class="font-medium">Currency:</span> <span class="text-slate-900 font-bold font-mono">{{ deal.currency || 'MAD' }}</span>
-                      <span class="font-medium">Payment Terms:</span> <span class="text-slate-900">{{ deal.paymentTerms || 'N/A' }}</span>
-                      <span class="font-medium">Total Amount:</span> <span class="text-slate-900 font-mono font-bold">{{ formatCurrency(deal.orderTotalAmount || deal.amount) }}</span>
-                    </div>
-                  </div>
-
-                  <!-- Vendor & Logistics -->
-                  @if (deal.vendorAccount || deal.purchaseOrderRef || deal.warehouseAddress) {
-                    <div class="col-span-1 md:col-span-2 lg:col-span-3 space-y-2 pt-2 border-t border-slate-200/60">
-                      <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">4. Vendor & Logistics (if applicable)</span>
-                      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-slate-600">
-                        <div>
-                          <span class="font-medium block text-[10px] uppercase text-slate-400">Vendor Account</span>
-                          <span class="text-slate-900 font-mono font-semibold">{{ deal.vendorAccount || 'N/A' }}</span>
-                        </div>
-                        <div>
-                          <span class="font-medium block text-[10px] uppercase text-slate-400">PO Reference</span>
-                          <span class="text-slate-900 font-mono font-semibold">{{ deal.purchaseOrderRef || 'N/A' }}</span>
-                        </div>
-                        <div>
-                          <span class="font-medium block text-[10px] uppercase text-slate-400">Warehouse Address</span>
-                          <span class="text-slate-900">{{ deal.warehouseAddress || 'N/A' }}</span>
-                        </div>
-                        <div>
-                          <span class="font-medium block text-[10px] uppercase text-slate-400">Transport / Expected Dates</span>
-                          <div class="text-[11px]">
-                            <div class="text-slate-900 font-semibold">{{ deal.transportationService || 'N/A' }}</div>
-                            <div class="text-[10px] font-mono mt-0.5 text-slate-500">
-                              Vendor Est: {{ deal.expectedDeliveryDateVendor || 'N/A' }}<br>
-                              Customer Del: {{ deal.deliveryDate || 'N/A' }}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  }
-
-                  <!-- Activity Hub -->
-                  <div class="col-span-1 md:col-span-2 lg:col-span-3 border-t border-slate-200/60 pt-4 mt-2">
-                    <h5 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1.5 font-sans">
-                      <mat-icon class="text-[16px] w-4 h-4 text-indigo-600 flex items-center justify-center">forum</mat-icon> Deal Activity Hub
-                    </h5>
-                    
-                    <!-- Tabs Header -->
-                    <div class="flex flex-wrap gap-1 border-b border-slate-200 mb-4 bg-slate-50/50 p-1 rounded-lg">
-                      <button type="button" (click)="setDealTab(deal.id, 'calls')"
-                        [class]="getDealTab(deal.id) === 'calls' ? 'bg-white text-indigo-600 shadow-xs border-slate-200' : 'text-slate-600 border-transparent hover:text-slate-900 hover:bg-slate-100'"
-                        class="px-3 py-1.5 rounded-md text-xs font-medium border transition-all flex items-center gap-1.5">
-                        <mat-icon class="text-[14px] w-3.5 h-3.5 leading-none flex items-center justify-center">call</mat-icon>
-                        Calls
-                        <span class="bg-indigo-50 text-indigo-600 px-1 py-0.2 rounded-full text-[9px] font-semibold">{{ deal.activityLog?.calls?.length || 0 }}</span>
-                      </button>
-                      <button type="button" (click)="setDealTab(deal.id, 'emails')"
-                        [class]="getDealTab(deal.id) === 'emails' ? 'bg-white text-indigo-600 shadow-xs border-slate-200' : 'text-slate-600 border-transparent hover:text-slate-900 hover:bg-slate-100'"
-                        class="px-3 py-1.5 rounded-md text-xs font-medium border transition-all flex items-center gap-1.5">
-                        <mat-icon class="text-[14px] w-3.5 h-3.5 leading-none flex items-center justify-center">email</mat-icon>
-                        Emails
-                        <span class="bg-indigo-50 text-indigo-600 px-1 py-0.2 rounded-full text-[9px] font-semibold">{{ deal.activityLog?.emails?.length || 0 }}</span>
-                      </button>
-                      <button type="button" (click)="setDealTab(deal.id, 'meetings')"
-                        [class]="getDealTab(deal.id) === 'meetings' ? 'bg-white text-indigo-600 shadow-xs border-slate-200' : 'text-slate-600 border-transparent hover:text-slate-900 hover:bg-slate-100'"
-                        class="px-3 py-1.5 rounded-md text-xs font-medium border transition-all flex items-center gap-1.5">
-                        <mat-icon class="text-[14px] w-3.5 h-3.5 leading-none flex items-center justify-center">groups</mat-icon>
-                        Meetings
-                        <span class="bg-indigo-50 text-indigo-600 px-1 py-0.2 rounded-full text-[9px] font-semibold">{{ deal.activityLog?.meetings?.length || 0 }}</span>
-                      </button>
-                      <button type="button" (click)="setDealTab(deal.id, 'recordings')"
-                        [class]="getDealTab(deal.id) === 'recordings' ? 'bg-white text-indigo-600 shadow-xs border-slate-200' : 'text-slate-600 border-transparent hover:text-slate-900 hover:bg-slate-100'"
-                        class="px-3 py-1.5 rounded-md text-xs font-medium border transition-all flex items-center gap-1.5">
-                        <mat-icon class="text-[14px] w-3.5 h-3.5 leading-none flex items-center justify-center">videocam</mat-icon>
-                        Teams Recordings
-                        <span class="bg-indigo-50 text-indigo-600 px-1 py-0.2 rounded-full text-[9px] font-semibold">{{ deal.activityLog?.recordings?.length || 0 }}</span>
-                      </button>
-                      <button type="button" (click)="setDealTab(deal.id, 'notes')"
-                        [class]="getDealTab(deal.id) === 'notes' ? 'bg-white text-indigo-600 shadow-xs border-slate-200' : 'text-slate-600 border-transparent hover:text-slate-900 hover:bg-slate-100'"
-                        class="px-3 py-1.5 rounded-md text-xs font-medium border transition-all flex items-center gap-1.5">
-                        <mat-icon class="text-[14px] w-3.5 h-3.5 leading-none flex items-center justify-center">note_alt</mat-icon>
-                        Notes
-                        <span class="bg-indigo-50 text-indigo-600 px-1 py-0.2 rounded-full text-[9px] font-semibold">{{ deal.activityLog?.notes?.length || 0 }}</span>
-                      </button>
-                      <button type="button" (click)="setDealTab(deal.id, 'tasks')"
-                        [class]="getDealTab(deal.id) === 'tasks' ? 'bg-white text-indigo-600 shadow-xs border-slate-200' : 'text-slate-600 border-transparent hover:text-slate-900 hover:bg-slate-100'"
-                        class="px-3 py-1.5 rounded-md text-xs font-medium border transition-all flex items-center gap-1.5">
-                        <mat-icon class="text-[14px] w-3.5 h-3.5 leading-none flex items-center justify-center">assignment</mat-icon>
-                        Tasks
-                        <span class="bg-indigo-50 text-indigo-600 px-1 py-0.2 rounded-full text-[9px] font-semibold">{{ getLinkedTasksCount(deal.title) }}</span>
-                      </button>
-                      <button type="button" (click)="setDealTab(deal.id, 'followups')"
-                        [class]="getDealTab(deal.id) === 'followups' ? 'bg-white text-indigo-600 shadow-xs border-slate-200' : 'text-slate-600 border-transparent hover:text-slate-900 hover:bg-slate-100'"
-                        class="px-3 py-1.5 rounded-md text-xs font-medium border transition-all flex items-center gap-1.5">
-                        <mat-icon class="text-[14px] w-3.5 h-3.5 leading-none flex items-center justify-center">notification_important</mat-icon>
-                        Follow-ups
-                        <span class="bg-indigo-50 text-indigo-600 px-1 py-0.2 rounded-full text-[9px] font-semibold">{{ deal.activityLog?.followUps?.length || 0 }}</span>
-                      </button>
-                      <button type="button" (click)="setDealTab(deal.id, 'calendar')"
-                        [class]="getDealTab(deal.id) === 'calendar' ? 'bg-white text-indigo-600 shadow-xs border-slate-200' : 'text-slate-600 border-transparent hover:text-slate-900 hover:bg-slate-100'"
-                        class="px-3 py-1.5 rounded-md text-xs font-medium border transition-all flex items-center gap-1.5">
-                        <mat-icon class="text-[14px] w-3.5 h-3.5 leading-none flex items-center justify-center">calendar_month</mat-icon>
-                        Calendar
-                      </button>
-                    </div>
-
-                    <!-- Active Tab Panel -->
-                    <div class="bg-slate-50/50 border border-slate-200/60 rounded-xl p-4 min-h-[180px]">
-                      
-                      <!-- CALLS TAB -->
-                      @if (getDealTab(deal.id) === 'calls') {
-                        <div class="space-y-4">
-                          <div class="flex justify-between items-center">
-                            <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Phone Calls History</span>
-                            <button type="button" (click)="openAddActivityModal(deal.id, 'calls')" class="text-indigo-600 hover:text-indigo-700 text-xs font-semibold flex items-center gap-0.5">
-                              <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">add</mat-icon> Log Call
-                            </button>
-                          </div>
-                          
-                          <div class="space-y-3">
-                            @for (call of deal.activityLog?.calls; track call.id) {
-                              <div class="bg-white border border-slate-150 rounded-lg p-3 shadow-xs space-y-1.5">
-                                <div class="flex justify-between items-start">
-                                  <div class="flex items-center gap-2">
-                                    <span class="font-bold text-slate-800">{{ call.callerName }}</span>
-                                    <span class="text-slate-400 font-mono text-[10px]">{{ call.date }} ({{ call.duration }} min)</span>
-                                  </div>
-                                  <span [class]="call.outcome === 'Interested' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 
-                                                 call.outcome === 'Follow-up' ? 'bg-amber-50 text-amber-700 border-amber-100' : 
-                                                 'bg-slate-100 text-slate-600 border-slate-200'"
-                                        class="px-2 py-0.5 rounded text-[10px] font-semibold border">
-                                    {{ call.outcome }}
-                                  </span>
-                                </div>
-                                <p class="text-[11px] text-slate-600 font-sans leading-relaxed">{{ call.summary }}</p>
-                              </div>
-                            } @empty {
-                              <div class="text-center py-6 text-slate-400 text-xs">No calls logged yet.</div>
-                            }
-                          </div>
-                        </div>
-                      }
-
-                      <!-- EMAILS TAB -->
-                      @if (getDealTab(deal.id) === 'emails') {
-                        <div class="space-y-4">
-                          <div class="flex justify-between items-center">
-                            <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Email Correspondence Thread</span>
-                            <button type="button" (click)="openAddActivityModal(deal.id, 'emails')" class="text-indigo-600 hover:text-indigo-700 text-xs font-semibold flex items-center gap-0.5">
-                              <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">add</mat-icon> Log Email
-                            </button>
-                          </div>
-
-                          <div class="space-y-3">
-                            @for (email of deal.activityLog?.emails; track email.id) {
-                              <div [class]="email.direction === 'sent' ? 'bg-indigo-50/40 border-indigo-100 ml-6' : 'bg-white border-slate-150 mr-6'"
-                                   class="border rounded-lg p-3 shadow-xs space-y-1.5 transition-all">
-                                <div class="flex justify-between items-start">
-                                  <div>
-                                    <span class="font-bold text-slate-800 text-xs">{{ email.subject }}</span>
-                                    <div class="text-[10px] text-slate-400 font-mono mt-0.5">
-                                      From: {{ email.from }} | To: {{ email.to }}
-                                    </div>
-                                  </div>
-                                  <span class="text-[10px] font-mono text-slate-400">{{ email.date }}</span>
-                                </div>
-                                <p class="text-[11px] text-slate-600 leading-relaxed font-sans whitespace-pre-wrap">{{ email.body }}</p>
-                              </div>
-                            }
-                            
-                            <!-- Legacy emails text snippet fallback -->
-                            @if (deal.emailExchange && (!deal.activityLog || deal.activityLog.emails.length === 0)) {
-                              <div class="bg-white border border-slate-150 rounded-lg p-3 shadow-xs font-mono text-[11px] text-slate-700 leading-relaxed">
-                                <div class="text-slate-400 font-sans font-bold flex items-center gap-1 mb-2">
-                                  <mat-icon class="text-[14px] w-3.5 h-3.5 leading-none">history</mat-icon> Imported Exchange Logs
-                                </div>
-                                <pre class="whitespace-pre-wrap text-[10px] font-sans leading-relaxed">{{ deal.emailExchange }}</pre>
-                              </div>
-                            }
-                            
-                            @if (!deal.emailExchange && (!deal.activityLog || deal.activityLog.emails.length === 0)) {
-                              <div class="text-center py-6 text-slate-400 text-xs">No email exchanges logged yet.</div>
-                            }
-                          </div>
-                        </div>
-                      }
-
-                      <!-- MEETINGS TAB -->
-                      @if (getDealTab(deal.id) === 'meetings') {
-                        <div class="space-y-4">
-                          <div class="flex justify-between items-center">
-                            <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Meetings & Technical Demos</span>
-                            <button type="button" (click)="openAddActivityModal(deal.id, 'meetings')" class="text-indigo-600 hover:text-indigo-700 text-xs font-semibold flex items-center gap-0.5">
-                              <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">add</mat-icon> Log Meeting
-                            </button>
-                          </div>
-
-                          <div class="space-y-3">
-                            @for (meeting of deal.activityLog?.meetings; track meeting.id) {
-                              <div class="bg-white border border-slate-150 rounded-lg p-3 shadow-xs space-y-2">
-                                <div class="flex justify-between items-start">
-                                  <div class="flex items-center gap-2">
-                                    <span class="font-bold text-slate-800 text-xs">{{ meeting.title }}</span>
-                                    <span [class]="meeting.type === 'teams' ? 'bg-blue-50 text-blue-700 border-blue-100' : 
-                                                   meeting.type === 'demo' ? 'bg-purple-50 text-purple-700 border-purple-100' : 
-                                                   'bg-slate-50 text-slate-700 border-slate-200'"
-                                          class="px-1.5 py-0.2 rounded text-[9px] font-semibold border uppercase">
-                                      {{ meeting.type }}
-                                    </span>
-                                  </div>
-                                  <span class="text-[10px] text-slate-400 font-mono">{{ meeting.date }} à {{ meeting.time }}</span>
-                                </div>
-                                
-                                <div class="text-[10px] text-slate-500">
-                                  <strong>Location:</strong> {{ meeting.location }} | 
-                                  <strong>Attendees:</strong> 
-                                  @for (att of meeting.attendees; track $index) {
-                                    <span class="inline-block bg-slate-100 text-slate-600 px-1.5 py-0.2 rounded-full mx-0.5">{{ att }}</span>
-                                  }
-                                </div>
-                                <p class="text-[11px] text-slate-600 font-sans leading-relaxed border-t border-slate-50 pt-1.5">{{ meeting.summary }}</p>
-                              </div>
-                            } @empty {
-                              <div class="text-center py-6 text-slate-400 text-xs">No meetings logged yet.</div>
-                            }
-                          </div>
-                        </div>
-                      }
-
-                      <!-- RECORDINGS TAB -->
-                      @if (getDealTab(deal.id) === 'recordings') {
-                        <div class="space-y-4">
-                          <div class="flex justify-between items-center">
-                            <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Teams Meeting Records</span>
-                            <button type="button" (click)="openAddActivityModal(deal.id, 'recordings')" class="text-indigo-600 hover:text-indigo-700 text-xs font-semibold flex items-center gap-0.5">
-                              <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">add</mat-icon> Add Link
-                            </button>
-                          </div>
-
-                          <div class="space-y-2">
-                            @for (rec of deal.activityLog?.recordings; track rec.id) {
-                              <div class="bg-white border border-slate-150 rounded-lg p-3 shadow-xs flex items-center justify-between gap-4">
-                                <div class="flex items-center gap-3">
-                                  <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100">
-                                    <mat-icon class="text-base w-4.5 h-4.5 flex items-center justify-center">videocam</mat-icon>
-                                  </div>
-                                  <div>
-                                    <span class="font-bold text-slate-800 text-xs block">{{ rec.title }}</span>
-                                    <span class="text-[10px] text-slate-400 font-mono">{{ rec.date }} | Duration: {{ rec.duration }}</span>
-                                  </div>
-                                </div>
-                                
-                                <div class="flex gap-2">
-                                  <a [href]="rec.meetingLink" target="_blank" class="px-2.5 py-1 text-[10px] font-semibold rounded bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200 flex items-center gap-0.5">
-                                    <mat-icon class="text-[12px] w-3 h-3">link</mat-icon> Teams
-                                  </a>
-                                  <a [href]="rec.recordingLink" target="_blank" class="px-2.5 py-1 text-[10px] font-semibold rounded bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 flex items-center gap-0.5">
-                                    <mat-icon class="text-[12px] w-3 h-3 flex items-center justify-center">play_arrow</mat-icon> Record
-                                  </a>
-                                </div>
-                              </div>
-                            } @empty {
-                              <div class="text-center py-6 text-slate-400 text-xs">No recording links added yet.</div>
-                            }
-                          </div>
-                        </div>
-                      }
-
-                      <!-- NOTES TAB -->
-                      @if (getDealTab(deal.id) === 'notes') {
-                        <div class="space-y-4">
-                          <div class="flex justify-between items-center">
-                            <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Sales Notes & Comments</span>
-                            <button type="button" (click)="openAddActivityModal(deal.id, 'notes')" class="text-indigo-600 hover:text-indigo-700 text-xs font-semibold flex items-center gap-0.5">
-                              <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">add</mat-icon> Add Note
-                            </button>
-                          </div>
-
-                          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            @for (note of deal.activityLog?.notes; track note.id) {
-                              <div class="bg-amber-50/50 border border-amber-100 rounded-lg p-3 shadow-xs space-y-1.5 relative overflow-hidden font-sans">
-                                <div class="absolute top-0 left-0 w-1 h-full bg-amber-400"></div>
-                                <div class="flex justify-between items-center text-[10px] text-slate-400 font-mono">
-                                  <span>By: {{ note.author }}</span>
-                                  <span>{{ note.date }}</span>
-                                </div>
-                                <p class="text-[11px] text-slate-700 leading-relaxed font-sans">{{ note.content }}</p>
-                              </div>
-                            } @empty {
-                              <div class="col-span-2 text-center py-6 text-slate-400 text-xs">No notes added yet.</div>
-                            }
-                          </div>
-                        </div>
-                      }
-
-                      <!-- TASKS TAB -->
-                      @if (getDealTab(deal.id) === 'tasks') {
-                        <div class="space-y-4">
-                          <div class="flex justify-between items-center">
-                            <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Operation & Hand-off Tasks</span>
-                            <button type="button" (click)="openCreateTaskForDeal(deal.title)" class="text-indigo-600 hover:text-indigo-700 text-xs font-semibold flex items-center gap-0.5">
-                              <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">add</mat-icon> New Task
-                            </button>
-                          </div>
-
-                          <div class="space-y-2">
-                            @for (t of getLinkedTasks(deal.title); track t.id) {
-                              <div class="bg-white border border-slate-150 rounded-lg p-3 shadow-xs flex items-center justify-between gap-4">
-                                <div class="flex items-center gap-3">
-                                  <button type="button" (click)="toggleTaskStatus(t.id, t.status)" class="text-slate-400 hover:text-indigo-600">
-                                    <mat-icon class="text-base w-4.5 h-4.5 flex items-center justify-center">{{ t.status === 'Completed' ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
-                                  </button>
-                                  <div>
-                                    <span [class.line-through]="t.status === 'Completed'" [class.text-slate-400]="t.status === 'Completed'" class="font-bold text-slate-800 text-xs block font-sans">{{ t.title }}</span>
-                                    <span class="text-[10px] text-slate-400 font-sans">Team: {{ t.assignedTeam }} | Assigned: {{ t.assignedTo || 'Unassigned' }}</span>
-                                  </div>
-                                </div>
-                                
-                                <span [class]="t.status === 'Completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-slate-100 text-slate-600 border-slate-200'" class="px-2 py-0.5 border text-[9px] font-bold uppercase rounded font-mono">
-                                  {{ t.status }}
-                                </span>
-                              </div>
-                            } @empty {
-                              <div class="text-center py-6 text-slate-400 text-xs">No tasks linked to this deal yet.</div>
-                            }
-                          </div>
-                        </div>
-                      }
-
-                      <!-- FOLLOW-UPS TAB -->
-                      @if (getDealTab(deal.id) === 'followups') {
-                        <div class="space-y-4">
-                          <div class="flex justify-between items-center">
-                            <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider font-sans">Upcoming Alerts & Action Reminders</span>
-                            <button type="button" (click)="openAddActivityModal(deal.id, 'followups')" class="text-indigo-600 hover:text-indigo-700 text-xs font-semibold flex items-center gap-0.5">
-                              <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">add</mat-icon> Add Follow-up
-                            </button>
-                          </div>
-
-                          <div class="space-y-2">
-                            @for (f of deal.activityLog?.followUps; track f.id) {
-                              <div class="bg-white border border-slate-150 rounded-lg p-3 shadow-xs flex items-center justify-between gap-4">
-                                <div class="flex items-center gap-3">
-                                  <button type="button" (click)="toggleFollowUpStatus(deal.id, f.id, f.status)" class="text-slate-400 hover:text-indigo-600">
-                                    <mat-icon class="text-base w-4.5 h-4.5 flex items-center justify-center">{{ f.status === 'done' ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
-                                  </button>
-                                  <div>
-                                    <span [class.line-through]="f.status === 'done'" [class.text-slate-400]="f.status === 'done'" class="font-bold text-slate-800 text-xs block font-sans">{{ f.title }}</span>
-                                    <span class="text-[10px] text-slate-400 font-mono">Due date: {{ f.dueDate }} | Owner: {{ f.assignedTo }}</span>
-                                  </div>
-                                </div>
-                                
-                                <span [class]="f.status === 'done' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-rose-50 text-rose-700 border-rose-100'" class="px-2 py-0.5 border text-[9px] font-bold uppercase rounded font-mono">
-                                  {{ f.status === 'done' ? 'Completed' : 'Pending' }}
-                                </span>
-                              </div>
-                            } @empty {
-                              <div class="text-center py-6 text-slate-400 text-xs">No follow-ups scheduled yet.</div>
-                            }
-                          </div>
-                        </div>
-                      }
-
-                      <!-- CALENDAR TAB -->
-                      @if (getDealTab(deal.id) === 'calendar') {
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <div class="flex justify-between items-center mb-2 px-1">
-                              <span class="text-[11px] font-bold text-slate-700 uppercase">Juin 2026</span>
-                              <span class="text-[9px] text-slate-400 flex items-center gap-0.5 font-semibold">
-                                <span class="w-1.5 h-1.5 bg-indigo-600 rounded-full inline-block"></span> Outlook Sync TBD
-                              </span>
-                            </div>
-
-                            <!-- Calendar Grid -->
-                            <div class="bg-white border border-slate-200 rounded-xl p-2.5 shadow-xs">
-                              <div class="grid grid-cols-7 gap-1 text-center font-bold text-[9px] text-slate-400 mb-1 border-b border-slate-50 pb-1">
-                                @for (h of calendarHeaders; track h) {
-                                  <div>{{ h }}</div>
-                                }
-                              </div>
-                              <div class="grid grid-cols-7 gap-1.5">
-                                @for (day of calendarDays; track day) {
-                                  <button type="button" (click)="selectCalendarDay(deal.id, day)"
-                                          [class]="isSelectedCalendarDay(deal.id, day) ? 'bg-indigo-600 text-white font-bold' : 
-                                                   hasEventsOnDay(deal, day) ? 'bg-indigo-50 text-indigo-700 font-bold border-indigo-200' : 
-                                                   'bg-slate-50 text-slate-700 hover:bg-slate-100 border-slate-105 border-slate-100'"
-                                          class="w-full aspect-square rounded-lg text-[10px] font-semibold border flex flex-col items-center justify-center relative transition-all">
-                                    {{ day }}
-                                    @if (hasEventsOnDay(deal, day) && !isSelectedCalendarDay(deal.id, day)) {
-                                      <span class="absolute bottom-1 w-1.5 h-1.5 bg-indigo-600 rounded-full"></span>
-                                    }
-                                  </button>
-                                }
-                              </div>
-                            </div>
-                          </div>
-
-                          <!-- Selected Day Details -->
-                          <div class="flex flex-col justify-between">
-                            <div class="space-y-2">
-                              <span class="text-[11px] font-bold text-slate-700 block mb-2 uppercase">
-                                Events: {{ getSelectedCalendarDay(deal.id) ? 'Day ' + getSelectedCalendarDay(deal.id) + ' June' : 'Select a day' }}
-                              </span>
-
-                              <div class="space-y-2">
-                                @for (m of getEventsOnDay(deal, getSelectedCalendarDay(deal.id) || 15); track m.id) {
-                                  <div class="bg-white border border-indigo-100 rounded-lg p-2.5 shadow-xs">
-                                    <div class="flex justify-between items-center mb-1">
-                                      <span class="font-bold text-slate-900 text-xs">{{ m.title }}</span>
-                                      <span class="text-[9px] text-slate-400 font-mono">{{ m.time }}</span>
-                                    </div>
-                                    <div class="text-[9px] text-slate-500 uppercase tracking-wider mb-1 font-sans">
-                                      Type: {{ m.type }} | Location: {{ m.location }}
-                                    </div>
-                                    <p class="text-[10px] text-slate-600 line-clamp-2 leading-relaxed font-sans">{{ m.summary }}</p>
-                                  </div>
-                                } @empty {
-                                  <div class="text-center py-8 text-slate-400 text-[11px] bg-white border border-slate-150 rounded-xl font-sans">
-                                    No meetings scheduled on this day.
-                                  </div>
-                                }
-                              </div>
-                            </div>
-
-                            <div class="text-[10px] bg-slate-100 text-slate-500 rounded-lg p-2.5 border border-slate-150 mt-4 leading-relaxed font-sans">
-                              💡 <strong>Tip:</strong> Meetings logged in the <strong>Meetings</strong> tab automatically populate this calendar view.
-                            </div>
-                          </div>
-                        </div>
-                      }
-
-                    </div>
-                  </div>
-                </div>
-              }
-
-              <!-- Action buttons for Operations / Delivery -->
-              <div class="flex justify-between items-center pt-4 border-t border-slate-100">
-                <div class="flex items-center gap-4">
-                  <span class="text-xs text-slate-400">Lines: {{ deal.orderLines?.length || 0 }} items</span>
-                  <button (click)="toggleDealDetails(deal.id)" class="text-indigo-600 hover:text-indigo-700 text-xs font-semibold flex items-center gap-0.5 transition-colors">
-                    <mat-icon class="text-[16px] w-4 h-4">{{ expandedDeals()[deal.id] ? 'expand_less' : 'expand_more' }}</mat-icon>
-                    {{ expandedDeals()[deal.id] ? 'Hide Full Details' : 'View Full Details' }}
-                  </button>
-                </div>
-                <div class="flex gap-2">
-                  <!-- Create PO trigger if none exists for this deal -->
-                  @if (!hasPOForDeal(deal.id)) {
-                    <button (click)="openCreatePOModal(deal)" class="bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors flex items-center">
-                      <mat-icon class="mr-1 text-[16px] w-4 h-4">add_shopping_cart</mat-icon> Create PO (Operations)
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm text-slate-600 font-medium">{{getPartnerName(deal.partnerId)}}</div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm text-slate-900 font-mono font-bold">{{formatCurrency(deal.amount)}}</div>
+                    @if (deal.discount) {
+                      <div class="text-[10px] text-emerald-600 font-semibold">-{{deal.discount}}%</div>
+                    }
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="inline-flex px-2.5 py-0.5 text-xs font-semibold rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
+                      {{deal.stage}}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600 font-mono">
+                    {{deal.estimatedDeliveryDate || 'N/A'}}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="inline-flex px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                      {{deal.orderStatus || 'N/A'}}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-right text-xs font-semibold">
+                    <button class="text-indigo-600 hover:text-indigo-900 flex items-center gap-1 ml-auto">
+                      View details <mat-icon class="text-sm w-4 h-4 flex items-center justify-center">chevron_right</mat-icon>
                     </button>
-                  }
-                  @if (deal.stage === 'New') {
-                    <button (click)="state.updateDealStage(deal.id, 'Confirmed')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors flex items-center">
-                      <mat-icon class="mr-1 text-[16px] w-4 h-4">check</mat-icon> Confirm Deal
-                    </button>
-                  }
-                </div>
-              </div>
-            </div>
-          } @empty {
-            <div class="bg-white rounded-2xl p-8 text-center text-slate-500 shadow-sm border border-slate-200">No deals found. Create a confirmed proposal to start.</div>
-          }
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="7" class="px-6 py-8 text-center text-slate-500 text-sm">No deals found. Create a confirmed proposal to start.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
         </div>
       }
 
@@ -709,6 +210,47 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                     </div>
                   </div>
                 </div>
+                
+                <!-- Confirmation Info (if confirmed) -->
+                @if (prop.status === 'Confirmed' && prop.confirmationMethod) {
+                  <div class="border-t border-slate-100 pt-3 mt-3">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Confirmation Proof</span>
+                    <div class="bg-emerald-50/40 border border-emerald-100 rounded-xl p-3 text-xs text-emerald-950 space-y-2">
+                      <div class="flex items-center gap-1.5 font-semibold text-emerald-800 text-[11px]">
+                        @if (prop.confirmationMethod === 'Email') {
+                          <mat-icon class="text-sm w-4 h-4 flex items-center justify-center">email</mat-icon>
+                          <span>Email confirmation</span>
+                        } @else if (prop.confirmationMethod === 'WhatsApp') {
+                          <mat-icon class="text-sm w-4 h-4 flex items-center justify-center">chat</mat-icon>
+                          <span>WhatsApp screenshot</span>
+                        } @else {
+                          <mat-icon class="text-sm w-4 h-4 flex items-center justify-center">phone</mat-icon>
+                          <span>Call Summary</span>
+                        }
+                        @if (prop.confirmedAt) {
+                          <span class="text-[10px] text-emerald-600 font-normal ml-auto font-mono">{{ prop.confirmedAt }}</span>
+                        }
+                      </div>
+
+                      @if (prop.confirmationAttachmentName) {
+                        <div class="flex items-center gap-1.5 bg-white border border-emerald-200/60 p-2 rounded-lg text-emerald-900 font-mono text-[10px] truncate">
+                          <mat-icon class="text-[14px] w-3.5 h-3.5 text-emerald-600">attach_file</mat-icon>
+                          <span class="truncate flex-1">{{ prop.confirmationAttachmentName }}</span>
+                          @if (prop.confirmationAttachmentData) {
+                            <a [href]="prop.confirmationAttachmentData" [download]="prop.confirmationAttachmentName"
+                               class="text-indigo-650 hover:underline font-sans font-semibold ml-1 shrink-0">Download</a>
+                          }
+                        </div>
+                      }
+
+                      @if (prop.confirmationNote) {
+                        <p class="text-[11px] text-slate-650 leading-relaxed bg-white border border-emerald-150 p-2 rounded-lg italic">
+                          "{{ prop.confirmationNote }}"
+                        </p>
+                      }
+                    </div>
+                  </div>
+                }
               </div>
 
               <div class="mt-5 pt-3 border-t border-slate-100 flex justify-between gap-2">
@@ -723,11 +265,11 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                     Send to Prospect
                   </button>
                 } @else if (prop.status === 'Sent') {
-                  <button (click)="state.updateProposalStatus(prop.id, 'Confirmed')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold py-2 rounded-lg transition-colors flex items-center justify-center gap-1">
+                  <button (click)="openConfirmProposalModal(prop)" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold py-2 rounded-lg transition-colors flex items-center justify-center gap-1">
                     <mat-icon class="text-[16px] w-4 h-4">task_alt</mat-icon> Confirm (Signs BC)
                   </button>
                 } @else {
-                  <button (click)="convertProposalToDeal(prop)"
+                  <button (click)="openConvertProposalModal(prop)"
                     class="flex-1 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-xs font-bold py-2.5 rounded-lg transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-1.5 group">
                     <mat-icon class="text-[16px] w-4 h-4 transition-transform group-hover:scale-110">swap_horiz</mat-icon>
                     Convert to Deal &amp; Customer
@@ -889,68 +431,110 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
     <!-- Send Proposal Modal -->
     @if (sendingProposalId()) {
       <div class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-xl border border-slate-100 animate-in zoom-in-95 duration-200">
-          <h3 class="text-lg font-bold text-slate-950">Send Proposal</h3>
-          
-          <div class="bg-gray-50 border border-gray-100 rounded-xl p-3 mb-4">
-            <span class="text-xs text-gray-500 font-medium block uppercase tracking-wider">Target Prospect</span>
-            <span class="text-sm font-bold text-gray-800">{{ currentProposalPartnerName() }}</span>
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-5 shadow-xl border border-slate-100 animate-in zoom-in-95 duration-200">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-bold text-slate-950">Send Proposal</h3>
+            <button (click)="sendingProposalId.set(null)" class="text-slate-400 hover:text-slate-600 transition-colors">
+              <mat-icon class="text-[20px] w-5 h-5">close</mat-icon>
+            </button>
           </div>
 
-          @if (!selectedChannel()) {
-            <div class="space-y-3">
-              <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Choose Sending Channel</label>
-              <div class="grid grid-cols-2 gap-3">
-                <button type="button" (click)="selectChannel('email')" class="flex flex-col items-center justify-center p-4 border border-slate-200 rounded-xl hover:border-indigo-650 hover:bg-slate-50/50 hover:text-indigo-600 transition-all gap-2 text-slate-700">
-                  <mat-icon class="text-3xl w-8 h-8 flex items-center justify-center">email</mat-icon>
-                  <span class="text-sm font-semibold">Email</span>
-                </button>
-                <button type="button" (click)="selectChannel('whatsapp')" class="flex flex-col items-center justify-center p-4 border border-slate-200 rounded-xl hover:border-indigo-650 hover:bg-slate-50/50 hover:text-indigo-600 transition-all gap-2 text-slate-700">
-                  <mat-icon class="text-3xl w-8 h-8 flex items-center justify-center">chat</mat-icon>
-                  <span class="text-sm font-semibold">WhatsApp</span>
-                </button>
-              </div>
-            </div>
-            
-            <div class="flex justify-end pt-2">
-              <button (click)="sendingProposalId.set(null)" class="px-4 py-2 border border-slate-250 border-slate-200 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-50">Cancel</button>
-            </div>
-          } @else {
-            <div class="space-y-3">
-              <div>
-                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Include other prospects in this send:</label>
-                <select (change)="addProspectToRecipients($event)" class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
-                  <option value="">-- Select Prospect --</option>
-                  @for (prospect of availableProspects(); track prospect.id) {
-                    <option [value]="prospect.id">{{prospect.name}}</option>
-                  }
-                </select>
-              </div>
+          <!-- Target Organization -->
+          <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-3">
+            <span class="text-[10px] text-indigo-400 font-bold uppercase tracking-wider block mb-0.5">Target Organization</span>
+            <span class="text-sm font-bold text-indigo-900">{{ currentProposalPartnerName() }}</span>
+          </div>
 
-              <div class="space-y-2">
-                <label class="block text-xs font-semibold text-slate-500 uppercase">Recipients ({{ selectedChannel() === 'email' ? 'Emails' : 'Phone Numbers' }})</label>
-                @for (recipient of recipients(); track $index) {
-                  <div class="flex gap-2">
-                    <input [value]="recipient" (input)="updateRecipient($index, $event)" type="text" class="flex-1 border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
-                    <button type="button" (click)="removeRecipient($index)" class="text-rose-500 hover:bg-rose-50 p-2 rounded">
-                      <mat-icon class="text-base w-4 h-4">delete</mat-icon>
-                    </button>
-                  </div>
+          <!-- Channel Selection (multi-select toggle) -->
+          <div class="space-y-2">
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Sending Channel(s) — select one or both</label>
+            <div class="grid grid-cols-2 gap-3">
+              <button type="button" (click)="toggleChannel('email')"
+                [class]="isChannelSelected('email')
+                  ? 'flex flex-col items-center justify-center p-4 border-2 border-indigo-500 bg-indigo-50 text-indigo-700 rounded-xl gap-2 font-semibold transition-all shadow-sm'
+                  : 'flex flex-col items-center justify-center p-4 border border-slate-200 rounded-xl hover:border-indigo-300 hover:bg-slate-50/50 hover:text-indigo-600 transition-all gap-2 text-slate-600'">
+                <mat-icon class="text-3xl w-8 h-8 flex items-center justify-center">email</mat-icon>
+                <span class="text-sm font-semibold">Email</span>
+                @if (isChannelSelected('email')) {
+                  <span class="text-[10px] bg-indigo-600 text-white px-2 py-0.5 rounded-full font-bold">Selected</span>
                 }
-                <button type="button" (click)="addManualRecipient()" class="text-indigo-600 hover:text-indigo-700 text-xs font-semibold flex items-center gap-1">
-                  <mat-icon class="text-base w-4 h-4">add_circle</mat-icon> Add Recipient
-                </button>
-              </div>
+              </button>
+              <button type="button" (click)="toggleChannel('whatsapp')"
+                [class]="isChannelSelected('whatsapp')
+                  ? 'flex flex-col items-center justify-center p-4 border-2 border-emerald-500 bg-emerald-50 text-emerald-700 rounded-xl gap-2 font-semibold transition-all shadow-sm'
+                  : 'flex flex-col items-center justify-center p-4 border border-slate-200 rounded-xl hover:border-emerald-300 hover:bg-slate-50/50 hover:text-emerald-600 transition-all gap-2 text-slate-600'">
+                <mat-icon class="text-3xl w-8 h-8 flex items-center justify-center">chat</mat-icon>
+                <span class="text-sm font-semibold">WhatsApp</span>
+                @if (isChannelSelected('whatsapp')) {
+                  <span class="text-[10px] bg-emerald-600 text-white px-2 py-0.5 rounded-full font-bold">Selected</span>
+                }
+              </button>
             </div>
+          </div>
 
-            <div class="flex justify-between gap-2 pt-2 border-t border-slate-100">
-              <button (click)="selectedChannel.set(null)" class="px-4 py-2 border border-slate-200 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-50">Back</button>
-              <div class="flex gap-2">
-                <button (click)="sendingProposalId.set(null)" class="px-4 py-2 border border-slate-200 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-50">Cancel</button>
-                <button (click)="submitSendProposal()" [disabled]="recipients().length === 0" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm disabled:opacity-50">Send</button>
-              </div>
+          <!-- Add other contacts from same org -->
+          @if (proposalOrgContacts().length > 0) {
+            <div>
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Add other contacts from this organization:</label>
+              <select (change)="addContactToRecipients($event)" class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                <option value="">— Select a contact —</option>
+                @for (contact of proposalOrgContacts(); track contact.id) {
+                  <option [value]="contact.id">{{ contact.fullName }} · {{ contact.jobTitle }}</option>
+                }
+              </select>
             </div>
           }
+
+          <!-- Recipients list -->
+          <div class="space-y-2">
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Recipients</label>
+            @for (recipient of recipients(); track $index) {
+              <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-2">
+                <div class="flex justify-between items-center">
+                  <span class="text-xs font-bold text-slate-700 truncate max-w-[200px]">{{ recipient.name || 'New Contact' }}</span>
+                  @if ($index > 0) {
+                    <button type="button" (click)="removeRecipient($index)" class="text-rose-400 hover:text-rose-600 hover:bg-rose-50 p-1 rounded transition-colors">
+                      <mat-icon class="text-base w-4 h-4">close</mat-icon>
+                    </button>
+                  }
+                </div>
+                @if (isChannelSelected('email')) {
+                  <div class="flex items-center gap-2">
+                    <mat-icon class="text-[14px] w-3.5 h-3.5 text-indigo-400 shrink-0">email</mat-icon>
+                    <input [value]="recipient.email || ''" (input)="updateRecipientEmail($index, $event)"
+                      type="email" placeholder="Email address"
+                      class="flex-1 border border-slate-200 rounded-lg p-1.5 text-xs focus:outline-indigo-600 bg-white">
+                  </div>
+                }
+                @if (isChannelSelected('whatsapp')) {
+                  <div class="flex items-center gap-2">
+                    <mat-icon class="text-[14px] w-3.5 h-3.5 text-emerald-500 shrink-0">chat</mat-icon>
+                    <input [value]="recipient.phone || ''" (input)="updateRecipientPhone($index, $event)"
+                      type="tel" placeholder="Phone / WhatsApp number"
+                      class="flex-1 border border-slate-200 rounded-lg p-1.5 text-xs focus:outline-indigo-600 bg-white">
+                  </div>
+                }
+              </div>
+            } @empty {
+              <div class="text-center py-4 text-slate-400 text-xs bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                No recipients yet. The primary contact will be added automatically.
+              </div>
+            }
+            <button type="button" (click)="addManualRecipient()" class="text-indigo-600 hover:text-indigo-700 text-xs font-semibold flex items-center gap-1 transition-colors">
+              <mat-icon class="text-base w-4 h-4">add_circle</mat-icon> Add Recipient
+            </button>
+          </div>
+
+          <!-- Footer actions -->
+          <div class="flex justify-between gap-2 pt-2 border-t border-slate-100">
+            <button (click)="sendingProposalId.set(null)" class="px-4 py-2 border border-slate-200 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-50 transition-colors">Cancel</button>
+            <button (click)="submitSendProposal()"
+              [disabled]="selectedChannels().size === 0 || recipients().length === 0"
+              class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2">
+              <mat-icon class="text-[16px] w-4 h-4">send</mat-icon>
+              Send Proposal
+            </button>
+          </div>
         </div>
       </div>
     }
@@ -1752,11 +1336,724 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
         </div>
       </div>
     }
+
+    <!-- Confirm Proposal Modal -->
+    @if (showConfirmProposalModal()) {
+      <div class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-6 shadow-xl border border-slate-100 animate-in zoom-in-95 duration-200">
+          <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+            <h3 class="text-lg font-bold text-slate-950">Confirm Proposal #{{ proposalToConfirm()?.id }}</h3>
+            <button (click)="showConfirmProposalModal.set(false)" class="text-slate-400 hover:text-slate-600 transition-colors">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+
+          <div class="space-y-4 font-sans">
+            <!-- Method Selector -->
+            <div>
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Confirmation Channel</label>
+              <div class="grid grid-cols-3 gap-2">
+                <button type="button" (click)="confirmMethod.set('Email')"
+                  [class]="confirmMethod() === 'Email' 
+                    ? 'flex flex-col items-center justify-center py-2 px-3 border-2 border-indigo-500 bg-indigo-55/40 text-indigo-700 rounded-xl gap-1 font-semibold transition-all text-xs' 
+                    : 'flex flex-col items-center justify-center py-2 px-3 border border-slate-200 rounded-xl hover:border-indigo-300 hover:bg-slate-50 hover:text-indigo-650 transition-all gap-1 text-slate-500 text-xs'">
+                  <mat-icon class="text-xl w-5 h-5 flex items-center justify-center">email</mat-icon>
+                  <span>Email</span>
+                </button>
+                <button type="button" (click)="confirmMethod.set('WhatsApp')"
+                  [class]="confirmMethod() === 'WhatsApp' 
+                    ? 'flex flex-col items-center justify-center py-2 px-3 border-2 border-emerald-500 bg-emerald-55/40 text-emerald-800 rounded-xl gap-1 font-semibold transition-all text-xs' 
+                    : 'flex flex-col items-center justify-center py-2 px-3 border border-slate-200 rounded-xl hover:border-emerald-300 hover:bg-slate-50 hover:text-emerald-650 transition-all gap-1 text-slate-500 text-xs'">
+                  <mat-icon class="text-xl w-5 h-5 flex items-center justify-center">chat</mat-icon>
+                  <span>WhatsApp</span>
+                </button>
+                <button type="button" (click)="confirmMethod.set('Call')"
+                  [class]="confirmMethod() === 'Call' 
+                    ? 'flex flex-col items-center justify-center py-2 px-3 border-2 border-amber-500 bg-amber-55/40 text-amber-800 rounded-xl gap-1 font-semibold transition-all text-xs' 
+                    : 'flex flex-col items-center justify-center py-2 px-3 border border-slate-200 rounded-xl hover:border-amber-300 hover:bg-slate-50 hover:text-amber-650 transition-all gap-1 text-slate-500 text-xs'">
+                  <mat-icon class="text-xl w-5 h-5 flex items-center justify-center">phone</mat-icon>
+                  <span>Call Log</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Upload fields or Notes -->
+            @if (confirmMethod() === 'Email' || confirmMethod() === 'WhatsApp') {
+              <div class="space-y-3">
+                <label class="block text-xs font-semibold text-slate-650 uppercase">
+                  Attach {{ confirmMethod() }} Confirmation Screenshot / PDF
+                </label>
+                
+                <div class="border-2 border-dashed border-slate-200 rounded-xl p-4 flex flex-col items-center justify-center bg-slate-50/50 hover:bg-slate-50 transition-all relative">
+                  <input type="file" (change)="onConfirmFileSelected($event)" accept="image/*,application/pdf"
+                    class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                  <mat-icon class="text-slate-400 text-3xl w-8 h-8 mb-1">cloud_upload</mat-icon>
+                  <span class="text-xs text-slate-500 font-semibold">Click or drag image screenshot / document here</span>
+                  <span class="text-[10px] text-slate-400 mt-0.5">Supports PNG, JPG, PDF</span>
+                </div>
+
+                @if (confirmAttachmentName()) {
+                  <div class="flex items-center gap-2 bg-emerald-50 border border-emerald-100 rounded-xl p-2.5 text-xs text-emerald-800">
+                    <mat-icon class="text-emerald-600 text-sm w-4 h-4">task_alt</mat-icon>
+                    <span class="font-semibold truncate flex-1">{{ confirmAttachmentName() }}</span>
+                    <button type="button" (click)="confirmAttachmentName.set(''); confirmAttachmentData.set('');" 
+                      class="text-emerald-700 hover:text-rose-600 p-0.5 rounded-full transition-colors">
+                      <mat-icon class="text-sm w-4 h-4">close</mat-icon>
+                    </button>
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="space-y-2">
+                <label class="block text-xs font-semibold text-slate-650 uppercase">
+                  Call Summary &amp; Notes
+                </label>
+                <textarea [(ngModel)]="confirmNote" name="confirmNote" rows="4" 
+                  placeholder="Summary of conversation, agreed pricing details, customer approval details..."
+                  class="w-full border border-slate-200 rounded-xl p-3 text-xs focus:outline-indigo-650 bg-white placeholder-slate-400 shadow-sm"></textarea>
+              </div>
+            }
+
+            <div class="flex justify-end gap-2 pt-4 border-t border-slate-100">
+              <button type="button" (click)="showConfirmProposalModal.set(false)" class="px-4 py-2 border border-slate-200 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-50">Cancel</button>
+              <button type="button" (click)="submitConfirmProposal()"
+                [disabled]="(confirmMethod() !== 'Call' && !confirmAttachmentName()) || (confirmMethod() === 'Call' && !confirmNote().trim())"
+                class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-bold rounded-lg shadow-md transition-all flex items-center gap-1.5">
+                <mat-icon class="text-[18px] w-[18.5px] h-[18.5px]">task_alt</mat-icon>
+                Confirm Proposal
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Convert Proposal to Deal & Customer Modal -->
+    @if (showConvertProposalModal()) {
+      <div class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-6 shadow-xl border border-slate-100">
+          <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+            <h3 class="text-lg font-semibold text-slate-950">Convert Prospect to Customer</h3>
+            <button (click)="showConvertProposalModal.set(false)" class="text-slate-400 hover:text-slate-600">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+          
+          <form (ngSubmit)="submitConvertProposal()" class="space-y-4 font-sans">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Company / Contact Name</label>
+              <input [(ngModel)]="newPartner.name" name="name" type="text" placeholder="e.g. Casablanca Technologies" required class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Email</label>
+              <input [(ngModel)]="newPartner.email" name="email" type="email" placeholder="e.g. contact@domain.ma" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Phone</label>
+              <input [(ngModel)]="newPartner.phone" name="phone" type="text" placeholder="e.g. +212-522-XXXXXX" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">City</label>
+              <select [(ngModel)]="newPartner.city" name="city" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600 bg-white">
+                <option value="Casablanca">Casablanca</option>
+                <option value="Rabat">Rabat</option>
+                <option value="Marrakech">Marrakech</option>
+                <option value="Tangier">Tangier</option>
+                <option value="Fès">Fès</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">ICE (15 digits) *</label>
+              <input [(ngModel)]="newPartner.ICE" name="ICE" type="text" maxlength="15" placeholder="e.g. 123456789012345" required class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600 font-mono">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Identifiant Fiscal (IF) *</label>
+              <input [(ngModel)]="newPartner.IF" name="IF" type="text" placeholder="e.g. 123456" required class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600 font-mono">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Registre de Commerce (RC) *</label>
+              <input [(ngModel)]="newPartner.RC" name="RC" type="text" placeholder="e.g. 123456" required class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600 font-mono">
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Comments / Notes</label>
+              <textarea [(ngModel)]="newPartner.comments" name="comments" rows="3" placeholder="Additional details..." class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600"></textarea>
+            </div>
+
+            <div class="flex justify-end gap-2 pt-4 border-t border-slate-100">
+              <button type="button" (click)="showConvertProposalModal.set(false)" class="px-4 py-2 border border-slate-200 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-50">Cancel</button>
+              <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm">Convert to Customer &amp; Deal</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    }
+
+    <!-- Slide-Over Drawer for Deal Details -->
+    @if (selectedDeal(); as deal) {
+      <div class="fixed inset-0 z-50 overflow-hidden" aria-labelledby="deal-drawer-title" role="dialog" aria-modal="true">
+        <!-- Backdrop -->
+        <div (click)="closeDealDrawer()" class="absolute inset-0 overflow-hidden bg-slate-900/40 backdrop-blur-sm transition-opacity"></div>
+        
+        <div class="absolute inset-y-0 right-0 max-w-full flex pl-10">
+          <div class="w-screen max-w-3xl bg-white shadow-2xl flex flex-col h-full animate-in slide-in-from-right-12 duration-300">
+            <!-- Header -->
+            <div class="px-6 py-5 bg-slate-50 border-b border-slate-200 flex justify-between items-center shrink-0">
+              <div>
+                <h2 class="text-lg font-bold text-slate-900" id="deal-drawer-title">{{deal.title}}</h2>
+                <p class="text-xs text-slate-500 mt-0.5">Client: {{getPartnerName(deal.partnerId)}}</p>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="px-3 py-1 text-xs font-semibold rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
+                  {{deal.stage}}
+                </span>
+                <button (click)="closeDealDrawer()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
+            </div>
+
+            <!-- Content -->
+            <div class="flex-1 overflow-y-auto p-6 space-y-6">
+              <!-- General Info & Amounts -->
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pb-4 border-b border-slate-100">
+                <div>
+                  <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Amount Details</span>
+                  <div class="mt-1">
+                    <span class="text-xl font-bold text-slate-900 font-mono">{{formatCurrency(deal.amount)}}</span>
+                    @if (deal.discount) {
+                      <span class="text-xs text-emerald-600 font-semibold ml-2">({{deal.discount}}% Discount applied)</span>
+                    }
+                  </div>
+                </div>
+
+                <div>
+                  <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider font-sans">Comments / Notes</span>
+                  <p class="text-xs text-slate-600 mt-1">{{deal.comments || 'No comments.'}}</p>
+                </div>
+
+                <div>
+                  <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider font-sans">Attached Proposal</span>
+                  <div class="text-xs text-slate-600 mt-1">
+                    #{{deal.proposalId || 'N/A'}} - {{ getProposalTitle(deal.proposalId) }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Identification & Dates -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 p-4 rounded-xl border border-slate-100 text-xs">
+                <div class="space-y-2">
+                  <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block border-b border-slate-200/60 pb-1">1. Identification & Dates</span>
+                  <div class="grid grid-cols-2 gap-y-1.5 text-slate-600 font-sans">
+                    <span class="font-medium">Order Number:</span> <span class="font-mono text-slate-900 font-semibold">{{ deal.orderNumber || 'N/A' }}</span>
+                    <span class="font-medium">Deal Number:</span> <span class="font-mono text-slate-900 font-semibold">{{ deal.dealNumber || 'N/A' }}</span>
+                    <span class="font-medium">Order Date:</span> <span class="text-slate-900 font-mono">{{ deal.orderDate || 'N/A' }}</span>
+                    <span class="font-medium">Req. Delivery:</span> <span class="text-slate-900 font-mono">{{ deal.requestedDeliveryDate || 'N/A' }}</span>
+                    <span class="font-medium">Order Status:</span> 
+                    <span>
+                      <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">
+                        {{ deal.orderStatus || 'N/A' }}
+                      </span>
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Customer & Delivery -->
+                <div class="space-y-2">
+                  <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block border-b border-slate-200/60 pb-1">2. Customer & Delivery</span>
+                  <div class="grid grid-cols-3 gap-y-1.5 text-slate-600 font-sans">
+                    <span class="font-medium col-span-1">Account:</span> <span class="col-span-2 text-slate-900 font-mono">{{ deal.customerAccount || 'N/A' }}</span>
+                    <span class="font-medium col-span-1">Contact:</span> <span class="col-span-2 text-slate-900 font-medium">{{ deal.contactPerson || 'N/A' }}</span>
+                    <span class="font-medium col-span-1">Email:</span> <span class="col-span-2 text-slate-900 font-mono truncate" [title]="deal.contactEmail">{{ deal.contactEmail || 'N/A' }}</span>
+                    <span class="font-medium col-span-1">Phone:</span> <span class="col-span-2 text-slate-900 font-mono">{{ deal.contactPhone || 'N/A' }}</span>
+                  </div>
+                  <div class="mt-1.5 pt-1.5 border-t border-slate-200/60 text-[11px] text-slate-600 space-y-1">
+                    <div><strong class="text-slate-700">Billing:</strong> {{ deal.billingAddress || 'N/A' }}</div>
+                    <div><strong class="text-slate-700">Delivery:</strong> {{ deal.deliveryAddress || 'N/A' }}</div>
+                  </div>
+                </div>
+
+                <!-- Sales & Commercial -->
+                <div class="space-y-2">
+                  <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block border-b border-slate-200/60 pb-1">3. Sales & Commercial</span>
+                  <div class="grid grid-cols-2 gap-y-1.5 text-slate-600 font-sans">
+                    <span class="font-medium">Sales Person:</span> <span class="text-slate-900 font-medium">{{ deal.salesPerson || 'N/A' }}</span>
+                    <span class="font-medium">Region:</span> <span class="text-slate-900">{{ deal.salesRegion || 'N/A' }}</span>
+                    <span class="font-medium">Currency:</span> <span class="text-slate-900 font-bold font-mono">{{ deal.currency || 'MAD' }}</span>
+                    <span class="font-medium">Payment Terms:</span> <span class="text-slate-900">{{ deal.paymentTerms || 'N/A' }}</span>
+                    <span class="font-medium">Total Amount:</span> <span class="text-slate-900 font-mono font-bold">{{ formatCurrency(deal.orderTotalAmount || deal.amount) }}</span>
+                  </div>
+                </div>
+
+                <!-- Vendor & Logistics -->
+                <div class="space-y-2">
+                  <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block border-b border-slate-200/60 pb-1">4. Vendor & Logistics</span>
+                  <div class="grid grid-cols-2 gap-y-1.5 text-slate-600 font-sans">
+                    <span class="font-medium">Vendor Account:</span> <span class="font-mono text-slate-900 font-semibold">{{ deal.vendorAccount || 'N/A' }}</span>
+                    <span class="font-medium">PO Reference:</span> <span class="font-mono text-slate-900 font-semibold">{{ deal.purchaseOrderRef || 'N/A' }}</span>
+                    <span class="font-medium">Warehouse:</span> <span class="text-slate-900">{{ deal.warehouseAddress || 'N/A' }}</span>
+                    <span class="font-medium">Transport:</span> <span class="text-slate-900">{{ deal.transportationService || 'N/A' }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Email Exchange Log -->
+              @if (deal.emailExchange) {
+                <div class="bg-slate-50 rounded-xl p-4 border border-slate-100 text-xs font-mono space-y-1.5">
+                  <div class="text-slate-400 font-sans font-bold flex items-center gap-1 mb-1">
+                    <mat-icon class="text-[14px] w-3.5 h-3.5 leading-none">email</mat-icon> Email Exchange & Confirmation Logs
+                  </div>
+                  <pre class="whitespace-pre-wrap text-[10px] text-slate-700 leading-relaxed font-sans">{{deal.emailExchange}}</pre>
+                </div>
+              }
+
+              <!-- Activity Hub -->
+              <div class="border-t border-slate-200 pt-4">
+                <h5 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1.5 font-sans">
+                  <mat-icon class="text-[16px] w-4 h-4 text-indigo-600 flex items-center justify-center">forum</mat-icon> Deal Activity Hub
+                </h5>
+                
+                <!-- Tabs Header -->
+                <div class="flex flex-wrap gap-1 border-b border-slate-200 mb-4 bg-slate-50/50 p-1 rounded-lg">
+                  <button type="button" (click)="setDealTab(deal.id, 'calls')"
+                    [class]="getDealTab(deal.id) === 'calls' ? 'bg-white text-indigo-600 shadow-xs border-slate-200' : 'text-slate-600 border-transparent hover:text-slate-900 hover:bg-slate-100'"
+                    class="px-3 py-1.5 rounded-md text-xs font-medium border transition-all flex items-center gap-1.5">
+                    <mat-icon class="text-[14px] w-3.5 h-3.5 leading-none flex items-center justify-center">call</mat-icon>
+                    Calls
+                    <span class="bg-indigo-50 text-indigo-600 px-1 py-0.2 rounded-full text-[9px] font-semibold">{{ deal.activityLog?.calls?.length || 0 }}</span>
+                  </button>
+                  <button type="button" (click)="setDealTab(deal.id, 'emails')"
+                    [class]="getDealTab(deal.id) === 'emails' ? 'bg-white text-indigo-600 shadow-xs border-slate-200' : 'text-slate-600 border-transparent hover:text-slate-900 hover:bg-slate-100'"
+                    class="px-3 py-1.5 rounded-md text-xs font-medium border transition-all flex items-center gap-1.5">
+                    <mat-icon class="text-[14px] w-3.5 h-3.5 leading-none flex items-center justify-center">email</mat-icon>
+                    Emails
+                    <span class="bg-indigo-50 text-indigo-600 px-1 py-0.2 rounded-full text-[9px] font-semibold">{{ deal.activityLog?.emails?.length || 0 }}</span>
+                  </button>
+                  <button type="button" (click)="setDealTab(deal.id, 'meetings')"
+                    [class]="getDealTab(deal.id) === 'meetings' ? 'bg-white text-indigo-600 shadow-xs border-slate-200' : 'text-slate-600 border-transparent hover:text-slate-900 hover:bg-slate-100'"
+                    class="px-3 py-1.5 rounded-md text-xs font-medium border transition-all flex items-center gap-1.5">
+                    <mat-icon class="text-[14px] w-3.5 h-3.5 leading-none flex items-center justify-center">groups</mat-icon>
+                    Meetings
+                    <span class="bg-indigo-50 text-indigo-600 px-1 py-0.2 rounded-full text-[9px] font-semibold">{{ deal.activityLog?.meetings?.length || 0 }}</span>
+                  </button>
+                  <button type="button" (click)="setDealTab(deal.id, 'recordings')"
+                    [class]="getDealTab(deal.id) === 'recordings' ? 'bg-white text-indigo-600 shadow-xs border-slate-200' : 'text-slate-600 border-transparent hover:text-slate-900 hover:bg-slate-100'"
+                    class="px-3 py-1.5 rounded-md text-xs font-medium border transition-all flex items-center gap-1.5">
+                    <mat-icon class="text-[14px] w-3.5 h-3.5 leading-none flex items-center justify-center">videocam</mat-icon>
+                    Recordings
+                    <span class="bg-indigo-50 text-indigo-600 px-1 py-0.2 rounded-full text-[9px] font-semibold">{{ deal.activityLog?.recordings?.length || 0 }}</span>
+                  </button>
+                  <button type="button" (click)="setDealTab(deal.id, 'notes')"
+                    [class]="getDealTab(deal.id) === 'notes' ? 'bg-white text-indigo-600 shadow-xs border-slate-200' : 'text-slate-600 border-transparent hover:text-slate-900 hover:bg-slate-100'"
+                    class="px-3 py-1.5 rounded-md text-xs font-medium border transition-all flex items-center gap-1.5">
+                    <mat-icon class="text-[14px] w-3.5 h-3.5 leading-none flex items-center justify-center">note_alt</mat-icon>
+                    Notes
+                    <span class="bg-indigo-50 text-indigo-600 px-1 py-0.2 rounded-full text-[9px] font-semibold">{{ deal.activityLog?.notes?.length || 0 }}</span>
+                  </button>
+                  <button type="button" (click)="setDealTab(deal.id, 'tasks')"
+                    [class]="getDealTab(deal.id) === 'tasks' ? 'bg-white text-indigo-600 shadow-xs border-slate-200' : 'text-slate-600 border-transparent hover:text-slate-900 hover:bg-slate-100'"
+                    class="px-3 py-1.5 rounded-md text-xs font-medium border transition-all flex items-center gap-1.5">
+                    <mat-icon class="text-[14px] w-3.5 h-3.5 leading-none flex items-center justify-center">assignment</mat-icon>
+                    Tasks
+                    <span class="bg-indigo-50 text-indigo-600 px-1 py-0.2 rounded-full text-[9px] font-semibold">{{ getLinkedTasksCount(deal.title) }}</span>
+                  </button>
+                  <button type="button" (click)="setDealTab(deal.id, 'followups')"
+                    [class]="getDealTab(deal.id) === 'followups' ? 'bg-white text-indigo-600 shadow-xs border-slate-200' : 'text-slate-600 border-transparent hover:text-slate-900 hover:bg-slate-100'"
+                    class="px-3 py-1.5 rounded-md text-xs font-medium border transition-all flex items-center gap-1.5">
+                    <mat-icon class="text-[14px] w-3.5 h-3.5 leading-none flex items-center justify-center">notification_important</mat-icon>
+                    Follow-ups
+                    <span class="bg-indigo-50 text-indigo-600 px-1 py-0.2 rounded-full text-[9px] font-semibold">{{ deal.activityLog?.followUps?.length || 0 }}</span>
+                  </button>
+                  <button type="button" (click)="setDealTab(deal.id, 'calendar')"
+                    [class]="getDealTab(deal.id) === 'calendar' ? 'bg-white text-indigo-600 shadow-xs border-slate-200' : 'text-slate-600 border-transparent hover:text-slate-900 hover:bg-slate-100'"
+                    class="px-3 py-1.5 rounded-md text-xs font-medium border transition-all flex items-center gap-1.5">
+                    <mat-icon class="text-[14px] w-3.5 h-3.5 leading-none flex items-center justify-center">calendar_month</mat-icon>
+                    Calendar
+                  </button>
+                </div>
+
+                <!-- Active Tab Panel -->
+                <div class="bg-slate-50/50 border border-slate-200/60 rounded-xl p-4 min-h-[180px]">
+                  
+                  <!-- CALLS TAB -->
+                  @if (getDealTab(deal.id) === 'calls') {
+                    <div class="space-y-4">
+                      <div class="flex justify-between items-center">
+                        <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Phone Calls History</span>
+                        <button type="button" (click)="openAddActivityModal(deal.id, 'calls')" class="text-indigo-600 hover:text-indigo-700 text-xs font-semibold flex items-center gap-0.5">
+                          <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">add</mat-icon> Log Call
+                        </button>
+                      </div>
+                      
+                      <div class="space-y-3">
+                        @for (call of deal.activityLog?.calls; track call.id) {
+                          <div class="bg-white border border-slate-150 rounded-lg p-3 shadow-xs space-y-1.5">
+                            <div class="flex justify-between items-start">
+                              <div class="flex items-center gap-2">
+                                <span class="font-bold text-slate-800">{{ call.callerName }}</span>
+                                <span class="text-slate-400 font-mono text-[10px]">{{ call.date }} ({{ call.duration }} min)</span>
+                              </div>
+                              <span [class]="call.outcome === 'Interested' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 
+                                             call.outcome === 'Follow-up' ? 'bg-amber-50 text-amber-700 border-amber-100' : 
+                                             'bg-slate-100 text-slate-600 border-slate-200'"
+                                    class="px-2 py-0.5 rounded text-[10px] font-semibold border">
+                                {{ call.outcome }}
+                              </span>
+                            </div>
+                            <p class="text-[11px] text-slate-600 font-sans leading-relaxed">{{ call.summary }}</p>
+                          </div>
+                        } @empty {
+                          <div class="text-center py-6 text-slate-400 text-xs">No calls logged yet.</div>
+                        }
+                      </div>
+                    </div>
+                  }
+
+                  <!-- EMAILS TAB -->
+                  @if (getDealTab(deal.id) === 'emails') {
+                    <div class="space-y-4">
+                      <div class="flex justify-between items-center">
+                        <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Email Correspondence Thread</span>
+                        <button type="button" (click)="openAddActivityModal(deal.id, 'emails')" class="text-indigo-600 hover:text-indigo-700 text-xs font-semibold flex items-center gap-0.5">
+                          <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">add</mat-icon> Log Email
+                        </button>
+                      </div>
+
+                      <div class="space-y-3">
+                        @for (email of deal.activityLog?.emails; track email.id) {
+                          <div [class]="email.direction === 'sent' ? 'bg-indigo-50/40 border-indigo-100 ml-6' : 'bg-white border-slate-150 mr-6'"
+                               class="border rounded-lg p-3 shadow-xs space-y-1.5 transition-all">
+                            <div class="flex justify-between items-start">
+                              <div>
+                                <span class="font-bold text-slate-800 text-xs">{{ email.subject }}</span>
+                                <div class="text-[10px] text-slate-400 font-mono mt-0.5">
+                                  From: {{ email.from }} | To: {{ email.to }}
+                                </div>
+                              </div>
+                              <span class="text-[10px] font-mono text-slate-400">{{ email.date }}</span>
+                            </div>
+                            <p class="text-[11px] text-slate-600 leading-relaxed font-sans whitespace-pre-wrap">{{ email.body }}</p>
+                          </div>
+                        }
+                        
+                        <!-- Legacy emails text snippet fallback -->
+                        @if (deal.emailExchange && (!deal.activityLog || deal.activityLog.emails.length === 0)) {
+                          <div class="bg-white border border-slate-150 rounded-lg p-3 shadow-xs font-mono text-[11px] text-slate-700 leading-relaxed">
+                            <div class="text-slate-400 font-sans font-bold flex items-center gap-1 mb-2">
+                              <mat-icon class="text-[14px] w-3.5 h-3.5 leading-none">history</mat-icon> Imported Exchange Logs
+                            </div>
+                            <pre class="whitespace-pre-wrap text-[10px] font-sans leading-relaxed">{{ deal.emailExchange }}</pre>
+                          </div>
+                        }
+                        
+                        @if (!deal.emailExchange && (!deal.activityLog || deal.activityLog.emails.length === 0)) {
+                          <div class="text-center py-6 text-slate-400 text-xs">No email exchanges logged yet.</div>
+                        }
+                      </div>
+                    </div>
+                  }
+
+                  <!-- MEETINGS TAB -->
+                  @if (getDealTab(deal.id) === 'meetings') {
+                    <div class="space-y-4">
+                      <div class="flex justify-between items-center">
+                        <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Meetings & Technical Demos</span>
+                        <button type="button" (click)="openAddActivityModal(deal.id, 'meetings')" class="text-indigo-600 hover:text-indigo-700 text-xs font-semibold flex items-center gap-0.5">
+                          <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">add</mat-icon> Log Meeting
+                        </button>
+                      </div>
+
+                      <div class="space-y-3">
+                        @for (meeting of deal.activityLog?.meetings; track meeting.id) {
+                          <div class="bg-white border border-slate-150 rounded-lg p-3 shadow-xs space-y-2">
+                            <div class="flex justify-between items-start">
+                              <div class="flex items-center gap-2">
+                                <span class="font-bold text-slate-800 text-xs">{{ meeting.title }}</span>
+                                <span [class]="meeting.type === 'teams' ? 'bg-blue-50 text-blue-700 border-blue-100' : 
+                                               meeting.type === 'demo' ? 'bg-purple-50 text-purple-700 border-purple-100' : 
+                                               'bg-slate-50 text-slate-700 border-slate-200'"
+                                      class="px-1.5 py-0.2 rounded text-[9px] font-semibold border uppercase">
+                                  {{ meeting.type }}
+                                </span>
+                              </div>
+                              <span class="text-[10px] text-slate-400 font-mono">{{ meeting.date }} à {{ meeting.time }}</span>
+                            </div>
+                            
+                            <div class="text-[10px] text-slate-500">
+                              <strong>Location:</strong> {{ meeting.location }} | 
+                              <strong>Attendees:</strong> 
+                              @for (att of meeting.attendees; track $index) {
+                                <span class="inline-block bg-slate-100 text-slate-600 px-1.5 py-0.2 rounded-full mx-0.5">{{ att }}</span>
+                              }
+                            </div>
+                            <p class="text-[11px] text-slate-600 font-sans leading-relaxed border-t border-slate-50 pt-1.5">{{ meeting.summary }}</p>
+                          </div>
+                        } @empty {
+                          <div class="text-center py-6 text-slate-400 text-xs">No meetings logged yet.</div>
+                        }
+                      </div>
+                    </div>
+                  }
+
+                  <!-- RECORDINGS TAB -->
+                  @if (getDealTab(deal.id) === 'recordings') {
+                    <div class="space-y-4">
+                      <div class="flex justify-between items-center">
+                        <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Teams Meeting Records</span>
+                        <button type="button" (click)="openAddActivityModal(deal.id, 'recordings')" class="text-indigo-600 hover:text-indigo-700 text-xs font-semibold flex items-center gap-0.5">
+                          <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">add</mat-icon> Add Link
+                        </button>
+                      </div>
+
+                      <div class="space-y-2">
+                        @for (rec of deal.activityLog?.recordings; track rec.id) {
+                          <div class="bg-white border border-slate-150 rounded-lg p-3 shadow-xs flex items-center justify-between gap-4">
+                            <div class="flex items-center gap-3">
+                              <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100">
+                                <mat-icon class="text-base w-4.5 h-4.5 flex items-center justify-center">videocam</mat-icon>
+                              </div>
+                              <div>
+                                <span class="font-bold text-slate-800 text-xs block">{{ rec.title }}</span>
+                                <span class="text-[10px] text-slate-400 font-mono">{{ rec.date }} | Duration: {{ rec.duration }}</span>
+                              </div>
+                            </div>
+                            
+                            <div class="flex gap-2">
+                              <a [href]="rec.meetingLink" target="_blank" class="px-2.5 py-1 text-[10px] font-semibold rounded bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200 flex items-center gap-0.5">
+                                <mat-icon class="text-[12px] w-3 h-3">link</mat-icon> Teams
+                              </a>
+                              <a [href]="rec.recordingLink" target="_blank" class="px-2.5 py-1 text-[10px] font-semibold rounded bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 flex items-center gap-0.5">
+                                <mat-icon class="text-[12px] w-3 h-3 flex items-center justify-center">play_arrow</mat-icon> Record
+                              </a>
+                            </div>
+                          </div>
+                        } @empty {
+                          <div class="text-center py-6 text-slate-400 text-xs">No recording links added yet.</div>
+                        }
+                      </div>
+                    </div>
+                  }
+
+                  <!-- NOTES TAB -->
+                  @if (getDealTab(deal.id) === 'notes') {
+                    <div class="space-y-4">
+                      <div class="flex justify-between items-center">
+                        <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Sales Notes & Comments</span>
+                        <button type="button" (click)="openAddActivityModal(deal.id, 'notes')" class="text-indigo-600 hover:text-indigo-700 text-xs font-semibold flex items-center gap-0.5">
+                          <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">add</mat-icon> Add Note
+                        </button>
+                      </div>
+
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        @for (note of deal.activityLog?.notes; track note.id) {
+                          <div class="bg-amber-50/50 border border-amber-100 rounded-lg p-3 shadow-xs space-y-1.5 relative overflow-hidden font-sans">
+                            <div class="absolute top-0 left-0 w-1 h-full bg-amber-400"></div>
+                            <div class="flex justify-between items-center text-[10px] text-slate-400 font-mono">
+                              <span>By: {{ note.author }}</span>
+                              <span>{{ note.date }}</span>
+                            </div>
+                            <p class="text-[11px] text-slate-700 leading-relaxed font-sans">{{ note.content }}</p>
+                          </div>
+                        } @empty {
+                          <div class="col-span-2 text-center py-6 text-slate-400 text-xs">No notes added yet.</div>
+                        }
+                      </div>
+                    </div>
+                  }
+
+                  <!-- TASKS TAB -->
+                  @if (getDealTab(deal.id) === 'tasks') {
+                    <div class="space-y-4">
+                      <div class="flex justify-between items-center">
+                        <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Operation & Hand-off Tasks</span>
+                        <button type="button" (click)="openCreateTaskForDeal(deal.title)" class="text-indigo-600 hover:text-indigo-700 text-xs font-semibold flex items-center gap-0.5">
+                          <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">add</mat-icon> New Task
+                        </button>
+                      </div>
+
+                      <div class="space-y-2">
+                        @for (t of getLinkedTasks(deal.title); track t.id) {
+                          <div class="bg-white border border-slate-150 rounded-lg p-3 shadow-xs flex items-center justify-between gap-4">
+                            <div class="flex items-center gap-3">
+                              <button type="button" (click)="toggleTaskStatus(t.id, t.status)" class="text-slate-400 hover:text-indigo-600">
+                                <mat-icon class="text-base w-4.5 h-4.5 flex items-center justify-center">{{ t.status === 'Completed' ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
+                              </button>
+                              <div>
+                                <span [class.line-through]="t.status === 'Completed'" [class.text-slate-400]="t.status === 'Completed'" class="font-bold text-slate-800 text-xs block font-sans">{{ t.title }}</span>
+                                <span class="text-[10px] text-slate-400 font-sans">Team: {{ t.assignedTeam }} | Assigned: {{ t.assignedTo || 'Unassigned' }}</span>
+                              </div>
+                            </div>
+                            
+                            <span [class]="t.status === 'Completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-slate-100 text-slate-600 border-slate-200'" class="px-2 py-0.5 border text-[9px] font-bold uppercase rounded font-mono">
+                              {{ t.status }}
+                            </span>
+                          </div>
+                        } @empty {
+                          <div class="text-center py-6 text-slate-400 text-xs">No tasks linked to this deal yet.</div>
+                        }
+                      </div>
+                    </div>
+                  }
+
+                  <!-- FOLLOW-UPS TAB -->
+                  @if (getDealTab(deal.id) === 'followups') {
+                    <div class="space-y-4">
+                      <div class="flex justify-between items-center">
+                        <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider font-sans">Upcoming Alerts & Action Reminders</span>
+                        <button type="button" (click)="openAddActivityModal(deal.id, 'followups')" class="text-indigo-600 hover:text-indigo-700 text-xs font-semibold flex items-center gap-0.5">
+                          <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">add</mat-icon> Add Follow-up
+                        </button>
+                      </div>
+
+                      <div class="space-y-2">
+                        @for (f of deal.activityLog?.followUps; track f.id) {
+                          <div class="bg-white border border-slate-150 rounded-lg p-3 shadow-xs flex items-center justify-between gap-4">
+                            <div class="flex items-center gap-3">
+                              <button type="button" (click)="toggleFollowUpStatus(deal.id, f.id, f.status)" class="text-slate-400 hover:text-indigo-600">
+                                <mat-icon class="text-base w-4.5 h-4.5 flex items-center justify-center">{{ f.status === 'done' ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+                              </button>
+                              <div>
+                                <span [class.line-through]="f.status === 'done'" [class.text-slate-400]="f.status === 'done'" class="font-bold text-slate-800 text-xs block font-sans">{{ f.title }}</span>
+                                <span class="text-[10px] text-slate-400 font-mono">Due date: {{ f.dueDate }} | Owner: {{ f.assignedTo }}</span>
+                              </div>
+                            </div>
+                            
+                            <span [class]="f.status === 'done' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-rose-50 text-rose-700 border-rose-100'" class="px-2 py-0.5 border text-[9px] font-bold uppercase rounded font-mono">
+                              {{ f.status === 'done' ? 'Completed' : 'Pending' }}
+                            </span>
+                          </div>
+                        } @empty {
+                          <div class="text-center py-6 text-slate-400 text-xs">No follow-ups scheduled yet.</div>
+                        }
+                      </div>
+                    </div>
+                  }
+
+                  <!-- CALENDAR TAB -->
+                  @if (getDealTab(deal.id) === 'calendar') {
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <div class="flex justify-between items-center mb-2 px-1">
+                          <span class="text-[11px] font-bold text-slate-700 uppercase">Juin 2026</span>
+                          <span class="text-[9px] text-slate-400 flex items-center gap-0.5 font-semibold">
+                            <span class="w-1.5 h-1.5 bg-indigo-600 rounded-full inline-block"></span> Outlook Sync TBD
+                          </span>
+                        </div>
+
+                        <!-- Calendar Grid -->
+                        <div class="bg-white border border-slate-200 rounded-xl p-2.5 shadow-xs">
+                          <div class="grid grid-cols-7 gap-1 text-center font-bold text-[9px] text-slate-400 mb-1 border-b border-slate-50 pb-1">
+                            @for (h of calendarHeaders; track h) {
+                              <div>{{ h }}</div>
+                            }
+                          </div>
+                          <div class="grid grid-cols-7 gap-1.5">
+                            @for (day of calendarDays; track day) {
+                              <button type="button" (click)="selectCalendarDay(deal.id, day)"
+                                      [class]="isSelectedCalendarDay(deal.id, day) ? 'bg-indigo-600 text-white font-bold' : 
+                                               hasEventsOnDay(deal, day) ? 'bg-indigo-50 text-indigo-700 font-bold border-indigo-200' : 
+                                               'bg-slate-50 text-slate-700 hover:bg-slate-100 border-slate-105 border-slate-100'"
+                                      class="w-full aspect-square rounded-lg text-[10px] font-semibold border flex flex-col items-center justify-center relative transition-all">
+                                {{ day }}
+                                @if (hasEventsOnDay(deal, day) && !isSelectedCalendarDay(deal.id, day)) {
+                                  <span class="absolute bottom-1 w-1.5 h-1.5 bg-indigo-600 rounded-full"></span>
+                                }
+                              </button>
+                            }
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Selected Day Details -->
+                      <div class="flex flex-col justify-between">
+                        <div class="space-y-2">
+                          <span class="text-[11px] font-bold text-slate-700 block mb-2 uppercase">
+                            Events: {{ getSelectedCalendarDay(deal.id) ? 'Day ' + getSelectedCalendarDay(deal.id) + ' June' : 'Select a day' }}
+                          </span>
+
+                          <div class="space-y-2">
+                            @for (m of getEventsOnDay(deal, getSelectedCalendarDay(deal.id) || 15); track m.id) {
+                              <div class="bg-white border border-indigo-100 rounded-lg p-2.5 shadow-xs">
+                                <div class="flex justify-between items-center mb-1">
+                                  <span class="font-bold text-slate-900 text-xs">{{ m.title }}</span>
+                                  <span class="text-[9px] text-slate-400 font-mono">{{ m.time }}</span>
+                                </div>
+                                <div class="text-[9px] text-slate-500 uppercase tracking-wider mb-1 font-sans">
+                                  Type: {{ m.type }} | Location: {{ m.location }}
+                                </div>
+                                <p class="text-[10px] text-slate-600 line-clamp-2 leading-relaxed font-sans">{{ m.summary }}</p>
+                              </div>
+                            } @empty {
+                              <div class="text-center py-8 text-slate-400 text-[11px] bg-white border border-slate-150 rounded-xl font-sans">
+                                No meetings scheduled on this day.
+                              </div>
+                            }
+                          </div>
+                        </div>
+
+                        <div class="text-[10px] bg-slate-100 text-slate-500 rounded-lg p-2.5 border border-slate-150 mt-4 leading-relaxed font-sans">
+                          💡 <strong>Tip:</strong> Meetings logged in the <strong>Meetings</strong> tab automatically populate this calendar view.
+                        </div>
+                      </div>
+                    </div>
+                  }
+
+                </div>
+              </div>
+            </div>
+
+            <!-- Footer Actions -->
+            <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex justify-between items-center shrink-0 font-sans">
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-slate-500">Lines: {{ deal.orderLines?.length || 0 }} items</span>
+              </div>
+              <div class="flex gap-2">
+                <!-- Create PO trigger if none exists for this deal -->
+                @if (!hasPOForDeal(deal.id)) {
+                  <button (click)="openCreatePOModal(deal)" class="bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors flex items-center">
+                    <mat-icon class="mr-1 text-[16px] w-4 h-4">add_shopping_cart</mat-icon> Create PO (Operations)
+                  </button>
+                }
+                @if (deal.stage === 'New') {
+                  <button (click)="state.updateDealStage(deal.id, 'Confirmed')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors flex items-center">
+                    <mat-icon class="mr-1 text-[16px] w-4 h-4">check</mat-icon> Confirm Deal
+                  </button>
+                }
+                <button (click)="closeDealDrawer()" class="bg-white border border-slate-300 text-slate-700 px-4 py-1.5 rounded-lg text-xs font-semibold transition-all">Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
   `
 })
 export class SalesComponent {
   state = inject(CrmStateService);
   activeTab = signal<'leads' | 'deals' | 'proposals' | 'tasks' | 'pos'>('leads');
+
+  // Convert Proposal to Deal & Customer Modal State
+  showConvertProposalModal = signal(false);
+  proposalToConvert = signal<Proposal | null>(null);
+  newPartner = {
+    id: '' as string | undefined,
+    name: '',
+    type: 'Customer' as const,
+    email: '',
+    phone: '',
+    city: 'Casablanca',
+    comments: '',
+    ICE: '',
+    IF: '',
+    RC: '',
+    score: undefined as number | undefined,
+    source: 'Website form' as const,
+    assignedTo: ''
+  };
 
   salesEligiblePartners = computed(() => 
     this.state.partners().filter(p => p.type === 'Prospect' || p.type === 'Customer')
@@ -1765,15 +2062,35 @@ export class SalesComponent {
   // Modals state
   assignModalOpen = signal(false);
   sendingProposalId = signal<string | null>(null);
-  selectedChannel = signal<'email' | 'whatsapp' | null>(null);
-  recipients = signal<string[]>([]);
+  selectedChannels = signal<Set<'email' | 'whatsapp'>>(new Set());
+  recipients = signal<{ name: string; email?: string; phone?: string }[]>([]);
 
-  currentProposalPartnerName = computed(() => {
+  // Confirm Proposal Modal State
+  showConfirmProposalModal = signal(false);
+  proposalToConfirm = signal<Proposal | null>(null);
+  confirmMethod = signal<'Email' | 'WhatsApp' | 'Call'>('Email');
+  confirmAttachmentName = signal<string>('');
+  confirmAttachmentData = signal<string>('');
+  confirmNote = signal<string>('');
+
+  currentProposalPartner = computed(() => {
     const prop = this.state.proposals().find(p => p.id === this.sendingProposalId());
-    const partner = this.state.partners().find(p => p.id === prop?.partnerId);
-    return partner ? partner.name : 'Unknown Prospect';
+    return this.state.partners().find(p => p.id === prop?.partnerId) ?? null;
   });
 
+  currentProposalPartnerName = computed(() => {
+    return this.currentProposalPartner()?.name ?? 'Unknown Prospect';
+  });
+
+  /** Contacts from the same organization as the proposal's partner (via CustomerCard.personnel) */
+  proposalOrgContacts = computed(() => {
+    const partner = this.currentProposalPartner();
+    if (!partner) return [];
+    const card = this.state.customerCards().find(c => c.partnerId === partner.id);
+    return card ? card.personnel : [];
+  });
+
+  /** All other partners of the same type (Prospect) for cross-org additions */
   availableProspects = computed(() => this.state.partners().filter(p => p.type === 'Prospect'));
   editingProposalId = signal<string | null>(null);
   taskContextProposalId = signal<string | null>(null);
@@ -1879,6 +2196,21 @@ export class SalesComponent {
     expectedDeliveryDateVendor: '',
     deliveryDate: ''
   };
+
+  selectedDealForDrawer = signal<Deal | null>(null);
+  selectedDeal = computed(() => {
+    const id = this.selectedDealForDrawer()?.id;
+    if (!id) return null;
+    return this.state.deals().find(d => d.id === id) || null;
+  });
+
+  openDealDrawer(deal: Deal) {
+    this.selectedDealForDrawer.set(deal);
+  }
+
+  closeDealDrawer() {
+    this.selectedDealForDrawer.set(null);
+  }
 
   expandedDeals = signal<{ [key: string]: boolean }>({});
 
@@ -1988,49 +2320,68 @@ export class SalesComponent {
   // Proposal Creation
   openSendProposalModal(prop: Proposal) {
     this.sendingProposalId.set(prop.id);
-    this.selectedChannel.set(null);
-    this.recipients.set([]);
-  }
-
-  selectChannel(channel: 'email' | 'whatsapp') {
-    this.selectedChannel.set(channel);
-    
-    // Extract info from primary prospect
-    const prop = this.state.proposals().find(p => p.id === this.sendingProposalId());
-    const partner = this.state.partners().find(p => p.id === prop?.partnerId);
-    
-    let contactInfo = '';
-    if (channel === 'email') {
-      contactInfo = partner?.email || '';
-    } else {
-      contactInfo = partner?.phone || '';
-    }
-    
-    this.recipients.set(contactInfo ? [contactInfo] : []);
-  }
-
-  addProspectToRecipients(event: Event) {
-    const target = event.target as HTMLSelectElement;
-    const partnerId = target.value;
-    if (!partnerId) return;
-
-    const partner = this.state.partners().find(p => p.id === partnerId);
+    this.selectedChannels.set(new Set());
+    // Pre-populate primary recipient from the proposal's partner
+    const partner = this.state.partners().find(p => p.id === prop.partnerId);
     if (partner) {
-      const channel = this.selectedChannel();
-      const extractedContact = channel === 'email' ? partner.email : partner.phone;
-      if (extractedContact) {
-        this.recipients.update(arr => [...arr, extractedContact]);
+      this.recipients.set([{ name: partner.name, email: partner.email, phone: partner.phone }]);
+    } else {
+      this.recipients.set([]);
+    }
+  }
+
+  toggleChannel(channel: 'email' | 'whatsapp') {
+    this.selectedChannels.update(set => {
+      const next = new Set(set);
+      if (next.has(channel)) {
+        next.delete(channel);
+      } else {
+        next.add(channel);
+      }
+      return next;
+    });
+  }
+
+  isChannelSelected(channel: 'email' | 'whatsapp'): boolean {
+    return this.selectedChannels().has(channel);
+  }
+
+  addContactToRecipients(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    const personnelId = target.value;
+    if (!personnelId) return;
+
+    // First check org contacts (CustomerCard.personnel)
+    const orgContacts = this.proposalOrgContacts();
+    const personnel = orgContacts.find(p => p.id === personnelId);
+    if (personnel) {
+      // Avoid duplicates
+      const alreadyAdded = this.recipients().some(r => r.name === personnel.fullName);
+      if (!alreadyAdded) {
+        this.recipients.update(arr => [...arr, {
+          name: personnel.fullName,
+          email: personnel.directEmail,
+          phone: personnel.directMobile
+        }]);
       }
     }
     target.value = '';
   }
 
-  updateRecipient(index: number, event: Event) {
+  updateRecipientEmail(index: number, event: Event) {
     const input = event.target as HTMLInputElement;
-    const val = input.value;
     this.recipients.update(arr => {
       const copy = [...arr];
-      copy[index] = val;
+      copy[index] = { ...copy[index], email: input.value };
+      return copy;
+    });
+  }
+
+  updateRecipientPhone(index: number, event: Event) {
+    const input = event.target as HTMLInputElement;
+    this.recipients.update(arr => {
+      const copy = [...arr];
+      copy[index] = { ...copy[index], phone: input.value };
       return copy;
     });
   }
@@ -2040,7 +2391,7 @@ export class SalesComponent {
   }
 
   addManualRecipient() {
-    this.recipients.update(arr => [...arr, '']);
+    this.recipients.update(arr => [...arr, { name: '', email: '', phone: '' }]);
   }
 
   submitSendProposal() {
@@ -2049,6 +2400,44 @@ export class SalesComponent {
       this.state.updateProposalStatus(propId, 'Sent');
     }
     this.sendingProposalId.set(null);
+  }
+
+  openConfirmProposalModal(prop: Proposal) {
+    this.proposalToConfirm.set(prop);
+    this.confirmMethod.set('Email');
+    this.confirmAttachmentName.set('');
+    this.confirmAttachmentData.set('');
+    this.confirmNote.set('');
+    this.showConfirmProposalModal.set(true);
+  }
+
+  onConfirmFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      this.confirmAttachmentName.set(file.name);
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.confirmAttachmentData.set(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  submitConfirmProposal() {
+    const prop = this.proposalToConfirm();
+    if (prop) {
+      this.state.updateProposal(prop.id, {
+        status: 'Confirmed',
+        confirmationMethod: this.confirmMethod(),
+        confirmationAttachmentName: this.confirmAttachmentName(),
+        confirmationAttachmentData: this.confirmAttachmentData(),
+        confirmationNote: this.confirmNote(),
+        confirmedAt: new Date().toISOString().split('T')[0]
+      });
+    }
+    this.showConfirmProposalModal.set(false);
+    this.proposalToConfirm.set(null);
   }
 
   openCreateProposalModal() {
@@ -2587,43 +2976,123 @@ export class SalesComponent {
     return deal.activityLog.meetings.filter(m => m.date === dateStr);
   }
 
-  // Convert a Confirmed Proposal → Deal + Prospect → Customer
-  convertProposalToDeal(prop: Proposal) {
-    const today = new Date().toISOString().split('T')[0];
-    const deliveryDate = new Date();
-    deliveryDate.setDate(deliveryDate.getDate() + 30);
-    const formattedDelivery = deliveryDate.toISOString().split('T')[0];
-    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+  openConvertProposalModal(prop: Proposal) {
+    this.proposalToConvert.set(prop);
+    const partner = this.state.partners().find(p => p.id === prop.partnerId);
+    this.newPartner = {
+      id: partner?.id,
+      name: partner?.name || '',
+      type: 'Customer',
+      email: partner?.email || '',
+      phone: partner?.phone || '',
+      city: partner?.city || 'Casablanca',
+      comments: partner?.comments || '',
+      ICE: '',
+      IF: '',
+      RC: '',
+      score: undefined,
+      source: 'Website form',
+      assignedTo: ''
+    };
+    this.showConvertProposalModal.set(true);
+  }
 
-    // (A) Promote the associated Prospect → Customer
-    this.state.convertToCustomer(prop.partnerId);
+  submitConvertProposal() {
+    const prop = this.proposalToConvert();
+    if (!prop) return;
 
-    // (B) Create a Deal inheriting all line items from the Proposal
-    this.state.addDeal({
-      title: prop.title + ' — Deal',
-      partnerId: prop.partnerId,
-      amount: prop.amount,
-      stage: 'New',
-      comments: 'Converted automatically from confirmed proposal #' + prop.id,
-      proposalId: prop.id,
-      orderLines: prop.lines.map(l => ({ ...l })),
-      orderNumber: 'ORD-' + new Date().getFullYear() + '-' + randomSuffix,
-      dealNumber: 'DL-' + new Date().getFullYear() + '-' + randomSuffix,
-      orderDate: today,
-      requestedDeliveryDate: formattedDelivery,
-      orderStatus: 'Confirmed',
-      currency: 'MAD',
-      paymentTerms: '30 Days Net',
-      orderTotalAmount: prop.amount,
-      salesPerson: this.state.users().find(u => u.team === 'Sales')?.name || '',
-      salesRegion: 'Casablanca-Settat / Maroc'
-    });
+    if (this.newPartner.name.trim()) {
+      if (!this.newPartner.ICE || this.newPartner.ICE.length !== 15) {
+        alert('ICE must be exactly 15 digits.');
+        return;
+      }
+      if (!this.newPartner.IF || !this.newPartner.IF.trim()) {
+        alert('IF is required.');
+        return;
+      }
+      if (!this.newPartner.RC || !this.newPartner.RC.trim()) {
+        alert('RC is required.');
+        return;
+      }
 
-    // Remove the proposal from the list (moves to Deals tab)
-    this.state.proposals.update(props => props.filter(p => p.id !== prop.id));
+      const partnerId = prop.partnerId;
 
-    // Switch to Deals tab so the user sees the result immediately
-    this.activeTab.set('deals');
+      // 1. Promote the associated Prospect → Customer
+      this.state.convertToCustomer(partnerId);
+
+      // 2. Update the partner details in the list
+      this.state.partners.update(partners =>
+        partners.map(p => p.id === partnerId ? {
+          ...p,
+          name: this.newPartner.name,
+          email: this.newPartner.email,
+          phone: this.newPartner.phone,
+          city: this.newPartner.city,
+          comments: this.newPartner.comments
+        } : p)
+      );
+
+      // 3. Create the Customer Card
+      const accountId = this.state.generateAccountId();
+      this.state.saveCustomerCard({
+        id: 'cc-' + partnerId,
+        partnerId: partnerId,
+        accountId,
+        recordType: 'Organization',
+        name: this.newPartner.name,
+        searchName: '',
+        erpAccount: '',
+        ice: this.newPartner.ICE,
+        ifField: this.newPartner.IF,
+        rc: this.newPartner.RC,
+        rcCity: this.newPartner.city,
+        tp: '',
+        vatStatus: ['Standard'],
+        orgType: 'Headquarter',
+        parentAccountId: null,
+        addresses: [],
+        mainPhone: this.newPartner.phone,
+        corporateEmail: this.newPartner.email,
+        websiteUrl: '',
+        personnel: [],
+      });
+
+      // 4. Create the Deal
+      const today = new Date().toISOString().split('T')[0];
+      const deliveryDate = new Date();
+      deliveryDate.setDate(deliveryDate.getDate() + 30);
+      const formattedDelivery = deliveryDate.toISOString().split('T')[0];
+      const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+
+      this.state.addDeal({
+        title: prop.title + ' — Deal',
+        partnerId: partnerId,
+        amount: prop.amount,
+        stage: 'New',
+        comments: 'Converted automatically from confirmed proposal #' + prop.id,
+        proposalId: prop.id,
+        orderLines: prop.lines.map(l => ({ ...l })),
+        orderNumber: 'ORD-' + new Date().getFullYear() + '-' + randomSuffix,
+        dealNumber: 'DL-' + new Date().getFullYear() + '-' + randomSuffix,
+        orderDate: today,
+        requestedDeliveryDate: formattedDelivery,
+        orderStatus: 'Confirmed',
+        currency: 'MAD',
+        paymentTerms: '30 Days Net',
+        orderTotalAmount: prop.amount,
+        salesPerson: this.state.users().find(u => u.team === 'Sales')?.name || '',
+        salesRegion: 'Casablanca-Settat / Maroc'
+      });
+
+      // Remove the proposal from the list
+      this.state.proposals.update(props => props.filter(p => p.id !== prop.id));
+
+      this.showConvertProposalModal.set(false);
+      this.proposalToConvert.set(null);
+
+      // Switch to Deals tab so the user sees the result immediately
+      this.activeTab.set('deals');
+    }
   }
 
   openCreateLeadModal() {

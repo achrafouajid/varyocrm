@@ -26,7 +26,7 @@ import { RouterModule } from '@angular/router';
           <div class="bg-white text-indigo-600 w-12 h-12 rounded-full mb-3 shadow-sm group-hover:scale-110 transition-transform flex items-center justify-center">
             <mat-icon class="leading-none! flex items-center justify-center w-6 h-6 text-[24px]!">add_business</mat-icon>
           </div>
-          <span class="font-medium text-sm">New Deal</span>
+          <span class="font-medium text-sm">New Proposal</span>
         </a>
         <a routerLink="/partners" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 p-5 rounded-2xl flex flex-col items-center justify-center transition-all group shadow-sm border border-emerald-100/50 cursor-pointer no-underline">
           <div class="bg-white text-emerald-600 w-12 h-12 rounded-full mb-3 shadow-sm group-hover:scale-110 transition-transform flex items-center justify-center">
@@ -165,6 +165,87 @@ import { RouterModule } from '@angular/router';
             </div>
           </div>
         }
+
+        @if (isKpiActive('newDeals')) {
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col transition-all hover:shadow-md">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">New Deals</h3>
+              <div class="h-10 w-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center border border-indigo-100">
+                <mat-icon class="text-base" style="width:18px;height:18px;font-size:18px;display:flex;align-items:center">handshake</mat-icon>
+              </div>
+            </div>
+            <div class="text-3xl font-semibold text-slate-900">{{ newDealsKPI().count }} <span class="text-sm font-semibold text-slate-400">deals</span></div>
+            <div class="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
+              <div class="text-[10px] text-indigo-600 font-bold flex items-center gap-0.5">
+                <mat-icon class="text-[12px]" style="width:12px;height:12px;font-size:12px;display:flex;align-items:center">trending_up</mat-icon> This month's profit
+              </div>
+              <span class="text-[11px] font-bold font-mono text-slate-700">{{ newDealsKPI().profit | number:'1.0-0' }} <span class="text-slate-400 font-normal">{{ state.globalCurrency() }}</span></span>
+            </div>
+          </div>
+        }
+
+        @if (isKpiActive('newProspects')) {
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col transition-all hover:shadow-md">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">New Prospects</h3>
+              <div class="h-10 w-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center border border-emerald-100">
+                <mat-icon class="text-base" style="width:18px;height:18px;font-size:18px;display:flex;align-items:center">group_add</mat-icon>
+              </div>
+            </div>
+            <div class="text-3xl font-semibold text-slate-900">{{ newProspectsKPI().count }} <span class="text-sm font-semibold text-slate-400">prospects</span></div>
+            <div class="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
+              <div class="text-[10px] text-emerald-600 font-bold flex items-center gap-0.5">
+                <mat-icon class="text-[12px]" style="width:12px;height:12px;font-size:12px;display:flex;align-items:center">insights</mat-icon> Pipeline potential
+              </div>
+              <span class="text-[11px] font-bold font-mono text-slate-700">{{ newProspectsKPI().potential | number:'1.0-0' }} <span class="text-slate-400 font-normal">{{ state.globalCurrency() }}</span></span>
+            </div>
+          </div>
+        }
+
+        @if (isKpiActive('lostProspects')) {
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col transition-all hover:shadow-md">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Lost Prospects</h3>
+              <div class="h-10 w-10 bg-red-50 text-red-500 rounded-xl flex items-center justify-center border border-red-100">
+                <mat-icon class="text-base" style="width:18px;height:18px;font-size:18px;display:flex;align-items:center">do_not_disturb_on</mat-icon>
+              </div>
+            </div>
+            <div class="text-3xl font-semibold text-slate-900">{{ lostProspectsKPI().count }} <span class="text-sm font-semibold text-slate-400">closed lost</span></div>
+            <div class="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
+              <div class="text-[10px] text-red-500 font-bold flex items-center gap-0.5">
+                <mat-icon class="text-[12px]" style="width:12px;height:12px;font-size:12px;display:flex;align-items:center">trending_down</mat-icon> Value lost
+              </div>
+              <span class="text-[11px] font-bold font-mono text-slate-700">{{ lostProspectsKPI().potentialLost | number:'1.0-0' }} <span class="text-slate-400 font-normal">{{ state.globalCurrency() }}</span></span>
+            </div>
+          </div>
+        }
+
+        @if (isKpiActive('todaysDeal')) {
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col transition-all hover:shadow-md">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Today's Deal</h3>
+              <div class="h-10 w-10 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center border border-amber-100">
+                <mat-icon class="text-base" style="width:18px;height:18px;font-size:18px;display:flex;align-items:center">star</mat-icon>
+              </div>
+            </div>
+            @if (todaysDealKPI(); as deal) {
+              <div class="text-base font-bold text-slate-900 truncate" [title]="deal.name">{{ deal.name }}</div>
+              <div class="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
+                <div class="text-[10px] text-amber-600 font-bold flex items-center gap-0.5">
+                  <mat-icon class="text-[12px]" style="width:12px;height:12px;font-size:12px;display:flex;align-items:center">bolt</mat-icon> Deal value
+                </div>
+                <span class="text-[11px] font-bold font-mono text-slate-700">{{ deal.profit | number:'1.0-0' }} <span class="text-slate-400 font-normal">{{ state.globalCurrency() }}</span></span>
+              </div>
+            } @else {
+              <div class="text-sm font-semibold text-slate-400">No transactions today</div>
+              <div class="mt-2 pt-2 border-t border-slate-100">
+                <div class="text-[10px] text-slate-300 font-bold flex items-center gap-0.5">
+                  <mat-icon class="text-[12px]" style="width:12px;height:12px;font-size:12px;display:flex;align-items:center">bolt</mat-icon> Check back later
+                </div>
+              </div>
+            }
+          </div>
+        }
       </div>
 
       <!-- Charts Section -->
@@ -247,7 +328,11 @@ export class DashboardComponent {
     { id: 'latePayers', name: 'Late Payers', icon: 'warning' },
     { id: 'activeCampaigns', name: 'Active Campaigns', icon: 'email' },
     { id: 'openTickets', name: 'Open Tickets', icon: 'support_agent' },
-    { id: 'totalProspects', name: 'Total Prospects', icon: 'person_search' }
+    { id: 'totalProspects', name: 'Total Prospects', icon: 'person_search' },
+    { id: 'newDeals', name: 'New Deals', icon: 'handshake' },
+    { id: 'newProspects', name: 'New Prospects', icon: 'group_add' },
+    { id: 'lostProspects', name: 'Lost Prospects', icon: 'do_not_disturb_on' },
+    { id: 'todaysDeal', name: "Today's Deal", icon: 'star' }
   ];
 
   totalDealsValue = () => this.state.deals().reduce((acc, deal) => acc + deal.amount, 0);
@@ -255,6 +340,57 @@ export class DashboardComponent {
   activeCampaignsCount = () => this.state.campaigns().filter(c => c.status === 'Active').length;
   openTicketsCount = () => this.state.tickets().filter(c => c.status === 'Open' || c.status === 'In Progress').length;
   prospectsCount = () => this.state.prospects().length;
+
+  /** Deals created in the current calendar month */
+  newDealsKPI = computed(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const periodDeals = this.state.deals().filter(d => {
+      if (!d.orderDate) return false;
+      const dt = new Date(d.orderDate);
+      return dt.getFullYear() === year && dt.getMonth() === month;
+    });
+    return {
+      count: periodDeals.length,
+      profit: periodDeals.reduce((s, d) => s + d.amount, 0)
+    };
+  });
+
+  /** Partners with type === 'Prospect', aggregating linked proposal opportunity values */
+  newProspectsKPI = computed(() => {
+    const prospects = this.state.partners().filter(p => p.type === 'Prospect');
+    const proposals = this.state.proposals();
+    const potential = prospects.reduce((sum, p) => {
+      const linked = proposals.filter(pr => pr.partnerId === p.id);
+      const val = linked.reduce((s, pr) => s + ((pr as any).opportunityValue ?? pr.amount ?? 0), 0);
+      return sum + val;
+    }, 0);
+    return { count: prospects.length, potential };
+  });
+
+  /** Deals with stage 'Closed Lost' — count and total value lost */
+  lostProspectsKPI = computed(() => {
+    const lost = this.state.deals().filter(d => d.stage === 'Closed Lost');
+    return {
+      count: lost.length,
+      potentialLost: lost.reduce((s, d) => s + d.amount, 0)
+    };
+  });
+
+  /** Highest-value deal with an orderDate matching today */
+  todaysDealKPI = computed((): { name: string; profit: number } | null => {
+    const today = new Date().toISOString().split('T')[0];
+    const todays = this.state.deals()
+      .filter(d => d.orderDate === today)
+      .sort((a, b) => b.amount - a.amount);
+    if (!todays.length) return null;
+    const top = todays[0];
+    return {
+      name: (top as any).customerAccount || top.title,
+      profit: top.amount
+    };
+  });
 
   partnerSlices = computed(() => {
     const customers = this.state.customers().length;
