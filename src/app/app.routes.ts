@@ -9,7 +9,6 @@ export const routes: Routes = [
   { path: 'partners', loadComponent: () => import('./pages/partners.component').then(m => m.PartnersComponent) },
   { path: 'finance', loadComponent: () => import('./pages/finance.component').then(m => m.FinanceComponent) },
   { path: 'tickets', loadComponent: () => import('./pages/tickets.component').then(m => m.TicketsComponent) },
-  { path: 'leads', loadComponent: () => import('./pages/leads.component').then(m => m.LeadsComponent) },
   { path: 'automation', loadComponent: () => import('./pages/automation.component').then(m => m.AutomationComponent) },
   { path: 'partners/:id/customer-card', loadComponent: () => import('./pages/customer-card.component').then(m => m.CustomerCardComponent) },
   {

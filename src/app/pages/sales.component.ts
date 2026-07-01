@@ -247,6 +247,9 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                 </button>
 
                 @if (prop.status === 'Draft') {
+                  <button (click)="openAssignTaskModal('proposal', prop.id, prop.title)" class="bg-white border border-slate-200 text-indigo-600 hover:bg-indigo-50 p-2 rounded-lg transition-colors flex items-center justify-center shrink-0" title="Assign Task">
+                    <mat-icon class="text-[18px] w-[18px] h-[18px] flex items-center justify-center">assignment</mat-icon>
+                  </button>
                   <button (click)="openSendProposalModal(prop)" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold py-2 rounded-lg transition-colors">
                     Send to Prospect
                   </button>
@@ -312,6 +315,9 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                     </span>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-right text-xs font-semibold space-x-1.5">
+                    <button (click)="openAssignTaskModal('po', po.id, 'PO #' + po.id)" class="bg-white border border-slate-200 text-indigo-600 px-2 py-1 rounded-lg hover:bg-indigo-50 flex items-center gap-1 ml-auto" title="Assign Task">
+                      <mat-icon class="text-[14px] w-3.5 h-3.5">assignment</mat-icon> Assign
+                    </button>
                     @if (po.status === 'Sent') {
                       <button (click)="openSetDeliveryDatePOModal(po)" class="bg-white border border-slate-200 text-slate-700 px-2 py-1 rounded-lg hover:bg-slate-50">Set Del. Date</button>
                       <button (click)="state.updatePurchaseOrderStatus(po.id, 'Delivered')" class="bg-indigo-600 text-white px-2 py-1 rounded-lg hover:bg-indigo-700">Receive Goods</button>
@@ -551,6 +557,9 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
             </div>
             <div class="flex gap-2">
               <button (click)="proposalModalOpen.set(false)" class="px-4 py-2 border border-slate-200 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-50">Cancel</button>
+              <button (click)="saveProposal(true)" class="px-4 py-2 border border-slate-200 text-indigo-600 hover:bg-indigo-50 text-sm font-semibold rounded-lg flex items-center gap-1.5">
+                <mat-icon class="text-[16px] w-4 h-4">assignment</mat-icon> {{ editingProposalId() ? 'Save &amp; Assign Task' : 'Create &amp; Assign Task' }}
+              </button>
               <button (click)="saveProposal()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm">{{ editingProposalId() ? 'Save Changes' : 'Create Proposal' }}</button>
             </div>
           </div>
@@ -849,6 +858,9 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
             </div>
             <div class="flex gap-2">
               <button (click)="dealModalOpen.set(false)" class="px-4 py-2 border border-slate-200 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-50">Cancel</button>
+              <button (click)="saveDeal(true)" class="px-4 py-2 border border-slate-200 text-indigo-600 hover:bg-indigo-50 text-sm font-semibold rounded-lg flex items-center gap-1.5">
+                <mat-icon class="text-[16px] w-4 h-4">assignment</mat-icon> Save &amp; Assign Task
+              </button>
               <button (click)="saveDeal()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm">Save Deal</button>
             </div>
           </div>
@@ -1351,6 +1363,67 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
       </div>
     }
 
+    <!-- Assign Task Modal -->
+    @if (assignTaskModalOpen(); as ctx) {
+      <div class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-5 shadow-xl border border-slate-100 animate-in zoom-in-95 duration-200">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-bold text-slate-950">Assign Task</h3>
+            <button (click)="assignTaskModalOpen.set(null)" class="text-slate-400 hover:text-slate-600 transition-colors">
+              <mat-icon class="text-[20px] w-5 h-5">close</mat-icon>
+            </button>
+          </div>
+
+          <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-3">
+            <span class="text-[10px] text-indigo-400 font-bold uppercase tracking-wider block mb-0.5">Related to</span>
+            <span class="text-sm font-bold text-indigo-900">{{ ctx.entityTitle }}</span>
+          </div>
+
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Task Title</label>
+              <input [(ngModel)]="assignTaskData.title" type="text" placeholder="e.g. Follow up with client" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Description (optional)</label>
+              <textarea [(ngModel)]="assignTaskData.description" rows="3" placeholder="Describe the task..." class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600"></textarea>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Assigned Team</label>
+              <select [(ngModel)]="assignTaskData.assignedTeam" class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                <option value="Sales">Sales</option>
+                <option value="Operations">Operations</option>
+                <option value="Finance">Finance</option>
+                <option value="Support">Support</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Assigned Person</label>
+              <select [(ngModel)]="assignTaskData.assignedTo" class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                <option value="">-- Select --</option>
+                @for (user of state.users(); track user.name) {
+                  <option [value]="user.name">{{ user.name }} ({{ user.team }})</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <div class="flex justify-between gap-2 pt-2 border-t border-slate-100">
+            <button (click)="assignTaskModalOpen.set(null)" class="px-4 py-2 border border-slate-200 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-50 transition-colors">Cancel</button>
+            <button (click)="saveAssignTask()"
+              [disabled]="!assignTaskData.title.trim() || !assignTaskData.assignedTo"
+              class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2">
+              <mat-icon class="text-[16px] w-4 h-4">assignment</mat-icon>
+              Create &amp; Assign Task
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
     <!-- Slide-Over Drawer for Deal Details -->
     @if (selectedDeal(); as deal) {
       <div class="fixed inset-0 z-50 overflow-hidden" aria-labelledby="deal-drawer-title" role="dialog" aria-modal="true">
@@ -1835,6 +1908,9 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                     <mat-icon class="mr-1 text-[16px] w-4 h-4">add_shopping_cart</mat-icon> Create PO (Operations)
                   </button>
                 }
+                <button (click)="openAssignTaskModal('deal', deal.id, deal.title)" class="bg-white border border-slate-300 text-indigo-600 hover:bg-indigo-50 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                  <mat-icon class="text-[16px] w-4 h-4">assignment</mat-icon> Assign Task
+                </button>
                 @if (deal.stage === 'New') {
                   <button (click)="state.updateDealStage(deal.id, 'Confirmed')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors flex items-center">
                     <mat-icon class="mr-1 text-[16px] w-4 h-4">check</mat-icon> Confirm Deal
@@ -1940,6 +2016,19 @@ export class SalesComponent {
     recordings: { date: '2026-06-27', title: '', meetingLink: 'https://teams.microsoft.com/l/meetup-join/123456', recordingLink: 'https://share.acme.ma/rec/recording-06-27', duration: '30 mins' },
     notes: { date: '2026-06-27', author: 'Youssef El Alami', content: '' },
     followups: { dueDate: '2026-06-27', title: '', assignedTo: 'Omar (Finance)' }
+  };
+
+  // Assign Task Modal
+  assignTaskModalOpen = signal<{
+    entityType: 'deal' | 'proposal' | 'po';
+    entityId: string;
+    entityTitle: string;
+  } | null>(null);
+  assignTaskData = {
+    title: '',
+    description: '',
+    assignedTeam: 'Sales' as 'Sales' | 'Operations' | 'Finance' | 'Support',
+    assignedTo: ''
   };
 
   // Modal data properties
@@ -2332,7 +2421,7 @@ export class SalesComponent {
     return this.newProposal.lines.reduce((acc, line) => acc + (line.qty * line.unitPrice), 0);
   }
 
-  saveProposal() {
+  saveProposal(andAssignTask = false) {
     const total = this.getNewProposalTotal();
     const propId = this.editingProposalId();
     const competitorsArray = this.newProposal.competitors
@@ -2354,14 +2443,22 @@ export class SalesComponent {
 
     if (propId) {
       this.state.updateProposal(propId, payload);
+      this.proposalModalOpen.set(false);
+      this.editingProposalId.set(null);
+      if (andAssignTask) {
+        this.openAssignTaskModal('proposal', propId, payload.title);
+      }
     } else {
-      this.state.addProposal({
+      const newProp = this.state.addProposal({
         ...payload,
         status: 'Draft'
       });
+      this.proposalModalOpen.set(false);
+      this.editingProposalId.set(null);
+      if (andAssignTask && newProp) {
+        this.openAssignTaskModal('proposal', newProp.id, newProp.title);
+      }
     }
-    this.proposalModalOpen.set(false);
-    this.editingProposalId.set(null);
   }
 
   // Deal Creation
@@ -2438,9 +2535,36 @@ export class SalesComponent {
     this.newDeal.orderTotalAmount = total;
   }
 
-  saveDeal() {
+  // Assign Task Methods
+  openAssignTaskModal(entityType: 'deal' | 'proposal' | 'po', entityId: string, entityTitle: string) {
+    this.assignTaskData = {
+      title: '',
+      description: '',
+      assignedTeam: 'Sales',
+      assignedTo: ''
+    };
+    this.assignTaskModalOpen.set({ entityType, entityId, entityTitle });
+  }
+
+  saveAssignTask() {
+    const ctx = this.assignTaskModalOpen();
+    if (!ctx || !this.assignTaskData.title.trim() || !this.assignTaskData.assignedTo) return;
+
+    this.state.addTask({
+      title: this.assignTaskData.title.trim(),
+      description: this.assignTaskData.description.trim() || undefined,
+      assignedTeam: this.assignTaskData.assignedTeam,
+      assignedTo: this.assignTaskData.assignedTo,
+      status: 'Pending',
+      relatedTo: `${ctx.entityType}: ${ctx.entityTitle}`
+    });
+
+    this.assignTaskModalOpen.set(null);
+  }
+
+  saveDeal(andAssignTask = false) {
     const finalAmount = this.newDeal.amount - (this.newDeal.amount * (this.newDeal.discount / 100));
-    this.state.addDeal({
+    const newDeal = this.state.addDeal({
       title: this.newDeal.title || 'New Deal',
       partnerId: this.newDeal.partnerId,
       amount: finalAmount,
@@ -2484,6 +2608,9 @@ export class SalesComponent {
       deliveryDate: this.newDeal.deliveryDate
     });
     this.dealModalOpen.set(false);
+    if (andAssignTask && newDeal) {
+      this.openAssignTaskModal('deal', newDeal.id, newDeal.title);
+    }
   }
 
   // Purchase Order Helpers & Mutators

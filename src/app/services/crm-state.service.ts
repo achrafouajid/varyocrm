@@ -2378,6 +2378,21 @@ export class CrmStateService {
     );
   }
 
+  convertLeadDataToProspect(lead: Lead) {
+    this.addPartner({
+      name: lead.name,
+      type: 'Prospect',
+      email: lead.contacts?.[0]?.email || '',
+      phone: lead.contacts?.[0]?.phone || '',
+      city: lead.company?.city || 'Casablanca',
+      comments: lead.notes || '',
+      score: lead.score,
+      source: lead.campaigns?.[0]?.source || 'Website form' as any,
+      assignedTo: lead.assignedSalesperson || ''
+    });
+    this.updateLeadStatus(lead.id, 'Converted');
+  }
+
   getCustomerCard(partnerId: string): CustomerCard | undefined {
     return this.customerCards().find(c => c.partnerId === partnerId);
   }
