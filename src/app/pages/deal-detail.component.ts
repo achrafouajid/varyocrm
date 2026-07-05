@@ -4,10 +4,11 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { CrmStateService, Deal, PurchaseOrder, Task } from '../services/crm-state.service';
+import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
 
 @Component({
   selector: 'app-deal-detail',
-  imports: [CommonModule, FormsModule, MatIconModule, RouterLink],
+  imports: [CommonModule, FormsModule, MatIconModule, RouterLink, CreatedByBadgeComponent],
   template: `
     <div class="space-y-6 font-sans max-w-5xl mx-auto">
       <a routerLink="/sales" class="inline-flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors">
@@ -22,6 +23,9 @@ import { CrmStateService, Deal, PurchaseOrder, Task } from '../services/crm-stat
             <div>
               <h2 class="text-xl font-bold text-slate-900">{{deal.title}}</h2>
               <p class="text-sm text-slate-500 mt-1">Client: {{getPartnerName(deal.partnerId)}} · {{deal.dealNumber || 'No deal number'}}</p>
+              <div class="mt-2">
+                <app-created-by-badge [createdBy]="deal.createdBy" [createdAt]="deal.createdAt" />
+              </div>
             </div>
             <span class="px-3 py-1 text-xs font-semibold rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
               {{deal.stage}}

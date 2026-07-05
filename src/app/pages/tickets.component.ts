@@ -3,10 +3,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { CrmStateService, Ticket } from '../services/crm-state.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
 
 @Component({
   selector: 'app-tickets',
-  imports: [MatIconModule, CommonModule, FormsModule],
+  imports: [MatIconModule, CommonModule, FormsModule, CreatedByBadgeComponent],
   template: `
     <div class="max-w-6xl mx-auto space-y-8">
       <div class="flex justify-between items-end">
@@ -30,6 +31,7 @@ import { FormsModule } from '@angular/forms';
               <th scope="col" class="px-6 py-3 text-left font-medium text-slate-500 uppercase tracking-wider text-xs">Related Partner</th>
               <th scope="col" class="px-6 py-3 text-left font-medium text-slate-500 uppercase tracking-wider text-xs">Assignee</th>
               <th scope="col" class="px-6 py-3 text-left font-medium text-slate-500 uppercase tracking-wider text-xs">Status</th>
+              <th scope="col" class="px-6 py-3 text-left font-medium text-slate-500 uppercase tracking-wider text-xs">Created By</th>
               <th scope="col" class="px-6 py-3 text-right font-medium text-slate-500 uppercase tracking-wider text-xs">Actions</th>
             </tr>
           </thead>
@@ -72,6 +74,9 @@ import { FormsModule } from '@angular/forms';
                     {{ticket.status}}
                   </span>
                 </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <app-created-by-badge [createdBy]="ticket.createdBy" [createdAt]="ticket.createdAt" />
+                </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
                   <button (click)="deleteTicket(ticket.id)" class="text-rose-500 hover:text-rose-700 hover:bg-rose-50 p-1.5 rounded-lg transition-colors" title="Delete Ticket">
                     <mat-icon class="text-[18px] w-4.5 h-4.5">delete</mat-icon>
@@ -80,7 +85,7 @@ import { FormsModule } from '@angular/forms';
               </tr>
             } @empty {
               <tr>
-                <td colspan="7" class="px-6 py-12 text-center text-slate-400 text-sm">
+                <td colspan="8" class="px-6 py-12 text-center text-slate-400 text-sm">
                   <mat-icon class="text-[40px]! w-10 h-10 mb-2 text-slate-300 block mx-auto">support_agent</mat-icon>
                   No tickets found. Create one to get started.
                 </td>

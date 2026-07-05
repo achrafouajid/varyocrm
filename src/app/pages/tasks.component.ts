@@ -4,6 +4,7 @@ import { CrmStateService, Task } from '../services/crm-state.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DragDropModule, CdkDragDrop, transferArrayItem } from '@angular/cdk/drag-drop';
+import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
 
 const MODULE_SUB_MODULES: Record<string, string[]> = {
   Sales: ['Deal', 'Proposal', 'PurchaseOrder'],
@@ -30,7 +31,7 @@ const SUB_MODULE_LABELS: Record<string, string> = {
 
 @Component({
   selector: 'app-tasks',
-  imports: [MatIconModule, CommonModule, FormsModule, DragDropModule],
+  imports: [MatIconModule, CommonModule, FormsModule, DragDropModule, CreatedByBadgeComponent],
   styles: [`
     .kanban-column.cdk-drop-list-dragging .kanban-card:not(.cdk-drag-placeholder) {
       transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
@@ -110,7 +111,11 @@ const SUB_MODULE_LABELS: Record<string, string> = {
                 }
               </div>
 
-              <div class="border-t border-slate-100 pt-3 flex flex-col gap-3 mt-4">
+              <div class="border-t border-slate-100 pt-3 flex flex-col gap-2 mt-4">
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-slate-400 font-medium">Created By:</span>
+                  <app-created-by-badge [createdBy]="task.createdBy" [createdAt]="task.createdAt" />
+                </div>
                 <div class="flex justify-between items-center text-xs">
                   <span class="text-slate-400 font-medium">Assigned Team:</span>
                   <span class="font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded">{{task.assignedTeam || 'Sales'}}</span>
@@ -188,6 +193,9 @@ const SUB_MODULE_LABELS: Record<string, string> = {
                       <span class="ml-auto text-[10px] font-semibold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">{{task.assignedTeam}}</span>
                     }
                   </div>
+                  <div class="mt-2 pt-2 border-t border-slate-50 flex items-center gap-2 text-[10px] text-slate-400">
+                    <app-created-by-badge [createdBy]="task.createdBy" [createdAt]="task.createdAt" [size]="20" />
+                  </div>
                 </div>
               } @empty {
                 <div class="text-center py-8 text-xs text-slate-400 italic">No tasks</div>
@@ -229,6 +237,9 @@ const SUB_MODULE_LABELS: Record<string, string> = {
                       <span class="ml-auto text-[10px] font-semibold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">{{task.assignedTeam}}</span>
                     }
                   </div>
+                  <div class="mt-2 pt-2 border-t border-slate-50 flex items-center gap-2 text-[10px] text-slate-400">
+                    <app-created-by-badge [createdBy]="task.createdBy" [createdAt]="task.createdAt" [size]="20" />
+                  </div>
                 </div>
               } @empty {
                 <div class="text-center py-8 text-xs text-slate-400 italic">No tasks</div>
@@ -269,6 +280,9 @@ const SUB_MODULE_LABELS: Record<string, string> = {
                     @if (task.assignedTeam) {
                       <span class="ml-auto text-[10px] font-semibold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">{{task.assignedTeam}}</span>
                     }
+                  </div>
+                  <div class="mt-2 pt-2 border-t border-slate-50 flex items-center gap-2 text-[10px] text-slate-400">
+                    <app-created-by-badge [createdBy]="task.createdBy" [createdAt]="task.createdAt" [size]="20" />
                   </div>
                 </div>
               } @empty {

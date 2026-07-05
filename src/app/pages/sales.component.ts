@@ -4,12 +4,13 @@ import { CrmStateService, Partner, Proposal, Deal, PurchaseOrder, Task } from '.
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
 
 export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Proposal Sent' | 'Negotiation' | 'Won / Lost';
 
 @Component({
   selector: 'app-sales',
-  imports: [MatIconModule, CommonModule, FormsModule, RouterLink],
+  imports: [MatIconModule, CommonModule, FormsModule, RouterLink, CreatedByBadgeComponent],
   template: `
     <div class="flex gap-6">
       <!-- Left Sidebar Navigation -->
@@ -77,6 +78,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                 <th scope="col" class="px-6 py-3 text-left font-semibold text-slate-500 uppercase tracking-wider text-xs">Stage</th>
                 <th scope="col" class="px-6 py-3 text-left font-semibold text-slate-500 uppercase tracking-wider text-xs">Est. Delivery</th>
                 <th scope="col" class="px-6 py-3 text-left font-semibold text-slate-500 uppercase tracking-wider text-xs">Order Status</th>
+                <th scope="col" class="px-6 py-3 text-left font-semibold text-slate-500 uppercase tracking-wider text-xs">Created By</th>
                 <th scope="col" class="px-6 py-3 text-right font-semibold text-slate-500 uppercase tracking-wider text-xs">Actions</th>
               </tr>
             </thead>
@@ -111,6 +113,9 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                       {{deal.orderStatus || 'N/A'}}
                     </span>
                   </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <app-created-by-badge [createdBy]="deal.createdBy" [createdAt]="deal.createdAt" />
+                  </td>
                   <td class="px-6 py-4 whitespace-nowrap text-right text-xs font-semibold">
                     <a [routerLink]="['/sales/deals', deal.id]" class="text-indigo-600 hover:text-indigo-900 flex items-center gap-1 ml-auto" (click)="$event.stopPropagation()">
                       View details <mat-icon class="text-sm w-4 h-4 flex items-center justify-center">chevron_right</mat-icon>
@@ -119,7 +124,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                 </tr>
               } @empty {
                 <tr>
-                  <td colspan="7" class="px-6 py-8 text-center text-slate-500 text-sm">No deals found. Create a confirmed proposal to start.</td>
+                  <td colspan="8" class="px-6 py-8 text-center text-slate-500 text-sm">No deals found. Create a confirmed proposal to start.</td>
                 </tr>
               }
             </tbody>
@@ -142,6 +147,9 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                 </div>
                 <h3 class="text-lg font-semibold text-slate-900">{{prop.title}}</h3>
                 <p class="text-xs text-slate-500">Prospect: {{getPartnerName(prop.partnerId)}}</p>
+                <div class="flex items-center gap-3 text-xs text-slate-400">
+                  <app-created-by-badge [createdBy]="prop.createdBy" [createdAt]="prop.createdAt" [size]="22" />
+                </div>
 
                 <!-- Lines -->
                 <div class="bg-slate-50 rounded-xl p-3 border border-slate-100 space-y-2">
@@ -285,6 +293,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                 <th scope="col" class="px-6 py-3 text-left font-medium text-slate-500 uppercase tracking-wider text-xs">Amount</th>
                 <th scope="col" class="px-6 py-3 text-left font-medium text-slate-500 uppercase tracking-wider text-xs">Delivery Date</th>
                 <th scope="col" class="px-6 py-3 text-left font-medium text-slate-500 uppercase tracking-wider text-xs">Status</th>
+                <th scope="col" class="px-6 py-3 text-left font-medium text-slate-500 uppercase tracking-wider text-xs">Created By</th>
                 <th scope="col" class="px-6 py-3 text-right font-medium text-slate-500 uppercase tracking-wider text-xs">Actions</th>
               </tr>
             </thead>
@@ -315,6 +324,9 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                       {{po.status}}
                     </span>
                   </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <app-created-by-badge [createdBy]="po.createdBy" [createdAt]="po.createdAt" />
+                  </td>
                   <td class="px-6 py-4 whitespace-nowrap text-right text-xs font-semibold space-x-1.5">
                     <button (click)="openAssignTaskModal('po', po.id, 'PO #' + po.id)" class="bg-white border border-slate-200 text-indigo-600 px-2 py-1 rounded-lg hover:bg-indigo-50 flex items-center gap-1 ml-auto" title="Assign Task">
                       <mat-icon class="text-[14px] w-3.5 h-3.5">assignment</mat-icon> Assign
@@ -327,7 +339,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                 </tr>
               } @empty {
                 <tr>
-                  <td colspan="7" class="px-6 py-8 text-center text-slate-500 text-sm">No Purchase Orders generated yet.</td>
+                  <td colspan="8" class="px-6 py-8 text-center text-slate-500 text-sm">No Purchase Orders generated yet.</td>
                 </tr>
               }
             </tbody>

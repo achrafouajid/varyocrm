@@ -382,6 +382,8 @@ export class CustomerCardComponent implements OnInit {
           corporateEmail: p?.email || '',
           websiteUrl: '',
           personnel: [],
+          createdBy: '',
+          createdAt: '',
         });
       }
     });
@@ -409,6 +411,8 @@ export class CustomerCardComponent implements OnInit {
       corporateEmail: '',
       websiteUrl: '',
       personnel: [],
+      createdBy: '',
+      createdAt: '',
     };
   }
 

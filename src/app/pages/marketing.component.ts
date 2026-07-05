@@ -2,10 +2,11 @@ import { Component, inject, signal } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { CrmStateService } from '../services/crm-state.service';
 import { CommonModule } from '@angular/common';
+import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
 
 @Component({
   selector: 'app-marketing',
-  imports: [MatIconModule, CommonModule],
+  imports: [MatIconModule, CommonModule, CreatedByBadgeComponent],
   template: `
     <div class="flex gap-6">
       <!-- Left Sidebar Navigation -->
@@ -75,6 +76,7 @@ import { CommonModule } from '@angular/common';
               <th scope="col" class="px-6 py-3 text-left test-xs font-medium text-slate-500 uppercase tracking-wider text-xs">Target Audience</th>
               <th scope="col" class="px-6 py-3 text-left test-xs font-medium text-slate-500 uppercase tracking-wider text-xs">Sent/Delivery</th>
               <th scope="col" class="px-6 py-3 text-left test-xs font-medium text-slate-500 uppercase tracking-wider text-xs">Status</th>
+              <th scope="col" class="px-6 py-3 text-left test-xs font-medium text-slate-500 uppercase tracking-wider text-xs">Created By</th>
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-slate-200">
@@ -94,10 +96,13 @@ import { CommonModule } from '@angular/common';
                     {{campaign.status}}
                   </span>
                 </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <app-created-by-badge [createdBy]="campaign.createdBy" [createdAt]="campaign.createdAt" />
+                </td>
               </tr>
             } @empty {
               <tr>
-                <td colspan="4" class="px-6 py-8 text-center text-slate-500 text-sm">No {{activeTab()}} campaigns found.</td>
+                <td colspan="5" class="px-6 py-8 text-center text-slate-500 text-sm">No {{activeTab()}} campaigns found.</td>
               </tr>
             }
           </tbody>

@@ -4,10 +4,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { CrmStateService, Partner, Lead, LeadActivity, LeadAttachment } from '../services/crm-state.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
+import { UserAvatarComponent } from '../shared/user-avatar.component';
 
 @Component({
   selector: 'app-partners',
-  imports: [MatIconModule, CommonModule, FormsModule],
+  imports: [MatIconModule, CommonModule, FormsModule, CreatedByBadgeComponent, UserAvatarComponent],
   template: `
     <div class="flex gap-6">
       <!-- Left Sidebar Navigation -->
@@ -380,8 +382,8 @@ import { FormsModule } from '@angular/forms';
                           <div class="bg-slate-50/50 rounded-xl p-4 border border-slate-100 space-y-3">
                             <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Audit Trail</h3>
                             <div class="grid grid-cols-2 gap-4 text-[11px] text-slate-500">
-                              <div><div>Created Date</div><div class="font-semibold text-slate-700 mt-0.5">{{ lead.createdDate }} by {{ lead.createdBy }}</div></div>
-                              <div><div>Modified Date</div><div class="font-semibold text-slate-700 mt-0.5">{{ lead.modifiedDate }} by {{ lead.modifiedBy }}</div></div>
+                              <div><div>Created By</div><div class="mt-0.5"><app-created-by-badge [createdBy]="lead.createdBy" [createdAt]="lead.createdDate" /></div></div>
+                              <div><div>Modified Date</div><div class="font-semibold text-slate-700 mt-0.5">{{ lead.modifiedDate }} by <app-user-avatar [userId]="lead.modifiedBy" [size]="20" /> {{ getUserName(lead.modifiedBy) }}</div></div>
                             </div>
                           </div>
                         </div>
@@ -624,6 +626,10 @@ import { FormsModule } from '@angular/forms';
                       <strong class="text-slate-700">Notes:</strong> {{partner.comments}}
                     </div>
                   }
+
+                  <div class="mt-4 pt-4 border-t border-slate-100">
+                    <app-created-by-badge [createdBy]="partner.createdBy" [createdAt]="partner.createdAt" />
+                  </div>
 
                   @let partnerInvoices = getPartnerInvoices(partner.id);
                   @if (partnerInvoices.length > 0) {
@@ -1115,6 +1121,10 @@ export class PartnersComponent {
   getInitials(name: string): string {
     if (!name) return 'LD';
     return name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+  }
+
+  getUserName(userId: string): string {
+    return this.state.users().find(u => u.id === userId)?.displayName || userId;
   }
 
   getStatusClass(status: string): string {

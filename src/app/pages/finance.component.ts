@@ -3,6 +3,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { CrmStateService, Deal } from '../services/crm-state.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
 
 // ── Local type alias for invoice line items ────────────────────────────────
 type InvoiceLine = {
@@ -15,7 +16,7 @@ type InvoiceLine = {
 
 @Component({
   selector: 'app-finance',
-  imports: [MatIconModule, CommonModule, FormsModule],
+  imports: [MatIconModule, CommonModule, FormsModule, CreatedByBadgeComponent],
   template: `
     <div class="flex gap-6">
       <!-- Left Sidebar Navigation -->
@@ -73,6 +74,7 @@ type InvoiceLine = {
                   <th scope="col" class="px-6 py-3 text-left font-medium text-slate-500 uppercase tracking-wider text-xs">Partner</th>
                   <th scope="col" class="px-6 py-3 text-left font-medium text-slate-500 uppercase tracking-wider text-xs">Amount</th>
                   <th scope="col" class="px-6 py-3 text-left font-medium text-slate-500 uppercase tracking-wider text-xs">Due Date</th>
+                  <th scope="col" class="px-6 py-3 text-left font-medium text-slate-500 uppercase tracking-wider text-xs">Created By</th>
                   <th scope="col" class="px-6 py-3 text-left font-medium text-slate-500 uppercase tracking-wider text-xs">Status</th>
                   <th scope="col" class="px-6 py-3 text-right font-medium text-slate-500 uppercase tracking-wider text-xs">Actions</th>
                 </tr>
@@ -94,6 +96,9 @@ type InvoiceLine = {
                       <div class="text-sm text-slate-500 font-mono">{{invoice.dueDate}}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
+                      <app-created-by-badge [createdBy]="invoice.createdBy" [createdAt]="invoice.createdAt" />
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
                       <span [class]="getStatusColor(invoice.status)" class="px-2.5 py-1 text-xs font-semibold rounded-full border">
                         {{invoice.status}}
                       </span>
@@ -106,7 +111,7 @@ type InvoiceLine = {
                   </tr>
                 } @empty {
                   <tr>
-                    <td colspan="6" class="px-6 py-8 text-center text-slate-500 text-sm">No invoices found.</td>
+                    <td colspan="7" class="px-6 py-8 text-center text-slate-500 text-sm">No invoices found.</td>
                   </tr>
                 }
               </tbody>

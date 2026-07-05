@@ -526,6 +526,8 @@ export interface Partner {
   score?: number;
   source?: 'Website form' | 'Trade show' | 'LinkedIn' | 'Marketing campaign' | 'Referral';
   assignedTo?: string;
+  createdBy: string;
+  createdAt: string;
 }
 
 export interface Task {
@@ -539,6 +541,8 @@ export interface Task {
   relatedModule?: 'Sales' | 'Finance' | 'Partners' | 'Support' | 'Marketing';
   relatedSubModule?: string; // entity type: Deal, Proposal, PurchaseOrder, Lead, Customer, Prospect, Vendor, Ticket, Campaign, Invoice, Recovery
   relatedEntityId?: string; // id of the related entity
+  createdBy: string;
+  createdAt: string;
 }
 
 export interface ProposalLine {
@@ -558,6 +562,8 @@ export interface Proposal {
   status: 'Draft' | 'Sent' | 'Confirmed' | 'Rejected';
   templateId?: string;
   lines: ProposalLine[];
+  createdBy: string;
+  createdAt: string;
   deliveryMethod?: 'Email' | 'WhatsApp' | 'SMS';
   opportunityValue?: number;
   closingProbability?: number;
@@ -633,6 +639,8 @@ export interface Deal {
   stage: DealStage;
   comments?: string;
   proposalId?: string;
+  createdBy: string;
+  createdAt: string;
   orderLines?: ProposalLine[];
   discount?: number;
   emailExchange?: string;
@@ -690,6 +698,8 @@ export interface PurchaseOrder {
   deliveryDate?: string;
   lines: { product: string; description?: string; qty: number; cost: number; type?: 'software' | 'hardware' | 'service' }[];
   sentVia?: string;
+  createdBy: string;
+  createdAt: string;
 }
 
 export interface Invoice {
@@ -701,6 +711,8 @@ export interface Invoice {
   dueDate: string;
   dealId?: string;
   purchaseOrderId?: string;
+  createdBy: string;
+  createdAt: string;
   // Customer administrative information
   customerAccount?: string;   // Unique account code / ERP ID
   customerName?: string;      // Official corporate name
@@ -717,6 +729,8 @@ export interface Campaign {
   status: 'Draft' | 'Active' | 'Completed';
   targetAudience: string;
   sentCount: number;
+  createdBy: string;
+  createdAt: string;
 }
 
 export interface Ticket {
@@ -728,6 +742,8 @@ export interface Ticket {
   priority: 'Low' | 'Medium' | 'High';
   type?: string;
   resolution?: string;
+  createdBy: string;
+  createdAt: string;
 }
 
 export interface ActivityLog {
@@ -786,6 +802,8 @@ export interface CustomerCard {
   corporateEmail: string;
   websiteUrl: string;
   personnel: CustomerPersonnel[];
+  createdBy: string;
+  createdAt: string;
 }
 
 export interface ProposalTemplate {
@@ -1076,15 +1094,15 @@ export class CrmStateService {
 
   // Moroccan data population
   partners = signal<Partner[]>([
-    { id: 'p1', name: 'Atlas Digital S.A.R.L.', type: 'Prospect', email: 'contact@atlasdigital.ma', phone: '+212-522-458922', comments: 'Grand intérêt pour la migration Cloud.', city: 'Casablanca' },
-    { id: 'p2', name: 'Casablanca Tech Wholesale', type: 'Vendor', email: 'sales@casatechwholesale.ma', phone: '+212-522-897452', comments: 'Fournisseur principal de serveurs physiques.', city: 'Casablanca' },
-    { id: 'p3', name: 'Maroc Telecom Systems', type: 'Customer', email: 'telecomsys@mts.co.ma', phone: '+212-537-778899', comments: 'Client historique pour le support réseau.', city: 'Rabat' },
-    { id: 'p4', name: 'Al-Maghrib Consulting', type: 'Prospect', email: 'hello@almaghribconsulting.ma', phone: '+212-661-345678', comments: 'En attente d\'une offre personnalisée CRM.', city: 'Marrakech' },
-    { id: 'p5', name: 'ABC Technologies', type: 'Customer', email: 'contact@abctech.ma', phone: '+212-522-112233', city: 'Casablanca' }
+    { id: 'p1', name: 'Atlas Digital S.A.R.L.', type: 'Prospect', email: 'contact@atlasdigital.ma', phone: '+212-522-458922', comments: 'Grand intérêt pour la migration Cloud.', city: 'Casablanca', createdBy: 'usr_rachid', createdAt: '2026-01-15' },
+    { id: 'p2', name: 'Casablanca Tech Wholesale', type: 'Vendor', email: 'sales@casatechwholesale.ma', phone: '+212-522-897452', comments: 'Fournisseur principal de serveurs physiques.', city: 'Casablanca', createdBy: 'usr_rachid', createdAt: '2026-01-20' },
+    { id: 'p3', name: 'Maroc Telecom Systems', type: 'Customer', email: 'telecomsys@mts.co.ma', phone: '+212-537-778899', comments: 'Client historique pour le support réseau.', city: 'Rabat', createdBy: 'usr_rachid', createdAt: '2026-02-01' },
+    { id: 'p4', name: 'Al-Maghrib Consulting', type: 'Prospect', email: 'hello@almaghribconsulting.ma', phone: '+212-661-345678', comments: 'En attente d\'une offre personnalisée CRM.', city: 'Marrakech', createdBy: 'usr_rachid', createdAt: '2026-03-10' },
+    { id: 'p5', name: 'ABC Technologies', type: 'Customer', email: 'contact@abctech.ma', phone: '+212-522-112233', city: 'Casablanca', createdBy: 'usr_rachid', createdAt: '2026-04-05' }
   ]);
 
   tasks = signal<Task[]>([
-    { id: 't1', title: 'Assign prospect and follow up', description: 'Sales manager needs to assign Atlas Digital to a salesperson', assignedTeam: 'Sales', assignedTo: 'Achraf (Manager)', status: 'Pending', relatedTo: 'Atlas Digital S.A.R.L.', relatedModule: 'Partners', relatedSubModule: 'Prospect', relatedEntityId: 'p4' }
+    { id: 't1', title: 'Assign prospect and follow up', description: 'Sales manager needs to assign Atlas Digital to a salesperson', assignedTeam: 'Sales', assignedTo: 'Achraf (Manager)', status: 'Pending', relatedTo: 'Atlas Digital S.A.R.L.', relatedModule: 'Partners', relatedSubModule: 'Prospect', relatedEntityId: 'p4', createdBy: 'usr_rachid', createdAt: '2026-03-15' }
   ]);
 
   proposals = signal<Proposal[]>([]);
@@ -1095,6 +1113,8 @@ export class CrmStateService {
       partnerId: 'p1',
       amount: 13500,
       stage: 'Invoiced',
+      createdBy: 'usr_fatima',
+      createdAt: '2026-06-01',
       discount: 10,
       emailExchange: 'De: contact@atlasdigital.ma\nÀ: y.alami@acme.ma\nSujet: Bon de commande signé\n\nBonjour Youssef,\nVous trouverez ci-joint le BC signé. Merci de procéder à la livraison des serveurs.',
       orderNumber: 'ORD-2026-0087',
@@ -1148,6 +1168,8 @@ export class CrmStateService {
       partnerId: 'p3',
       amount: 120000,
       stage: 'Closed Won',
+      createdBy: 'usr_ahmed',
+      createdAt: '2026-05-10',
       orderNumber: 'ORD-2026-0088',
       dealNumber: 'DL-2026-0046',
       orderDate: '2026-06-10',
@@ -1173,6 +1195,8 @@ export class CrmStateService {
       partnerId: 'p3',
       amount: 75000,
       stage: 'New',
+      createdBy: 'usr_rachid',
+      createdAt: '2026-06-25',
       orderDate: '2026-06-25',
       salesPerson: 'Youssef El Alami',
       salesRegion: 'Maroc - Rabat',
@@ -1194,6 +1218,8 @@ export class CrmStateService {
       partnerId: 'p1',
       amount: 45000,
       stage: 'Closed Lost',
+      createdBy: 'usr_karim',
+      createdAt: '2026-05-12',
       orderDate: '2026-05-12',
       salesPerson: 'Amine Bennani',
       salesRegion: 'Maroc - Tanger',
@@ -1217,6 +1243,8 @@ export class CrmStateService {
       partnerId: 'p4',
       amount: 32000,
       stage: 'Confirmed',
+      createdBy: 'usr_fatima',
+      createdAt: '2026-06-20',
       orderDate: '2026-07-05',
       salesPerson: 'Amine Bennani',
       salesRegion: 'Maroc - Fès',
@@ -1236,6 +1264,8 @@ export class CrmStateService {
       partnerId: 'p4',
       amount: 95000,
       stage: 'Awaiting Invoicing',
+      createdBy: 'usr_rachid',
+      createdAt: '2026-06-28',
       orderDate: '2026-06-28',
       salesPerson: 'Youssef El Alami',
       salesRegion: 'Maroc - Agadir',
@@ -1255,6 +1285,8 @@ export class CrmStateService {
       partnerId: 'p5',
       amount: 85000,
       stage: 'Confirmed',
+      createdBy: 'usr_youssef',
+      createdAt: '2026-06-12',
       orderDate: '2026-06-20',
       salesPerson: 'Youssef El Alami',
       salesRegion: 'Casablanca',
@@ -1277,6 +1309,8 @@ export class CrmStateService {
       partnerId: 'p5',
       amount: 42000,
       stage: 'Invoiced',
+      createdBy: 'usr_nadia',
+      createdAt: '2026-06-18',
       orderDate: '2026-06-22',
       salesPerson: 'Amine Bennani',
       salesRegion: 'Casablanca',
@@ -1295,22 +1329,22 @@ export class CrmStateService {
   ]);
   purchaseOrders = signal<PurchaseOrder[]>([]);
   invoices = signal<Invoice[]>([
-    { id: 'i1', type: 'Customer', partnerId: 'p1', amount: 13500, status: 'Overdue', dueDate: '2026-07-20', dealId: 'd1' },
-    { id: 'i2', type: 'Customer', partnerId: 'p3', amount: 120000, status: 'Paid', dueDate: '2026-06-30', dealId: 'd2' },
-    { id: 'inv-p5-1', type: 'Customer', partnerId: 'p5', amount: 85000, status: 'Pending', dueDate: '2026-07-20', dealId: 'd-p5-1' },
-    { id: 'inv-p5-2', type: 'Customer', partnerId: 'p5', amount: 42000, status: 'Paid', dueDate: '2026-06-30', dealId: 'd-p5-2' }
+    { id: 'i1', type: 'Customer', partnerId: 'p1', amount: 13500, status: 'Overdue', dueDate: '2026-07-20', dealId: 'd1', createdBy: 'usr_samira', createdAt: '2026-06-20' },
+    { id: 'i2', type: 'Customer', partnerId: 'p3', amount: 120000, status: 'Paid', dueDate: '2026-06-30', dealId: 'd2', createdBy: 'usr_samira', createdAt: '2026-06-10' },
+    { id: 'inv-p5-1', type: 'Customer', partnerId: 'p5', amount: 85000, status: 'Pending', dueDate: '2026-07-20', dealId: 'd-p5-1', createdBy: 'usr_samira', createdAt: '2026-06-22' },
+    { id: 'inv-p5-2', type: 'Customer', partnerId: 'p5', amount: 42000, status: 'Paid', dueDate: '2026-06-30', dealId: 'd-p5-2', createdBy: 'usr_samira', createdAt: '2026-06-22' }
   ]);
 
   campaigns = signal<Campaign[]>([
-    { id: 'c1', title: 'Aïd Al-Adha Promotion', type: 'Email', status: 'Completed', targetAudience: 'Prospects', sentCount: 450 },
-    { id: 'c2', title: 'WhatsApp Alert - Nouveautés Cloud', type: 'WhatsApp', status: 'Active', targetAudience: 'Customers', sentCount: 180 },
-    { id: 'c3', title: 'SMS Offres Spéciales PME', type: 'SMS', status: 'Draft', targetAudience: 'Prospects', sentCount: 0 }
+    { id: 'c1', title: 'Aïd Al-Adha Promotion', type: 'Email', status: 'Completed', targetAudience: 'Prospects', sentCount: 450, createdBy: 'usr_rachid', createdAt: '2026-05-01' },
+    { id: 'c2', title: 'WhatsApp Alert - Nouveautés Cloud', type: 'WhatsApp', status: 'Active', targetAudience: 'Customers', sentCount: 180, createdBy: 'usr_rachid', createdAt: '2026-06-01' },
+    { id: 'c3', title: 'SMS Offres Spéciales PME', type: 'SMS', status: 'Draft', targetAudience: 'Prospects', sentCount: 0, createdBy: 'usr_rachid', createdAt: '2026-06-25' }
   ]);
 
   tickets = signal<Ticket[]>([
-    { id: 'tk1', title: 'Problème accès console Cloud', partnerId: 'p3', assignedTo: 'Fatima Chraibi', status: 'In Progress', priority: 'High' },
-    { id: 'tk-p5-1', title: 'ERP Login Issue', partnerId: 'p5', assignedTo: 'Fatima Chraibi', status: 'Open', priority: 'High' },
-    { id: 'tk-p5-2', title: 'Hardware Delivery Delay', partnerId: 'p5', assignedTo: 'Khadija (Ops Manager)', status: 'Resolved', priority: 'Medium' }
+    { id: 'tk1', title: 'Problème accès console Cloud', partnerId: 'p3', assignedTo: 'Fatima Chraibi', status: 'In Progress', priority: 'High', createdBy: 'usr_zineb', createdAt: '2026-06-05' },
+    { id: 'tk-p5-1', title: 'ERP Login Issue', partnerId: 'p5', assignedTo: 'Fatima Chraibi', status: 'Open', priority: 'High', createdBy: 'usr_mehdi', createdAt: '2026-06-15' },
+    { id: 'tk-p5-2', title: 'Hardware Delivery Delay', partnerId: 'p5', assignedTo: 'Khadija (Ops Manager)', status: 'Resolved', priority: 'Medium', createdBy: 'usr_aya', createdAt: '2026-06-10' }
   ]);
 
   ticketTypes = signal<string[]>(['Software issue', 'Broken product', 'Billing issue']);
@@ -1328,7 +1362,9 @@ export class CrmStateService {
         { id: 'per-atlas-1', fullName: 'Karim Atlas', jobTitle: 'CEO', directMobile: '+212661100100', directEmail: 'k.atlas@atlasdigital.ma', isPrimary: true },
         { id: 'per-atlas-2', fullName: 'Nadia Berrada', jobTitle: 'IT Director', directMobile: '+212661100200', directEmail: 'n.berrada@atlasdigital.ma', isPrimary: false },
         { id: 'per-atlas-3', fullName: 'Omar Filali', jobTitle: 'Finance Director', directMobile: '+212661100300', directEmail: 'o.filali@atlasdigital.ma', isPrimary: false }
-      ]
+      ],
+      createdBy: 'usr_rachid',
+      createdAt: '2026-03-01'
     },
     {
       id: 'cc-p4', partnerId: 'p4', accountId: 'ACT-ALMAGHRIB-01',
@@ -1341,7 +1377,9 @@ export class CrmStateService {
       personnel: [
         { id: 'per-alm-1', fullName: 'Yassine Rhazi', jobTitle: 'Managing Director', directMobile: '+212661345678', directEmail: 'y.rhazi@almaghribconsulting.ma', isPrimary: true },
         { id: 'per-alm-2', fullName: 'Houda Sefrioui', jobTitle: 'Operations Manager', directMobile: '+212661345679', directEmail: 'h.sefrioui@almaghribconsulting.ma', isPrimary: false }
-      ]
+      ],
+      createdBy: 'usr_rachid',
+      createdAt: '2026-04-10'
     },
     {
       id: 'cc-p5', partnerId: 'p5', accountId: 'ACT-ABC-01',
@@ -1355,7 +1393,9 @@ export class CrmStateService {
         { id: 'per-abc-1', fullName: 'Mohammed Alaoui', jobTitle: 'CEO', directMobile: '+212661001001', directEmail: 'ceo@abctech.ma', isPrimary: true },
         { id: 'per-abc-2', fullName: 'Karim Benali', jobTitle: 'IT Manager', directMobile: '+212661002002', directEmail: 'it@abctech.ma', isPrimary: false },
         { id: 'per-abc-3', fullName: 'Samira El Fassi', jobTitle: 'Finance Manager', directMobile: '+212661003003', directEmail: 'finance@abctech.ma', isPrimary: false }
-      ]
+      ],
+      createdBy: 'usr_rachid',
+      createdAt: '2026-05-01'
     }
   ]);
 
@@ -1574,9 +1614,9 @@ export class CrmStateService {
       expectedCloseDate: '2026-07-30',
       notes: 'Customer wants to replace legacy antivirus across 600 endpoints and requested a technical proof of concept.',
       createdDate: '2026-06-01',
-      createdBy: 'Sarah Johnson',
+      createdBy: 'usr_fatima',
       modifiedDate: '2026-06-24',
-      modifiedBy: 'Sarah Johnson',
+      modifiedBy: 'usr_fatima',
       company: {
         industry: 'Healthcare',
         size: '450 Employees',
@@ -1643,9 +1683,9 @@ export class CrmStateService {
       expectedCloseDate: '2026-09-30',
       notes: 'Customer is replacing VMware. Currently evaluating Microsoft Azure and AWS. Decision expected after internal budget approval in July. Main concern is migration downtime.',
       createdDate: '2026-06-01',
-      createdBy: 'Sarah Johnson',
+      createdBy: 'usr_fatima',
       modifiedDate: '2026-06-12',
-      modifiedBy: 'John Brown',
+      modifiedBy: 'usr_ahmed',
       company: {
         industry: 'Healthcare',
         size: '250 employees',
@@ -2127,21 +2167,23 @@ export class CrmStateService {
   // ────────────────────────────────────────────────────────
   // Lead CRUD (automation-aware)
   // ────────────────────────────────────────────────────────
-  addLead(lead: Omit<Lead, 'id' | 'createdDate' | 'createdBy' | 'modifiedDate' | 'modifiedBy' | 'statusHistory'>) {
+  addLead(lead: Omit<Lead, 'id' | 'createdDate' | 'createdBy' | 'createdAt' | 'modifiedDate' | 'modifiedBy' | 'statusHistory'>) {
     const newId = 'LEAD-' + String(this.leadsData().length + 1).padStart(6, '0');
     const nowStr = new Date().toISOString().split('T')[0];
+    const currentUser = this.users().find(u => u.id === this.currentUserId());
+    const currentUserName = currentUser?.displayName || 'Achraf (Manager)';
     const newLead: Lead = {
       ...lead,
       id: newId,
       createdDate: nowStr,
-      createdBy: 'Achraf (Manager)',
+      createdBy: this.currentUserId(),
       modifiedDate: nowStr,
-      modifiedBy: 'Achraf (Manager)',
+      modifiedBy: this.currentUserId(),
       statusHistory: [
         {
           status: lead.status,
           timestamp: new Date().toLocaleString(),
-          user: 'Achraf (Manager)'
+          user: currentUserName
         }
       ],
       activities: lead.activities || [],
@@ -2157,6 +2199,8 @@ export class CrmStateService {
   }
 
   updateLeadStatus(leadId: string, status: Lead['status']) {
+    const currentUser = this.users().find(u => u.id === this.currentUserId());
+    const currentUserName = currentUser?.displayName || 'Achraf';
     this.leadsData.update(list => list.map(l => {
       if (l.id === leadId) {
         const history = l.statusHistory || [];
@@ -2164,13 +2208,13 @@ export class CrmStateService {
           ...l,
           status,
           modifiedDate: new Date().toISOString().split('T')[0],
-          modifiedBy: 'Achraf (Manager)',
+          modifiedBy: this.currentUserId(),
           statusHistory: [
             ...history,
             {
               status,
               timestamp: new Date().toLocaleString(),
-              user: 'Achraf (Manager)'
+              user: currentUserName
             }
           ]
         };
@@ -2180,13 +2224,15 @@ export class CrmStateService {
   }
 
   updateLead(leadId: string, updates: Partial<Lead>) {
+    const currentUser = this.users().find(u => u.id === this.currentUserId());
+    const currentUserName = currentUser?.displayName || 'Achraf';
     this.leadsData.update(list => list.map(l => {
       if (l.id === leadId) {
         const updated = {
           ...l,
           ...updates,
           modifiedDate: new Date().toISOString().split('T')[0],
-          modifiedBy: 'Achraf (Manager)'
+          modifiedBy: this.currentUserId()
         };
         if (updates.status && updates.status !== l.status) {
           const history = l.statusHistory || [];
@@ -2195,7 +2241,7 @@ export class CrmStateService {
             {
               status: updates.status,
               timestamp: new Date().toLocaleString(),
-              user: 'Achraf (Manager)'
+              user: currentUserName
             }
           ];
         }
@@ -2221,7 +2267,7 @@ export class CrmStateService {
           ...l,
           activities: [...activities, newAct],
           modifiedDate: new Date().toISOString().split('T')[0],
-          modifiedBy: 'Achraf (Manager)'
+          modifiedBy: this.currentUserId()
         };
       }
       return l;
@@ -2240,7 +2286,7 @@ export class CrmStateService {
           ...l,
           attachments: [...attachments, newAtt],
           modifiedDate: new Date().toISOString().split('T')[0],
-          modifiedBy: 'Achraf (Manager)'
+          modifiedBy: this.currentUserId()
         };
       }
       return l;
@@ -2467,15 +2513,21 @@ export class CrmStateService {
     };
   }
 
-  saveCustomerCard(card: CustomerCard) {
+  saveCustomerCard(card: Omit<CustomerCard, 'createdBy' | 'createdAt'> & { createdBy?: string; createdAt?: string }) {
+    const now = new Date().toISOString().split('T')[0];
+    const fullCard: CustomerCard = {
+      ...card,
+      createdBy: card.createdBy || this.currentUserId(),
+      createdAt: card.createdAt || now,
+    };
     this.customerCards.update(cards => {
-      const existing = cards.findIndex(c => c.id === card.id);
+      const existing = cards.findIndex(c => c.id === fullCard.id);
       if (existing >= 0) {
         const updated = [...cards];
-        updated[existing] = card;
+        updated[existing] = fullCard;
         return updated;
       }
-      return [...cards, card];
+      return [...cards, fullCard];
     });
   }
 
@@ -2484,17 +2536,19 @@ export class CrmStateService {
     return 'ACC-' + String(count).padStart(5, '0');
   }
 
-  addPartner(partner: Omit<Partner, 'id'>) {
+  addPartner(partner: Omit<Partner, 'id' | 'createdBy' | 'createdAt'> & { createdBy?: string; createdAt?: string }) {
     const newId = 'p' + (this.partners().length + 1);
-    const newPartner = { ...partner, id: newId };
+    const now = new Date().toISOString().split('T')[0];
+    const newPartner = { ...partner, id: newId, createdBy: this.currentUserId(), createdAt: now };
     this.partners.update(pList => [...pList, newPartner]);
 
     return newPartner;
   }
 
-  addTask(task: Omit<Task, 'id'>) {
+  addTask(task: Omit<Task, 'id' | 'createdBy' | 'createdAt'> & { createdBy?: string; createdAt?: string }) {
     const newId = 't' + (this.tasks().length + 1);
-    const newTask = { ...task, id: newId };
+    const now = new Date().toISOString().split('T')[0];
+    const newTask = { ...task, id: newId, createdBy: this.currentUserId(), createdAt: now };
     this.tasks.update(tList => [...tList, newTask]);
     return newTask;
   }
@@ -2546,9 +2600,10 @@ export class CrmStateService {
     return [];
   }
 
-  addProposal(proposal: Omit<Proposal, 'id'>) {
+  addProposal(proposal: Omit<Proposal, 'id' | 'createdBy' | 'createdAt'> & { createdBy?: string; createdAt?: string }) {
     const newId = 'pr' + (this.proposals().length + 1);
-    const newProp = { ...proposal, id: newId };
+    const now = new Date().toISOString().split('T')[0];
+    const newProp = { ...proposal, id: newId, createdBy: this.currentUserId(), createdAt: now };
     this.proposals.update(props => [...props, newProp]);
     return newProp;
   }
@@ -2565,9 +2620,10 @@ export class CrmStateService {
     );
   }
 
-  addDeal(deal: Omit<Deal, 'id'>) {
+  addDeal(deal: Omit<Deal, 'id' | 'createdBy' | 'createdAt'> & { createdBy?: string; createdAt?: string }) {
     const newId = 'd' + (this.deals().length + 1);
-    const newDeal = { ...deal, id: newId };
+    const now = new Date().toISOString().split('T')[0];
+    const newDeal = { ...deal, id: newId, createdBy: this.currentUserId(), createdAt: now };
     this.deals.update(dList => [...dList, newDeal]);
     // Fire automation rules after deal is persisted
     setTimeout(() => this.evaluateRules('DealCreated', newDeal as unknown as Record<string, any>, `Deal: ${newDeal.title}`), 0);
@@ -2724,9 +2780,10 @@ export class CrmStateService {
 
 
 
-  addPurchaseOrder(po: Omit<PurchaseOrder, 'id'>, vendorId?: string) {
+  addPurchaseOrder(po: Omit<PurchaseOrder, 'id' | 'createdBy' | 'createdAt'> & { createdBy?: string; createdAt?: string }, vendorId?: string) {
     const newId = 'po' + (this.purchaseOrders().length + 1);
-    const newPo = { ...po, id: newId };
+    const now = new Date().toISOString().split('T')[0];
+    const newPo = { ...po, id: newId, createdBy: this.currentUserId(), createdAt: now };
     if (vendorId) {
       newPo.vendorId = vendorId;
     }
@@ -2747,9 +2804,10 @@ export class CrmStateService {
     );
   }
 
-  addInvoice(invoice: Omit<Invoice, 'id'>) {
+  addInvoice(invoice: Omit<Invoice, 'id' | 'createdBy' | 'createdAt'> & { createdBy?: string; createdAt?: string }) {
     const newId = 'i' + (this.invoices().length + 1);
-    const newInv = { ...invoice, id: newId };
+    const now = new Date().toISOString().split('T')[0];
+    const newInv = { ...invoice, id: newId, createdBy: this.currentUserId(), createdAt: now };
     this.invoices.update(invs => [...invs, newInv]);
     return newInv;
   }
@@ -2760,9 +2818,10 @@ export class CrmStateService {
     );
   }
 
-  addTicket(ticket: Omit<Ticket, 'id'>) {
+  addTicket(ticket: Omit<Ticket, 'id' | 'createdBy' | 'createdAt'> & { createdBy?: string; createdAt?: string }) {
     const newId = 'tk' + (this.tickets().length + 1);
-    const newTicket = { ...ticket, id: newId };
+    const now = new Date().toISOString().split('T')[0];
+    const newTicket = { ...ticket, id: newId, createdBy: this.currentUserId(), createdAt: now };
     this.tickets.update(tList => [...tList, newTicket]);
     return newTicket;
   }
