@@ -535,7 +535,10 @@ export interface Task {
   assignedTeam?: 'Sales' | 'Operations' | 'Finance' | 'Support';
   assignedTo?: string;
   status: TaskStatus;
-  relatedTo?: string; // module/entity reference
+  relatedTo?: string; // display label of the related entity
+  relatedModule?: 'Sales' | 'Finance' | 'Partners' | 'Support' | 'Marketing';
+  relatedSubModule?: string; // entity type: Deal, Proposal, PurchaseOrder, Lead, Customer, Prospect, Vendor, Ticket, Campaign, Invoice, Recovery
+  relatedEntityId?: string; // id of the related entity
 }
 
 export interface ProposalLine {
@@ -1081,7 +1084,7 @@ export class CrmStateService {
   ]);
 
   tasks = signal<Task[]>([
-    { id: 't1', title: 'Assign prospect and follow up', description: 'Sales manager needs to assign Atlas Digital to a salesperson', assignedTeam: 'Sales', assignedTo: 'Achraf (Manager)', status: 'Pending', relatedTo: 'Atlas Digital S.A.R.L.' }
+    { id: 't1', title: 'Assign prospect and follow up', description: 'Sales manager needs to assign Atlas Digital to a salesperson', assignedTeam: 'Sales', assignedTo: 'Achraf (Manager)', status: 'Pending', relatedTo: 'Atlas Digital S.A.R.L.', relatedModule: 'Partners', relatedSubModule: 'Prospect', relatedEntityId: 'p4' }
   ]);
 
   proposals = signal<Proposal[]>([]);
@@ -1857,7 +1860,10 @@ export class CrmStateService {
                   assignedTeam: action.params.targetTeam || action.params.taskTeam || 'Sales',
                   assignedTo: action.params.assignee || '',
                   status: 'Pending',
-                  relatedTo: entityLabel
+                  relatedTo: entityLabel,
+                  relatedModule: entityType === 'Lead' ? 'Partners' : entityType === 'Deal' ? 'Sales' : 'Support',
+                  relatedSubModule: entityType === 'Lead' ? 'Lead' : entityType === 'Deal' ? 'Deal' : 'Ticket',
+                  relatedEntityId: entity['id']
                 } as any);
                 break;
 
@@ -1869,7 +1875,10 @@ export class CrmStateService {
                   assignedTeam: action.params.targetTeam || action.params.taskTeam || 'Sales',
                   assignedTo: action.params.assignee || 'Achraf (Manager)',
                   status: 'Pending',
-                  relatedTo: entityLabel
+                  relatedTo: entityLabel,
+                  relatedModule: entityType === 'Lead' ? 'Partners' : entityType === 'Deal' ? 'Sales' : 'Support',
+                  relatedSubModule: entityType === 'Lead' ? 'Lead' : entityType === 'Deal' ? 'Deal' : 'Ticket',
+                  relatedEntityId: entity['id']
                 } as any);
                 break;
 
@@ -2501,6 +2510,40 @@ export class CrmStateService {
         return t;
       })
     );
+  }
+
+  getRelatedEntities(module: string, subModule: string): { id: string; label: string }[] {
+    switch (module) {
+      case 'Sales':
+        switch (subModule) {
+          case 'Deal': return this.deals().map(d => ({ id: d.id, label: d.title }));
+          case 'Proposal': return this.proposals().map(p => ({ id: p.id, label: p.title }));
+          case 'PurchaseOrder': return this.purchaseOrders().map(po => ({ id: po.id, label: `PO #${po.id}` }));
+        }
+        break;
+      case 'Finance':
+        switch (subModule) {
+          case 'CustomerInvoice': return this.invoices().filter(i => i.type === 'Customer').map(i => ({ id: i.id, label: `Invoice #${i.id} - ${i.customerName || i.id}` }));
+          case 'VendorInvoice': return this.invoices().filter(i => i.type === 'Vendor').map(i => ({ id: i.id, label: `Invoice #${i.id}` }));
+          case 'Recovery': return this.invoices().filter(i => i.status === 'Overdue' || i.status === 'Pending').map(i => ({ id: i.id, label: `Invoice #${i.id} - ${i.customerName || i.id} (${i.status})` }));
+        }
+        break;
+      case 'Partners':
+        switch (subModule) {
+          case 'Lead': return this.partners().filter(p => p.type === 'Lead').map(p => ({ id: p.id, label: p.name }));
+          case 'Customer': return this.partners().filter(p => p.type === 'Customer').map(p => ({ id: p.id, label: p.name }));
+          case 'Prospect': return this.partners().filter(p => p.type === 'Prospect').map(p => ({ id: p.id, label: p.name }));
+          case 'Vendor': return this.partners().filter(p => p.type === 'Vendor').map(p => ({ id: p.id, label: p.name }));
+        }
+        break;
+      case 'Support':
+        if (subModule === 'Ticket') return this.tickets().map(t => ({ id: t.id, label: t.title }));
+        break;
+      case 'Marketing':
+        if (subModule === 'Campaign') return this.campaigns().map(c => ({ id: c.id, label: c.title }));
+        break;
+    }
+    return [];
   }
 
   addProposal(proposal: Omit<Proposal, 'id'>) {

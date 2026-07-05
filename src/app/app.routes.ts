@@ -5,6 +5,7 @@ export const routes: Routes = [
   { path: 'analytics', loadComponent: () => import('./pages/analytics.component').then(m => m.AnalyticsComponent) },
   { path: 'tasks', loadComponent: () => import('./pages/tasks.component').then(m => m.TasksComponent) },
   { path: 'sales', loadComponent: () => import('./pages/sales.component').then(m => m.SalesComponent) },
+  { path: 'sales/deals/:dealId', loadComponent: () => import('./pages/deal-detail.component').then(m => m.DealDetailComponent) },
   { path: 'marketing', loadComponent: () => import('./pages/marketing.component').then(m => m.MarketingComponent) },
   { path: 'partners', loadComponent: () => import('./pages/partners.component').then(m => m.PartnersComponent) },
   { path: 'finance', loadComponent: () => import('./pages/finance.component').then(m => m.FinanceComponent) },

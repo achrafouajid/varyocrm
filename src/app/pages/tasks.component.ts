@@ -5,6 +5,29 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DragDropModule, CdkDragDrop, transferArrayItem } from '@angular/cdk/drag-drop';
 
+const MODULE_SUB_MODULES: Record<string, string[]> = {
+  Sales: ['Deal', 'Proposal', 'PurchaseOrder'],
+  Finance: ['CustomerInvoice', 'VendorInvoice', 'Recovery'],
+  Partners: ['Lead', 'Customer', 'Prospect', 'Vendor'],
+  Support: ['Ticket'],
+  Marketing: ['Campaign'],
+};
+
+const SUB_MODULE_LABELS: Record<string, string> = {
+  Deal: 'Deal',
+  Proposal: 'Proposal',
+  PurchaseOrder: 'Purchase Order',
+  CustomerInvoice: 'Customer Invoice',
+  VendorInvoice: 'Vendor Invoice',
+  Recovery: 'Recovery',
+  Lead: 'Lead',
+  Customer: 'Customer',
+  Prospect: 'Prospect',
+  Vendor: 'Vendor',
+  Ticket: 'Ticket',
+  Campaign: 'Campaign',
+};
+
 @Component({
   selector: 'app-tasks',
   imports: [MatIconModule, CommonModule, FormsModule, DragDropModule],
@@ -296,9 +319,38 @@ import { DragDropModule, CdkDragDrop, transferArrayItem } from '@angular/cdk/dra
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Related To</label>
-              <input [(ngModel)]="newTaskData.relatedTo" type="text" placeholder="e.g. Deal: Atlas Digital Project" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
+              <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Module</label>
+              <select [(ngModel)]="selectedModule" (ngModelChange)="onModuleChange()" class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                <option value="">None</option>
+                @for (mod of moduleList; track mod) {
+                  <option [value]="mod">{{mod}}</option>
+                }
+              </select>
             </div>
+
+            @if (selectedModule()) {
+              <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Sub-module</label>
+                <select [(ngModel)]="selectedSubModule" (ngModelChange)="onSubModuleChange()" class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                  <option value="">Select...</option>
+                  @for (sub of subModules(); track sub) {
+                    <option [value]="sub">{{subModuleLabel(sub)}}</option>
+                  }
+                </select>
+              </div>
+            }
+
+            @if (selectedModule() && selectedSubModule()) {
+              <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">{{subModuleLabel(selectedSubModule())}}</label>
+                <select [(ngModel)]="newTaskData.relatedEntityId" class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                  <option value="">Select...</option>
+                  @for (entity of relatedEntities(); track entity.id) {
+                    <option [value]="entity.id">{{entity.label}}</option>
+                  }
+                </select>
+              </div>
+            }
           </div>
 
           <div class="flex justify-end gap-2 pt-4 border-t border-slate-100">
@@ -334,6 +386,8 @@ import { DragDropModule, CdkDragDrop, transferArrayItem } from '@angular/cdk/dra
 export class TasksComponent {
   state = inject(CrmStateService);
 
+  moduleList = Object.keys(MODULE_SUB_MODULES);
+
   activeView = signal<'list' | 'kanban'>('list');
 
   pendingTasks = computed(() => this.state.tasks().filter(t => t.status === 'Pending'));
@@ -345,6 +399,24 @@ export class TasksComponent {
   selectedTask = signal<Task | null>(null);
   reassignedUser = '';
 
+  selectedModule = signal('');
+  selectedSubModule = signal('');
+  subModules = computed(() => this.selectedModule() ? MODULE_SUB_MODULES[this.selectedModule()] || [] : []);
+  relatedEntities = computed(() => {
+    const mod = this.selectedModule();
+    const sub = this.selectedSubModule();
+    if (!mod || !sub) return [];
+    return this.state.getRelatedEntities(mod, sub);
+  });
+
+  newTaskData = {
+    title: '',
+    description: '',
+    assignedTeam: 'Sales' as 'Sales' | 'Operations' | 'Finance' | 'Support',
+    assignedTo: '',
+    relatedEntityId: ''
+  };
+
   constructor() {
     const tab = this.state.navigateTab();
     if (tab === 'kanban') {
@@ -353,13 +425,18 @@ export class TasksComponent {
     }
   }
 
-  newTaskData = {
-    title: '',
-    description: '',
-    assignedTeam: 'Sales' as 'Sales' | 'Operations' | 'Finance' | 'Support',
-    assignedTo: '',
-    relatedTo: ''
-  };
+  subModuleLabel(sub: string): string {
+    return SUB_MODULE_LABELS[sub] || sub;
+  }
+
+  getRelatedLabel(task: Task): string {
+    if (task.relatedTo) return task.relatedTo;
+    if (task.relatedModule && task.relatedSubModule) {
+      const subLabel = this.subModuleLabel(task.relatedSubModule);
+      return `${subLabel} (${task.relatedModule})`;
+    }
+    return '';
+  }
 
   getStatusColor(status: string) {
     switch (status) {
@@ -381,14 +458,25 @@ export class TasksComponent {
     this.state.updateTaskStatus(task.id, targetStatus);
   }
 
+  onModuleChange() {
+    this.selectedSubModule.set('');
+    this.newTaskData.relatedEntityId = '';
+  }
+
+  onSubModuleChange() {
+    this.newTaskData.relatedEntityId = '';
+  }
+
   openCreateTaskModal() {
     this.newTaskData = {
       title: '',
       description: '',
       assignedTeam: 'Sales',
       assignedTo: '',
-      relatedTo: ''
+      relatedEntityId: ''
     };
+    this.selectedModule.set('');
+    this.selectedSubModule.set('');
     this.taskModalOpen.set(true);
   }
 
@@ -397,13 +485,33 @@ export class TasksComponent {
   }
 
   saveTask() {
+    const mod = this.selectedModule();
+    const sub = this.selectedSubModule();
+    const entityId = this.newTaskData.relatedEntityId;
+    let relatedTo: string | undefined;
+    let relatedModule: string | undefined;
+    let relatedSubModule: string | undefined;
+    let relatedEntityId: string | undefined;
+
+    if (mod && sub && entityId) {
+      relatedModule = mod;
+      relatedSubModule = sub;
+      relatedEntityId = entityId;
+      const entities = this.state.getRelatedEntities(mod, sub);
+      const found = entities.find(e => e.id === entityId);
+      relatedTo = found ? found.label : entityId;
+    }
+
     this.state.addTask({
       title: this.newTaskData.title,
       description: this.newTaskData.description,
       assignedTeam: this.newTaskData.assignedTeam,
       assignedTo: this.newTaskData.assignedTo || undefined,
       status: 'Pending',
-      relatedTo: this.newTaskData.relatedTo || undefined
+      relatedTo,
+      relatedModule: relatedModule as Task['relatedModule'],
+      relatedSubModule,
+      relatedEntityId
     });
     this.taskModalOpen.set(false);
   }

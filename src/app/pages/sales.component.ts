@@ -1,14 +1,15 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { CrmStateService, Partner, Proposal, Deal, PurchaseOrder } from '../services/crm-state.service';
+import { CrmStateService, Partner, Proposal, Deal, PurchaseOrder, Task } from '../services/crm-state.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
 
 export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Proposal Sent' | 'Negotiation' | 'Won / Lost';
 
 @Component({
   selector: 'app-sales',
-  imports: [MatIconModule, CommonModule, FormsModule],
+  imports: [MatIconModule, CommonModule, FormsModule, RouterLink],
   template: `
     <div class="flex gap-6">
       <!-- Left Sidebar Navigation -->
@@ -111,9 +112,9 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                     </span>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-right text-xs font-semibold">
-                    <button class="text-indigo-600 hover:text-indigo-900 flex items-center gap-1 ml-auto">
+                    <a [routerLink]="['/sales/deals', deal.id]" class="text-indigo-600 hover:text-indigo-900 flex items-center gap-1 ml-auto" (click)="$event.stopPropagation()">
                       View details <mat-icon class="text-sm w-4 h-4 flex items-center justify-center">chevron_right</mat-icon>
-                    </button>
+                    </a>
                   </td>
                 </tr>
               } @empty {
@@ -1442,6 +1443,9 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                 <span class="px-3 py-1 text-xs font-semibold rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
                   {{deal.stage}}
                 </span>
+                <a [routerLink]="['/sales/deals', deal.id]" (click)="closeDealDrawer()" class="text-indigo-600 hover:text-indigo-800 text-xs font-semibold flex items-center gap-1 p-1.5 rounded-lg hover:bg-indigo-50 transition-colors">
+                  <mat-icon class="text-sm w-4 h-4">open_in_new</mat-icon> Open page
+                </a>
                 <button (click)="closeDealDrawer()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors">
                   <mat-icon>close</mat-icon>
                 </button>
@@ -1927,6 +1931,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
 })
 export class SalesComponent {
   state = inject(CrmStateService);
+  private router = inject(Router);
   activeTab = signal<'deals' | 'proposals' | 'pos'>('deals');
 
   constructor() {
@@ -2550,13 +2555,18 @@ export class SalesComponent {
     const ctx = this.assignTaskModalOpen();
     if (!ctx || !this.assignTaskData.title.trim() || !this.assignTaskData.assignedTo) return;
 
+    const moduleMap: Record<string, string> = { deal: 'Sales', proposal: 'Sales', po: 'Sales' };
+    const subModuleMap: Record<string, string> = { deal: 'Deal', proposal: 'Proposal', po: 'PurchaseOrder' };
     this.state.addTask({
       title: this.assignTaskData.title.trim(),
       description: this.assignTaskData.description.trim() || undefined,
       assignedTeam: this.assignTaskData.assignedTeam,
       assignedTo: this.assignTaskData.assignedTo,
       status: 'Pending',
-      relatedTo: `${ctx.entityType}: ${ctx.entityTitle}`
+      relatedTo: ctx.entityTitle,
+      relatedModule: moduleMap[ctx.entityType] as Task['relatedModule'],
+      relatedSubModule: subModuleMap[ctx.entityType],
+      relatedEntityId: ctx.entityId
     });
 
     this.assignTaskModalOpen.set(null);
