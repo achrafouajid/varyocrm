@@ -72,13 +72,13 @@ const SEARCH_ITEMS: SearchItem[] = [
   imports: [RouterOutlet, RouterLink, MatIconModule, CommonModule, FormsModule, UserAvatarComponent, SupportModalComponent],
   styles: [`
     .sidebar {
-      width: 64px;
-      transition: width 180ms cubic-bezier(0.4, 0, 0.2, 1);
+      width: 68px;
+      transition: width 200ms cubic-bezier(0.4, 0, 0.2, 1);
       overflow: hidden;
       flex-shrink: 0;
     }
     .sidebar.expanded {
-      width: 220px;
+      width: 232px;
     }
     .nav-label {
       opacity: 0;
@@ -86,7 +86,7 @@ const SEARCH_ITEMS: SearchItem[] = [
       overflow: hidden;
       white-space: nowrap;
       transition: opacity 140ms cubic-bezier(0.4, 0, 0.2, 1),
-                  max-width 180ms cubic-bezier(0.4, 0, 0.2, 1);
+                  max-width 200ms cubic-bezier(0.4, 0, 0.2, 1);
     }
     .sidebar.expanded .nav-label {
       opacity: 1;
@@ -95,27 +95,30 @@ const SEARCH_ITEMS: SearchItem[] = [
 
     .sidebar-tooltip {
       position: absolute;
-      left: calc(100% + 10px);
+      left: calc(100% + 12px);
       top: 50%;
       transform: translateY(-50%);
-      background: #1e293b;
+      background: rgba(30, 41, 59, 0.9);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       color: #f1f5f9;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 600;
-      padding: 4px 10px;
+      padding: 5px 12px;
       border-radius: 8px;
       white-space: nowrap;
       pointer-events: none;
       opacity: 0;
-      transition: opacity 80ms ease;
+      transition: opacity 100ms ease;
       z-index: 1000;
+      border: 1px solid rgba(255, 255, 255, 0.08);
     }
     .sidebar:not(.expanded) .nav-item-wrap:hover .sidebar-tooltip {
       opacity: 1;
     }
     .sidebar:not(.expanded) .nav-item-wrap:hover .icon-badge {
-      background: #eef2ff;
-      color: #4f46e5;
+      background: rgba(99, 102, 241, 0.12);
+      color: #6366f1;
     }
     .toggle-btn {
       transition: transform 250ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -123,73 +126,68 @@ const SEARCH_ITEMS: SearchItem[] = [
     .toggle-btn.expanded {
       transform: rotate(180deg);
     }
-    .hover-bar {
+    .nav-item-glow {
       position: absolute;
-      bottom: 0;
-      left: 8px;
-      right: 8px;
-      height: 2px;
-      border-radius: 1px;
-      background: #6366f1;
-      transform: scaleX(0);
-      transform-origin: left;
+      inset: 0;
+      border-radius: 12px;
       opacity: 0;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.06), rgba(139, 92, 246, 0.06));
+      transition: opacity 200ms ease;
+      pointer-events: none;
     }
-    .sidebar:not(.expanded) .nav-item-wrap:hover .hover-bar {
+    .nav-item-wrap:hover .nav-item-glow {
       opacity: 1;
-      transform: scaleX(1);
-      transition: transform 1s linear, opacity 50ms ease;
     }
   `],
   template: `
-    <div class="min-h-screen bg-[#F5F6FA] text-slate-900 font-sans flex" style="height:100vh; overflow:hidden;">
+    <div class="min-h-screen text-slate-900 font-sans flex" style="height:100vh; overflow:hidden;">
 
       <!-- Sidebar -->
       <aside
-        class="sidebar flex flex-col bg-white border-r border-slate-200/80 h-full relative z-40"
+        class="sidebar flex flex-col glass-sidebar h-full relative z-40"
         [class.expanded]="isExpanded()"
         (mouseenter)="onSidebarMouseEnter()"
         (mouseleave)="onSidebarMouseLeave()"
       >
         <!-- Logo / Toggle -->
-        <div class="flex items-center h-16 px-3 border-b border-slate-100 gap-2 shrink-0">
+        <div class="flex items-center h-16 px-3 border-b border-white/20 gap-2 shrink-0">
           <button
             (click)="togglePin()"
-            class="w-10 h-10 rounded-xl flex items-center justify-center text-slate-500 hover:bg-slate-100 hover:text-indigo-600 transition-all duration-150 shrink-0"
+            class="w-10 h-10 rounded-xl flex items-center justify-center text-slate-400 hover:text-indigo-600 transition-all duration-150 shrink-0 glass-button"
             [title]="pinnedOpen() ? 'Unpin sidebar' : 'Pin sidebar open'"
           >
             <mat-icon class="text-[20px] w-5 h-5 toggle-btn" [class.expanded]="isExpanded()">chevron_right</mat-icon>
           </button>
           @if (isExpanded()) {
             <a routerLink="/" class="flex items-center shrink-0 hover:opacity-80 transition-opacity overflow-hidden">
-              <img src="/crm.webp" alt="MarocCRM" class="h-10 w-auto object-contain">
+              <img src="/crm.webp" alt="MarocCRM" class="h-9 w-auto object-contain">
             </a>
           }
         </div>
 
         <!-- Nav Items -->
-        <nav class="flex-1 overflow-y-auto overflow-x-hidden py-3 px-2 flex flex-col gap-0.5">
+        <nav class="flex-1 overflow-y-auto overflow-x-hidden py-3 px-2.5 flex flex-col gap-0.5">
           @for (item of navItems; track item.route + item.label) {
             <div class="nav-item-wrap relative">
+              <div class="nav-item-glow"></div>
               <a
                 [routerLink]="item.route"
-                class="flex items-center gap-3 px-2.5 py-2.5 rounded-xl transition-all duration-150 cursor-pointer"
-                [class]="isNavActive(item) ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-slate-500 hover:bg-indigo-50 hover:text-indigo-600'"
+                class="relative flex items-center gap-3 px-2.5 py-2.5 rounded-xl transition-all duration-150 cursor-pointer"
+                [class]="isNavActive(item) ? 'bg-white/60 text-indigo-600 font-semibold shadow-sm' : 'text-slate-500 hover:text-indigo-600'"
               >
                 <mat-icon class="icon-badge text-[20px] w-5 h-5 shrink-0 rounded-lg transition-colors duration-150">{{ item.icon }}</mat-icon>
                 <span class="nav-label text-sm font-semibold tracking-tight">{{ item.label }}</span>
               </a>
               <div class="sidebar-tooltip">{{ item.label }}</div>
-              <div class="hover-bar"></div>
             </div>
           }
         </nav>
 
         <!-- Bottom: Help + User Profile -->
-        <div class="shrink-0 p-2 border-t border-slate-100 space-y-0.5">
+        <div class="shrink-0 p-2.5 border-t border-white/20 space-y-0.5">
           <button
             (click)="openSupportModal()"
-            class="w-full flex items-center gap-3 px-2.5 py-2 rounded-xl text-slate-500 hover:bg-indigo-50 hover:text-indigo-600 transition-all duration-150 cursor-pointer"
+            class="w-full flex items-center gap-3 px-2.5 py-2 rounded-xl text-slate-400 hover:text-indigo-600 transition-all duration-150 cursor-pointer glass-button"
             title="Help & Support"
           >
             <mat-icon class="text-[20px] w-5 h-5 shrink-0">help</mat-icon>
@@ -199,13 +197,13 @@ const SEARCH_ITEMS: SearchItem[] = [
           @if (currentUser) {
             <a
               [routerLink]="['/settings/users', state.currentUserId()]"
-              class="flex items-center gap-3 px-2.5 py-2.5 rounded-xl hover:bg-slate-50 transition-colors"
+              class="flex items-center gap-3 px-2.5 py-2.5 rounded-xl hover:bg-white/40 transition-all duration-150"
               title="View Profile"
             >
               <app-user-avatar [userId]="state.currentUserId()" [size]="36" class="shrink-0"></app-user-avatar>
               <div class="nav-label flex flex-col text-left overflow-hidden">
-                <span class="text-xs font-bold text-slate-800 leading-tight truncate">{{ currentUser.displayName }}</span>
-                <span class="text-[10px] text-slate-500 font-semibold leading-none mt-0.5 truncate uppercase tracking-wider">{{ currentUser.roleId }}</span>
+                <span class="text-xs font-bold text-slate-700 leading-tight truncate">{{ currentUser.displayName }}</span>
+                <span class="text-[10px] text-slate-400 font-semibold leading-none mt-0.5 truncate uppercase tracking-wider">{{ currentUser.roleId }}</span>
               </div>
             </a>
           }
@@ -215,9 +213,9 @@ const SEARCH_ITEMS: SearchItem[] = [
       <!-- Main Content -->
       <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
         <!-- Global Search Bar -->
-        <div class="shrink-0 px-6 lg:px-8 pt-4 pb-0 relative z-30 search-container">
+        <div class="shrink-0 px-6 lg:px-8 pt-5 pb-0 relative z-30 search-container">
           <div class="relative max-w-xl">
-            <mat-icon class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px] w-5 h-5 pointer-events-none">search</mat-icon>
+            <mat-icon class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-[20px] w-5 h-5 pointer-events-none">search</mat-icon>
             <input
               #searchInput
               [ngModel]="searchQuery()"
@@ -226,7 +224,7 @@ const SEARCH_ITEMS: SearchItem[] = [
               (keydown)="onSearchKeydown($event)"
               type="text"
               placeholder="Search menus and pages...  (Ctrl+K)"
-              class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-slate-400 shadow-xs"
+              class="w-full pl-10 pr-4 py-2.5 glass-input rounded-xl text-sm outline-none transition-all placeholder:text-slate-400"
             />
             @if (searchQuery()) {
               <button (click)="clearSearch()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
@@ -235,13 +233,12 @@ const SEARCH_ITEMS: SearchItem[] = [
             }
             <!-- Results Dropdown -->
             @if (showSearchResults() && searchQuery().length >= 1 && filteredSearchItems().length > 0) {
-              <div class="absolute left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-lg z-50 max-h-80 overflow-y-auto origin-top animate-in zoom-in-95 duration-150">
+              <div class="absolute left-0 right-0 mt-2 glass-dialog rounded-xl z-50 max-h-80 overflow-y-auto origin-top">
                 @for (item of filteredSearchItems(); track $index) {
                   <button
                     (click)="navigateToSearchItem(item)"
                     (mouseenter)="selectedSearchIndex.set($index)"
-                    [class.bg-indigo-50]="selectedSearchIndex() === $index"
-                    class="w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-b-0 cursor-pointer"
+                    [class]="(selectedSearchIndex() === $index ? 'bg-indigo-50/50' : '') + ' w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-white/50 transition-colors border-b border-white/20 last:border-b-0 cursor-pointer'"
                   >
                     <mat-icon class="text-slate-400 text-[18px] w-[18px] h-[18px] mt-0.5 shrink-0">{{ item.subIcon || item.mainIcon }}</mat-icon>
                     <div class="min-w-0 flex-1">
@@ -261,7 +258,7 @@ const SEARCH_ITEMS: SearchItem[] = [
               </div>
             }
             @if (showSearchResults() && searchQuery().length >= 1 && filteredSearchItems().length === 0) {
-              <div class="absolute left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-lg z-50 p-4 text-center">
+              <div class="absolute left-0 right-0 mt-2 glass-dialog rounded-xl z-50 p-4 text-center">
                 <p class="text-sm text-slate-400">No results found for "{{ searchQuery() }}"</p>
               </div>
             }
@@ -276,7 +273,7 @@ const SEARCH_ITEMS: SearchItem[] = [
                 <a [routerLink]="crumb.route" class="hover:text-indigo-600 transition-colors truncate max-w-[120px]">{{ crumb.label }}</a>
                 <mat-icon class="text-[14px] w-3.5 h-3.5 mx-0.5 shrink-0 text-slate-300">chevron_right</mat-icon>
               } @else {
-                <span class="text-slate-700 font-semibold truncate max-w-[180px]">{{ crumb.label }}</span>
+                <span class="text-slate-600 font-semibold truncate max-w-[180px]">{{ crumb.label }}</span>
               }
             }
           </nav>

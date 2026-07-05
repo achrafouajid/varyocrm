@@ -62,14 +62,14 @@ const SUB_MODULE_LABELS: Record<string, string> = {
           <h2 class="text-3xl font-semibold tracking-tight text-slate-900">Tasks</h2>
           <p class="text-slate-500 mt-1">Manage cross-team operational tasks and follow-ups.</p>
         </div>
-        <button (click)="openCreateTaskModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm">
+        <button (click)="openCreateTaskModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm shadow-lg shadow-indigo-200">
           <mat-icon class="w-5 h-5 text-[20px]! leading-none! flex items-center justify-center">add</mat-icon>
           New Task
         </button>
       </div>
 
       <!-- View Tabs -->
-      <div class="flex gap-1 bg-white rounded-xl p-1 border border-slate-200 w-fit shadow-xs">
+      <div class="flex gap-1 glass-card rounded-xl p-1 w-fit">
         <button
           (click)="activeView.set('list')"
           [class]="activeView() === 'list' ? 'bg-indigo-50 text-indigo-700 shadow-xs' : 'text-slate-500 hover:text-slate-700'"
@@ -92,7 +92,7 @@ const SUB_MODULE_LABELS: Record<string, string> = {
       @if (activeView() === 'list') {
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           @for (task of state.tasks(); track task.id) {
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 flex flex-col justify-between hover:shadow-md transition-all">
+            <div class="glass-card rounded-xl p-5 flex flex-col justify-between hover:shadow-md transition-all">
               <div>
                 <div class="flex justify-between items-start mb-3">
                   <span [class]="getStatusColor(task.status)" class="px-2.5 py-1 text-[10px] font-bold uppercase rounded-full">
@@ -149,7 +149,7 @@ const SUB_MODULE_LABELS: Record<string, string> = {
               </div>
             </div>
           } @empty {
-            <div class="col-span-full text-center py-12 text-slate-500 bg-white rounded-2xl border border-slate-200">
+            <div class="col-span-full text-center py-12 text-slate-500 glass-card rounded-2xl">
               No tasks found. Create a new task to get started.
             </div>
           }
@@ -159,13 +159,13 @@ const SUB_MODULE_LABELS: Record<string, string> = {
       <!-- Kanban View -->
       @if (activeView() === 'kanban') {
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 min-h-[600px]" cdkDropListGroup>
-          <div class="bg-slate-100/60 rounded-2xl p-4 flex flex-col">
+          <div class="glass rounded-2xl p-4 flex flex-col">
             <div class="flex items-center justify-between mb-4 px-1">
               <div class="flex items-center gap-2">
                 <div class="w-2.5 h-2.5 rounded-full bg-slate-400"></div>
                 <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Pending</h3>
               </div>
-              <span class="text-xs font-semibold text-slate-400 bg-white px-2 py-0.5 rounded-full border border-slate-200">{{pendingTasks().length}}</span>
+              <span class="text-xs font-semibold text-slate-400 bg-white px-2 py-0.5 rounded-full border border-white/30">{{pendingTasks().length}}</span>
             </div>
             <div
               cdkDropList
@@ -174,7 +174,7 @@ const SUB_MODULE_LABELS: Record<string, string> = {
               class="kanban-column flex-1 space-y-3 min-h-[100px] rounded-xl"
             >
               @for (task of pendingTasks(); track task.id) {
-                <div cdkDrag [cdkDragData]="task" class="kanban-card bg-white rounded-xl shadow-xs border border-slate-200 p-4 cursor-grab active:cursor-grabbing hover:shadow-md">
+                <div cdkDrag [cdkDragData]="task" class="kanban-card glass-card rounded-xl p-4 cursor-grab active:cursor-grabbing hover:shadow-md">
                   <div class="flex items-start justify-between mb-2">
                     <span class="text-[10px] font-mono text-slate-400">#{{task.id}}</span>
                     <span [class]="getStatusColor(task.status)" class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full">{{task.status}}</span>
@@ -203,13 +203,13 @@ const SUB_MODULE_LABELS: Record<string, string> = {
             </div>
           </div>
 
-          <div class="bg-slate-100/60 rounded-2xl p-4 flex flex-col">
+          <div class="glass rounded-2xl p-4 flex flex-col">
             <div class="flex items-center justify-between mb-4 px-1">
               <div class="flex items-center gap-2">
                 <div class="w-2.5 h-2.5 rounded-full bg-indigo-500"></div>
                 <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">In Progress</h3>
               </div>
-              <span class="text-xs font-semibold text-slate-400 bg-white px-2 py-0.5 rounded-full border border-slate-200">{{inProgressTasks().length}}</span>
+              <span class="text-xs font-semibold text-slate-400 bg-white px-2 py-0.5 rounded-full border border-white/30">{{inProgressTasks().length}}</span>
             </div>
             <div
               cdkDropList
@@ -218,7 +218,7 @@ const SUB_MODULE_LABELS: Record<string, string> = {
               class="kanban-column flex-1 space-y-3 min-h-[100px] rounded-xl"
             >
               @for (task of inProgressTasks(); track task.id) {
-                <div cdkDrag [cdkDragData]="task" class="kanban-card bg-white rounded-xl shadow-xs border border-slate-200 p-4 cursor-grab active:cursor-grabbing hover:shadow-md">
+                <div cdkDrag [cdkDragData]="task" class="kanban-card glass-card rounded-xl p-4 cursor-grab active:cursor-grabbing hover:shadow-md">
                   <div class="flex items-start justify-between mb-2">
                     <span class="text-[10px] font-mono text-slate-400">#{{task.id}}</span>
                     <span [class]="getStatusColor(task.status)" class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full">{{task.status}}</span>
@@ -247,13 +247,13 @@ const SUB_MODULE_LABELS: Record<string, string> = {
             </div>
           </div>
 
-          <div class="bg-slate-100/60 rounded-2xl p-4 flex flex-col">
+          <div class="glass rounded-2xl p-4 flex flex-col">
             <div class="flex items-center justify-between mb-4 px-1">
               <div class="flex items-center gap-2">
                 <div class="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
                 <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Completed</h3>
               </div>
-              <span class="text-xs font-semibold text-slate-400 bg-white px-2 py-0.5 rounded-full border border-slate-200">{{completedTasks().length}}</span>
+              <span class="text-xs font-semibold text-slate-400 bg-white px-2 py-0.5 rounded-full border border-white/30">{{completedTasks().length}}</span>
             </div>
             <div
               cdkDropList
@@ -262,7 +262,7 @@ const SUB_MODULE_LABELS: Record<string, string> = {
               class="kanban-column flex-1 space-y-3 min-h-[100px] rounded-xl"
             >
               @for (task of completedTasks(); track task.id) {
-                <div cdkDrag [cdkDragData]="task" class="kanban-card bg-white rounded-xl shadow-xs border border-slate-200 p-4 cursor-grab active:cursor-grabbing hover:shadow-md">
+                <div cdkDrag [cdkDragData]="task" class="kanban-card glass-card rounded-xl p-4 cursor-grab active:cursor-grabbing hover:shadow-md">
                   <div class="flex items-start justify-between mb-2">
                     <span class="text-[10px] font-mono text-slate-400">#{{task.id}}</span>
                     <span [class]="getStatusColor(task.status)" class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full">{{task.status}}</span>
@@ -297,24 +297,24 @@ const SUB_MODULE_LABELS: Record<string, string> = {
     <!-- Create Task Modal -->
     @if (taskModalOpen()) {
       <div class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-xl border border-slate-100 animate-in zoom-in-95 duration-200">
+        <div class="glass-dialog rounded-2xl max-w-sm w-full p-6 space-y-4 animate-in zoom-in-95 duration-200">
           <h3 class="text-lg font-bold text-slate-950">Create New Task</h3>
 
           <div class="space-y-3">
             <div>
               <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Task Title</label>
-              <input [(ngModel)]="newTaskData.title" type="text" placeholder="e.g. Generate Customer Invoice" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
+              <input [(ngModel)]="newTaskData.title" type="text" placeholder="e.g. Generate Customer Invoice" class="w-full glass-input rounded-lg p-2 text-sm focus:outline-indigo-600">
             </div>
 
             <div>
               <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Description</label>
-              <textarea [(ngModel)]="newTaskData.description" rows="2" class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600"></textarea>
+              <textarea [(ngModel)]="newTaskData.description" rows="2" class="w-full glass-input rounded-lg p-2 text-sm focus:outline-indigo-600"></textarea>
             </div>
 
             <div class="grid grid-cols-2 gap-3">
               <div>
                 <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Assigned Team</label>
-                <select [(ngModel)]="newTaskData.assignedTeam" class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                <select [(ngModel)]="newTaskData.assignedTeam" class="w-full glass-input rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
                   <option value="Sales">Sales</option>
                   <option value="Operations">Operations</option>
                   <option value="Finance">Finance</option>
@@ -323,7 +323,7 @@ const SUB_MODULE_LABELS: Record<string, string> = {
               </div>
               <div>
                 <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Assigned Person</label>
-                <select [(ngModel)]="newTaskData.assignedTo" class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                <select [(ngModel)]="newTaskData.assignedTo" class="w-full glass-input rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
                   <option value="">Unassigned</option>
                   @for (user of state.users(); track user.name) {
                     <option [value]="user.name">{{user.name}}</option>
@@ -334,7 +334,7 @@ const SUB_MODULE_LABELS: Record<string, string> = {
 
             <div>
               <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Module</label>
-              <select [(ngModel)]="selectedModule" (ngModelChange)="onModuleChange()" class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+              <select [(ngModel)]="selectedModule" (ngModelChange)="onModuleChange()" class="w-full glass-input rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
                 <option value="">None</option>
                 @for (mod of moduleList; track mod) {
                   <option [value]="mod">{{mod}}</option>
@@ -345,7 +345,7 @@ const SUB_MODULE_LABELS: Record<string, string> = {
             @if (selectedModule()) {
               <div>
                 <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Sub-module</label>
-                <select [(ngModel)]="selectedSubModule" (ngModelChange)="onSubModuleChange()" class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                <select [(ngModel)]="selectedSubModule" (ngModelChange)="onSubModuleChange()" class="w-full glass-input rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
                   <option value="">Select...</option>
                   @for (sub of subModules(); track sub) {
                     <option [value]="sub">{{subModuleLabel(sub)}}</option>
@@ -357,7 +357,7 @@ const SUB_MODULE_LABELS: Record<string, string> = {
             @if (selectedModule() && selectedSubModule()) {
               <div>
                 <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">{{subModuleLabel(selectedSubModule())}}</label>
-                <select [(ngModel)]="newTaskData.relatedEntityId" class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                <select [(ngModel)]="newTaskData.relatedEntityId" class="w-full glass-input rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
                   <option value="">Select...</option>
                   @for (entity of relatedEntities(); track entity.id) {
                     <option [value]="entity.id">{{entity.label}}</option>
@@ -369,7 +369,7 @@ const SUB_MODULE_LABELS: Record<string, string> = {
 
           <div class="flex justify-end gap-2 pt-4 border-t border-slate-100">
             <button (click)="closeTaskModal()" class="px-4 py-2 border border-slate-200 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-50 font-sans">Cancel</button>
-            <button (click)="saveTask()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm font-sans">Save Task</button>
+            <button (click)="saveTask()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm shadow-lg shadow-indigo-200 font-sans">Save Task</button>
           </div>
         </div>
       </div>
@@ -378,11 +378,11 @@ const SUB_MODULE_LABELS: Record<string, string> = {
     <!-- Assign Modal -->
     @if (assignModalOpen()) {
       <div class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-xl border border-slate-100 animate-in zoom-in-95 duration-200">
+        <div class="glass-dialog rounded-2xl max-w-sm w-full p-6 space-y-4 animate-in zoom-in-95 duration-200">
           <h3 class="text-lg font-bold text-slate-950">Assign Task: {{selectedTask()?.title}}</h3>
           <div>
             <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Select Assignee</label>
-            <select [(ngModel)]="reassignedUser" class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+            <select [(ngModel)]="reassignedUser" class="w-full glass-input rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
               @for (user of state.users(); track user.name) {
                 <option [value]="user.name">{{user.name}} ({{user.role}})</option>
               }
@@ -390,7 +390,7 @@ const SUB_MODULE_LABELS: Record<string, string> = {
           </div>
           <div class="flex justify-end gap-2 pt-2">
             <button (click)="assignModalOpen.set(false)" class="px-4 py-2 border border-slate-200 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-50">Cancel</button>
-            <button (click)="saveAssignment()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm">Assign</button>
+            <button (click)="saveAssignment()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm shadow-lg shadow-indigo-200">Assign</button>
           </div>
         </div>
       </div>

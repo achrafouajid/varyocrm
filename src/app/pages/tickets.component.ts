@@ -15,15 +15,15 @@ import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
           <h2 class="text-3xl font-semibold tracking-tight text-slate-900">Tickets & Customer Support</h2>
           <p class="text-slate-500 mt-1">Manage customer service requests, technical bugs, and billing issues.</p>
         </div>
-        <button (click)="openNewTicketModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm">
+        <button (click)="openNewTicketModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm shadow-lg shadow-indigo-200">
           <mat-icon class="w-5 h-5 text-[20px]! leading-none! flex items-center justify-center">add</mat-icon>
           New Ticket
         </button>
       </div>
 
-      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      <div class="glass-card rounded-2xl overflow-hidden">
         <table class="min-w-full divide-y divide-slate-200">
-          <thead class="bg-slate-50">
+          <thead class="glass">
             <tr>
               <th scope="col" class="px-6 py-3 text-left font-medium text-slate-500 uppercase tracking-wider text-xs">Priority</th>
               <th scope="col" class="px-6 py-3 text-left font-medium text-slate-500 uppercase tracking-wider text-xs">Subject / Title</th>
@@ -99,7 +99,7 @@ import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
     <!-- Ticket Modal (Create / Edit) -->
     @if (modalOpen()) {
       <div class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-xl border border-slate-100 animate-in zoom-in-95 duration-200">
+        <div class="glass-dialog rounded-2xl max-w-md w-full p-6 space-y-4 animate-in zoom-in-95 duration-200">
           <div class="flex justify-between items-center">
             <h3 class="text-lg font-bold text-slate-950">
               {{ isEditing() ? 'Edit Support Ticket' : 'New Support Ticket' }}
@@ -116,14 +116,14 @@ import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
                 [(ngModel)]="newTicket.title"
                 type="text"
                 placeholder="e.g. Login issue on client portal"
-                class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600"
+                class="w-full glass-input rounded-lg p-2 text-sm focus:outline-indigo-600"
               >
             </div>
 
             <div class="grid grid-cols-2 gap-3">
               <div>
                 <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Ticket Type</label>
-                <select [(ngModel)]="newTicket.type" class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                <select [(ngModel)]="newTicket.type" class="w-full glass-input rounded-lg p-2 text-sm focus:outline-indigo-600">
                   @for (t of state.ticketTypes(); track t) {
                     <option [value]="t">{{ t }}</option>
                   }
@@ -131,7 +131,7 @@ import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
               </div>
               <div>
                 <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Related Partner</label>
-                <select [(ngModel)]="newTicket.partnerId" class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                <select [(ngModel)]="newTicket.partnerId" class="w-full glass-input rounded-lg p-2 text-sm focus:outline-indigo-600">
                   <option value="">-- Select Partner --</option>
                   @for (p of state.partners(); track p.id) {
                     <option [value]="p.id">{{p.name}} ({{p.type}})</option>
@@ -142,7 +142,7 @@ import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
 
             <div>
               <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Assigned To</label>
-              <select [(ngModel)]="newTicket.assignedTo" class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+              <select [(ngModel)]="newTicket.assignedTo" class="w-full glass-input rounded-lg p-2 text-sm focus:outline-indigo-600">
                 <option value="">-- Select Assignee --</option>
                 @for (user of state.users(); track user.name) {
                   <option [value]="user.name">{{user.name}} ({{user.role}})</option>
@@ -153,7 +153,7 @@ import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
             <div class="grid grid-cols-2 gap-3">
               <div>
                 <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Priority</label>
-                <select [(ngModel)]="newTicket.priority" class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                <select [(ngModel)]="newTicket.priority" class="w-full glass-input rounded-lg p-2 text-sm focus:outline-indigo-600">
                   <option value="Low">Low</option>
                   <option value="Medium">Medium</option>
                   <option value="High">High</option>
@@ -161,7 +161,7 @@ import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
               </div>
               <div>
                 <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Status</label>
-                <select [(ngModel)]="newTicket.status" class="w-full border border-slate-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                <select [(ngModel)]="newTicket.status" class="w-full glass-input rounded-lg p-2 text-sm focus:outline-indigo-600">
                   <option value="Open">Open</option>
                   <option value="In Progress">In Progress</option>
                   <option value="Resolved">Resolved</option>
@@ -178,17 +178,17 @@ import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
                   [(ngModel)]="newTicket.resolution"
                   rows="3"
                   placeholder="Describe how this issue was resolved..."
-                  class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600"
+                  class="w-full glass-input rounded-lg p-2 text-sm focus:outline-indigo-600"
                 ></textarea>
               </div>
             }
           </div>
 
-          <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+          <div class="flex justify-end gap-2 pt-2 border-t border-white/30">
             <button (click)="modalOpen.set(false)" class="px-4 py-2 border border-slate-200 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-50">
               Cancel
             </button>
-            <button (click)="saveTicket()" [disabled]="!newTicket.title.trim() || ((newTicket.status === 'Resolved' || newTicket.status === 'Closed') && !newTicket.resolution.trim())" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-lg shadow-sm">
+            <button (click)="saveTicket()" [disabled]="!newTicket.title.trim() || ((newTicket.status === 'Resolved' || newTicket.status === 'Closed') && !newTicket.resolution.trim())" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-lg shadow-sm shadow-lg shadow-indigo-200">
               {{ isEditing() ? 'Save Changes' : 'Create Ticket' }}
             </button>
           </div>

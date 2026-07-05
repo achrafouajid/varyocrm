@@ -33,12 +33,12 @@ import { MatIconModule } from '@angular/material/icon';
     }
   `],
   template: `
-    <div class="font-sans flex flex-col md:flex-row border border-slate-200 rounded-2xl bg-white overflow-hidden shadow-xs h-[calc(100vh-10rem)] max-w-6xl mx-auto">
+    <div class="font-sans flex flex-col md:flex-row glass-card rounded-2xl overflow-hidden h-[calc(100vh-10rem)] max-w-6xl mx-auto">
       
       <!-- LEFT PANEL: Group list -->
       <aside class="w-full md:w-[300px] border-r border-slate-200 flex flex-col h-full shrink-0">
         <!-- Panel Header -->
-        <div class="p-4 border-b border-slate-100 flex items-center justify-between">
+        <div class="p-4 border-b border-white/30 flex items-center justify-between">
           <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wide">Collaboration Groups</h2>
           <button
             (click)="toggleCreateGroupForm()"
@@ -50,21 +50,21 @@ import { MatIconModule } from '@angular/material/icon';
         </div>
 
         <!-- Inline Create Group Form -->
-        <div [class.open]="showCreateForm()" class="panel bg-slate-50 border-b border-slate-200">
+        <div [class.open]="showCreateForm()" class="panel glass border-b border-white/30">
           <div class="p-4 space-y-3">
             <h3 class="font-bold text-slate-700 text-xs">Create Group</h3>
             
             <input
               [(ngModel)]="newGroupName"
               placeholder="Group name (e.g. Finance Sync)"
-              class="w-full border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs bg-white focus:outline-indigo-600 text-slate-850"
+              class="w-full glass-input rounded-xl px-2.5 py-1.5 text-xs focus:outline-indigo-600 text-slate-850"
             />
             
             <textarea
               [(ngModel)]="newGroupDesc"
               placeholder="Description (Optional)"
               rows="2"
-              class="w-full border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs bg-white focus:outline-indigo-600 text-slate-850"
+              class="w-full glass-input rounded-xl px-2.5 py-1.5 text-xs focus:outline-indigo-600 text-slate-850"
             ></textarea>
 
             <!-- Search members -->
@@ -76,10 +76,10 @@ import { MatIconModule } from '@angular/material/icon';
                 (input)="searchUsers(searchBox.value)"
                 (focus)="searchUsers(searchBox.value)"
                 (blur)="clearSearchDelay()"
-                class="w-full border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs bg-white focus:outline-indigo-600 text-slate-850"
+                class="w-full glass-input rounded-xl px-2.5 py-1.5 text-xs focus:outline-indigo-600 text-slate-850"
               />
               @if (userSearchMatches().length > 0) {
-                <div class="absolute left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-lg z-20 overflow-hidden max-h-36 overflow-y-auto">
+                <div class="absolute left-0 right-0 mt-1 glass rounded-xl shadow-lg z-20 overflow-hidden max-h-36 overflow-y-auto">
                   @for (match of userSearchMatches(); track match.id) {
                     <button
                       (click)="addMemberChip(match)"
@@ -96,14 +96,14 @@ import { MatIconModule } from '@angular/material/icon';
             <!-- Chips -->
             <div class="flex flex-wrap gap-1.5 pt-1">
               @for (chip of selectedMemberChips(); track chip.id) {
-                <span class="inline-flex items-center gap-1 bg-indigo-50 border border-indigo-100 text-indigo-700 font-bold px-2 py-0.5 rounded-lg text-[9px] uppercase tracking-wide">
+                <span class="inline-flex items-center gap-1 glass-strong text-indigo-700 font-semibold px-2 py-0.5 rounded-lg text-[9px] uppercase tracking-wide">
                   {{ chip.displayName.split(' ')[0] }}
                   <button (click)="removeMemberChip(chip.id)" class="text-indigo-400 hover:text-indigo-700 select-none">×</button>
                 </span>
               }
             </div>
 
-            <div class="flex justify-end gap-2 pt-2 border-t border-slate-200/50">
+            <div class="flex justify-end gap-2 pt-2 border-t border-white/30">
               <button
                 (click)="closeCreateGroupForm()"
                 class="px-2.5 py-1 border border-slate-200 text-slate-500 text-[10px] font-bold rounded-lg hover:bg-slate-100 cursor-pointer"
@@ -159,16 +159,16 @@ import { MatIconModule } from '@angular/material/icon';
       </aside>
 
       <!-- RIGHT PANEL: Group workspace -->
-      <main class="flex-1 flex flex-col h-full min-w-0 bg-slate-50/50">
+      <main class="flex-1 flex flex-col h-full min-w-0 glass">
         @if (selectedGroup(); as grp) {
           <!-- Header -->
-          <div class="p-4 bg-white border-b border-slate-200 flex items-center justify-between">
+          <div class="p-4 glass-card border-b border-white/30 flex items-center justify-between">
             <div>
               <h2 class="text-sm font-bold text-slate-900">{{ grp.name }}</h2>
               <p class="text-[10px] text-slate-400 font-medium mt-0.5">{{ grp.memberUserIds.length }} members in sync</p>
             </div>
             
-            <div class="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+            <div class="flex items-center gap-1 glass p-0.5 rounded-lg">
               <button
                 (click)="activeTab.set('chat')"
                 [class.bg-white]="activeTab() === 'chat'"
@@ -192,7 +192,7 @@ import { MatIconModule } from '@angular/material/icon';
 
           <!-- TAB CONTENT: Chat -->
           @if (activeTab() === 'chat') {
-            <div class="flex-1 flex flex-col min-h-0 bg-slate-50/50">
+            <div class="flex-1 flex flex-col min-h-0 glass">
               <!-- Scrollable thread -->
               <div
                 #messageThread
@@ -236,13 +236,13 @@ import { MatIconModule } from '@angular/material/icon';
               </div>
 
               <!-- Input row -->
-              <div class="p-4 bg-white border-t border-slate-200 flex gap-2 shrink-0">
+              <div class="p-4 glass-card border-t border-white/30 flex gap-2 shrink-0">
                 <input
                   [(ngModel)]="chatInputValue"
                   (keydown.enter)="sendMessage(grp.id)"
                   type="text"
-                  placeholder="Type your message..."
-                  class="flex-1 border border-slate-200 rounded-xl px-4 py-2 text-xs focus:outline-indigo-650 bg-slate-50/60"
+placeholder="Type your message..."
+                   class="flex-1 glass-input rounded-xl px-4 py-2 text-xs focus:outline-indigo-650"
                 />
                 <button
                   (click)="sendMessage(grp.id)"
@@ -270,7 +270,7 @@ import { MatIconModule } from '@angular/material/icon';
               </div>
 
               <!-- Inline Schedule form -->
-              <div [class.open]="showScheduleForm()" class="panel bg-white border border-slate-200 rounded-2xl shadow-3xs">
+              <div [class.open]="showScheduleForm()" class="panel glass-card rounded-2xl shadow-3xs">
                 <div class="p-5 space-y-3">
                   <h4 class="font-bold text-slate-800 text-xs">Schedule New Meeting</h4>
                   
@@ -280,7 +280,7 @@ import { MatIconModule } from '@angular/material/icon';
                       <input
                         [(ngModel)]="meetTitle"
                         placeholder="e.g. Post-Mortem Briefing"
-                        class="w-full border border-slate-200 rounded-xl px-3 py-1.5 text-xs bg-slate-50/50 focus:outline-indigo-600 text-slate-800"
+                        class="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-indigo-600 text-slate-800"
                       />
                     </div>
 
@@ -289,7 +289,7 @@ import { MatIconModule } from '@angular/material/icon';
                       <input
                         [(ngModel)]="meetDateStr"
                         type="datetime-local"
-                        class="w-full border border-slate-200 rounded-xl px-3 py-1.5 text-xs bg-slate-50/50 focus:outline-indigo-600 text-slate-800 font-mono"
+                        class="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-indigo-600 text-slate-800 font-mono"
                       />
                     </div>
 
@@ -298,7 +298,7 @@ import { MatIconModule } from '@angular/material/icon';
                         <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Duration (minutes)</label>
                         <select
                           [(ngModel)]="meetDuration"
-                          class="w-full border border-slate-200 rounded-xl px-3 py-1.5 text-xs bg-slate-50/50 focus:outline-indigo-600 text-slate-700 font-semibold cursor-pointer"
+                          class="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-indigo-600 text-slate-700 font-semibold cursor-pointer"
                         >
                           <option value="30">30 min</option>
                           <option value="60">60 min</option>
@@ -312,7 +312,7 @@ import { MatIconModule } from '@angular/material/icon';
                         <input
                           [(ngModel)]="meetDesc"
                           placeholder="Agenda details..."
-                          class="w-full border border-slate-200 rounded-xl px-3 py-1.5 text-xs bg-slate-50/50 focus:outline-indigo-600 text-slate-800"
+                          class="w-full glass-input rounded-xl px-3 py-1.5 text-xs focus:outline-indigo-600 text-slate-800"
                         />
                       </div>
                     </div>
@@ -358,7 +358,7 @@ import { MatIconModule } from '@angular/material/icon';
               <!-- Meetings Cards -->
               <div class="space-y-4">
                 @for (meet of getMeetingsList(grp.id); track meet.id) {
-                  <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs hover:shadow-sm transition-all flex flex-col justify-between gap-4">
+                  <div class="glass-card rounded-2xl p-5 flex flex-col justify-between gap-4">
                     <div class="flex items-start justify-between gap-2">
                       <div>
                         <h4 class="text-xs font-bold text-slate-900 block font-sans">{{ meet.title }}</h4>
@@ -376,7 +376,7 @@ import { MatIconModule } from '@angular/material/icon';
                     </div>
 
                     <!-- Details -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-[11px] font-semibold text-slate-500 border-t border-slate-100 pt-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-[11px] font-semibold text-slate-500 border-t border-white/30 pt-3">
                       <div class="space-y-1">
                         <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Time</span>
                         <div class="flex items-center gap-1 text-slate-700">
@@ -395,13 +395,13 @@ import { MatIconModule } from '@angular/material/icon';
                     </div>
 
                     <!-- Attendee Stack -->
-                    <div class="flex items-center justify-between border-t border-slate-100 pt-3">
+                    <div class="flex items-center justify-between border-t border-white/30 pt-3">
                       <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Attendees</span>
                       <app-avatar-stack [userIds]="meet.attendeeUserIds" [size]="24" [maxVisible]="3"></app-avatar-stack>
                     </div>
                   </div>
                 } @empty {
-                  <div class="p-8 text-center text-slate-405 text-xs italic bg-white border border-slate-200 rounded-2xl">
+                  <div class="p-8 text-center text-slate-405 text-xs italic glass-card rounded-2xl">
                     No scheduled meetings. Schedule one to align with group members.
                   </div>
                 }

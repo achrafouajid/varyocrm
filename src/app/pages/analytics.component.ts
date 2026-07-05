@@ -16,13 +16,13 @@ declare var Chart: any;
           <h2 class="text-3xl font-semibold tracking-tight text-slate-900 font-sans">Analytics Dashboard</h2>
           <p class="text-slate-500 mt-1 font-sans">Real-time performance indicators and sales insights.</p>
         </div>
-        <div class="text-xs text-slate-400 font-mono flex items-center gap-1 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
+        <div class="text-xs text-slate-400 font-mono flex items-center gap-1 glass-chip text-slate-500 px-3 py-1.5 rounded-lg">
           <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span> Live state sync
         </div>
       </div>
 
       <!-- Sub-Tab Switcher -->
-      <div class="flex gap-1 bg-slate-100 p-1 rounded-xl w-fit border border-slate-200">
+      <div class="flex gap-1 glass p-1 rounded-xl w-fit">
         <button
           id="tab-overview"
           (click)="activeTab.set('overview')"
@@ -56,7 +56,7 @@ declare var Chart: any;
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
 
           <!-- Card 1: New Deals -->
-          <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-6 flex flex-col justify-between hover:shadow-md transition-all">
+          <div class="glass-card rounded-2xl p-6 flex flex-col justify-between hover:shadow-md transition-all">
             <div class="flex items-center justify-between mb-4">
               <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-sans">New Deals</h3>
               <div class="h-9 w-9 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center border border-indigo-100">
@@ -73,7 +73,7 @@ declare var Chart: any;
           </div>
 
           <!-- Card 2: New Prospects -->
-          <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-6 flex flex-col justify-between hover:shadow-md transition-all">
+          <div class="glass-card rounded-2xl p-6 flex flex-col justify-between hover:shadow-md transition-all">
             <div class="flex items-center justify-between mb-4">
               <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-sans">New Prospects</h3>
               <div class="h-9 w-9 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center border border-emerald-100">
@@ -90,7 +90,7 @@ declare var Chart: any;
           </div>
 
           <!-- Card 3: Lost Prospects -->
-          <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-6 flex flex-col justify-between hover:shadow-md transition-all">
+          <div class="glass-card rounded-2xl p-6 flex flex-col justify-between hover:shadow-md transition-all">
             <div class="flex items-center justify-between mb-4">
               <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-sans">Lost Prospects</h3>
               <div class="h-9 w-9 bg-red-50 text-red-500 rounded-xl flex items-center justify-center border border-red-100">
@@ -107,7 +107,7 @@ declare var Chart: any;
           </div>
 
           <!-- Card 4: Today's Deal -->
-          <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-6 flex flex-col justify-between hover:shadow-md transition-all">
+          <div class="glass-card rounded-2xl p-6 flex flex-col justify-between hover:shadow-md transition-all">
             <div class="flex items-center justify-between mb-4">
               <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-sans">Today's Deal</h3>
               <div class="h-9 w-9 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center border border-amber-100">
@@ -137,7 +137,7 @@ declare var Chart: any;
         <!-- Currency Toggle — matches tab switcher style -->
         <div class="flex items-center gap-2">
           <span class="text-[10px] text-slate-400 font-mono uppercase tracking-wider mr-1">Currency</span>
-          <div class="flex gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
+          <div class="flex gap-1 glass p-1 rounded-xl">
             @for (cur of ['MAD', 'USD', 'EUR']; track cur) {
               <button
                 id="currency-toggle-{{ cur }}"
@@ -155,7 +155,7 @@ declare var Chart: any;
         <!-- KPI Summary Cards (4 Columns) -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <!-- Sales This Month -->
-          <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-6 flex flex-col justify-between hover:shadow-md transition-all">
+          <div class="glass-card rounded-2xl p-6 flex flex-col justify-between hover:shadow-md transition-all">
             <div class="flex items-center justify-between mb-4">
               <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-sans">Sales This Month</h3>
               <div class="h-9 w-9 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center border border-emerald-100">
@@ -169,7 +169,7 @@ declare var Chart: any;
           </div>
 
           <!-- Conversion Rate -->
-          <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-6 flex flex-col justify-between hover:shadow-md transition-all">
+          <div class="glass-card rounded-2xl p-6 flex flex-col justify-between hover:shadow-md transition-all">
             <div class="flex items-center justify-between mb-4">
               <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-sans">Conversion Rate</h3>
               <div class="h-9 w-9 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center border border-indigo-100">
@@ -183,7 +183,7 @@ declare var Chart: any;
           </div>
 
           <!-- Win Rate -->
-          <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-6 flex flex-col justify-between hover:shadow-md transition-all">
+          <div class="glass-card rounded-2xl p-6 flex flex-col justify-between hover:shadow-md transition-all">
             <div class="flex items-center justify-between mb-4">
               <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-sans">Win Rate</h3>
               <div class="h-9 w-9 bg-violet-50 text-violet-600 rounded-xl flex items-center justify-center border border-violet-100">
@@ -197,7 +197,7 @@ declare var Chart: any;
           </div>
 
           <!-- Average Deal Size -->
-          <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-6 flex flex-col justify-between hover:shadow-md transition-all">
+          <div class="glass-card rounded-2xl p-6 flex flex-col justify-between hover:shadow-md transition-all">
             <div class="flex items-center justify-between mb-4">
               <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-sans">Avg Deal Size</h3>
               <div class="h-9 w-9 bg-sky-50 text-sky-600 rounded-xl flex items-center justify-center border border-sky-100">
@@ -214,7 +214,7 @@ declare var Chart: any;
         <!-- Charts Section (2 Columns) -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <!-- Sales Forecasting -->
-          <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-6 space-y-4">
+          <div class="glass-card rounded-2xl p-6 space-y-4">
             <div>
               <h3 class="text-base font-semibold text-slate-900 font-sans">Sales Forecasting</h3>
               <p class="text-xs text-slate-500 mt-0.5 font-sans">Expected monthly revenue per salesperson (excludes lost deals)</p>
@@ -225,7 +225,7 @@ declare var Chart: any;
           </div>
 
           <!-- Sales by Region -->
-          <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-6 space-y-4">
+          <div class="glass-card rounded-2xl p-6 space-y-4">
             <div>
               <h3 class="text-base font-semibold text-slate-900 font-sans">Sales by Region</h3>
               <p class="text-xs text-slate-500 mt-0.5 font-sans">Total won &amp; confirmed sales volume by geographical region</p>
@@ -239,7 +239,7 @@ declare var Chart: any;
         <!-- Lists & Table Section -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <!-- Top Customers -->
-          <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-6 space-y-4">
+          <div class="glass-card rounded-2xl p-6 space-y-4">
             <div>
               <h3 class="text-base font-semibold text-slate-900 font-sans">Top Customers</h3>
               <p class="text-xs text-slate-500 mt-0.5 font-sans">Ranked by total confirmed deal value</p>
@@ -265,14 +265,14 @@ declare var Chart: any;
           </div>
 
           <!-- Lost Opportunities -->
-          <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-6 space-y-4">
+          <div class="glass-card rounded-2xl p-6 space-y-4">
             <div>
               <h3 class="text-base font-semibold text-slate-900 font-sans">Lost Opportunities</h3>
               <p class="text-xs text-slate-500 mt-0.5 font-sans">Pipelines marked as Closed Lost</p>
             </div>
-            <div class="overflow-hidden border border-slate-200 rounded-xl bg-slate-50/50">
+            <div class="glass rounded-xl overflow-hidden">
               <table class="min-w-full divide-y divide-slate-200">
-                <thead class="bg-slate-100">
+                <thead class="glass">
                   <tr>
                     <th scope="col" class="px-4 py-2.5 text-left font-bold text-[10px] text-slate-500 uppercase tracking-wider font-sans">Opportunity</th>
                     <th scope="col" class="px-4 py-2.5 text-left font-bold text-[10px] text-slate-500 uppercase tracking-wider font-sans">Owner</th>
@@ -313,7 +313,7 @@ declare var Chart: any;
         <div class="space-y-6">
 
           <!-- Customer Selector Banner -->
-          <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div class="glass-card rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h3 class="text-base font-semibold text-slate-900 font-sans">Customer 360° Profile</h3>
               <p class="text-xs text-slate-500 mt-0.5 font-sans">Select a customer to view their complete profile and interaction history.</p>
@@ -323,7 +323,7 @@ declare var Chart: any;
                 id="customer-selector"
                 [value]="selectedCustomerId() || ''"
                 (change)="onCustomerChange($event)"
-                class="w-64 pl-3 pr-10 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 hover:bg-white transition-colors font-sans font-semibold text-slate-700 appearance-none cursor-pointer shadow-xs"
+                class="w-64 pl-3 pr-10 py-2.5 text-sm glass-input rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 glass hover:bg-white transition-colors font-sans font-semibold text-slate-700 appearance-none cursor-pointer"
               >
                 @for (p of getCustomers(); track p.id) {
                   <option [value]="p.id">{{ p.name }}</option>
@@ -338,7 +338,7 @@ declare var Chart: any;
           @if (selectedCustomer360(); as view) {
 
             <!-- ── Identity Card ── -->
-            <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-6 hover:shadow-md transition-all">
+            <div class="glass-card rounded-2xl p-6 hover:shadow-md transition-all">
               <div class="flex flex-col md:flex-row md:items-center gap-6">
                 <!-- Avatar + Name -->
                 <div class="flex items-center gap-4 shrink-0">
@@ -378,8 +378,8 @@ declare var Chart: any;
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
               <!-- Contacts / Personnel -->
-              <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-5 space-y-4 hover:shadow-md transition-all">
-                <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div class="glass-card rounded-2xl p-5 space-y-4 hover:shadow-md transition-all">
+                <div class="flex items-center justify-between pb-3 border-b border-white/30">
                   <div class="flex items-center gap-2">
                     <div class="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg">
                       <mat-icon style="font-size:16px;width:16px;height:16px">people</mat-icon>
@@ -413,8 +413,8 @@ declare var Chart: any;
               </div>
 
               <!-- Orders / Deals -->
-              <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-5 space-y-4 hover:shadow-md transition-all">
-                <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div class="glass-card rounded-2xl p-5 space-y-4 hover:shadow-md transition-all">
+                <div class="flex items-center justify-between pb-3 border-b border-white/30">
                   <div class="flex items-center gap-2">
                     <div class="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg">
                       <mat-icon style="font-size:16px;width:16px;height:16px">shopping_bag</mat-icon>
@@ -442,8 +442,8 @@ declare var Chart: any;
               </div>
 
               <!-- Meetings -->
-              <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-5 space-y-4 hover:shadow-md transition-all">
-                <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div class="glass-card rounded-2xl p-5 space-y-4 hover:shadow-md transition-all">
+                <div class="flex items-center justify-between pb-3 border-b border-white/30">
                   <div class="flex items-center gap-2">
                     <div class="p-1.5 bg-amber-50 text-amber-600 rounded-lg">
                       <mat-icon style="font-size:16px;width:16px;height:16px">event</mat-icon>
@@ -473,8 +473,8 @@ declare var Chart: any;
               </div>
 
               <!-- Support Tickets -->
-              <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-5 space-y-4 hover:shadow-md transition-all">
-                <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div class="glass-card rounded-2xl p-5 space-y-4 hover:shadow-md transition-all">
+                <div class="flex items-center justify-between pb-3 border-b border-white/30">
                   <div class="flex items-center gap-2">
                     <div class="p-1.5 bg-violet-50 text-violet-600 rounded-lg">
                       <mat-icon style="font-size:16px;width:16px;height:16px">confirmation_number</mat-icon>
@@ -504,8 +504,8 @@ declare var Chart: any;
             </div><!-- /4-grid -->
 
             <!-- ── Invoices (Full Width) ── -->
-            <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-5 space-y-4 hover:shadow-md transition-all">
-              <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div class="glass-card rounded-2xl p-5 space-y-4 hover:shadow-md transition-all">
+              <div class="flex items-center justify-between pb-3 border-b border-white/30">
                 <div class="flex items-center gap-2">
                   <div class="p-1.5 bg-teal-50 text-teal-600 rounded-lg">
                     <mat-icon style="font-size:16px;width:16px;height:16px">receipt_long</mat-icon>
@@ -515,9 +515,9 @@ declare var Chart: any;
                 <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold font-sans">{{ view.invoices.length }}</span>
               </div>
 
-              <div class="overflow-hidden border border-slate-200 rounded-xl">
+              <div class="glass rounded-xl overflow-hidden">
                 <table class="min-w-full divide-y divide-slate-200">
-                  <thead class="bg-slate-100">
+                  <thead class="glass">
                     <tr>
                       <th scope="col" class="px-4 py-2.5 text-left font-bold text-[10px] text-slate-500 uppercase tracking-wider font-sans">Invoice ID</th>
                       <th scope="col" class="px-4 py-2.5 text-left font-bold text-[10px] text-slate-500 uppercase tracking-wider font-sans">Due Date</th>
@@ -547,7 +547,7 @@ declare var Chart: any;
 
           } @else {
             <!-- No customer selected / no data -->
-            <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-16 flex flex-col items-center justify-center text-center">
+            <div class="glass-card rounded-2xl p-16 flex flex-col items-center justify-center text-center">
               <div class="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mb-4">
                 <mat-icon style="font-size:32px;width:32px;height:32px">contact_page</mat-icon>
               </div>

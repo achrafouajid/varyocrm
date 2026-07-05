@@ -24,23 +24,23 @@ type InvoiceLine = {
         <nav class="space-y-1 sticky top-24">
           <button
             (click)="activeTab.set('Customer'); state.breadcrumbLabel.set('Customer Invoices')"
-            [class]="activeTab() === 'Customer' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-transparent'"
+            [class]="activeTab() === 'Customer' ? 'glass-strong text-indigo-700 font-semibold' : 'glass-button text-slate-500 hover:text-indigo-600'"
             class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors border flex items-center gap-2">
             <mat-icon class="text-[18px] w-[18px] h-[18px]">receipt</mat-icon>
             Customer
-            <span class="ml-auto text-xs bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full">{{ state.customerInvoices().length }}</span>
+            <span class="ml-auto text-xs glass-chip text-slate-500 px-1.5 py-0.5 rounded-full">{{ state.customerInvoices().length }}</span>
           </button>
           <button
             (click)="activeTab.set('Vendor'); state.breadcrumbLabel.set('Vendor Invoices')"
-            [class]="activeTab() === 'Vendor' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-transparent'"
+            [class]="activeTab() === 'Vendor' ? 'glass-strong text-indigo-700 font-semibold' : 'glass-button text-slate-500 hover:text-indigo-600'"
             class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors border flex items-center gap-2">
             <mat-icon class="text-[18px] w-[18px] h-[18px]">receipt_long</mat-icon>
             Vendor
-            <span class="ml-auto text-xs bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full">{{ state.vendorInvoices().length }}</span>
+            <span class="ml-auto text-xs glass-chip text-slate-500 px-1.5 py-0.5 rounded-full">{{ state.vendorInvoices().length }}</span>
           </button>
           <button
             (click)="activeTab.set('Recovery'); state.breadcrumbLabel.set('Recovery')"
-            [class]="activeTab() === 'Recovery' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-transparent'"
+            [class]="activeTab() === 'Recovery' ? 'glass-strong text-indigo-700 font-semibold' : 'glass-button text-slate-500 hover:text-indigo-600'"
             class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors border flex items-center gap-2">
             <mat-icon class="text-[18px] w-[18px] h-[18px]">healing</mat-icon>
             Recovery
@@ -58,7 +58,7 @@ type InvoiceLine = {
             <h2 class="text-3xl font-semibold tracking-tight text-slate-900">Finance / المالية</h2>
             <p class="text-slate-500 mt-1">Manage customer invoices, vendor invoices, and late payment recovery.</p>
           </div>
-          <button (click)="openCreateInvoiceModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm">
+          <button (click)="openCreateInvoiceModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm shadow-lg shadow-indigo-200">
             <mat-icon class="w-5 h-5 text-[20px]! leading-none! flex items-center justify-center">receipt_long</mat-icon>
             New Invoice
           </button>
@@ -66,9 +66,9 @@ type InvoiceLine = {
 
         <!-- Invoices View -->
         @if (activeTab() !== 'Recovery') {
-          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div class="glass-card rounded-2xl overflow-hidden">
             <table class="min-w-full divide-y divide-slate-200">
-              <thead class="bg-slate-50">
+              <thead class="glass">
                 <tr>
                   <th scope="col" class="px-6 py-3 text-left font-medium text-slate-500 uppercase tracking-wider text-xs">Invoice Ref</th>
                   <th scope="col" class="px-6 py-3 text-left font-medium text-slate-500 uppercase tracking-wider text-xs">Partner</th>
@@ -135,7 +135,7 @@ type InvoiceLine = {
               <div class="lg:col-span-2 space-y-3">
                 <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Overdue Invoices</span>
                 @for (invoice of state.overdueInvoices(); track invoice.id) {
-                  <div class="bg-white rounded-xl shadow-sm border p-5 flex items-center justify-between transition-all"
+                  <div class="glass-card rounded-xl p-5 flex items-center justify-between transition-all"
                     [class.border-indigo-600]="selectedInvoiceIds().includes(invoice.id)"
                     [class.border-slate-200]="!selectedInvoiceIds().includes(invoice.id)">
                     <div class="flex items-center gap-3">
@@ -156,15 +156,15 @@ type InvoiceLine = {
                     <span class="bg-rose-100 text-rose-800 text-[10px] font-bold px-2 py-0.5 rounded border border-rose-200 uppercase">Overdue</span>
                   </div>
                 } @empty {
-                  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-8 text-center text-slate-500">
+                  <div class="glass-card rounded-xl p-8 text-center text-slate-500">
                     No overdue invoices found. Excellent collection rates!
                   </div>
                 }
               </div>
 
               <!-- Right 1 column: Outbound campaign config -->
-              <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-4 self-start">
-                <h3 class="font-semibold text-slate-900 text-sm pb-3 border-b border-slate-100 flex items-center gap-1.5">
+              <div class="glass-card rounded-2xl p-5 space-y-4 self-start">
+                <h3 class="font-semibold text-slate-900 text-sm pb-3 border-b border-white/30 flex items-center gap-1.5">
                   <mat-icon class="text-indigo-600">send_time_extension</mat-icon> Outbound Reminder
                 </h3>
 
@@ -195,7 +195,7 @@ type InvoiceLine = {
 
                   <div>
                     <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Template Language</label>
-                    <select [(ngModel)]="reminderLanguage" (change)="updateReminderTemplate()" class="w-full border border-slate-200 rounded-lg p-2 text-xs bg-white">
+                    <select [(ngModel)]="reminderLanguage" (change)="updateReminderTemplate()" class="w-full glass-input rounded-lg p-2 text-xs">
                       <option value="ar">Moroccan Darija / العربية</option>
                       <option value="fr">French / Français</option>
                     </select>
@@ -203,7 +203,7 @@ type InvoiceLine = {
 
                   <div>
                     <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Message Preview</label>
-                    <textarea [(ngModel)]="reminderMessage" rows="5" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs text-slate-700 focus:outline-indigo-600 leading-relaxed"></textarea>
+                    <textarea [(ngModel)]="reminderMessage" rows="5" class="w-full glass-input rounded-lg p-2.5 text-xs text-slate-700 focus:outline-indigo-600 leading-relaxed"></textarea>
                   </div>
 
                   @if (successMessage()) {
@@ -232,10 +232,10 @@ type InvoiceLine = {
          ═══════════════════════════════════════════════════════════════════════ -->
     @if (invoiceModalOpen()) {
       <div class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4" (click)="onBackdropClick($event)">
-        <div class="bg-white rounded-2xl w-full max-w-3xl shadow-2xl border border-slate-100 flex flex-col max-h-[92vh]">
+        <div class="glass-dialog rounded-2xl w-full max-w-3xl flex flex-col max-h-[92vh]">
 
           <!-- ── Sticky Modal Header ──────────────────────────────────────── -->
-          <div class="flex items-center justify-between px-6 pt-6 pb-4 border-b border-slate-100 shrink-0">
+          <div class="flex items-center justify-between px-6 pt-6 pb-4 border-b border-white/30 shrink-0">
             <div class="flex items-center gap-3">
               <div [class]="invoiceType() === 'Deal' ? 'bg-violet-100' : 'bg-indigo-100'"
                    class="w-9 h-9 rounded-xl flex items-center justify-center">
@@ -343,7 +343,7 @@ type InvoiceLine = {
                   (ngModelChange)="onPartnerSelected($event)"
                   [disabled]="invoiceType() === 'Deal'"
                   [class]="invoiceType() === 'Deal' ? 'bg-slate-50 text-slate-400 cursor-not-allowed opacity-70' : 'bg-white focus:ring-2 focus:ring-indigo-200'"
-                  class="w-full border border-slate-200 rounded-lg p-2.5 text-sm focus:outline-indigo-600 transition-colors">
+                  class="w-full glass-input rounded-lg p-2.5 text-sm focus:outline-indigo-600 transition-colors">
                   <option value="">— Select an existing Customer —</option>
                   @for (cust of invoiceEligibleCustomers(); track cust.id) {
                     <option [value]="cust.id">{{ cust.name }}</option>
@@ -396,7 +396,7 @@ type InvoiceLine = {
                   type="text"
                   placeholder="e.g. ERP-ATLAS-01"
                   [class]="invoiceType() === 'Deal' ? 'bg-slate-50 text-slate-400 cursor-not-allowed' : autoFilledFields().has('customerAccount') ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-white'"
-                  class="w-full border border-slate-200 rounded-lg p-2 text-sm font-mono focus:outline-indigo-600 transition-colors">
+                  class="w-full glass-input rounded-lg p-2 text-sm font-mono focus:outline-indigo-600 transition-colors">
               </div>
 
               <!-- Customer Name -->
@@ -412,7 +412,7 @@ type InvoiceLine = {
                   type="text"
                   placeholder="Official corporate name"
                   [class]="invoiceType() === 'Deal' ? 'bg-slate-50 text-slate-400 cursor-not-allowed' : autoFilledFields().has('customerName') ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-white'"
-                  class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600 transition-colors">
+                  class="w-full glass-input rounded-lg p-2 text-sm focus:outline-indigo-600 transition-colors">
               </div>
 
               <!-- Billing Address -->
@@ -428,7 +428,7 @@ type InvoiceLine = {
                   type="text"
                   placeholder="Registered billing / fiscal address"
                   [class]="invoiceType() === 'Deal' ? 'bg-slate-50 text-slate-400 cursor-not-allowed' : autoFilledFields().has('billingAddress') ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-white'"
-                  class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600 transition-colors">
+                  class="w-full glass-input rounded-lg p-2 text-sm focus:outline-indigo-600 transition-colors">
               </div>
 
               <!-- Delivery Address -->
@@ -444,14 +444,14 @@ type InvoiceLine = {
                   type="text"
                   placeholder="Full delivery location"
                   [class]="invoiceType() === 'Deal' ? 'bg-slate-50 text-slate-400 cursor-not-allowed' : autoFilledFields().has('deliveryAddress') ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-white'"
-                  class="w-full border border-slate-200 rounded-lg p-2 text-sm focus:outline-indigo-600 transition-colors">
+                  class="w-full glass-input rounded-lg p-2 text-sm focus:outline-indigo-600 transition-colors">
               </div>
 
               <!-- Due Date -->
               <div>
                 <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Due Date</label>
                 <input [(ngModel)]="newInvoiceData.dueDate" type="date"
-                  class="w-full border border-slate-200 rounded-lg p-2 text-sm font-mono focus:outline-indigo-600">
+                  class="w-full glass-input rounded-lg p-2 text-sm font-mono focus:outline-indigo-600">
               </div>
 
               <!-- Computed Total (read-only) -->
@@ -463,7 +463,7 @@ type InvoiceLine = {
                   }
                 </label>
                 <input [value]="computedTotal()" readonly type="text"
-                  class="w-full border border-slate-200 rounded-lg p-2 text-sm font-mono bg-slate-50 text-slate-600 cursor-not-allowed focus:outline-none">
+                  class="w-full glass-input rounded-lg p-2 text-sm font-mono bg-slate-50 text-slate-600 cursor-not-allowed focus:outline-none">
               </div>
             </div>
 
@@ -486,7 +486,7 @@ type InvoiceLine = {
               @if (invoiceLines().length > 0) {
                 <div class="rounded-xl border border-slate-200 overflow-hidden">
                   <!-- Table header -->
-                  <div class="grid bg-slate-50 border-b border-slate-200 px-3 py-2"
+                  <div class="grid glass border-b border-slate-200 px-3 py-2"
                        style="grid-template-columns: 1fr 1.4fr 60px 90px 90px 32px">
                     <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Item</span>
                     <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Description</span>
@@ -498,28 +498,28 @@ type InvoiceLine = {
 
                   <!-- Line rows -->
                   @for (line of invoiceLines(); track $index; let i = $index) {
-                    <div class="grid items-center gap-1.5 px-3 py-2 border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors"
+                    <div class="grid items-center gap-1.5 px-3 py-2 border-b border-white/30 last:border-0 hover:bg-slate-50 transition-colors"
                          style="grid-template-columns: 1fr 1.4fr 60px 90px 90px 32px">
                       <!-- Item -->
                       <input [(ngModel)]="invoiceLines()[i].item"
                         (ngModelChange)="patchLine(i, 'item', $event)"
                         placeholder="Product / service"
-                        class="w-full border border-slate-200 rounded-lg px-2 py-1 text-xs bg-white focus:outline-indigo-500 focus:ring-1 focus:ring-indigo-200">
+                        class="w-full glass-input rounded-lg px-2 py-1 text-xs focus:outline-indigo-500 focus:ring-1 focus:ring-indigo-200">
                       <!-- Description -->
                       <input [(ngModel)]="invoiceLines()[i].description"
                         (ngModelChange)="patchLine(i, 'description', $event)"
                         placeholder="Optional detail"
-                        class="w-full border border-slate-200 rounded-lg px-2 py-1 text-xs bg-white focus:outline-indigo-500 focus:ring-1 focus:ring-indigo-200">
+                        class="w-full glass-input rounded-lg px-2 py-1 text-xs focus:outline-indigo-500 focus:ring-1 focus:ring-indigo-200">
                       <!-- Qty -->
                       <input [(ngModel)]="invoiceLines()[i].qty"
                         (ngModelChange)="patchLine(i, 'qty', +$event)"
                         type="number" min="1"
-                        class="w-full border border-slate-200 rounded-lg px-2 py-1 text-xs bg-white font-mono text-center focus:outline-indigo-500">
+                        class="w-full glass-input rounded-lg px-2 py-1 text-xs font-mono text-center focus:outline-indigo-500">
                       <!-- Unit Price -->
                       <input [(ngModel)]="invoiceLines()[i].unitPrice"
                         (ngModelChange)="patchLine(i, 'unitPrice', +$event)"
                         type="number" min="0"
-                        class="w-full border border-slate-200 rounded-lg px-2 py-1 text-xs bg-white font-mono text-right focus:outline-indigo-500">
+                        class="w-full glass-input rounded-lg px-2 py-1 text-xs font-mono text-right focus:outline-indigo-500">
                       <!-- Row Total (read-only) -->
                       <span class="text-xs font-mono font-semibold text-slate-700 text-right pr-1">
                         {{ formatCurrency(line.qty * line.unitPrice) }}
@@ -533,7 +533,7 @@ type InvoiceLine = {
                   }
 
                   <!-- Running total footer -->
-                  <div class="grid px-3 py-2 bg-slate-50 border-t border-slate-200"
+                  <div class="grid px-3 py-2 glass border-t border-slate-200"
                        style="grid-template-columns: 1fr 1.4fr 60px 90px 90px 32px">
                     <span class="col-span-4 text-xs font-bold text-slate-500 text-right pr-2">Invoice Total:</span>
                     <span class="text-xs font-bold font-mono text-slate-900 text-right pr-1">{{ formatCurrency(computedTotal()) }}</span>
@@ -569,10 +569,10 @@ type InvoiceLine = {
           </div>
 
           <!-- ── Sticky Footer Actions ───────────────────────────────────── -->
-          <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/60 rounded-b-2xl flex items-center justify-between gap-3 shrink-0">
+          <div class="px-6 py-4 border-t border-white/30 glass rounded-b-2xl flex items-center justify-between gap-3 shrink-0">
             <!-- Left: Cancel -->
             <button (click)="invoiceModalOpen.set(false)"
-              class="px-4 py-2 border border-slate-200 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-100 transition-colors">
+              class="px-4 py-2 glass-button text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-100 transition-colors">
               Cancel
             </button>
 
