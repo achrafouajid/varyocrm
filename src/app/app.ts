@@ -72,19 +72,87 @@ const SEARCH_ITEMS: SearchItem[] = [
   imports: [RouterOutlet, RouterLink, MatIconModule, CommonModule, FormsModule, UserAvatarComponent, SupportModalComponent],
   styles: [`
     .sidebar {
-      width: 68px;
-      transition: width 200ms cubic-bezier(0.4, 0, 0.2, 1);
-      overflow: hidden;
+      width: 72px;
+      transition: width 250ms cubic-bezier(0.4, 0, 0.2, 1);
       flex-shrink: 0;
+      height: 100vh;
+      margin: 0;
+      padding: 0 0 16px 0;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
     }
     .sidebar.expanded {
-      width: 232px;
+      width: 240px;
+    }
+    .sidebar-pill {
+      border-radius: 36px;
+      overflow: hidden;
+      margin: 0 8px;
+    }
+    .logo-container-wrap {
+      transition: padding 250ms ease, justify-content 250ms ease;
+    }
+    .sidebar:not(.expanded) .logo-container-wrap {
+      justify-content: center;
+      padding: 0;
+    }
+    .toggle-container-wrap {
+      transition: padding 250ms ease, justify-content 250ms ease;
+    }
+    .sidebar:not(.expanded) .toggle-container-wrap {
+      justify-content: center;
+      padding: 0;
+    }
+    .nav-item-link {
+      height: 48px;
+      width: 100%;
+      padding: 0 16px;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 16px;
+      border-radius: 9999px;
+      transition: width 250ms ease, padding 250ms ease, justify-content 250ms ease;
+    }
+    .sidebar:not(.expanded) .nav-item-link {
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      justify-content: center;
+      gap: 0;
+    }
+    .nav-item-wrap {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+    .user-profile-link {
+      height: 48px;
+      width: 100%;
+      padding: 0 8px;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 12px;
+      border-radius: 9999px;
+      transition: width 250ms ease, padding 250ms ease, justify-content 250ms ease;
+    }
+    .sidebar:not(.expanded) .user-profile-link {
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      justify-content: center;
+      gap: 0;
     }
     .nav-label {
       opacity: 0;
       max-width: 0;
       overflow: hidden;
       white-space: nowrap;
+      color: rgba(255, 255, 255, 0.8);
       transition: opacity 140ms cubic-bezier(0.4, 0, 0.2, 1),
                   max-width 200ms cubic-bezier(0.4, 0, 0.2, 1);
     }
@@ -138,75 +206,112 @@ const SEARCH_ITEMS: SearchItem[] = [
     .nav-item-wrap:hover .nav-item-glow {
       opacity: 1;
     }
+
+    .dark-glass-search {
+      background: rgba(17, 17, 17, 0.9) !important;
+      backdrop-filter: blur(30px) saturate(2);
+      -webkit-backdrop-filter: blur(30px) saturate(2);
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      color: #f1f5f9 !important;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15) !important;
+      font-weight: 500;
+    }
+    .dark-glass-search::placeholder {
+      color: rgba(255, 255, 255, 0.4) !important;
+    }
+    .dark-glass-search:focus {
+      background: rgba(17, 17, 17, 0.95) !important;
+      border-color: rgba(99, 102, 241, 0.3) !important;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1), 0 4px 24px rgba(0, 0, 0, 0.2) !important;
+    }
+    .dark-glass-dropdown {
+      background: rgba(17, 17, 17, 0.95) !important;
+      backdrop-filter: blur(40px) saturate(2);
+      -webkit-backdrop-filter: blur(40px) saturate(2);
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      box-shadow: 0 8px 64px rgba(0, 0, 0, 0.3) !important;
+    }
+    .search-result-btn {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      transition: background-color 150ms ease;
+    }
+    .search-result-btn:hover, .search-result-btn.selected-item {
+      background-color: rgba(255, 255, 255, 0.08) !important;
+    }
   `],
   template: `
     <div class="min-h-screen text-slate-900 font-sans flex" style="height:100vh; overflow:hidden;">
 
       <!-- Sidebar -->
       <aside
-        class="sidebar flex flex-col glass-sidebar h-full relative z-40"
+        class="sidebar flex flex-col relative z-40"
         [class.expanded]="isExpanded()"
         (mouseenter)="onSidebarMouseEnter()"
         (mouseleave)="onSidebarMouseLeave()"
       >
-        <!-- Logo / Toggle -->
-        <div class="flex items-center h-16 px-3 border-b border-white/20 gap-2 shrink-0">
+        <!-- Logo field at the top -->
+        <div class="flex items-center justify-start h-16 px-4 gap-3 shrink-0 mt-3 logo-container-wrap">
+          <img src="logo.png" alt="Company Logo" class="w-10 h-10 object-contain rounded-xl shadow-sm" />
+          @if (isExpanded()) {
+            <span class="text-slate-800 font-bold text-lg tracking-tight font-sans truncate">VaryoCRM</span>
+          }
+        </div>
+
+        <!-- Toggle Button below the logo, but not in the pill sidebar -->
+        <div class="flex items-center justify-start px-4 h-12 shrink-0 mb-2 toggle-container-wrap">
           <button
             (click)="togglePin()"
-            class="w-10 h-10 rounded-xl flex items-center justify-center text-slate-400 hover:text-indigo-600 transition-all duration-150 shrink-0 glass-button"
+            class="w-10 h-10 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-200/50 bg-white/60 border border-slate-200/50 transition-all duration-150 shrink-0 shadow-sm"
             [title]="pinnedOpen() ? 'Unpin sidebar' : 'Pin sidebar open'"
           >
             <mat-icon class="text-[20px] w-5 h-5 toggle-btn" [class.expanded]="isExpanded()">chevron_right</mat-icon>
           </button>
-          @if (isExpanded()) {
-            <a routerLink="/" class="flex items-center shrink-0 hover:opacity-80 transition-opacity overflow-hidden">
-              <img src="/crm.webp" alt="MarocCRM" class="h-9 w-auto object-contain">
-            </a>
-          }
         </div>
 
-        <!-- Nav Items -->
-        <nav class="flex-1 overflow-y-auto overflow-x-hidden py-3 px-2.5 flex flex-col gap-0.5">
-          @for (item of navItems; track item.route + item.label) {
-            <div class="nav-item-wrap relative">
-              <div class="nav-item-glow"></div>
-              <a
-                [routerLink]="item.route"
-                class="relative flex items-center gap-3 px-2.5 py-2.5 rounded-xl transition-all duration-150 cursor-pointer"
-                [class]="isNavActive(item) ? 'bg-white/60 text-indigo-600 font-semibold shadow-sm' : 'text-slate-500 hover:text-indigo-600'"
-              >
-                <mat-icon class="icon-badge text-[20px] w-5 h-5 shrink-0 rounded-lg transition-colors duration-150">{{ item.icon }}</mat-icon>
-                <span class="nav-label text-sm font-semibold tracking-tight">{{ item.label }}</span>
-              </a>
-              <div class="sidebar-tooltip">{{ item.label }}</div>
-            </div>
-          }
-        </nav>
-
-        <!-- Bottom: Help + User Profile -->
-        <div class="shrink-0 p-2.5 border-t border-white/20 space-y-0.5">
-          <button
-            (click)="openSupportModal()"
-            class="w-full flex items-center gap-3 px-2.5 py-2 rounded-xl text-slate-400 hover:text-indigo-600 transition-all duration-150 cursor-pointer glass-button"
-            title="Help & Support"
-          >
-            <mat-icon class="text-[20px] w-5 h-5 shrink-0">help</mat-icon>
-            <span class="nav-label text-sm font-semibold tracking-tight">Help & Support</span>
-          </button>
-          @let currentUser = getCurrentUser();
-          @if (currentUser) {
-            <a
-              [routerLink]="['/settings/users', state.currentUserId()]"
-              class="flex items-center gap-3 px-2.5 py-2.5 rounded-xl hover:bg-white/40 transition-all duration-150"
-              title="View Profile"
-            >
-              <app-user-avatar [userId]="state.currentUserId()" [size]="36" class="shrink-0"></app-user-avatar>
-              <div class="nav-label flex flex-col text-left overflow-hidden">
-                <span class="text-xs font-bold text-slate-700 leading-tight truncate">{{ currentUser.displayName }}</span>
-                <span class="text-[10px] text-slate-400 font-semibold leading-none mt-0.5 truncate uppercase tracking-wider">{{ currentUser.roleId }}</span>
+        <!-- Pill-shaped Sidebar Menu -->
+        <div class="sidebar-pill flex-1 flex flex-col glass-sidebar shadow-2xl overflow-hidden">
+          <!-- Nav Items -->
+          <nav class="flex-1 overflow-y-auto overflow-x-hidden py-4 px-1.5 flex flex-col gap-2">
+            @for (item of navItems; track item.route + item.label) {
+              <div class="nav-item-wrap relative group">
+                <a
+                  [routerLink]="item.route"
+                  class="nav-item-link relative transition-all duration-200 cursor-pointer"
+                  [class]="isNavActive(item) ? 'bg-[#c6f6d5] text-slate-900 shadow-sm' : 'text-white/60 hover:text-white hover:bg-white/10'"
+                >
+                  <mat-icon class="icon-badge text-[22px] w-[22px] h-[22px] shrink-0 transition-colors duration-150">{{ item.icon }}</mat-icon>
+                  <span class="nav-label text-[15px] font-semibold tracking-tight" [class]="isNavActive(item) ? '!text-slate-900' : ''">{{ item.label }}</span>
+                </a>
+                <div class="sidebar-tooltip">{{ item.label }}</div>
               </div>
-            </a>
-          }
+            }
+          </nav>
+
+          <!-- Bottom: Help + User Profile -->
+          <div class="shrink-0 py-3 px-1.5 border-t border-white/5 space-y-2 flex flex-col items-center">
+            <button
+              (click)="openSupportModal()"
+              class="nav-item-link text-white/60 hover:text-white hover:bg-white/10 transition-all duration-150 cursor-pointer"
+              title="Help & Support"
+            >
+              <mat-icon class="text-[22px] w-[22px] h-[22px] shrink-0">help</mat-icon>
+              <span class="nav-label text-[15px] font-semibold tracking-tight">Help & Support</span>
+            </button>
+            @let currentUser = getCurrentUser();
+            @if (currentUser) {
+              <a
+                [routerLink]="['/settings/users', state.currentUserId()]"
+                class="user-profile-link hover:bg-white/10 transition-all duration-150"
+                title="View Profile"
+              >
+                <app-user-avatar [userId]="state.currentUserId()" [size]="32" class="shrink-0 border-2 border-white/20 rounded-full"></app-user-avatar>
+                <div class="nav-label flex flex-col text-left overflow-hidden ml-1">
+                  <span class="text-xs font-bold text-white leading-tight truncate">{{ currentUser.displayName }}</span>
+                  <span class="text-[10px] text-white/50 font-semibold leading-none mt-0.5 truncate uppercase tracking-wider">{{ currentUser.roleId }}</span>
+                </div>
+              </a>
+            }
+          </div>
         </div>
       </aside>
 
@@ -215,7 +320,7 @@ const SEARCH_ITEMS: SearchItem[] = [
         <!-- Global Search Bar -->
         <div class="shrink-0 px-6 lg:px-8 pt-5 pb-0 relative z-30 search-container">
           <div class="relative max-w-xl">
-            <mat-icon class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-[20px] w-5 h-5 pointer-events-none">search</mat-icon>
+            <mat-icon class="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/60 text-[20px] w-5 h-5 pointer-events-none">search</mat-icon>
             <input
               #searchInput
               [ngModel]="searchQuery()"
@@ -224,56 +329,56 @@ const SEARCH_ITEMS: SearchItem[] = [
               (keydown)="onSearchKeydown($event)"
               type="text"
               placeholder="Search menus and pages...  (Ctrl+K)"
-              class="w-full pl-10 pr-4 py-2.5 glass-input rounded-xl text-sm outline-none transition-all placeholder:text-slate-400"
+              class="w-full pl-11 pr-10 py-2.5 dark-glass-search rounded-full text-sm outline-none transition-all"
             />
             @if (searchQuery()) {
-              <button (click)="clearSearch()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
+              <button (click)="clearSearch()" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors">
                 <mat-icon class="text-[18px] w-4.5 h-4.5">close</mat-icon>
               </button>
             }
             <!-- Results Dropdown -->
             @if (showSearchResults() && searchQuery().length >= 1 && filteredSearchItems().length > 0) {
-              <div class="absolute left-0 right-0 mt-2 glass-dialog rounded-xl z-50 max-h-80 overflow-y-auto origin-top">
+              <div class="absolute left-0 right-0 mt-2 dark-glass-dropdown rounded-2xl z-50 max-h-80 overflow-y-auto origin-top">
                 @for (item of filteredSearchItems(); track $index) {
                   <button
                     (click)="navigateToSearchItem(item)"
                     (mouseenter)="selectedSearchIndex.set($index)"
-                    [class]="(selectedSearchIndex() === $index ? 'bg-indigo-50/50' : '') + ' w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-white/50 transition-colors border-b border-white/20 last:border-b-0 cursor-pointer'"
+                    [class]="(selectedSearchIndex() === $index ? 'selected-item' : '') + ' search-result-btn w-full flex items-start gap-3 px-5 py-3.5 text-left transition-colors last:border-b-0 cursor-pointer'"
                   >
-                    <mat-icon class="text-slate-400 text-[18px] w-[18px] h-[18px] mt-0.5 shrink-0">{{ item.subIcon || item.mainIcon }}</mat-icon>
+                    <mat-icon class="text-white/60 text-[18px] w-[18px] h-[18px] mt-0.5 shrink-0">{{ item.subIcon || item.mainIcon }}</mat-icon>
                     <div class="min-w-0 flex-1">
                       <div class="flex items-baseline gap-2">
-                        <span class="text-[11px] font-medium text-slate-400 shrink-0">{{ item.mainMenu }}</span>
+                        <span class="text-[10px] font-semibold text-white/40 uppercase tracking-wider shrink-0">{{ item.mainMenu }}</span>
                         @if (item.submenu) {
-                          <span class="text-xs font-semibold text-slate-800 truncate">{{ item.submenu }}</span>
+                          <span class="text-xs font-bold text-white/90 truncate">{{ item.submenu }}</span>
                         } @else {
-                          <span class="text-xs font-semibold text-slate-800 truncate">{{ item.mainMenu }}</span>
+                          <span class="text-xs font-bold text-white/90 truncate">{{ item.mainMenu }}</span>
                         }
                       </div>
-                      <p class="text-[11px] text-slate-500 mt-0.5 leading-tight">{{ item.action }}</p>
+                      <p class="text-[11px] text-white/50 mt-0.5 leading-tight">{{ item.action }}</p>
                     </div>
-                    <mat-icon class="text-slate-300 text-[14px] w-3.5 h-3.5 mt-1 shrink-0">chevron_right</mat-icon>
+                    <mat-icon class="text-white/30 text-[14px] w-3.5 h-3.5 mt-1 shrink-0">chevron_right</mat-icon>
                   </button>
                 }
               </div>
             }
             @if (showSearchResults() && searchQuery().length >= 1 && filteredSearchItems().length === 0) {
-              <div class="absolute left-0 right-0 mt-2 glass-dialog rounded-xl z-50 p-4 text-center">
-                <p class="text-sm text-slate-400">No results found for "{{ searchQuery() }}"</p>
+              <div class="absolute left-0 right-0 mt-2 dark-glass-dropdown rounded-2xl z-50 p-4 text-center">
+                <p class="text-sm text-white/50">No results found for "{{ searchQuery() }}"</p>
               </div>
             }
           </div>
         </div>
 
-        <!-- Breadcrumbs -->
-        <div class="shrink-0 px-6 lg:px-8 pt-3 pb-0">
-          <nav class="flex items-center gap-1 text-xs font-medium text-slate-400" aria-label="Breadcrumb">
+        <!-- Breadcrumbs & Nav Tabs -->
+        <div class="shrink-0 px-6 lg:px-10 pt-3 pb-0 flex items-center gap-6">
+          <nav class="flex items-center gap-2 text-sm font-semibold text-slate-500" aria-label="Breadcrumb">
             @for (crumb of breadcrumbs(); track crumb.label; let last = $last) {
               @if (!last && crumb.route) {
-                <a [routerLink]="crumb.route" class="hover:text-indigo-600 transition-colors truncate max-w-[120px]">{{ crumb.label }}</a>
-                <mat-icon class="text-[14px] w-3.5 h-3.5 mx-0.5 shrink-0 text-slate-300">chevron_right</mat-icon>
+                <a [routerLink]="crumb.route" class="hover:text-slate-800 transition-colors truncate max-w-[120px]">{{ crumb.label }}</a>
+                <mat-icon class="text-[16px] w-4 h-4 mx-1 shrink-0 text-slate-400">chevron_right</mat-icon>
               } @else {
-                <span class="text-slate-600 font-semibold truncate max-w-[180px]">{{ crumb.label }}</span>
+                <span class="text-slate-900 font-bold truncate max-w-[180px]">{{ crumb.label }}</span>
               }
             }
           </nav>

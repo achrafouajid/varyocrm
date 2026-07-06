@@ -13,66 +13,88 @@ import { CrmStateService, Customer360View } from '../services/crm-state.service'
       <div class="col-span-12 lg:col-span-5 space-y-6">
 
         <!-- Profile Card -->
-        <div class="glass-card rounded-2xl p-8 flex flex-col items-center text-center hover:shadow-md transition-all">
-          <div class="w-20 h-20 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center font-extrabold text-3xl uppercase shadow-lg mb-4">
+        <div class="glass-card rounded-[32px] p-10 flex flex-col items-center text-center hover:shadow-lg transition-all relative overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-b from-white/60 to-transparent pointer-events-none"></div>
+          <div class="w-32 h-32 rounded-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 text-white flex items-center justify-center font-extrabold text-5xl uppercase shadow-xl mb-6 relative z-10 border-4 border-white/50">
             {{ initials() }}
           </div>
-          <h2 class="text-xl font-extrabold text-slate-900 font-sans">{{ view().partner.name }}</h2>
-          <p class="text-sm text-slate-500 font-sans mt-1">{{ jobTitle() }}</p>
-          <div class="flex items-center gap-3 mt-5">
-            <button class="w-10 h-10 rounded-full bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-100 flex items-center justify-center transition-all cursor-pointer">
-              <mat-icon style="font-size:18px;width:18px;height:18px">call</mat-icon>
+          <h2 class="text-2xl font-extrabold text-slate-900 font-sans relative z-10">{{ view().partner.name }}</h2>
+          <p class="text-sm font-semibold text-slate-500 font-sans mt-1 relative z-10">{{ jobTitle() }}</p>
+          <div class="flex items-center gap-4 mt-8 relative z-10">
+            <button class="w-12 h-12 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900 flex items-center justify-center transition-all cursor-pointer shadow-sm">
+              <mat-icon style="font-size:20px;width:20px;height:20px">edit</mat-icon>
             </button>
-            <button class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border border-emerald-100 flex items-center justify-center transition-all cursor-pointer">
-              <mat-icon style="font-size:18px;width:18px;height:18px">mail</mat-icon>
+            <button class="w-12 h-12 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900 flex items-center justify-center transition-all cursor-pointer shadow-sm">
+              <mat-icon style="font-size:20px;width:20px;height:20px">mail</mat-icon>
             </button>
-            <button class="w-10 h-10 rounded-full bg-sky-50 text-sky-600 hover:bg-sky-100 border border-sky-100 flex items-center justify-center transition-all cursor-pointer">
-              <mat-icon style="font-size:18px;width:18px;height:18px">chat</mat-icon>
+            <button class="w-12 h-12 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900 flex items-center justify-center transition-all cursor-pointer shadow-sm">
+              <mat-icon style="font-size:20px;width:20px;height:20px">call</mat-icon>
             </button>
-            <button class="w-10 h-10 rounded-full bg-amber-50 text-amber-600 hover:bg-amber-100 border border-amber-100 flex items-center justify-center transition-all cursor-pointer">
-              <mat-icon style="font-size:18px;width:18px;height:18px">calendar_today</mat-icon>
+            <button class="w-12 h-12 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900 flex items-center justify-center transition-all cursor-pointer shadow-sm">
+              <mat-icon style="font-size:20px;width:20px;height:20px">add</mat-icon>
+            </button>
+            <button class="w-12 h-12 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900 flex items-center justify-center transition-all cursor-pointer shadow-sm">
+              <mat-icon style="font-size:20px;width:20px;height:20px">calendar_today</mat-icon>
             </button>
           </div>
         </div>
 
         <!-- Detailed Information Card -->
-        <div class="glass-card rounded-2xl p-6 space-y-5 hover:shadow-md transition-all">
-          <h3 class="text-sm font-bold text-slate-900 font-sans flex items-center gap-2">
-            <mat-icon style="font-size:16px;width:16px;height:16px" class="text-indigo-500">badge</mat-icon>
+        <div class="glass-card rounded-[32px] p-8 space-y-6 hover:shadow-lg transition-all">
+          <h3 class="text-base font-extrabold text-slate-900 font-sans flex items-center justify-between">
             Detailed Information
+            <button class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors">
+              <mat-icon style="font-size:16px;width:16px;height:16px" class="text-slate-600">edit</mat-icon>
+            </button>
           </h3>
-          <div class="space-y-4">
-            <div>
-              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans block mb-1">First Name</span>
-              <span class="text-sm font-semibold text-slate-800 font-sans">{{ firstName() }}</span>
-            </div>
-            <div>
-              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans block mb-1">Last Name</span>
-              <span class="text-sm font-semibold text-slate-800 font-sans">{{ lastName() }}</span>
-            </div>
-            <div>
-              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans block mb-1">Email</span>
-              <span class="text-sm font-semibold text-slate-800 font-sans truncate block">{{ view().partner.email || '—' }}</span>
-            </div>
-            <div>
-              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans block mb-1">Phone</span>
-              <span class="text-sm font-semibold text-slate-800 font-sans">{{ view().partner.phone || '—' }}</span>
-            </div>
-            <div>
-              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans block mb-2">Sources</span>
-              <div class="flex flex-wrap gap-2">
-                @for (src of sources(); track src) {
-                  <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold font-sans uppercase tracking-wide border"
-                        [class]="sourceBadgeClass(src)">
-                    <mat-icon style="font-size:12px;width:12px;height:12px">{{ sourceIcon(src) }}</mat-icon>
-                    {{ src }}
-                  </span>
-                }
+          <div class="space-y-5">
+            <div class="flex items-center gap-4 group">
+              <mat-icon class="text-slate-400 shrink-0" style="font-size:20px;width:20px;height:20px">person_outline</mat-icon>
+              <div class="flex-1">
+                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-sans block">First Name</span>
+                <span class="text-base font-bold text-slate-900 font-sans">{{ firstName() }}</span>
               </div>
             </div>
-            <div>
-              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans block mb-1">Last Contacted</span>
-              <span class="text-sm font-semibold text-slate-800 font-sans">{{ lastContacted() }}</span>
+            <div class="flex items-center gap-4 group">
+              <mat-icon class="text-slate-400 shrink-0" style="font-size:20px;width:20px;height:20px">person_outline</mat-icon>
+              <div class="flex-1">
+                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-sans block">Last Name</span>
+                <span class="text-base font-bold text-slate-900 font-sans">{{ lastName() }}</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-4 group">
+              <mat-icon class="text-slate-400 shrink-0" style="font-size:20px;width:20px;height:20px">mail_outline</mat-icon>
+              <div class="flex-1 min-w-0">
+                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-sans block">Email</span>
+                <span class="text-base font-bold text-slate-900 font-sans truncate block">{{ view().partner.email || '—' }}</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-4 group">
+              <mat-icon class="text-slate-400 shrink-0" style="font-size:20px;width:20px;height:20px">phone_outline</mat-icon>
+              <div class="flex-1">
+                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-sans block">Phone Number</span>
+                <span class="text-base font-bold text-slate-900 font-sans">{{ view().partner.phone || '—' }}</span>
+              </div>
+            </div>
+            <div class="flex items-start gap-4 group">
+              <mat-icon class="text-slate-400 shrink-0 mt-1" style="font-size:20px;width:20px;height:20px">hub</mat-icon>
+              <div class="flex-1">
+                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-sans block mb-1">Sources</span>
+                <div class="flex flex-wrap gap-2">
+                  @for (src of sources(); track src) {
+                    <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center shadow-sm" [title]="src">
+                      <mat-icon style="font-size:16px;width:16px;height:16px" [class]="sourceIconColor(src)">{{ sourceIcon(src) }}</mat-icon>
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center gap-4 group">
+              <mat-icon class="text-slate-400 shrink-0" style="font-size:20px;width:20px;height:20px">calendar_month</mat-icon>
+              <div class="flex-1">
+                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-sans block">Last Contacted</span>
+                <span class="text-base font-bold text-slate-900 font-sans">{{ lastContacted() }}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -82,127 +104,109 @@ import { CrmStateService, Customer360View } from '../services/crm-state.service'
       <div class="col-span-12 lg:col-span-7 space-y-6">
 
         <!-- Interaction History Card -->
-        <div class="glass-card rounded-2xl p-6 hover:shadow-md transition-all">
-          <div class="flex items-center justify-between mb-5">
-            <div class="flex items-center gap-2">
-              <div class="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg">
-                <mat-icon style="font-size:16px;width:16px;height:16px">history</mat-icon>
-              </div>
-              <h3 class="font-bold text-slate-900 text-sm font-sans">Interaction History</h3>
-            </div>
-            <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold font-sans">{{ recentOrders().length }}</span>
+        <div class="glass-card rounded-[32px] p-8 hover:shadow-lg transition-all">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="font-extrabold text-slate-900 text-lg font-sans">Interaction History</h3>
+            <button class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors">
+              <mat-icon style="font-size:20px;width:20px;height:20px" class="text-slate-600">more_horiz</mat-icon>
+            </button>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             @for (order of recentOrders(); track order.id) {
-              <div class="p-3.5 bg-slate-50 border border-slate-100 rounded-xl hover:bg-indigo-50/30 transition-colors">
+              <div class="p-5 rounded-[24px] flex flex-col justify-between shadow-md hover:scale-[1.02] transition-transform min-h-[140px]" [class]="dealCardClass(order.stage)">
                 <div class="flex items-start justify-between gap-2 mb-2">
-                  <span class="font-bold text-xs text-slate-800 font-sans leading-snug truncate" [title]="order.title">{{ order.title }}</span>
-                  <span [class]="stageBadgeClass(order.stage)" class="shrink-0 text-[9px] px-1.5 py-0.5 rounded-full font-bold font-sans uppercase border whitespace-nowrap">{{ order.stage }}</span>
+                  <div>
+                    <div class="text-[11px] font-bold opacity-80 uppercase tracking-wide font-mono mb-1">
+                      {{ order.date ? (order.date | date:'MMM d') : '—' }}
+                    </div>
+                    <span class="font-bold text-sm font-sans leading-snug line-clamp-2" [title]="order.title">{{ order.title }}</span>
+                  </div>
+                  <button class="w-6 h-6 rounded-full bg-white/20 hover:bg-white/40 flex items-center justify-center shrink-0 transition-colors">
+                    <mat-icon style="font-size:14px;width:14px;height:14px">more_horiz</mat-icon>
+                  </button>
                 </div>
-                <div class="flex items-center justify-between">
-                  <span class="font-bold font-mono text-xs text-indigo-600">{{ formatCurrency(order.amount) }}</span>
-                  <span class="text-[10px] text-slate-400 font-mono">{{ order.date || '—' }}</span>
+                <div class="flex items-end justify-between mt-4">
+                  <span class="font-extrabold font-mono text-2xl">{{ formatCurrencyWithoutSymbol(order.amount) }}<span class="text-sm font-bold opacity-80">{{ currencySymbol() }}</span></span>
+                  <div class="flex -space-x-2">
+                    @for (member of teamMembers().slice(0, 3); track member.name) {
+                      <div class="w-6 h-6 rounded-full flex items-center justify-center text-white text-[8px] font-bold font-sans border border-white/50 shadow-sm"
+                           [style.background]="member.color"
+                           [title]="member.name">
+                        {{ member.initials }}
+                      </div>
+                    }
+                  </div>
                 </div>
               </div>
             } @empty {
-              <div class="col-span-2 text-center py-8 text-slate-400 text-xs italic font-sans">No transactions recorded</div>
+              <div class="col-span-2 text-center py-12 text-slate-400 text-sm font-sans glass rounded-[24px]">No interactions recorded.</div>
             }
           </div>
-
-          @if (teamMembers().length > 0) {
-            <div class="mt-4 pt-4 border-t border-slate-100">
-              <div class="flex items-center gap-3">
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Team</span>
-                <div class="flex -space-x-2">
-                  @for (member of teamMembers(); track member.name) {
-                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-[10px] font-bold font-sans border-2 border-white shadow-sm"
-                         [style.background]="member.color"
-                         [title]="member.name + ' (' + member.role + ')'">
-                      {{ member.initials }}
-                    </div>
-                  }
-                </div>
-                <span class="text-[10px] text-slate-400 font-sans">{{ teamMembers().length }} members</span>
-              </div>
-            </div>
-          }
         </div>
 
         <!-- Bottom Row: Task Schedule + Stage Funnel -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <!-- Task Schedule Card -->
-          <div class="glass-card rounded-2xl p-6 hover:shadow-md transition-all">
-            <div class="flex items-center gap-2 mb-4">
-              <div class="p-1.5 bg-amber-50 text-amber-600 rounded-lg">
-                <mat-icon style="font-size:16px;width:16px;height:16px">event_note</mat-icon>
-              </div>
-              <h3 class="font-bold text-slate-900 text-sm font-sans">Task Schedule</h3>
+          <div class="glass-card rounded-[32px] p-8 hover:shadow-lg transition-all">
+            <div class="flex items-center justify-between mb-6">
+              <h3 class="font-extrabold text-slate-900 text-lg font-sans">Tasks Schedule</h3>
+              <button class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors">
+                <mat-icon style="font-size:20px;width:20px;height:20px" class="text-slate-600">open_in_new</mat-icon>
+              </button>
             </div>
-            <div class="space-y-2.5">
+            <div class="space-y-3">
               @for (item of scheduleItems(); track item.id) {
-                <div class="flex items-center gap-3 p-2.5 bg-slate-50 border border-slate-100 rounded-xl hover:bg-amber-50/30 transition-colors">
-                  <div class="w-2 h-2 rounded-full shrink-0"
-                       [class]="item.type === 'task' ? (item.status === 'Completed' ? 'bg-emerald-500' : item.status === 'In Progress' ? 'bg-amber-500' : 'bg-slate-300') : 'bg-indigo-400'">
+                <div class="flex items-center gap-4 p-3 glass rounded-[16px] hover:bg-white/80 transition-colors shadow-sm">
+                  <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 font-bold text-white text-xs font-sans shadow-inner"
+                       [class]="item.type === 'task' ? (item.status === 'Completed' ? 'bg-emerald-500' : item.status === 'In Progress' ? 'bg-amber-500' : 'bg-[#2E5AAC]') : 'bg-indigo-400'">
+                    {{ item.dateLabel | slice:8:10 }}
                   </div>
                   <div class="min-w-0 flex-1">
-                    <span class="text-xs font-semibold text-slate-800 font-sans block truncate">{{ item.title }}</span>
-                    <span class="text-[9px] text-slate-400 font-mono">{{ item.dateLabel }}</span>
+                    <span class="text-sm font-bold text-slate-800 font-sans block truncate">{{ item.title }}</span>
+                    <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wide font-sans">{{ item.status || 'Scheduled' }}</span>
                   </div>
-                  @if (item.type === 'task') {
-                    <span class="text-[9px] font-bold font-sans uppercase"
-                          [class]="item.status === 'Completed' ? 'text-emerald-600' : item.status === 'In Progress' ? 'text-amber-600' : 'text-slate-400'">
-                      {{ item.status }}
-                    </span>
-                  }
                 </div>
               } @empty {
-                <div class="text-center py-6 text-slate-400 text-xs italic font-sans">No scheduled tasks</div>
+                <div class="text-center py-6 text-slate-400 text-sm font-sans glass rounded-[16px]">No scheduled tasks</div>
               }
             </div>
           </div>
 
           <!-- Stage Funnel Card -->
-          <div class="glass-card rounded-2xl p-6 hover:shadow-md transition-all">
-            <div class="flex items-center gap-2 mb-4">
-              <div class="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg">
-                <mat-icon style="font-size:16px;width:16px;height:16px">funnel</mat-icon>
-              </div>
-              <h3 class="font-bold text-slate-900 text-sm font-sans">Stage Funnel</h3>
+          <div class="glass-card rounded-[32px] p-8 hover:shadow-lg transition-all">
+            <div class="flex items-center justify-between mb-6">
+              <h3 class="font-extrabold text-slate-900 text-lg font-sans">Stage Funnel</h3>
+              <button class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors">
+                <mat-icon style="font-size:20px;width:20px;height:20px" class="text-slate-600">open_in_new</mat-icon>
+              </button>
             </div>
-            <div class="space-y-4">
-              <div class="p-4 bg-gradient-to-br from-indigo-50 to-violet-50 rounded-xl border border-indigo-100">
-                <span class="text-[10px] font-bold text-indigo-500 uppercase tracking-wider font-sans block mb-1">Weighted Value</span>
-                <span class="text-xl font-bold font-mono text-indigo-700">{{ formatCurrency(weightedValue()) }}</span>
-                <div class="flex items-center gap-1 mt-1">
-                  <mat-icon style="font-size:12px;width:12px;height:12px" class="text-indigo-400">trending_up</mat-icon>
-                  <span class="text-[10px] font-semibold text-indigo-400 font-sans">Probability adjusted</span>
-                </div>
+            <div class="space-y-5">
+              <div class="flex items-center justify-between mb-2">
+                <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-sans bg-slate-100 px-3 py-1 rounded-full">Total in Pipeline</div>
               </div>
-              <div class="p-4 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl border border-emerald-100">
-                <span class="text-[10px] font-bold text-emerald-500 uppercase tracking-wider font-sans block mb-1">Total Value</span>
-                <span class="text-xl font-bold font-mono text-emerald-700">{{ formatCurrency(totalValue()) }}</span>
-                <div class="flex items-center gap-1 mt-1">
-                  <mat-icon style="font-size:12px;width:12px;height:12px" class="text-emerald-400">account_balance</mat-icon>
-                  <span class="text-[10px] font-semibold text-emerald-400 font-sans">All deals pipeline</span>
-                </div>
+              <div>
+                <span class="text-3xl font-extrabold font-mono text-slate-900">{{ formatCurrencyWithoutSymbol(totalValue()) }}<span class="text-lg font-bold opacity-60">{{ currencySymbol() }}</span></span>
               </div>
-              @if (stageBreakdown().length > 0) {
-                <div class="pt-2 border-t border-slate-100 space-y-1.5">
-                  @for (item of stageBreakdown(); track item.stage) {
-                    <div class="flex items-center justify-between">
-                      <div class="flex items-center gap-2 min-w-0">
-                        <div class="w-1.5 h-1.5 rounded-full shrink-0" [style.background]="item.color"></div>
-                        <span class="text-[10px] font-semibold text-slate-500 font-sans truncate">{{ item.stage }}</span>
-                      </div>
-                      <div class="flex items-center gap-3 shrink-0">
-                        <span class="text-[10px] font-bold font-mono text-slate-600">{{ formatCurrency(item.value) }}</span>
-                        <span class="text-[9px] font-bold font-mono text-slate-400">({{ item.count }})</span>
-                      </div>
+              
+              <div class="pt-4 space-y-3">
+                @for (item of stageBreakdown(); track item.stage) {
+                  <div class="glass rounded-[16px] p-3 flex items-center justify-between shadow-sm">
+                    <div class="min-w-0 pr-2">
+                      <span class="text-[11px] font-bold text-slate-500 font-sans block truncate uppercase tracking-wider mb-0.5">{{ item.stage }}</span>
+                      <span class="text-sm font-extrabold font-mono text-slate-800">{{ formatCurrency(item.value) }}</span>
                     </div>
-                  }
-                </div>
-              }
+                    <div class="flex items-center gap-1">
+                      <button class="w-6 h-6 rounded-full hover:bg-slate-200 flex items-center justify-center transition-colors">
+                         <mat-icon style="font-size:14px;width:14px;height:14px" class="text-slate-400">refresh</mat-icon>
+                      </button>
+                      <button class="w-6 h-6 rounded-full hover:bg-slate-200 flex items-center justify-center transition-colors">
+                         <mat-icon style="font-size:14px;width:14px;height:14px" class="text-slate-400">open_in_full</mat-icon>
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
             </div>
           </div>
         </div>
@@ -425,6 +429,21 @@ export class Customer360Component {
     }
   }
 
+  sourceIconColor(source: string): string {
+    switch (source) {
+      case 'LinkedIn': return 'text-blue-500';
+      case 'Call': return 'text-emerald-500';
+      case 'Email': return 'text-indigo-500';
+      case 'Teams': return 'text-cyan-500';
+      case 'In-Person': return 'text-orange-500';
+      case 'Support': return 'text-violet-500';
+      case 'Website form': return 'text-sky-500';
+      case 'Referral': return 'text-amber-500';
+      case 'Marketing campaign': return 'text-pink-500';
+      default: return 'text-slate-500';
+    }
+  }
+
   sourceIcon(source: string): string {
     switch (source) {
       case 'LinkedIn': return 'business';
@@ -438,5 +457,31 @@ export class Customer360Component {
       case 'Marketing campaign': return 'campaign';
       default: return 'source';
     }
+  }
+
+  dealCardClass(stage: string): string {
+    switch (stage) {
+      case 'Closed Won': return 'bg-slate-900 text-white';
+      case 'Confirmed':
+      case 'Invoiced':
+      case 'Awaiting Invoicing': return 'bg-[#4A8FA0] text-white';
+      case 'Proposal sent': return 'bg-[#2E5AAC] text-white';
+      case 'New': return 'bg-[#F5C518] text-slate-900';
+      case 'Closed Lost': return 'bg-red-500 text-white';
+      default: return 'bg-white text-slate-900';
+    }
+  }
+
+  formatCurrencyWithoutSymbol(value: number) {
+    const cur = this.state.globalCurrency();
+    const locale = cur === 'MAD' ? 'fr-MA' : cur === 'EUR' ? 'fr-FR' : 'en-US';
+    return new Intl.NumberFormat(locale, { style: 'decimal', maximumFractionDigits: 0 }).format(value);
+  }
+
+  currencySymbol(): string {
+    const cur = this.state.globalCurrency();
+    if (cur === 'MAD') return ' DH';
+    if (cur === 'EUR') return '€';
+    return '$';
   }
 }

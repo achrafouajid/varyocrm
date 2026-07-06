@@ -23,14 +23,14 @@ declare var Chart: any;
       </div>
 
       <!-- Sub-Tab Switcher -->
-      <div class="flex gap-1 glass p-1 rounded-xl w-fit">
+      <div class="flex gap-2 w-fit mb-8">
         <button
           id="tab-overview"
           (click)="activeTab.set('overview')"
           [class]="activeTab() === 'overview'
-            ? 'bg-white text-indigo-700 shadow-sm border border-slate-200'
-            : 'text-slate-500 hover:text-slate-700'"
-          class="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm font-sans transition-all duration-150 cursor-pointer focus:outline-none"
+            ? 'bg-slate-900 text-white shadow-md'
+            : 'text-slate-500 hover:text-slate-900 hover:bg-white/40'"
+          class="flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm font-sans transition-all duration-200 cursor-pointer focus:outline-none border border-transparent"
         >
           <mat-icon class="text-base" style="width:18px;height:18px;font-size:18px;display:flex;align-items:center">dashboard</mat-icon>
           Overview
@@ -39,9 +39,9 @@ declare var Chart: any;
           id="tab-customers360"
           (click)="activeTab.set('customers360')"
           [class]="activeTab() === 'customers360'
-            ? 'bg-white text-indigo-700 shadow-sm border border-slate-200'
-            : 'text-slate-500 hover:text-slate-700'"
-          class="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm font-sans transition-all duration-150 cursor-pointer focus:outline-none"
+            ? 'bg-slate-900 text-white shadow-md'
+            : 'text-slate-500 hover:text-slate-900 hover:bg-white/40'"
+          class="flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm font-sans transition-all duration-200 cursor-pointer focus:outline-none border border-transparent"
         >
           <mat-icon class="text-base" style="width:18px;height:18px;font-size:18px;display:flex;align-items:center">contact_page</mat-icon>
           Customers 360°
@@ -314,17 +314,17 @@ declare var Chart: any;
         <div class="space-y-6">
 
           <!-- Customer Selector Banner -->
-          <div class="glass-card rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div class="glass-card rounded-[32px] p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h3 class="text-base font-semibold text-slate-900 font-sans">Customer 360° Profile</h3>
-              <p class="text-xs text-slate-500 mt-0.5 font-sans">Select a customer to view their complete profile and interaction history.</p>
+              <h3 class="text-xl font-bold text-slate-900 font-sans">Customer 360° Profile</h3>
+              <p class="text-sm text-slate-500 mt-1 font-sans">Select a customer to view their complete profile and interaction history.</p>
             </div>
             <div class="relative shrink-0">
               <select
                 id="customer-selector"
                 [value]="selectedCustomerId() || ''"
                 (change)="onCustomerChange($event)"
-                class="w-64 pl-3 pr-10 py-2.5 text-sm glass-input rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 glass hover:bg-white transition-colors font-sans font-semibold text-slate-700 appearance-none cursor-pointer"
+                class="w-64 pl-4 pr-10 py-3 text-sm glass rounded-full focus:outline-none focus:ring-2 focus:ring-slate-900 hover:bg-white/80 transition-colors font-sans font-bold text-slate-900 appearance-none cursor-pointer border border-white"
               >
                 @for (p of getCustomers(); track p.id) {
                   <option [value]="p.id">{{ p.name }}</option>
