@@ -59,12 +59,8 @@ import { UserAvatarComponent } from '../shared/user-avatar.component';
       <!-- Main Content -->
       <div class="flex-1 min-w-0 space-y-6">
 
-        <!-- Page Header with title + actions -->
-        <div class="glass-strong rounded-2xl p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 class="text-2xl font-bold tracking-tight text-slate-900">Partners / شركاء</h1>
-            <p class="text-sm text-slate-500 mt-0.5">Directory of leads, customers, prospects, and vendors in Morocco.</p>
-          </div>
+        <!-- Page Header actions -->
+        <div class="flex justify-end">
           @if (activeTab() === 'Lead') {
             <button (click)="openAddLeadModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 shadow-lg shadow-indigo-200">
               <mat-icon class="w-5 h-5 text-[20px]! leading-none! flex items-center justify-center">add</mat-icon>

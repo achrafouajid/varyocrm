@@ -11,16 +11,6 @@ declare var Chart: any;
   imports: [MatIconModule, CommonModule, Customer360Component],
   template: `
     <div class="max-w-6xl mx-auto space-y-8">
-      <!-- Header -->
-      <div class="flex justify-between items-end">
-        <div>
-          <h2 class="text-3xl font-semibold tracking-tight text-slate-900 font-sans">Analytics Dashboard</h2>
-          <p class="text-slate-500 mt-1 font-sans">Real-time performance indicators and sales insights.</p>
-        </div>
-        <div class="text-xs text-slate-400 font-mono flex items-center gap-1 glass-chip text-slate-500 px-3 py-1.5 rounded-lg">
-          <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span> Live state sync
-        </div>
-      </div>
 
       <!-- Sub-Tab Switcher -->
       <div class="flex gap-2 w-fit mb-8">

@@ -46,11 +46,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
 
       <!-- Main Content -->
       <div class="flex-1 min-w-0 space-y-8">
-        <div class="flex justify-between items-end">
-          <div>
-            <h2 class="text-3xl font-semibold tracking-tight text-slate-900">Sales & Operations</h2>
-            <p class="text-slate-500 mt-1">Manage deals, proposals, and purchase orders.</p>
-          </div>
+        <div class="flex justify-end">
           <div class="flex gap-2">
             @if (activeTab() === 'deals') {
               <button (click)="openCreateDealModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-lg shadow-indigo-200">

@@ -10,11 +10,7 @@ import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
   imports: [MatIconModule, CommonModule, FormsModule, CreatedByBadgeComponent],
   template: `
     <div class="max-w-6xl mx-auto space-y-8">
-      <div class="flex justify-between items-end">
-        <div>
-          <h2 class="text-3xl font-semibold tracking-tight text-slate-900">Tickets & Customer Support</h2>
-          <p class="text-slate-500 mt-1">Manage customer service requests, technical bugs, and billing issues.</p>
-        </div>
+      <div class="flex justify-end">
         <button (click)="openNewTicketModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm shadow-lg shadow-indigo-200">
           <mat-icon class="w-5 h-5 text-[20px]! leading-none! flex items-center justify-center">add</mat-icon>
           New Ticket

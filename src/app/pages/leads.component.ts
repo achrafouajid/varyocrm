@@ -10,11 +10,7 @@ import { CrmStateService, Lead, LeadActivity, LeadAttachment } from '../services
   template: `
     <div class="max-w-7xl mx-auto space-y-8 animate-in fade-in duration-200">
       <!-- Page Header -->
-      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h2 class="text-3xl font-extrabold tracking-tight text-slate-900">Leads Management</h2>
-          <p class="text-slate-500 mt-1">Qualify opportunities, track interactions, and manage sales pipeline.</p>
-        </div>
+      <div class="flex justify-end">
         <button (click)="openAddLeadModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150 flex items-center gap-2 shadow-md hover:shadow-lg focus:outline-none">
           <mat-icon class="w-5 h-5 text-[20px]! leading-none!">add</mat-icon>
           Add New Lead

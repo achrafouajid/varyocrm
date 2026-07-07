@@ -36,14 +36,6 @@ const JOB_TITLES = [
           <button (click)="goBack()" class="w-10 h-10 rounded-xl glass-button flex items-center justify-center text-slate-400 hover:text-indigo-600 transition-all">
             <mat-icon class="text-[22px]">arrow_back</mat-icon>
           </button>
-          <div>
-            <h1 class="text-2xl font-bold tracking-tight text-slate-900">
-              {{ isExisting() ? 'Edit Customer Card' : 'New Customer Card' }}
-            </h1>
-            <p class="text-sm text-slate-500 mt-0.5">
-              {{ isExisting() ? 'Update master data for ' + partner()?.name : 'Complete the details to convert this prospect to a customer' }}
-            </p>
-          </div>
         </div>
         <button (click)="saveCard()" [disabled]="!isValid()" class="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 shadow-lg shadow-indigo-200">
           <mat-icon class="w-5 h-5 text-[20px]! leading-none!">save</mat-icon>

@@ -10,14 +10,10 @@ import { RouterModule } from '@angular/router';
   template: `
     <div class="max-w-6xl mx-auto space-y-6">
 
-      <!-- Page Header -->
-      <div class="glass-strong rounded-2xl p-5 flex justify-between items-center flex-wrap gap-4">
-        <div>
-          <h1 class="text-2xl font-bold tracking-tight text-slate-900">Home</h1>
-          <p class="text-sm text-slate-500 mt-0.5">Your customizable daily summary. Select which KPIs to track.</p>
-        </div>
-        <button (click)="isCustomizing.set(!isCustomizing())" class="glass-button rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 hover:text-indigo-600 transition-all flex items-center gap-2">
-          <mat-icon class="text-[18px] w-4.5 h-4.5">{{ isCustomizing() ? 'check' : 'edit_square' }}</mat-icon>
+      <!-- Customize KPIs -->
+      <div class="flex justify-end">
+        <button (click)="isCustomizing.set(!isCustomizing())" class="glass-button rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-indigo-600 transition-all flex items-center gap-1.5">
+          <mat-icon class="text-[14px] w-3.5 h-3.5">{{ isCustomizing() ? 'check' : 'edit_square' }}</mat-icon>
           {{ isCustomizing() ? 'Done Customizing' : 'Customize KPIs' }}
         </button>
       </div>

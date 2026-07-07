@@ -53,11 +53,7 @@ type InvoiceLine = {
 
       <!-- Main Content -->
       <div class="flex-1 min-w-0 space-y-8">
-        <div class="flex justify-between items-end">
-          <div>
-            <h2 class="text-3xl font-semibold tracking-tight text-slate-900">Finance / المالية</h2>
-            <p class="text-slate-500 mt-1">Manage customer invoices, vendor invoices, and late payment recovery.</p>
-          </div>
+        <div class="flex justify-end">
           <button (click)="openCreateInvoiceModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm shadow-lg shadow-indigo-200">
             <mat-icon class="w-5 h-5 text-[20px]! leading-none! flex items-center justify-center">receipt_long</mat-icon>
             New Invoice

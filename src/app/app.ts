@@ -251,9 +251,9 @@ const SEARCH_ITEMS: SearchItem[] = [
       >
         <!-- Logo field at the top -->
         <div class="flex items-center justify-start h-16 px-4 gap-3 shrink-0 mt-3 logo-container-wrap">
-          <img src="logo.png" alt="Company Logo" class="w-10 h-10 object-contain rounded-xl shadow-sm" />
+          <img src="logo.webp" alt="Company Logo" class="w-10 h-10 object-contain rounded-xl shadow-sm" />
           @if (isExpanded()) {
-            <span class="text-slate-800 font-bold text-lg tracking-tight font-sans truncate">VaryoCRM</span>
+            <span class="text-slate-800 font-bold text-lg tracking-tight font-sans truncate">BentoCRM</span>
           }
         </div>
 

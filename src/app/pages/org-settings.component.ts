@@ -10,11 +10,6 @@ import { MatIconModule } from '@angular/material/icon';
   imports: [CommonModule, FormsModule, MatIconModule],
   template: `
     <div class="space-y-8 font-sans">
-      <!-- Title -->
-      <div>
-        <h1 class="text-2xl font-bold text-slate-900">Organization Settings</h1>
-        <p class="text-sm text-slate-500 mt-1">Manage your company profile and review application usage metrics.</p>
-      </div>
 
       <!-- Success Banner -->
       @if (showSuccess()) {

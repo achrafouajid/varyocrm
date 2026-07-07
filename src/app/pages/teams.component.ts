@@ -26,13 +26,7 @@ import { MatIconModule } from '@angular/material/icon';
   template: `
     <div class="space-y-6 font-sans">
       <!-- Header -->
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <h1 class="text-2xl font-bold text-slate-900">Teams</h1>
-          <span class="bg-indigo-50 text-indigo-700 text-xs font-bold px-2.5 py-1 rounded-full border border-indigo-100/50 animate-pulse">
-            {{ state.teams().length }} Active
-          </span>
-        </div>
+      <div class="flex justify-end">
         <button
           (click)="toggleCreateForm()"
           class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-sm transition-colors flex items-center gap-1.5 cursor-pointer"
