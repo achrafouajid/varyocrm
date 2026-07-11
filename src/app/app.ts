@@ -223,72 +223,17 @@ const SEARCH_ITEMS: SearchItem[] = [
     }
   `],
   template: `
-    <div class="min-h-screen text-slate-900 font-sans flex" style="height:100vh; overflow:hidden;">
+    <div class="min-h-screen text-slate-900 font-sans flex flex-col" style="height:100vh; overflow:hidden;">
 
-      <!-- Sidebar -->
-      <aside
-        class="sidebar flex flex-col relative z-40 self-center"
-        [class.expanded]="isExpanded()"
-        (mouseenter)="onSidebarMouseEnter()"
-        (mouseleave)="onSidebarMouseLeave()"
-      >
-        <!-- Logo field at the top -->
-        <div class="flex items-center justify-start h-16 px-4 gap-3 shrink-0 mt-3 logo-container-wrap">
-          <img src="logo.webp" alt="Company Logo" class="w-10 h-10 object-contain rounded-xl shadow-sm" />
-          @if (isExpanded()) {
-            <span class="font-bold text-xl tracking-tight font-sans truncate" style="color: #0146e5">Bento</span>
-          }
-        </div>
-
-        <!-- Toggle Button below the logo, but not in the pill sidebar -->
-        <div class="flex items-center justify-start px-4 h-12 shrink-0 mb-2 toggle-container-wrap">
-          <button
-            (click)="togglePin()"
-            class="w-10 h-10 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-200/50 bg-white/60 border border-slate-200/50 transition-all duration-150 shrink-0 shadow-sm"
-            [title]="pinnedOpen() ? 'Unpin sidebar' : 'Pin sidebar open'"
-          >
-            <mat-icon class="text-[20px] w-5 h-5 toggle-btn" [class.expanded]="isExpanded()">chevron_right</mat-icon>
-          </button>
-        </div>
-
-        <!-- Pill-shaped Sidebar Menu -->
-        <div class="sidebar-pill flex flex-col glass-sidebar shadow-2xl overflow-hidden">
-          <!-- Nav Items -->
-          <nav class="flex-1 overflow-y-auto overflow-x-hidden py-4 px-1.5 flex flex-col gap-2">
-            @for (item of navItems; track item.route + item.label) {
-              <div class="nav-item-wrap relative group">
-                <a
-                  [routerLink]="item.route"
-                  class="nav-item-link relative transition-all duration-200 cursor-pointer"
-                  [class]="isNavActive(item) ? 'bg-[#c6f6d5] text-slate-900 shadow-sm' : 'text-white/60 hover:text-white hover:bg-white/10'"
-                >
-                  <mat-icon class="icon-badge text-[22px] w-[22px] h-[22px] shrink-0 transition-colors duration-150">{{ item.icon }}</mat-icon>
-                  <span class="nav-label text-[15px] font-semibold tracking-tight" [class]="isNavActive(item) ? '!text-slate-900' : ''">{{ item.label }}</span>
-                </a>
-                <div class="sidebar-tooltip">{{ item.label }}</div>
-              </div>
-            }
-          </nav>
-
-          <!-- Bottom: Help -->
-          <div class="shrink-0 py-3 px-1.5 border-t border-white/5 flex flex-col items-center">
-            <button
-              (click)="openSupportModal()"
-              class="nav-item-link text-white/60 hover:text-white hover:bg-white/10 transition-all duration-150 cursor-pointer"
-              title="Help & Support"
-            >
-              <mat-icon class="text-[22px] w-[22px] h-[22px] shrink-0">help</mat-icon>
-              <span class="nav-label text-[15px] font-semibold tracking-tight">Help & Support</span>
-            </button>
+      <!-- Top Bar: Logo + Search + Right Icons (full width) -->
+      <div class="shrink-0 px-6 lg:px-8 pt-5 pb-2 relative z-30 search-container">
+        <div class="flex items-center justify-between gap-4">
+          <div class="flex items-center gap-4 shrink-0">
+            <div class="flex items-center gap-2.5 shrink-0">
+              <img src="logo.webp" alt="Company Logo" class="w-8 h-8 object-contain rounded-lg shadow-sm" />
+              <span class="font-bold text-lg tracking-tight font-sans whitespace-nowrap" style="color: #0146e5">Bento</span>
+            </div>
           </div>
-        </div>
-      </aside>
-
-      <!-- Main Content -->
-      <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <!-- Top Bar: Search + Right Icons -->
-        <div class="shrink-0 px-6 lg:px-8 pt-5 pb-0 relative z-30 search-container">
-          <div class="flex items-center justify-between gap-4">
             <div class="relative max-w-xl flex-1">
               <mat-icon class="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/60 text-[20px] w-5 h-5 pointer-events-none">search</mat-icon>
               <input
@@ -374,6 +319,61 @@ const SEARCH_ITEMS: SearchItem[] = [
           </div>
         </div>
 
+        <!-- Sidebar + Content Row -->
+        <div class="flex flex-1 min-h-0 overflow-hidden">
+
+          <!-- Sidebar -->
+          <aside
+            class="sidebar flex flex-col relative z-40 self-center -mt-[76px] pt-[76px]"
+            [class.expanded]="isExpanded()"
+            (mouseenter)="onSidebarMouseEnter()"
+            (mouseleave)="onSidebarMouseLeave()"
+          >
+            <div class="flex items-center justify-start px-4 h-12 shrink-0 mb-2 toggle-container-wrap sticky top-0 z-50">
+              <button
+                (click)="togglePin()"
+                class="w-10 h-10 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-200/50 bg-white/60 border border-slate-200/50 transition-all duration-150 shrink-0 shadow-sm"
+                [title]="pinnedOpen() ? 'Unpin sidebar' : 'Pin sidebar open'"
+              >
+                <mat-icon class="text-[20px] w-5 h-5 toggle-btn" [class.expanded]="isExpanded()">chevron_right</mat-icon>
+              </button>
+            </div>
+            <!-- Pill-shaped Sidebar Menu -->
+            <div class="sidebar-pill flex flex-col glass-sidebar shadow-2xl overflow-hidden">
+              <!-- Nav Items -->
+              <nav class="flex-1 overflow-y-auto overflow-x-hidden py-4 px-1.5 flex flex-col gap-2">
+                @for (item of navItems; track item.route + item.label) {
+                  <div class="nav-item-wrap relative group">
+                    <a
+                      [routerLink]="item.route"
+                      class="nav-item-link relative transition-all duration-200 cursor-pointer"
+                      [class]="isNavActive(item) ? 'bg-[#c6f6d5] text-slate-900 shadow-sm' : 'text-white/60 hover:text-white hover:bg-white/10'"
+                    >
+                      <mat-icon class="icon-badge text-[22px] w-[22px] h-[22px] shrink-0 transition-colors duration-150">{{ item.icon }}</mat-icon>
+                      <span class="nav-label text-[15px] font-semibold tracking-tight" [class]="isNavActive(item) ? '!text-slate-900' : ''">{{ item.label }}</span>
+                    </a>
+                    <div class="sidebar-tooltip">{{ item.label }}</div>
+                  </div>
+                }
+              </nav>
+
+              <!-- Bottom: Help -->
+              <div class="shrink-0 py-3 px-1.5 border-t border-white/5 flex flex-col items-center">
+                <button
+                  (click)="openSupportModal()"
+                  class="nav-item-link text-white/60 hover:text-white hover:bg-white/10 transition-all duration-150 cursor-pointer"
+                  title="Help & Support"
+                >
+                  <mat-icon class="text-[22px] w-[22px] h-[22px] shrink-0">help</mat-icon>
+                  <span class="nav-label text-[15px] font-semibold tracking-tight">Help & Support</span>
+                </button>
+              </div>
+            </div>
+          </aside>
+
+          <!-- Main Content -->
+          <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+
         <!-- Breadcrumbs & Nav Tabs -->
         <div class="shrink-0 px-6 lg:px-10 pt-3 pb-0 flex items-center gap-6">
           <nav class="flex items-center gap-2 text-sm font-semibold text-slate-500" aria-label="Breadcrumb">
@@ -388,9 +388,11 @@ const SEARCH_ITEMS: SearchItem[] = [
           </nav>
         </div>
 
-        <main class="flex-1 overflow-y-auto p-6 lg:p-8">
-          <router-outlet></router-outlet>
-        </main>
+          <main class="flex-1 overflow-y-auto p-6 lg:p-8">
+            <router-outlet></router-outlet>
+          </main>
+        </div>
+
       </div>
 
     </div>
