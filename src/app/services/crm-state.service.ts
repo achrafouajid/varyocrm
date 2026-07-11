@@ -537,6 +537,8 @@ export interface Task {
   assignedTeam?: 'Sales' | 'Operations' | 'Finance' | 'Support';
   assignedTo?: string;
   status: TaskStatus;
+  priority?: 'Urgent' | 'Medium' | 'Low';
+  deadline?: string;
   relatedTo?: string; // display label of the related entity
   relatedModule?: 'Sales' | 'Finance' | 'Partners' | 'Support' | 'Marketing';
   relatedSubModule?: string; // entity type: Deal, Proposal, PurchaseOrder, Lead, Customer, Prospect, Vendor, Ticket, Campaign, Invoice, Recovery
@@ -740,6 +742,7 @@ export interface Ticket {
   assignedTo: string;
   status: TicketStatus;
   priority: 'Low' | 'Medium' | 'High';
+  deadline?: string;
   type?: string;
   resolution?: string;
   createdBy: string;
@@ -834,6 +837,10 @@ export class CrmStateService {
 
   // Global search navigation target — set before navigating to deep-link a sub-tab
   navigateTab = signal<string | null>(null);
+
+  // Filter signals — set by dashboard widgets before navigating to filtered list pages
+  taskFilter = signal<{ priority?: string } | null>(null);
+  ticketFilter = signal<{ priority?: string } | null>(null);
 
   // Global currency setting — readable by all components, togglable from settings
   globalCurrency = signal<string>('MAD');
@@ -1102,7 +1109,31 @@ export class CrmStateService {
   ]);
 
   tasks = signal<Task[]>([
-    { id: 't1', title: 'Assign prospect and follow up', description: 'Sales manager needs to assign Atlas Digital to a salesperson', assignedTeam: 'Sales', assignedTo: 'Achraf (Manager)', status: 'Pending', relatedTo: 'Atlas Digital S.A.R.L.', relatedModule: 'Partners', relatedSubModule: 'Prospect', relatedEntityId: 'p4', createdBy: 'usr_rachid', createdAt: '2026-03-15' }
+    { id: 't1', title: 'Assign prospect and follow up', description: 'Sales manager needs to assign Atlas Digital to a salesperson', assignedTeam: 'Sales', assignedTo: 'Achraf (Manager)', status: 'Pending', priority: 'Urgent', deadline: '2026-07-15', relatedTo: 'Atlas Digital S.A.R.L.', relatedModule: 'Partners', relatedSubModule: 'Prospect', relatedEntityId: 'p4', createdBy: 'usr_rachid', createdAt: '2026-03-15' },
+    { id: 't2', title: 'Review Q3 marketing budget', description: 'Approve the proposed marketing budget for Q3 campaigns', assignedTeam: 'Sales', assignedTo: 'Khadija (Ops Manager)', status: 'Pending', priority: 'Medium', deadline: '2026-07-25', createdBy: 'usr_rachid', createdAt: '2026-06-10' },
+    { id: 't3', title: 'Follow up with ABC Technologies', description: 'Contact ABC Technologies regarding the pending proposal', assignedTeam: 'Sales', assignedTo: 'Youssef El Alami', status: 'Pending', priority: 'Urgent', deadline: '2026-07-10', relatedTo: 'ABC Technologies', relatedModule: 'Partners', relatedSubModule: 'Customer', relatedEntityId: 'p5', createdBy: 'usr_fatima', createdAt: '2026-06-12' },
+    { id: 't4', title: 'Update invoice templates', description: 'Refresh the invoice template with new company branding', assignedTeam: 'Finance', assignedTo: 'Mehdi Benani', status: 'Pending', priority: 'Low', deadline: '2026-08-01', createdBy: 'usr_rachid', createdAt: '2026-06-01' },
+    { id: 't5', title: 'Prepare monthly sales report', description: 'Compile and analyze June sales data for management review', assignedTeam: 'Sales', assignedTo: 'Youssef El Alami', status: 'In Progress', priority: 'Urgent', deadline: '2026-07-05', createdBy: 'usr_fatima', createdAt: '2026-06-14' },
+    { id: 't6', title: 'Setup automated email sequences', description: 'Configure drip campaigns for new prospect onboarding', assignedTeam: 'Sales', assignedTo: 'Zineb Rami', status: 'Pending', priority: 'Medium', deadline: '2026-07-20', createdBy: 'usr_rachid', createdAt: '2026-06-08' },
+    { id: 't7', title: 'Vendor contract renewal', description: 'Review and renew the contract with Maroc Express Logistics', assignedTeam: 'Operations', assignedTo: 'Khadija (Ops Manager)', status: 'Pending', priority: 'Low', deadline: '2026-07-30', createdBy: 'usr_mehdi', createdAt: '2026-05-20' },
+    { id: 't8', title: 'Customer feedback survey analysis', description: 'Analyze results from the recent customer satisfaction survey', assignedTeam: 'Support', assignedTo: 'Fatima Chraibi', status: 'Pending', priority: 'Medium', deadline: '2026-07-18', createdBy: 'usr_aya', createdAt: '2026-06-13' },
+    { id: 't9', title: 'Follow up with Maroc Telecom on support renewal', description: 'Contact Maroc Telecom regarding the upcoming support contract renewal', assignedTeam: 'Sales', assignedTo: 'Amine Bennani', status: 'Pending', priority: 'Urgent', deadline: '2026-07-15', relatedTo: 'Maroc Telecom Systems', relatedModule: 'Sales', relatedSubModule: 'Deal', relatedEntityId: 'd2', createdBy: 'usr_ahmed', createdAt: '2026-07-06' },
+    { id: 't10', title: 'Prepare Q3 pipeline review deck', description: 'Create presentation deck for quarterly pipeline review meeting', assignedTeam: 'Sales', assignedTo: 'Fatima Zahra El Idrissi', status: 'In Progress', priority: 'Medium', deadline: '2026-07-14', createdBy: 'usr_rachid', createdAt: '2026-07-06' },
+    { id: 't11', title: 'Update vendor contact details for Maroc Express', description: 'Verify and update contact information for Maroc Express Logistics', assignedTeam: 'Operations', assignedTo: 'Layla Cherkaoui', status: 'Pending', priority: 'Low', deadline: '2026-07-20', createdBy: 'usr_youssef', createdAt: '2026-07-07' },
+    { id: 't12', title: 'Review ABC Technologies proposal revisions', description: 'Review the revised proposal changes for ABC Technologies Cloud ERP Migration', assignedTeam: 'Sales', assignedTo: 'Youssef El Alami', status: 'Pending', priority: 'Urgent', deadline: '2026-07-12', relatedTo: 'ABC Technologies', relatedModule: 'Sales', relatedSubModule: 'Proposal', createdBy: 'usr_fatima', createdAt: '2026-07-08' },
+    { id: 't13', title: 'Approve Q3 marketing budget', description: 'Review and approve the proposed marketing budget for Q3 campaigns', assignedTeam: 'Finance', assignedTo: 'Samira Benjelloun', status: 'Pending', priority: 'Medium', deadline: '2026-07-16', createdBy: 'usr_rachid', createdAt: '2026-07-08' },
+    { id: 't14', title: 'Resolve ticket #TK-0891 escalation', description: 'Coordinate with support team to resolve the critical SLA breach ticket', assignedTeam: 'Support', assignedTo: 'Mehdi Qadiri', status: 'In Progress', priority: 'Urgent', deadline: '2026-07-11', createdBy: 'usr_zineb', createdAt: '2026-07-08' },
+    { id: 't15', title: 'Prepare monthly commission report', description: 'Calculate and prepare sales commission figures for June', assignedTeam: 'Finance', assignedTo: 'Hassan El Amrani', status: 'Pending', priority: 'Medium', deadline: '2026-07-18', createdBy: 'usr_samira', createdAt: '2026-07-09' },
+    { id: 't16', title: 'Schedule client onboarding session for Atlas Digital', description: 'Coordinate with Atlas Digital for the post-sale onboarding session', assignedTeam: 'Operations', assignedTo: 'Omar Fassi', status: 'Pending', priority: 'Medium', deadline: '2026-07-17', relatedTo: 'Atlas Digital S.A.R.L.', relatedModule: 'Sales', relatedSubModule: 'Deal', relatedEntityId: 'd1', createdBy: 'usr_fatima', createdAt: '2026-07-09' },
+    { id: 't17', title: 'Send proposal to Fes Smart School', description: 'Deliver the finalized WiFi proposal to Fes Smart School administration', assignedTeam: 'Sales', assignedTo: 'Amine Bennani', status: 'Pending', priority: 'Urgent', deadline: '2026-07-12', createdBy: 'usr_fatima', createdAt: '2026-07-10' },
+    { id: 't18', title: 'Update invoice payment reminders', description: 'Configure automated payment reminder emails for overdue invoices', assignedTeam: 'Finance', assignedTo: 'Samira Benjelloun', status: 'Pending', priority: 'Low', deadline: '2026-07-25', createdBy: 'usr_rachid', createdAt: '2026-07-10' },
+    { id: 't19', title: 'Perform system backup verification', description: 'Verify that all critical system backups completed successfully over the weekend', assignedTeam: 'Operations', assignedTo: 'Youssef Alami', status: 'Pending', priority: 'Medium', deadline: '2026-07-13', createdBy: 'usr_rachid', createdAt: '2026-07-10' },
+    { id: 't20', title: 'Contact new lead from Casablanca Expo', description: 'Follow up with the prospect who visited the booth at the Casablanca Tech Expo', assignedTeam: 'Sales', assignedTo: 'Karim Tazi', status: 'Pending', priority: 'Medium', deadline: '2026-07-14', createdBy: 'usr_rachid', createdAt: '2026-07-11' },
+    { id: 't21', title: 'Submit expense reports for June', description: 'Compile and submit all outstanding expense reports for the month of June', assignedTeam: 'Finance', assignedTo: 'Samira Benjelloun', status: 'Pending', priority: 'Medium', deadline: '2026-07-14', createdBy: 'usr_samira', createdAt: '2026-07-11' },
+    { id: 't22', title: 'Update client SLA documentation', description: 'Refresh SLA documentation for all active support contracts', assignedTeam: 'Support', assignedTo: 'Aya Mansouri', status: 'In Progress', priority: 'Low', deadline: '2026-07-20', createdBy: 'usr_zineb', createdAt: '2026-07-11' },
+    { id: 't23', title: 'Review partner commission structure', description: 'Evaluate and propose updates to the partner commission structure for Q4', assignedTeam: 'Sales', assignedTo: 'Ahmed Bennani', status: 'Pending', priority: 'Medium', deadline: '2026-07-21', createdBy: 'usr_rachid', createdAt: '2026-07-11' },
+    { id: 't24', title: 'Prepare weekly support metrics report', description: 'Compile weekly ticket resolution metrics and response time statistics', assignedTeam: 'Support', assignedTo: 'Zineb Tahiri', status: 'Pending', priority: 'Low', deadline: '2026-07-13', createdBy: 'usr_mehdi', createdAt: '2026-07-11' },
+    { id: 't25', title: 'Audit vendor delivery performance', description: 'Review and audit delivery performance of all active vendors for June', assignedTeam: 'Operations', assignedTo: 'Layla Cherkaoui', status: 'Pending', priority: 'Medium', deadline: '2026-07-18', createdBy: 'usr_youssef', createdAt: '2026-07-11' }
   ]);
 
   proposals = signal<Proposal[]>([]);
@@ -1342,8 +1373,8 @@ export class CrmStateService {
   ]);
 
   tickets = signal<Ticket[]>([
-    { id: 'tk1', title: 'Problème accès console Cloud', partnerId: 'p3', assignedTo: 'Fatima Chraibi', status: 'In Progress', priority: 'High', createdBy: 'usr_zineb', createdAt: '2026-06-05' },
-    { id: 'tk-p5-1', title: 'ERP Login Issue', partnerId: 'p5', assignedTo: 'Fatima Chraibi', status: 'Open', priority: 'High', createdBy: 'usr_mehdi', createdAt: '2026-06-15' },
+    { id: 'tk1', title: 'Problème accès console Cloud', partnerId: 'p3', assignedTo: 'Fatima Chraibi', status: 'In Progress', priority: 'High', deadline: '2026-07-12', createdBy: 'usr_zineb', createdAt: '2026-06-05' },
+    { id: 'tk-p5-1', title: 'ERP Login Issue', partnerId: 'p5', assignedTo: 'Fatima Chraibi', status: 'Open', priority: 'High', deadline: '2026-07-08', createdBy: 'usr_mehdi', createdAt: '2026-06-15' },
     { id: 'tk-p5-2', title: 'Hardware Delivery Delay', partnerId: 'p5', assignedTo: 'Khadija (Ops Manager)', status: 'Resolved', priority: 'Medium', createdBy: 'usr_aya', createdAt: '2026-06-10' }
   ]);
 
@@ -2412,7 +2443,9 @@ export class CrmStateService {
     });
   });
 
-  dashboardKpis = signal<string[]>(['totalDeals', 'marketingSpend', 'latePayers']);
+  isCustomizing = signal(false);
+
+  dashboardKpis = signal<string[]>(['totalDeals', 'marketingSpend', 'latePayers', 'newTasksWeek']);
 
   toggleDashboardKpi(kpiId: string) {
     this.dashboardKpis.update(kpis =>

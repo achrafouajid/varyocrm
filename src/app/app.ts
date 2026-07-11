@@ -88,7 +88,8 @@ const SEARCH_ITEMS: SearchItem[] = [
     .sidebar-pill {
       border-radius: 36px;
       overflow: hidden;
-      margin: 0 8px;
+      margin: auto 8px;
+      max-height: calc((100vh - 148px) * 0.67);
     }
     .logo-container-wrap {
       transition: padding 250ms ease, justify-content 250ms ease;
@@ -127,25 +128,6 @@ const SEARCH_ITEMS: SearchItem[] = [
       width: 100%;
       display: flex;
       justify-content: center;
-    }
-    .user-profile-link {
-      height: 48px;
-      width: 100%;
-      padding: 0 8px;
-      box-sizing: border-box;
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      gap: 12px;
-      border-radius: 9999px;
-      transition: width 250ms ease, padding 250ms ease, justify-content 250ms ease;
-    }
-    .sidebar:not(.expanded) .user-profile-link {
-      width: 40px;
-      height: 40px;
-      padding: 0;
-      justify-content: center;
-      gap: 0;
     }
     .nav-label {
       opacity: 0;
@@ -244,7 +226,7 @@ const SEARCH_ITEMS: SearchItem[] = [
 
       <!-- Sidebar -->
       <aside
-        class="sidebar flex flex-col relative z-40"
+        class="sidebar flex flex-col relative z-40 self-center"
         [class.expanded]="isExpanded()"
         (mouseenter)="onSidebarMouseEnter()"
         (mouseleave)="onSidebarMouseLeave()"
@@ -253,7 +235,7 @@ const SEARCH_ITEMS: SearchItem[] = [
         <div class="flex items-center justify-start h-16 px-4 gap-3 shrink-0 mt-3 logo-container-wrap">
           <img src="logo.webp" alt="Company Logo" class="w-10 h-10 object-contain rounded-xl shadow-sm" />
           @if (isExpanded()) {
-            <span class="text-slate-800 font-bold text-lg tracking-tight font-sans truncate">BentoCRM</span>
+            <span class="font-bold text-xl tracking-tight font-sans truncate" style="color: #0146e5">Bento</span>
           }
         </div>
 
@@ -269,7 +251,7 @@ const SEARCH_ITEMS: SearchItem[] = [
         </div>
 
         <!-- Pill-shaped Sidebar Menu -->
-        <div class="sidebar-pill flex-1 flex flex-col glass-sidebar shadow-2xl overflow-hidden">
+        <div class="sidebar-pill flex flex-col glass-sidebar shadow-2xl overflow-hidden">
           <!-- Nav Items -->
           <nav class="flex-1 overflow-y-auto overflow-x-hidden py-4 px-1.5 flex flex-col gap-2">
             @for (item of navItems; track item.route + item.label) {
@@ -287,8 +269,8 @@ const SEARCH_ITEMS: SearchItem[] = [
             }
           </nav>
 
-          <!-- Bottom: Help + User Profile -->
-          <div class="shrink-0 py-3 px-1.5 border-t border-white/5 space-y-2 flex flex-col items-center">
+          <!-- Bottom: Help -->
+          <div class="shrink-0 py-3 px-1.5 border-t border-white/5 flex flex-col items-center">
             <button
               (click)="openSupportModal()"
               class="nav-item-link text-white/60 hover:text-white hover:bg-white/10 transition-all duration-150 cursor-pointer"
@@ -297,76 +279,95 @@ const SEARCH_ITEMS: SearchItem[] = [
               <mat-icon class="text-[22px] w-[22px] h-[22px] shrink-0">help</mat-icon>
               <span class="nav-label text-[15px] font-semibold tracking-tight">Help & Support</span>
             </button>
-            @let currentUser = getCurrentUser();
-            @if (currentUser) {
-              <a
-                [routerLink]="['/settings/users', state.currentUserId()]"
-                class="user-profile-link hover:bg-white/10 transition-all duration-150"
-                title="View Profile"
-              >
-                <app-user-avatar [userId]="state.currentUserId()" [size]="32" class="shrink-0 border-2 border-white/20 rounded-full"></app-user-avatar>
-                <div class="nav-label flex flex-col text-left overflow-hidden ml-1">
-                  <span class="text-xs font-bold text-white leading-tight truncate">{{ currentUser.displayName }}</span>
-                  <span class="text-[10px] text-white/50 font-semibold leading-none mt-0.5 truncate uppercase tracking-wider">{{ currentUser.roleId }}</span>
-                </div>
-              </a>
-            }
           </div>
         </div>
       </aside>
 
       <!-- Main Content -->
       <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <!-- Global Search Bar -->
+        <!-- Top Bar: Search + Right Icons -->
         <div class="shrink-0 px-6 lg:px-8 pt-5 pb-0 relative z-30 search-container">
-          <div class="relative max-w-xl">
-            <mat-icon class="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/60 text-[20px] w-5 h-5 pointer-events-none">search</mat-icon>
-            <input
-              #searchInput
-              [ngModel]="searchQuery()"
-              (ngModelChange)="onSearchInput($event)"
-              (focus)="showSearchResults.set(true)"
-              (keydown)="onSearchKeydown($event)"
-              type="text"
-              placeholder="Search menus and pages...  (Ctrl+K)"
-              class="w-full pl-11 pr-10 py-2.5 dark-glass-search rounded-full text-sm outline-none transition-all"
-            />
-            @if (searchQuery()) {
-              <button (click)="clearSearch()" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors">
-                <mat-icon class="text-[18px] w-4.5 h-4.5">close</mat-icon>
-              </button>
-            }
-            <!-- Results Dropdown -->
-            @if (showSearchResults() && searchQuery().length >= 1 && filteredSearchItems().length > 0) {
-              <div class="absolute left-0 right-0 mt-2 dark-glass-dropdown rounded-2xl z-50 max-h-80 overflow-y-auto origin-top">
-                @for (item of filteredSearchItems(); track $index) {
-                  <button
-                    (click)="navigateToSearchItem(item)"
-                    (mouseenter)="selectedSearchIndex.set($index)"
-                    [class]="(selectedSearchIndex() === $index ? 'selected-item' : '') + ' search-result-btn w-full flex items-start gap-3 px-5 py-3.5 text-left transition-colors last:border-b-0 cursor-pointer'"
-                  >
-                    <mat-icon class="text-white/60 text-[18px] w-[18px] h-[18px] mt-0.5 shrink-0">{{ item.subIcon || item.mainIcon }}</mat-icon>
-                    <div class="min-w-0 flex-1">
-                      <div class="flex items-baseline gap-2">
-                        <span class="text-[10px] font-semibold text-white/40 uppercase tracking-wider shrink-0">{{ item.mainMenu }}</span>
-                        @if (item.submenu) {
-                          <span class="text-xs font-bold text-white/90 truncate">{{ item.submenu }}</span>
-                        } @else {
-                          <span class="text-xs font-bold text-white/90 truncate">{{ item.mainMenu }}</span>
-                        }
+          <div class="flex items-center justify-between gap-4">
+            <div class="relative max-w-xl flex-1">
+              <mat-icon class="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/60 text-[20px] w-5 h-5 pointer-events-none">search</mat-icon>
+              <input
+                #searchInput
+                [ngModel]="searchQuery()"
+                (ngModelChange)="onSearchInput($event)"
+                (focus)="showSearchResults.set(true)"
+                (keydown)="onSearchKeydown($event)"
+                type="text"
+                placeholder="Search menus and pages...  (Ctrl+K)"
+                class="w-full pl-11 pr-10 py-2.5 dark-glass-search rounded-full text-sm outline-none transition-all"
+              />
+              @if (searchQuery()) {
+                <button (click)="clearSearch()" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors">
+                  <mat-icon class="text-[18px] w-4.5 h-4.5">close</mat-icon>
+                </button>
+              }
+              <!-- Results Dropdown -->
+              @if (showSearchResults() && searchQuery().length >= 1 && filteredSearchItems().length > 0) {
+                <div class="absolute left-0 right-0 mt-2 dark-glass-dropdown rounded-2xl z-50 max-h-80 overflow-y-auto origin-top">
+                  @for (item of filteredSearchItems(); track $index) {
+                    <button
+                      (click)="navigateToSearchItem(item)"
+                      (mouseenter)="selectedSearchIndex.set($index)"
+                      [class]="(selectedSearchIndex() === $index ? 'selected-item' : '') + ' search-result-btn w-full flex items-start gap-3 px-5 py-3.5 text-left transition-colors last:border-b-0 cursor-pointer'"
+                    >
+                      <mat-icon class="text-white/60 text-[18px] w-[18px] h-[18px] mt-0.5 shrink-0">{{ item.subIcon || item.mainIcon }}</mat-icon>
+                      <div class="min-w-0 flex-1">
+                        <div class="flex items-baseline gap-2">
+                          <span class="text-[10px] font-semibold text-white/40 uppercase tracking-wider shrink-0">{{ item.mainMenu }}</span>
+                          @if (item.submenu) {
+                            <span class="text-xs font-bold text-white/90 truncate">{{ item.submenu }}</span>
+                          } @else {
+                            <span class="text-xs font-bold text-white/90 truncate">{{ item.mainMenu }}</span>
+                          }
+                        </div>
+                        <p class="text-[11px] text-white/50 mt-0.5 leading-tight">{{ item.action }}</p>
                       </div>
-                      <p class="text-[11px] text-white/50 mt-0.5 leading-tight">{{ item.action }}</p>
-                    </div>
-                    <mat-icon class="text-white/30 text-[14px] w-3.5 h-3.5 mt-1 shrink-0">chevron_right</mat-icon>
-                  </button>
+                      <mat-icon class="text-white/30 text-[14px] w-3.5 h-3.5 mt-1 shrink-0">chevron_right</mat-icon>
+                    </button>
+                  }
+                </div>
+              }
+              @if (showSearchResults() && searchQuery().length >= 1 && filteredSearchItems().length === 0) {
+                <div class="absolute left-0 right-0 mt-2 dark-glass-dropdown rounded-2xl z-50 p-4 text-center">
+                  <p class="text-sm text-white/50">No results found for "{{ searchQuery() }}"</p>
+                </div>
+              }
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <button
+                (click)="state.isCustomizing.set(!state.isCustomizing())"
+                class="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all duration-150 shrink-0"
+                [title]="state.isCustomizing() ? 'Done Customizing' : 'Customize KPIs'"
+              >
+                <mat-icon class="text-[18px] w-[18px] h-[18px]">{{ state.isCustomizing() ? 'check' : 'edit_square' }}</mat-icon>
+              </button>
+              <button
+                class="w-10 h-10 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-200/50 bg-white/60 border border-slate-200/50 transition-all duration-150 shrink-0 shadow-sm"
+                title="Inbox"
+              >
+                <mat-icon class="text-[20px] w-5 h-5">inbox</mat-icon>
+              </button>
+              <button
+                class="w-10 h-10 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-200/50 bg-white/60 border border-slate-200/50 transition-all duration-150 shrink-0 shadow-sm relative"
+                title="Notifications"
+              >
+                <mat-icon class="text-[20px] w-5 h-5">notifications</mat-icon>
+                @if (unreadCount() > 0) {
+                  <span class="absolute -top-1 -right-1 w-[18px] h-[18px] bg-red-500 border-2 border-white rounded-full flex items-center justify-center text-[9px] font-bold text-white">{{ unreadCount() }}</span>
                 }
-              </div>
-            }
-            @if (showSearchResults() && searchQuery().length >= 1 && filteredSearchItems().length === 0) {
-              <div class="absolute left-0 right-0 mt-2 dark-glass-dropdown rounded-2xl z-50 p-4 text-center">
-                <p class="text-sm text-white/50">No results found for "{{ searchQuery() }}"</p>
-              </div>
-            }
+              </button>
+              <a
+                [routerLink]="['/settings/users', state.currentUserId()]"
+                class="shrink-0"
+                title="View Profile"
+              >
+                <app-user-avatar [userId]="state.currentUserId()" [size]="36" class="shrink-0 border-2 border-white/80 rounded-full block"></app-user-avatar>
+              </a>
+            </div>
           </div>
         </div>
 
@@ -405,6 +406,9 @@ export class App implements OnInit, OnDestroy {
   searchQuery = signal('');
   showSearchResults = signal(false);
   selectedSearchIndex = signal(0);
+
+  /** Demo unread notification count */
+  unreadCount = signal(3);
 
   filteredSearchItems = computed(() => {
     const q = this.searchQuery().toLowerCase().trim();
@@ -582,10 +586,6 @@ export class App implements OnInit, OnDestroy {
     const route = this.activeRoute();
     if (item.route === '/') return route === '/';
     return route.startsWith(item.route);
-  }
-
-  getCurrentUser() {
-    return this.state.users().find(u => u.id === this.state.currentUserId());
   }
 
   ngOnDestroy() {

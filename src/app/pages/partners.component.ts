@@ -784,6 +784,7 @@ import { UserAvatarComponent } from '../shared/user-avatar.component';
             </div>
           }
         }
+
       </div>
     </div>
   `

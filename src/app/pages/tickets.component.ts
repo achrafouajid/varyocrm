@@ -1,13 +1,14 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { CrmStateService, Ticket } from '../services/crm-state.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-tickets',
-  imports: [MatIconModule, CommonModule, FormsModule, CreatedByBadgeComponent],
+  imports: [MatIconModule, CommonModule, FormsModule, CreatedByBadgeComponent, RouterModule],
   template: `
     <div class="max-w-6xl mx-auto space-y-8">
       <div class="flex justify-end">
@@ -16,6 +17,20 @@ import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
           New Ticket
         </button>
       </div>
+
+      @if (activePriorityFilter()) {
+        <div class="flex items-center gap-2">
+          <div class="glass rounded-xl px-4 py-2 flex items-center gap-2 text-sm">
+            <mat-icon class="text-[18px] w-4.5 h-4.5 text-amber-500">filter_alt</mat-icon>
+            <span class="font-semibold text-slate-700">Filtered by priority:</span>
+            <span [class]="activePriorityFilter() === 'High' ? 'bg-rose-100 text-rose-700' : activePriorityFilter() === 'Medium' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-700'" class="px-2 py-0.5 rounded text-xs font-bold">{{activePriorityFilter()}}</span>
+            <button (click)="clearFilter()" class="text-slate-400 hover:text-slate-600 ml-1 transition-colors">
+              <mat-icon class="text-[16px] w-4 h-4">close</mat-icon>
+            </button>
+          </div>
+          <span class="text-xs text-slate-400 font-medium">{{ filteredTickets().length }} ticket{{ filteredTickets().length !== 1 ? 's' : '' }}</span>
+        </div>
+      }
 
       <div class="glass-card rounded-2xl overflow-hidden">
         <table class="min-w-full divide-y divide-slate-200">
@@ -32,7 +47,7 @@ import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-slate-200">
-            @for (ticket of state.tickets(); track ticket.id) {
+            @for (ticket of filteredTickets(); track ticket.id) {
               <tr class="hover:bg-slate-50 transition-colors">
                 <td (click)="openEditTicketModal(ticket)" class="px-6 py-4 whitespace-nowrap cursor-pointer">
                   <div class="flex items-center">
@@ -198,6 +213,25 @@ export class TicketsComponent {
   modalOpen = signal(false);
   isEditing = signal(false);
   editingTicketId = signal<string | null>(null);
+  activePriorityFilter = signal<'High' | 'Medium' | 'Low' | null>(null);
+
+  filteredTickets = computed(() => {
+    const filter = this.activePriorityFilter();
+    if (!filter) return this.state.tickets();
+    return this.state.tickets().filter(t => t.priority === filter);
+  });
+
+  clearFilter() {
+    this.activePriorityFilter.set(null);
+  }
+
+  constructor() {
+    const filter = this.state.ticketFilter();
+    if (filter?.priority && ['High', 'Medium', 'Low'].includes(filter.priority)) {
+      this.activePriorityFilter.set(filter.priority as 'High' | 'Medium' | 'Low');
+      this.state.ticketFilter.set(null);
+    }
+  }
 
   newTicket = {
     title: '',

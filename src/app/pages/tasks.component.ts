@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DragDropModule, CdkDragDrop, transferArrayItem } from '@angular/cdk/drag-drop';
 import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
+import { RouterModule } from '@angular/router';
 
 const MODULE_SUB_MODULES: Record<string, string[]> = {
   Sales: ['Deal', 'Proposal', 'PurchaseOrder'],
@@ -31,7 +32,7 @@ const SUB_MODULE_LABELS: Record<string, string> = {
 
 @Component({
   selector: 'app-tasks',
-  imports: [MatIconModule, CommonModule, FormsModule, DragDropModule, CreatedByBadgeComponent],
+  imports: [MatIconModule, CommonModule, FormsModule, DragDropModule, CreatedByBadgeComponent, RouterModule],
   styles: [`
     .kanban-column.cdk-drop-list-dragging .kanban-card:not(.cdk-drag-placeholder) {
       transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
@@ -64,6 +65,21 @@ const SUB_MODULE_LABELS: Record<string, string> = {
         </button>
       </div>
 
+      <!-- Priority Filter Banner -->
+      @if (activePriorityFilter()) {
+        <div class="flex items-center gap-2">
+          <div class="glass rounded-xl px-4 py-2 flex items-center gap-2 text-sm">
+            <mat-icon class="text-[18px] w-4.5 h-4.5 text-indigo-500">filter_alt</mat-icon>
+            <span class="font-semibold text-slate-700">Filtered by priority:</span>
+            <span [class]="activePriorityFilter() === 'Urgent' ? 'bg-rose-100 text-rose-700' : activePriorityFilter() === 'Medium' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-700'" class="px-2 py-0.5 rounded text-xs font-bold">{{activePriorityFilter()}}</span>
+            <button (click)="clearFilter()" class="text-slate-400 hover:text-slate-600 ml-1 transition-colors">
+              <mat-icon class="text-[16px] w-4 h-4">close</mat-icon>
+            </button>
+          </div>
+          <span class="text-xs text-slate-400 font-medium">{{ filteredTasks().length }} task{{ filteredTasks().length !== 1 ? 's' : '' }}</span>
+        </div>
+      }
+
       <!-- View Tabs -->
       <div class="flex gap-1 glass-card rounded-xl p-1 w-fit">
         <button
@@ -87,13 +103,18 @@ const SUB_MODULE_LABELS: Record<string, string> = {
       <!-- List View -->
       @if (activeView() === 'list') {
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          @for (task of state.tasks(); track task.id) {
+          @for (task of filteredTasks(); track task.id) {
             <div class="glass-card rounded-xl p-5 flex flex-col justify-between hover:shadow-md transition-all">
               <div>
                 <div class="flex justify-between items-start mb-3">
-                  <span [class]="getStatusColor(task.status)" class="px-2.5 py-1 text-[10px] font-bold uppercase rounded-full">
-                    {{task.status}}
-                  </span>
+                  <div class="flex items-center gap-1.5">
+                    <span [class]="getStatusColor(task.status)" class="px-2.5 py-1 text-[10px] font-bold uppercase rounded-full">
+                      {{task.status}}
+                    </span>
+                    @if (task.priority) {
+                      <span [class]="getPriorityColor(task.priority)" class="text-[9px] font-bold px-1.5 py-0.5 rounded-full">{{task.priority}}</span>
+                    }
+                  </div>
                   <span class="text-xs text-slate-400 font-mono">#{{task.id}}</span>
                 </div>
                 <h4 class="text-slate-900 font-semibold text-base mb-1">{{task.title}}</h4>
@@ -173,7 +194,12 @@ const SUB_MODULE_LABELS: Record<string, string> = {
                 <div cdkDrag [cdkDragData]="task" class="kanban-card glass-card rounded-xl p-4 cursor-grab active:cursor-grabbing hover:shadow-md">
                   <div class="flex items-start justify-between mb-2">
                     <span class="text-[10px] font-mono text-slate-400">#{{task.id}}</span>
-                    <span [class]="getStatusColor(task.status)" class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full">{{task.status}}</span>
+                    <div class="flex items-center gap-1">
+                      @if (task.priority) {
+                        <span [class]="getPriorityColor(task.priority)" class="text-[9px] font-bold px-1.5 py-0.5 rounded-full">{{task.priority}}</span>
+                      }
+                      <span [class]="getStatusColor(task.status)" class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full">{{task.status}}</span>
+                    </div>
                   </div>
                   <h4 class="text-sm font-semibold text-slate-900 mb-2 leading-snug">{{task.title}}</h4>
                   @if (task.relatedTo) {
@@ -217,7 +243,12 @@ const SUB_MODULE_LABELS: Record<string, string> = {
                 <div cdkDrag [cdkDragData]="task" class="kanban-card glass-card rounded-xl p-4 cursor-grab active:cursor-grabbing hover:shadow-md">
                   <div class="flex items-start justify-between mb-2">
                     <span class="text-[10px] font-mono text-slate-400">#{{task.id}}</span>
-                    <span [class]="getStatusColor(task.status)" class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full">{{task.status}}</span>
+                    <div class="flex items-center gap-1">
+                      @if (task.priority) {
+                        <span [class]="getPriorityColor(task.priority)" class="text-[9px] font-bold px-1.5 py-0.5 rounded-full">{{task.priority}}</span>
+                      }
+                      <span [class]="getStatusColor(task.status)" class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full">{{task.status}}</span>
+                    </div>
                   </div>
                   <h4 class="text-sm font-semibold text-slate-900 mb-2 leading-snug">{{task.title}}</h4>
                   @if (task.relatedTo) {
@@ -261,7 +292,12 @@ const SUB_MODULE_LABELS: Record<string, string> = {
                 <div cdkDrag [cdkDragData]="task" class="kanban-card glass-card rounded-xl p-4 cursor-grab active:cursor-grabbing hover:shadow-md">
                   <div class="flex items-start justify-between mb-2">
                     <span class="text-[10px] font-mono text-slate-400">#{{task.id}}</span>
-                    <span [class]="getStatusColor(task.status)" class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full">{{task.status}}</span>
+                    <div class="flex items-center gap-1">
+                      @if (task.priority) {
+                        <span [class]="getPriorityColor(task.priority)" class="text-[9px] font-bold px-1.5 py-0.5 rounded-full">{{task.priority}}</span>
+                      }
+                      <span [class]="getStatusColor(task.status)" class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full">{{task.status}}</span>
+                    </div>
                   </div>
                   <h4 class="text-sm font-semibold text-slate-900 mb-2 leading-snug">{{task.title}}</h4>
                   @if (task.relatedTo) {
@@ -399,10 +435,22 @@ export class TasksComponent {
   moduleList = Object.keys(MODULE_SUB_MODULES);
 
   activeView = signal<'list' | 'kanban'>('list');
+  activePriorityFilter = signal<'Urgent' | 'Medium' | 'Low' | null>(null);
 
-  pendingTasks = computed(() => this.state.tasks().filter(t => t.status === 'Pending'));
-  inProgressTasks = computed(() => this.state.tasks().filter(t => t.status === 'In Progress'));
-  completedTasks = computed(() => this.state.tasks().filter(t => t.status === 'Completed'));
+  /** All tasks, filtered by priority if a filter is active */
+  filteredTasks = computed(() => {
+    const filter = this.activePriorityFilter();
+    if (!filter) return this.state.tasks();
+    return this.state.tasks().filter(t => t.priority === filter);
+  });
+
+  pendingTasks = computed(() => this.filteredTasks().filter(t => t.status === 'Pending'));
+  inProgressTasks = computed(() => this.filteredTasks().filter(t => t.status === 'In Progress'));
+  completedTasks = computed(() => this.filteredTasks().filter(t => t.status === 'Completed'));
+
+  clearFilter() {
+    this.activePriorityFilter.set(null);
+  }
 
   taskModalOpen = signal(false);
   assignModalOpen = signal(false);
@@ -428,6 +476,11 @@ export class TasksComponent {
   };
 
   constructor() {
+    const filter = this.state.taskFilter();
+    if (filter?.priority && ['Urgent', 'Medium', 'Low'].includes(filter.priority)) {
+      this.activePriorityFilter.set(filter.priority as 'Urgent' | 'Medium' | 'Low');
+      this.state.taskFilter.set(null);
+    }
     const tab = this.state.navigateTab();
     if (tab === 'kanban') {
       this.activeView.set('kanban');
@@ -453,6 +506,15 @@ export class TasksComponent {
       case 'Completed': return 'bg-emerald-100 text-emerald-800 border border-emerald-200';
       case 'In Progress': return 'bg-indigo-100 text-indigo-800 border border-indigo-200';
       default: return 'bg-slate-100 text-slate-800 border border-slate-200';
+    }
+  }
+
+  getPriorityColor(priority: string) {
+    switch (priority) {
+      case 'Urgent': return 'bg-rose-100 text-rose-700 border border-rose-200';
+      case 'Medium': return 'bg-amber-100 text-amber-700 border border-amber-200';
+      case 'Low': return 'bg-slate-100 text-slate-600 border border-slate-200';
+      default: return 'bg-slate-100 text-slate-600 border border-slate-200';
     }
   }
 
