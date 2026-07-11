@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { CrmStateService } from './services/crm-state.service';
 import { UserAvatarComponent } from './shared/user-avatar.component';
 import { SupportModalComponent } from './shared/support-modal.component';
+import { NotificationInboxDrawerComponent } from './shared/notification-inbox-drawer.component';
 import { filter } from 'rxjs/operators';
 
 interface NavItem {
@@ -69,7 +70,7 @@ const SEARCH_ITEMS: SearchItem[] = [
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, MatIconModule, CommonModule, FormsModule, UserAvatarComponent, SupportModalComponent],
+  imports: [RouterOutlet, RouterLink, MatIconModule, CommonModule, FormsModule, UserAvatarComponent, SupportModalComponent, NotificationInboxDrawerComponent],
   styles: [`
     .sidebar {
       width: 72px;
@@ -346,12 +347,14 @@ const SEARCH_ITEMS: SearchItem[] = [
                 <mat-icon class="text-[18px] w-[18px] h-[18px]">{{ state.isCustomizing() ? 'check' : 'edit_square' }}</mat-icon>
               </button>
               <button
+                (click)="openInbox()"
                 class="w-10 h-10 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-200/50 bg-white/60 border border-slate-200/50 transition-all duration-150 shrink-0 shadow-sm"
                 title="Inbox"
               >
                 <mat-icon class="text-[20px] w-5 h-5">inbox</mat-icon>
               </button>
               <button
+                (click)="openNotifications()"
                 class="w-10 h-10 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-200/50 bg-white/60 border border-slate-200/50 transition-all duration-150 shrink-0 shadow-sm relative"
                 title="Notifications"
               >
@@ -393,6 +396,13 @@ const SEARCH_ITEMS: SearchItem[] = [
     </div>
 
     <app-support-modal></app-support-modal>
+
+    <app-notification-inbox-drawer
+      [drawerType]="drawerType()"
+      [open]="drawerOpen()"
+      (closed)="closeDrawer()"
+      (switchType)="drawerType.set($event)"
+    ></app-notification-inbox-drawer>
   `
 })
 export class App implements OnInit, OnDestroy {
@@ -408,7 +418,24 @@ export class App implements OnInit, OnDestroy {
   selectedSearchIndex = signal(0);
 
   /** Demo unread notification count */
-  unreadCount = signal(3);
+  unreadCount = computed(() => this.state.unreadNotificationsCount());
+
+  drawerOpen = signal(false);
+  drawerType = signal<'notifications' | 'inbox'>('notifications');
+
+  openNotifications() {
+    this.drawerType.set('notifications');
+    this.drawerOpen.set(true);
+  }
+
+  openInbox() {
+    this.drawerType.set('inbox');
+    this.drawerOpen.set(true);
+  }
+
+  closeDrawer() {
+    this.drawerOpen.set(false);
+  }
 
   filteredSearchItems = computed(() => {
     const q = this.searchQuery().toLowerCase().trim();

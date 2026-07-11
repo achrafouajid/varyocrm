@@ -892,12 +892,23 @@ export class DashboardComponent {
     const vendors = this.state.vendors().length;
     const total = customers + prospects + vendors || 1;
 
-    let currentOffset = 0;
-    return [
-      { label: 'Customers', count: customers, color: 'bg-indigo-500', stroke: 'text-indigo-500', dasharray: this.getDash(customers, total), dashoffset: this.getOffset(currentOffset, false, (currentOffset += customers)) },
-      { label: 'Prospects', count: prospects, color: 'bg-emerald-400', stroke: 'text-emerald-400', dasharray: this.getDash(prospects, total), dashoffset: this.getOffset(currentOffset - prospects, false, (currentOffset += prospects)) },
-      { label: 'Vendors', count: vendors, color: 'bg-amber-400', stroke: 'text-amber-400', dasharray: this.getDash(vendors, total), dashoffset: this.getOffset(currentOffset - vendors, false) }
+    const slices = [
+      { label: 'Customers', count: customers, color: 'bg-indigo-500', stroke: 'text-indigo-500' },
+      { label: 'Prospects', count: prospects, color: 'bg-emerald-400', stroke: 'text-emerald-400' },
+      { label: 'Vendors', count: vendors, color: 'bg-amber-400', stroke: 'text-amber-400' }
     ].filter(s => s.count > 0);
+
+    let cumulativePercent = 0;
+    return slices.map(s => {
+      const percent = (s.count / total) * 100;
+      const slice = {
+        ...s,
+        dasharray: `${percent} ${100 - percent}`,
+        dashoffset: cumulativePercent === 0 ? 0 : -(cumulativePercent)
+      };
+      cumulativePercent += percent;
+      return slice;
+    });
   });
 
   taskSlices = computed(() => {
@@ -907,12 +918,23 @@ export class DashboardComponent {
     const inProgress = tasks.filter(t => t.status === 'In Progress').length;
     const total = tasks.length || 1;
 
-    let currentOffset = 0;
-    return [
-      { label: 'Completed', count: completed, color: 'bg-emerald-500', stroke: 'text-emerald-500', dasharray: this.getDash(completed, total), dashoffset: this.getOffset(currentOffset, false, (currentOffset += completed)) },
-      { label: 'In Progress', count: inProgress, color: 'bg-indigo-400', stroke: 'text-indigo-400', dasharray: this.getDash(inProgress, total), dashoffset: this.getOffset(currentOffset - inProgress, false, (currentOffset += inProgress)) },
-      { label: 'Pending', count: pending, color: 'bg-slate-300', stroke: 'text-slate-300', dasharray: this.getDash(pending, total), dashoffset: this.getOffset(currentOffset - pending, false) }
+    const slices = [
+      { label: 'Completed', count: completed, color: 'bg-emerald-500', stroke: 'text-emerald-500' },
+      { label: 'In Progress', count: inProgress, color: 'bg-indigo-400', stroke: 'text-indigo-400' },
+      { label: 'Pending', count: pending, color: 'bg-slate-300', stroke: 'text-slate-300' }
     ].filter(s => s.count > 0);
+
+    let cumulativePercent = 0;
+    return slices.map(s => {
+      const percent = (s.count / total) * 100;
+      const slice = {
+        ...s,
+        dasharray: `${percent} ${100 - percent}`,
+        dashoffset: cumulativePercent === 0 ? 0 : -(cumulativePercent)
+      };
+      cumulativePercent += percent;
+      return slice;
+    });
   });
 
   toggleTaskSelection(taskId: string) {
@@ -962,14 +984,7 @@ export class DashboardComponent {
     this.router.navigate(['/tickets']);
   }
 
-  private getDash(value: number, total: number) {
-    const percent = (value / total) * 100;
-    return `${percent} ${100 - percent}`;
-  }
 
-  private getOffset(previousTotal: number, _dummy: boolean, dummy2?: number) {
-     return previousTotal === 0 ? 0 : -((previousTotal) / (this.state.partners().length || 1) * 100); 
-  }
 
   formatCurrency(value: number) {
     return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'MAD' }).format(value);

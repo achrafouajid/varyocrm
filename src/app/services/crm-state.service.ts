@@ -817,6 +817,27 @@ export interface ProposalTemplate {
   lines: ProposalLine[];
 }
 
+export interface Notification {
+  id: string;
+  type: 'deal' | 'task' | 'ticket' | 'system' | 'mention';
+  title: string;
+  message: string;
+  timestamp: string;
+  read: boolean;
+  relatedId?: string;
+}
+
+export interface InboxMessage {
+  id: string;
+  sender: string;
+  senderEmail: string;
+  subject: string;
+  preview: string;
+  timestamp: string;
+  read: boolean;
+  hasAttachments: boolean;
+}
+
 @Injectable({ providedIn: 'root' })
 export class CrmStateService {
   // Config signals
@@ -1373,9 +1394,20 @@ export class CrmStateService {
   ]);
 
   tickets = signal<Ticket[]>([
-    { id: 'tk1', title: 'Problème accès console Cloud', partnerId: 'p3', assignedTo: 'Fatima Chraibi', status: 'In Progress', priority: 'High', deadline: '2026-07-12', createdBy: 'usr_zineb', createdAt: '2026-06-05' },
-    { id: 'tk-p5-1', title: 'ERP Login Issue', partnerId: 'p5', assignedTo: 'Fatima Chraibi', status: 'Open', priority: 'High', deadline: '2026-07-08', createdBy: 'usr_mehdi', createdAt: '2026-06-15' },
-    { id: 'tk-p5-2', title: 'Hardware Delivery Delay', partnerId: 'p5', assignedTo: 'Khadija (Ops Manager)', status: 'Resolved', priority: 'Medium', createdBy: 'usr_aya', createdAt: '2026-06-10' }
+    { id: 'tk1', title: 'Problème accès console Cloud', partnerId: 'p3', assignedTo: 'Fatima Chraibi', status: 'In Progress', priority: 'High', deadline: '2026-07-12', type: 'Software issue', createdBy: 'usr_zineb', createdAt: '2026-06-05' },
+    { id: 'tk-p5-1', title: 'ERP Login Issue', partnerId: 'p5', assignedTo: 'Fatima Chraibi', status: 'Open', priority: 'High', deadline: '2026-07-08', type: 'Software issue', createdBy: 'usr_mehdi', createdAt: '2026-06-15' },
+    { id: 'tk-p5-2', title: 'Hardware Delivery Delay', partnerId: 'p5', assignedTo: 'Khadija (Ops Manager)', status: 'Resolved', priority: 'Medium', type: 'Broken product', createdBy: 'usr_aya', createdAt: '2026-06-10' },
+    { id: 'tk2', title: 'Email configuration not sending on Outlook', partnerId: 'p3', assignedTo: 'Mehdi Qadiri', status: 'Open', priority: 'Medium', deadline: '2026-07-15', type: 'Software issue', createdBy: 'usr_aya', createdAt: '2026-06-20' },
+    { id: 'tk3', title: 'Billing discrepancy on June invoice', partnerId: 'p3', assignedTo: 'Samira Benjelloun', status: 'Open', priority: 'High', deadline: '2026-07-10', type: 'Billing issue', createdBy: 'usr_zineb', createdAt: '2026-06-22' },
+    { id: 'tk4', title: 'Vendor portal login not working', partnerId: 'p2', assignedTo: 'Zineb Tahiri', status: 'In Progress', priority: 'Medium', deadline: '2026-07-14', type: 'Software issue', createdBy: 'usr_mehdi', createdAt: '2026-06-25' },
+    { id: 'tk5', title: 'Server rack damaged during shipping', partnerId: 'p2', assignedTo: 'Fatima Chraibi', status: 'Open', priority: 'High', deadline: '2026-07-09', type: 'Broken product', createdBy: 'usr_aya', createdAt: '2026-06-28' },
+    { id: 'tk6', title: 'Cloud migration SLA breach - response time', partnerId: 'p1', assignedTo: 'Zineb Tahiri', status: 'In Progress', priority: 'High', deadline: '2026-07-11', type: 'Software issue', createdBy: 'usr_zineb', createdAt: '2026-07-01' },
+    { id: 'tk7', title: 'Incorrect discount applied on proposal', partnerId: 'p4', assignedTo: 'Samira Benjelloun', status: 'Open', priority: 'Medium', deadline: '2026-07-16', type: 'Billing issue', createdBy: 'usr_mehdi', createdAt: '2026-07-02' },
+    { id: 'tk8', title: 'API integration failure - CRM sync', partnerId: 'p5', assignedTo: 'Mehdi Qadiri', status: 'Open', priority: 'High', deadline: '2026-07-10', type: 'Software issue', createdBy: 'usr_zineb', createdAt: '2026-07-03' },
+    { id: 'tk9', title: 'Hardware warranty claim denied', partnerId: 'p5', assignedTo: 'Aya Mansouri', status: 'In Progress', priority: 'Low', deadline: '2026-07-20', type: 'Broken product', createdBy: 'usr_mehdi', createdAt: '2026-07-05' },
+    { id: 'tk10', title: 'Network latency issues on hosted platform', partnerId: 'p1', assignedTo: 'Mehdi Qadiri', status: 'Open', priority: 'Medium', deadline: '2026-07-18', type: 'Software issue', createdBy: 'usr_aya', createdAt: '2026-07-07' },
+    { id: 'tk11', title: 'Overdue invoice payment not reflected', partnerId: 'p3', assignedTo: 'Aya Mansouri', status: 'In Progress', priority: 'Medium', deadline: '2026-07-17', type: 'Billing issue', createdBy: 'usr_zineb', createdAt: '2026-07-08' },
+    { id: 'tk12', title: 'Feature request: bulk user import', partnerId: 'p4', assignedTo: '', status: 'Open', priority: 'Low', deadline: '2026-08-01', type: 'Software issue', createdBy: 'usr_mehdi', createdAt: '2026-07-10' }
   ]);
 
   ticketTypes = signal<string[]>(['Software issue', 'Broken product', 'Billing issue']);
@@ -2442,6 +2474,55 @@ export class CrmStateService {
       return { month, salesperson, total };
     });
   });
+
+  // ────────────────────────────────────────────────────────
+  // Notifications data
+  // ────────────────────────────────────────────────────────
+  notifications = signal<Notification[]>([
+    { id: 'notif-1', type: 'deal', title: 'New Deal Created', message: 'Atlas Digital Cloud Migration Deal worth 13,500 MAD has been created.', timestamp: '2026-07-11T09:30:00', read: false, relatedId: 'd1' },
+    { id: 'notif-2', type: 'task', title: 'Task Assigned', message: 'You have been assigned "Follow up with ABC Technologies" task.', timestamp: '2026-07-11T08:15:00', read: false, relatedId: 't3' },
+    { id: 'notif-3', type: 'ticket', title: 'Ticket Updated', message: 'Ticket #TK-0891 "Problème accès console Cloud" status changed to In Progress.', timestamp: '2026-07-10T16:45:00', read: false, relatedId: 'tk1' },
+    { id: 'notif-4', type: 'system', title: 'System Update', message: 'CRM system will undergo maintenance on Saturday, July 15th at 2:00 AM.', timestamp: '2026-07-10T14:00:00', read: false },
+    { id: 'notif-5', type: 'mention', title: 'Mentioned in Comment', message: 'Youssef El Alami mentioned you in a comment on Deal #d-p5-1.', timestamp: '2026-07-10T11:20:00', read: false, relatedId: 'd-p5-1' },
+    { id: 'notif-6', type: 'deal', title: 'Deal Stage Changed', message: 'ABC Technologies Cloud ERP Migration moved to Confirmed stage.', timestamp: '2026-07-09T15:00:00', read: true, relatedId: 'd-p5-1' },
+    { id: 'notif-7', type: 'ticket', title: 'New Ticket Created', message: 'Ticket "ERP Login Issue" has been opened by ABC Technologies.', timestamp: '2026-07-09T10:30:00', read: true, relatedId: 'tk-p5-1' },
+    { id: 'notif-8', type: 'task', title: 'Task Completed', message: 'Fatima Chraibi completed "Prepare monthly sales report" task.', timestamp: '2026-07-08T17:00:00', read: true, relatedId: 't5' },
+    { id: 'notif-9', type: 'system', title: 'Integration Sync Complete', message: 'WhatsApp integration sync completed successfully. 15 new messages processed.', timestamp: '2026-07-08T09:00:00', read: true },
+    { id: 'notif-10', type: 'mention', title: 'Mentioned in Meeting', message: 'Ahmed Bennani added you as attendee to "Q3 Pipeline Review" meeting.', timestamp: '2026-07-07T14:30:00', read: true },
+  ]);
+
+  unreadNotificationsCount = computed(() => this.notifications().filter(n => !n.read).length);
+
+  markNotificationRead(notifId: string) {
+    this.notifications.update(list => list.map(n => n.id === notifId ? { ...n, read: true } : n));
+  }
+
+  markAllNotificationsRead() {
+    this.notifications.update(list => list.map(n => ({ ...n, read: true })));
+  }
+
+  // ────────────────────────────────────────────────────────
+  // Inbox messages data
+  // ────────────────────────────────────────────────────────
+  inboxMessages = signal<InboxMessage[]>([
+    { id: 'msg-1', sender: 'Karim Atlas', senderEmail: 'k.atlas@atlasdigital.ma', subject: 'Re: Cloud Migration Proposal', preview: 'Thank you for the detailed proposal. We have reviewed it and would like to schedule a follow-up meeting to discuss the next steps.', timestamp: '2026-07-11T10:15:00', read: false, hasAttachments: false },
+    { id: 'msg-2', sender: 'Samira Benjelloun', senderEmail: 's.benjelloun@acg.ma', subject: 'Invoice #i1 - Payment Reminder', preview: 'This is a reminder that invoice #i1 for Atlas Digital Cloud Migration is now overdue. Please follow up with the client.', timestamp: '2026-07-11T09:00:00', read: false, hasAttachments: true },
+    { id: 'msg-3', sender: 'Mohammed Alaoui', senderEmail: 'ceo@abctech.ma', subject: 'ERP Implementation Timeline', preview: 'We need to discuss the revised timeline for the ERP implementation. Our IT team has raised some concerns about the current schedule.', timestamp: '2026-07-10T16:30:00', read: false, hasAttachments: false },
+    { id: 'msg-4', sender: 'System Notification', senderEmail: 'noreply@acg.ma', subject: 'Automation Rule Triggered: High-Value Deal Alert', preview: 'Rule "Notify Manager – Deal > 100k" was triggered for deal Maroc Telecom Systems Network Upgrade (120,000 MAD).', timestamp: '2026-07-10T14:00:00', read: true, hasAttachments: false },
+    { id: 'msg-5', sender: 'Fatima Zahra El Idrissi', senderEmail: 'fz.elidrissi@acg.ma', subject: 'Q3 Pipeline Review Meeting', preview: 'Hi everyone, I\'ve scheduled the Q3 pipeline review for next Monday at 10:00 AM. Please confirm your availability.', timestamp: '2026-07-09T11:45:00', read: true, hasAttachments: true },
+    { id: 'msg-6', sender: 'Youssef Alami', senderEmail: 'y.alami@acg.ma', subject: 'Delivery Status - Atlas Digital Servers', preview: 'The servers for Atlas Digital have been shipped and are expected to arrive by July 5th. Tracking number is attached.', timestamp: '2026-07-08T15:20:00', read: true, hasAttachments: true },
+    { id: 'msg-7', sender: 'Zineb Tahiri', senderEmail: 'z.tahiri@acg.ma', subject: 'Ticket #TK-0891 Update', preview: 'We have identified the root cause of the Cloud console access issue. It is related to a recent SSO configuration change.', timestamp: '2026-07-08T10:00:00', read: true, hasAttachments: false },
+  ]);
+
+  unreadInboxCount = computed(() => this.inboxMessages().filter(m => !m.read).length);
+
+  markInboxMessageRead(msgId: string) {
+    this.inboxMessages.update(list => list.map(m => m.id === msgId ? { ...m, read: true } : m));
+  }
+
+  markAllInboxMessagesRead() {
+    this.inboxMessages.update(list => list.map(m => ({ ...m, read: true })));
+  }
 
   isCustomizing = signal(false);
 

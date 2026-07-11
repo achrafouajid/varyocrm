@@ -1,0 +1,246 @@
+import { Component, input, output, computed, inject } from '@angular/core';
+import { MatIconModule } from '@angular/material/icon';
+import { CommonModule } from '@angular/common';
+import { CrmStateService, Notification, InboxMessage } from '../services/crm-state.service';
+
+@Component({
+  selector: 'app-notification-inbox-drawer',
+  imports: [MatIconModule, CommonModule],
+  template: `
+    @if (open()) {
+      <div class="fixed inset-0 z-50 overflow-hidden" aria-labelledby="drawer-title" role="dialog" aria-modal="true">
+        <div (click)="closeDrawer()" class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity"></div>
+
+        <div class="absolute inset-y-0 right-0 max-w-full flex pl-10">
+          <div class="w-screen max-w-lg bg-white shadow-2xl flex flex-col h-full animate-in slide-in-from-right-12 duration-300 relative">
+            <!-- Floating tab switcher -->
+            <div class="absolute -left-10 top-6 z-20 flex flex-col gap-1.5">
+              <button
+                (click)="switchTo('notifications')"
+                class="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg border-2 transition-all duration-200 relative"
+                [class]="drawerType() === 'notifications' 
+                  ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-200/50' 
+                  : 'bg-white text-slate-400 border-slate-200/80 hover:text-slate-600 hover:border-slate-300 hover:shadow-xl'"
+                title="Notifications"
+              >
+                <mat-icon class="text-[20px] w-5 h-5">notifications</mat-icon>
+                @if (notifUnreadCount() > 0) {
+                  <span class="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] bg-red-500 border-2 border-white rounded-full flex items-center justify-center text-[9px] font-bold text-white px-0.5">
+                    {{ notifUnreadCount() > 9 ? '9+' : notifUnreadCount() }}
+                  </span>
+                }
+              </button>
+              <button
+                (click)="switchTo('inbox')"
+                class="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg border-2 transition-all duration-200 relative"
+                [class]="drawerType() === 'inbox' 
+                  ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-200/50' 
+                  : 'bg-white text-slate-400 border-slate-200/80 hover:text-slate-600 hover:border-slate-300 hover:shadow-xl'"
+                title="Inbox"
+              >
+                <mat-icon class="text-[20px] w-5 h-5">inbox</mat-icon>
+                @if (inboxUnreadCount() > 0) {
+                  <span class="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] bg-red-500 border-2 border-white rounded-full flex items-center justify-center text-[9px] font-bold text-white px-0.5">
+                    {{ inboxUnreadCount() > 9 ? '9+' : inboxUnreadCount() }}
+                  </span>
+                }
+              </button>
+            </div>
+            <!-- Header -->
+            <div class="pl-10 pr-5 py-4 border-b border-slate-200 flex items-center justify-between shrink-0">
+              <div class="flex items-center gap-2.5">
+                <mat-icon class="text-slate-600 text-[22px] w-5.5 h-5.5">{{ drawerType() === 'notifications' ? 'notifications' : 'inbox' }}</mat-icon>
+                <h2 class="text-lg font-bold text-slate-900" id="drawer-title">
+                  {{ drawerType() === 'notifications' ? 'Notifications' : 'Inbox' }}
+                </h2>
+                @if (unreadCount() > 0) {
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">{{ unreadCount() }} new</span>
+                }
+              </div>
+              <div class="flex items-center gap-1">
+                @if (unreadCount() > 0) {
+                  <button (click)="markAllRead()" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 px-2.5 py-1.5 rounded-lg hover:bg-indigo-50 transition-colors">
+                    Mark all read
+                  </button>
+                }
+                <button (click)="closeDrawer()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors">
+                  <mat-icon class="text-[20px] w-5 h-5">close</mat-icon>
+                </button>
+              </div>
+            </div>
+
+            <!-- Content -->
+            <div class="flex-1 overflow-y-auto">
+              @if (drawerType() === 'notifications') {
+                <!-- Notifications List -->
+                @for (notif of notifications(); track notif.id) {
+                  <button
+                    (click)="markNotificationRead(notif.id)"
+                    class="w-full text-left px-5 py-4 flex items-start gap-3.5 transition-colors hover:bg-slate-50 border-b border-slate-100 last:border-b-0 cursor-pointer"
+                    [class]="notif.read ? '' : 'bg-indigo-50/40'"
+                  >
+                    <div class="shrink-0 mt-0.5">
+                      <div class="w-9 h-9 rounded-full flex items-center justify-center" [class]="notifIconBg(notif.type)">
+                        <mat-icon class="text-[16px] w-4 h-4" [class]="notifIconColor(notif.type)">{{ notifIcon(notif.type) }}</mat-icon>
+                      </div>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <div class="flex items-center justify-between gap-2">
+                        <span class="text-sm font-semibold" [class.text-slate-900]="!notif.read" [class.text-slate-700]="notif.read">{{ notif.title }}</span>
+                        <span class="text-[10px] text-slate-400 shrink-0 font-medium">{{ formatTime(notif.timestamp) }}</span>
+                      </div>
+                      <p class="text-xs mt-0.5 leading-relaxed" [class.text-slate-700]="!notif.read" [class.text-slate-500]="notif.read">{{ notif.message }}</p>
+                    </div>
+                    @if (!notif.read) {
+                      <span class="w-2 h-2 rounded-full bg-indigo-500 shrink-0 mt-2"></span>
+                    }
+                  </button>
+                } @empty {
+                  <div class="flex flex-col items-center justify-center py-16 px-6 text-center">
+                    <mat-icon class="text-slate-300 text-[48px] w-12 h-12 mb-3">notifications_off</mat-icon>
+                    <p class="text-sm font-semibold text-slate-500">No notifications</p>
+                    <p class="text-xs text-slate-400 mt-1">You're all caught up!</p>
+                  </div>
+                }
+              } @else {
+                <!-- Inbox Messages -->
+                @for (msg of inboxMessages(); track msg.id) {
+                  <button
+                    (click)="markInboxRead(msg.id)"
+                    class="w-full text-left px-5 py-4 flex items-start gap-3 transition-colors hover:bg-slate-50 border-b border-slate-100 last:border-b-0 cursor-pointer"
+                    [class]="msg.read ? '' : 'bg-indigo-50/40'"
+                  >
+                    <!-- Avatar -->
+                    <div class="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5">
+                      {{ getInitials(msg.sender) }}
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <div class="flex items-center justify-between gap-2">
+                        <span class="text-sm font-semibold truncate" [class.text-slate-900]="!msg.read" [class.text-slate-600]="msg.read">{{ msg.sender }}</span>
+                        <span class="text-[10px] text-slate-400 shrink-0 font-medium">{{ formatTime(msg.timestamp) }}</span>
+                      </div>
+                      <p class="text-xs font-medium mt-0.5 truncate" [class.text-slate-800]="!msg.read" [class.text-slate-500]="msg.read">{{ msg.subject }}</p>
+                      <p class="text-xs mt-0.5 leading-relaxed text-slate-500 truncate max-w-full">{{ msg.preview }}</p>
+                      <div class="flex items-center gap-2 mt-1.5">
+                        @if (!msg.read) {
+                          <span class="text-[10px] font-semibold text-indigo-600">New</span>
+                        }
+                        @if (msg.hasAttachments) {
+                          <span class="text-[10px] text-slate-400 flex items-center gap-0.5">
+                            <mat-icon class="text-[10px] w-2.5 h-2.5">attach_file</mat-icon> Attachment
+                          </span>
+                        }
+                      </div>
+                    </div>
+                  </button>
+                } @empty {
+                  <div class="flex flex-col items-center justify-center py-16 px-6 text-center">
+                    <mat-icon class="text-slate-300 text-[48px] w-12 h-12 mb-3">mail_outline</mat-icon>
+                    <p class="text-sm font-semibold text-slate-500">No messages</p>
+                    <p class="text-xs text-slate-400 mt-1">Your inbox is empty</p>
+                  </div>
+                }
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  `
+})
+export class NotificationInboxDrawerComponent {
+  private state = inject(CrmStateService);
+
+  drawerType = input<'notifications' | 'inbox'>('notifications');
+  open = input(false);
+  closed = output<void>();
+  switchType = output<'notifications' | 'inbox'>();
+
+  notifications = computed(() => this.state.notifications());
+  inboxMessages = computed(() => this.state.inboxMessages());
+
+  unreadCount = computed(() =>
+    this.drawerType() === 'notifications'
+      ? this.state.unreadNotificationsCount()
+      : this.state.unreadInboxCount()
+  );
+
+  notifUnreadCount = computed(() => this.state.unreadNotificationsCount());
+  inboxUnreadCount = computed(() => this.state.unreadInboxCount());
+
+  closeDrawer() {
+    this.closed.emit();
+  }
+
+  switchTo(type: 'notifications' | 'inbox') {
+    this.switchType.emit(type);
+  }
+
+  markAllRead() {
+    if (this.drawerType() === 'notifications') {
+      this.state.markAllNotificationsRead();
+    } else {
+      this.state.markAllInboxMessagesRead();
+    }
+  }
+
+  markNotificationRead(id: string) {
+    this.state.markNotificationRead(id);
+  }
+
+  markInboxRead(id: string) {
+    this.state.markInboxMessageRead(id);
+  }
+
+  notifIcon(type: string): string {
+    switch (type) {
+      case 'deal': return 'monetization_on';
+      case 'task': return 'task_alt';
+      case 'ticket': return 'support_agent';
+      case 'mention': return 'alternate_email';
+      default: return 'circle_notifications';
+    }
+  }
+
+  notifIconBg(type: string): string {
+    switch (type) {
+      case 'deal': return 'bg-emerald-50';
+      case 'task': return 'bg-blue-50';
+      case 'ticket': return 'bg-amber-50';
+      case 'mention': return 'bg-purple-50';
+      default: return 'bg-slate-50';
+    }
+  }
+
+  notifIconColor(type: string): string {
+    switch (type) {
+      case 'deal': return 'text-emerald-600';
+      case 'task': return 'text-blue-600';
+      case 'ticket': return 'text-amber-600';
+      case 'mention': return 'text-purple-600';
+      default: return 'text-slate-500';
+    }
+  }
+
+  getInitials(name: string): string {
+    const parts = name.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0][0] || '?';
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+
+  formatTime(timestamp: string): string {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+}
