@@ -117,37 +117,37 @@ import { UserAvatarComponent } from '../shared/user-avatar.component';
           <div class="max-w-7xl mx-auto space-y-6">
             <!-- KPI Metrics Dashboard -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div class="glass-card rounded-2xl p-5 flex items-center justify-between">
+              <div class="glass-card rounded-2xl p-4 lg:p-5 flex items-center justify-between">
                 <div class="space-y-1">
                   <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Leads</span>
-                  <div class="text-3xl font-bold text-slate-900">{{ totalLeadsCount() }}</div>
+                  <div class="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900">{{ totalLeadsCount() }}</div>
                 </div>
                 <div class="p-3 glass-strong text-indigo-600 rounded-xl">
                   <mat-icon class="w-6 h-6 text-[24px]! leading-none!">people_outline</mat-icon>
                 </div>
               </div>
-              <div class="glass-card rounded-2xl p-5 flex items-center justify-between">
+              <div class="glass-card rounded-2xl p-4 lg:p-5 flex items-center justify-between">
                 <div class="space-y-1">
                   <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Qualified Leads</span>
-                  <div class="text-3xl font-bold text-slate-900">{{ qualifiedLeadsCount() }}</div>
+                  <div class="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900">{{ qualifiedLeadsCount() }}</div>
                 </div>
                 <div class="p-3 glass-strong text-emerald-600 rounded-xl">
                   <mat-icon class="w-6 h-6 text-[24px]! leading-none!">verified_user</mat-icon>
                 </div>
               </div>
-              <div class="glass-card rounded-2xl p-5 flex items-center justify-between">
+              <div class="glass-card rounded-2xl p-4 lg:p-5 flex items-center justify-between">
                 <div class="space-y-1">
                   <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Avg Lead Score</span>
-                  <div class="text-3xl font-bold text-slate-900">{{ avgLeadScore() }}%</div>
+                  <div class="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900">{{ avgLeadScore() }}%</div>
                 </div>
                 <div class="p-3 glass-strong text-amber-600 rounded-xl">
                   <mat-icon class="w-6 h-6 text-[24px]! leading-none!">star_outline</mat-icon>
                 </div>
               </div>
-              <div class="glass-card rounded-2xl p-5 flex items-center justify-between">
+              <div class="glass-card rounded-2xl p-4 lg:p-5 flex items-center justify-between">
                 <div class="space-y-1">
                   <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Pipeline Value</span>
-                  <div class="text-3xl font-bold text-slate-900">€{{ pipelineValue() | number:'1.0-0' }}</div>
+                  <div class="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900">€{{ pipelineValue() | number:'1.0-0' }}</div>
                 </div>
                 <div class="p-3 glass-strong text-rose-600 rounded-xl">
                   <mat-icon class="w-6 h-6 text-[24px]! leading-none!">euro_symbol</mat-icon>

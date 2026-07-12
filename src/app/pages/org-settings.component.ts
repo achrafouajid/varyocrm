@@ -125,27 +125,27 @@ import { MatIconModule } from '@angular/material/icon';
           <h3 class="font-bold text-slate-800 text-base px-1">Organization Metrics</h3>
           <div class="grid grid-cols-2 gap-4">
             <!-- Total Users -->
-            <div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs hover:shadow-md transition-shadow">
+            <div class="bg-white border border-slate-200/80 rounded-2xl p-4 lg:p-5 shadow-xs hover:shadow-md transition-shadow">
               <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Users</div>
-              <div class="text-3xl font-extrabold text-slate-900 mt-2 font-mono">{{ state.users().length }}</div>
+              <div class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-2 font-mono">{{ state.users().length }}</div>
             </div>
 
             <!-- Active Users -->
-            <div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs hover:shadow-md transition-shadow">
+            <div class="bg-white border border-slate-200/80 rounded-2xl p-4 lg:p-5 shadow-xs hover:shadow-md transition-shadow">
               <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Active Users</div>
-              <div class="text-3xl font-extrabold text-slate-900 mt-2 font-mono">{{ state.activeUsers().length }}</div>
+              <div class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-2 font-mono">{{ state.activeUsers().length }}</div>
             </div>
 
             <!-- Active Teams -->
-            <div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs hover:shadow-md transition-shadow">
+            <div class="bg-white border border-slate-200/80 rounded-2xl p-4 lg:p-5 shadow-xs hover:shadow-md transition-shadow">
               <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Active Teams</div>
-              <div class="text-3xl font-extrabold text-slate-900 mt-2 font-mono">{{ state.teams().length }}</div>
+              <div class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-2 font-mono">{{ state.teams().length }}</div>
             </div>
 
             <!-- Groups -->
-            <div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs hover:shadow-md transition-shadow">
+            <div class="bg-white border border-slate-200/80 rounded-2xl p-4 lg:p-5 shadow-xs hover:shadow-md transition-shadow">
               <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Collaboration Groups</div>
-              <div class="text-3xl font-extrabold text-slate-900 mt-2 font-mono">{{ state.groups().length }}</div>
+              <div class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-2 font-mono">{{ state.groups().length }}</div>
             </div>
           </div>
         </div>

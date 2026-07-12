@@ -20,10 +20,10 @@ import { CrmStateService, Lead, LeadActivity, LeadAttachment } from '../services
       <!-- KPI Metrics Dashboard -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <!-- Metric 1: Total Leads -->
-        <div class="bg-white rounded-2xl border border-slate-200 p-6 flex items-center justify-between shadow-xs">
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 lg:p-6 flex items-center justify-between shadow-xs">
           <div class="space-y-1">
             <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Leads</span>
-            <div class="text-3xl font-bold text-slate-900">{{ totalLeadsCount() }}</div>
+            <div class="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900">{{ totalLeadsCount() }}</div>
           </div>
           <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl">
             <mat-icon class="w-6 h-6 text-[24px]! leading-none!">people_outline</mat-icon>
@@ -31,10 +31,10 @@ import { CrmStateService, Lead, LeadActivity, LeadAttachment } from '../services
         </div>
 
         <!-- Metric 2: Qualified Leads -->
-        <div class="bg-white rounded-2xl border border-slate-200 p-6 flex items-center justify-between shadow-xs">
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 lg:p-6 flex items-center justify-between shadow-xs">
           <div class="space-y-1">
             <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Qualified Leads</span>
-            <div class="text-3xl font-bold text-slate-900">{{ qualifiedLeadsCount() }}</div>
+            <div class="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900">{{ qualifiedLeadsCount() }}</div>
           </div>
           <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
             <mat-icon class="w-6 h-6 text-[24px]! leading-none!">verified_user</mat-icon>
@@ -42,10 +42,10 @@ import { CrmStateService, Lead, LeadActivity, LeadAttachment } from '../services
         </div>
 
         <!-- Metric 3: Avg Score -->
-        <div class="bg-white rounded-2xl border border-slate-200 p-6 flex items-center justify-between shadow-xs">
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 lg:p-6 flex items-center justify-between shadow-xs">
           <div class="space-y-1">
             <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Avg Lead Score</span>
-            <div class="text-3xl font-bold text-slate-900">{{ avgLeadScore() }}%</div>
+            <div class="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900">{{ avgLeadScore() }}%</div>
           </div>
           <div class="p-3 bg-amber-50 text-amber-600 rounded-xl">
             <mat-icon class="w-6 h-6 text-[24px]! leading-none!">star_outline</mat-icon>
@@ -53,10 +53,10 @@ import { CrmStateService, Lead, LeadActivity, LeadAttachment } from '../services
         </div>
 
         <!-- Metric 4: Est. Pipeline -->
-        <div class="bg-white rounded-2xl border border-slate-200 p-6 flex items-center justify-between shadow-xs">
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 lg:p-6 flex items-center justify-between shadow-xs">
           <div class="space-y-1">
             <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Pipeline Value</span>
-            <div class="text-3xl font-bold text-slate-900">€{{ pipelineValue() | number:'1.0-0' }}</div>
+            <div class="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900">€{{ pipelineValue() | number:'1.0-0' }}</div>
           </div>
           <div class="p-3 bg-rose-50 text-rose-600 rounded-xl">
             <mat-icon class="w-6 h-6 text-[24px]! leading-none!">euro_symbol</mat-icon>

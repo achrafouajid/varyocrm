@@ -47,14 +47,14 @@ declare var Chart: any;
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
 
           <!-- Card 1: New Deals -->
-          <div class="glass-card rounded-2xl p-6 flex flex-col justify-between hover:shadow-md transition-all">
+          <div class="glass-card rounded-2xl p-4 lg:p-6 flex flex-col justify-between hover:shadow-md transition-all">
             <div class="flex items-center justify-between mb-4">
               <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-sans">New Deals</h3>
               <div class="h-9 w-9 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center border border-indigo-100">
                 <mat-icon class="text-base" style="width:18px;height:18px;font-size:18px;display:flex;align-items:center">handshake</mat-icon>
               </div>
             </div>
-            <div class="text-2xl font-bold text-slate-900 font-mono">{{ newDealsKPI().count }} <span class="text-sm font-semibold text-slate-400 font-sans">deals</span></div>
+            <div class="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900 font-mono">{{ newDealsKPI().count }} <span class="text-sm font-semibold text-slate-400 font-sans">deals</span></div>
             <div class="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
               <div class="text-[10px] text-indigo-600 font-bold flex items-center gap-0.5 font-sans">
                 <mat-icon class="text-[12px]" style="width:12px;height:12px;font-size:12px;display:flex;align-items:center">trending_up</mat-icon> This month's profit
@@ -64,14 +64,14 @@ declare var Chart: any;
           </div>
 
           <!-- Card 2: New Prospects -->
-          <div class="glass-card rounded-2xl p-6 flex flex-col justify-between hover:shadow-md transition-all">
+          <div class="glass-card rounded-2xl p-4 lg:p-6 flex flex-col justify-between hover:shadow-md transition-all">
             <div class="flex items-center justify-between mb-4">
               <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-sans">New Prospects</h3>
               <div class="h-9 w-9 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center border border-emerald-100">
                 <mat-icon class="text-base" style="width:18px;height:18px;font-size:18px;display:flex;align-items:center">group_add</mat-icon>
               </div>
             </div>
-            <div class="text-2xl font-bold text-slate-900 font-mono">{{ newProspectsKPI().count }} <span class="text-sm font-semibold text-slate-400 font-sans">prospects</span></div>
+            <div class="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900 font-mono">{{ newProspectsKPI().count }} <span class="text-sm font-semibold text-slate-400 font-sans">prospects</span></div>
             <div class="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
               <div class="text-[10px] text-emerald-600 font-bold flex items-center gap-0.5 font-sans">
                 <mat-icon class="text-[12px]" style="width:12px;height:12px;font-size:12px;display:flex;align-items:center">insights</mat-icon> Pipeline potential
@@ -81,14 +81,14 @@ declare var Chart: any;
           </div>
 
           <!-- Card 3: Lost Prospects -->
-          <div class="glass-card rounded-2xl p-6 flex flex-col justify-between hover:shadow-md transition-all">
+          <div class="glass-card rounded-2xl p-4 lg:p-6 flex flex-col justify-between hover:shadow-md transition-all">
             <div class="flex items-center justify-between mb-4">
               <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-sans">Lost Prospects</h3>
               <div class="h-9 w-9 bg-red-50 text-red-500 rounded-xl flex items-center justify-center border border-red-100">
                 <mat-icon class="text-base" style="width:18px;height:18px;font-size:18px;display:flex;align-items:center">do_not_disturb_on</mat-icon>
               </div>
             </div>
-            <div class="text-2xl font-bold text-slate-900 font-mono">{{ lostProspectsKPI().count }} <span class="text-sm font-semibold text-slate-400 font-sans">closed lost</span></div>
+            <div class="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900 font-mono">{{ lostProspectsKPI().count }} <span class="text-sm font-semibold text-slate-400 font-sans">closed lost</span></div>
             <div class="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
               <div class="text-[10px] text-red-500 font-bold flex items-center gap-0.5 font-sans">
                 <mat-icon class="text-[12px]" style="width:12px;height:12px;font-size:12px;display:flex;align-items:center">trending_down</mat-icon> Value lost
@@ -98,7 +98,7 @@ declare var Chart: any;
           </div>
 
           <!-- Card 4: Today's Deal -->
-          <div class="glass-card rounded-2xl p-6 flex flex-col justify-between hover:shadow-md transition-all">
+          <div class="glass-card rounded-2xl p-4 lg:p-6 flex flex-col justify-between hover:shadow-md transition-all">
             <div class="flex items-center justify-between mb-4">
               <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-sans">Today's Deal</h3>
               <div class="h-9 w-9 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center border border-amber-100">
@@ -146,56 +146,56 @@ declare var Chart: any;
         <!-- KPI Summary Cards (4 Columns) -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <!-- Sales This Month -->
-          <div class="glass-card rounded-2xl p-6 flex flex-col justify-between hover:shadow-md transition-all">
+          <div class="glass-card rounded-2xl p-4 lg:p-6 flex flex-col justify-between hover:shadow-md transition-all">
             <div class="flex items-center justify-between mb-4">
               <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-sans">Sales This Month</h3>
               <div class="h-9 w-9 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center border border-emerald-100">
                 <mat-icon class="text-base w-4.5 h-4.5 flex items-center justify-center">paid</mat-icon>
               </div>
             </div>
-            <div class="text-2xl font-bold text-slate-900 font-mono">{{ formatCurrency(state.salesThisMonth()) }}</div>
+            <div class="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900 font-mono">{{ formatCurrency(state.salesThisMonth()) }}</div>
             <div class="text-[10px] text-emerald-600 font-bold mt-2 flex items-center gap-0.5 font-sans">
               <mat-icon class="text-[12px] w-3 h-3 flex items-center justify-center">trending_up</mat-icon> Current month won/confirmed
             </div>
           </div>
 
           <!-- Conversion Rate -->
-          <div class="glass-card rounded-2xl p-6 flex flex-col justify-between hover:shadow-md transition-all">
+          <div class="glass-card rounded-2xl p-4 lg:p-6 flex flex-col justify-between hover:shadow-md transition-all">
             <div class="flex items-center justify-between mb-4">
               <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-sans">Conversion Rate</h3>
               <div class="h-9 w-9 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center border border-indigo-100">
                 <mat-icon class="text-base w-4.5 h-4.5 flex items-center justify-center">query_stats</mat-icon>
               </div>
             </div>
-            <div class="text-2xl font-bold text-slate-900 font-mono">{{ state.conversionRate() }}%</div>
+            <div class="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900 font-mono">{{ state.conversionRate() }}%</div>
             <div class="text-[10px] text-indigo-600 font-bold mt-2 flex items-center gap-0.5 font-sans">
               <mat-icon class="text-[12px] w-3 h-3 flex items-center justify-center">insights</mat-icon> Active vs Total pipeline
             </div>
           </div>
 
           <!-- Win Rate -->
-          <div class="glass-card rounded-2xl p-6 flex flex-col justify-between hover:shadow-md transition-all">
+          <div class="glass-card rounded-2xl p-4 lg:p-6 flex flex-col justify-between hover:shadow-md transition-all">
             <div class="flex items-center justify-between mb-4">
               <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-sans">Win Rate</h3>
               <div class="h-9 w-9 bg-violet-50 text-violet-600 rounded-xl flex items-center justify-center border border-violet-100">
                 <mat-icon class="text-base w-4.5 h-4.5 flex items-center justify-center">emoji_events</mat-icon>
               </div>
             </div>
-            <div class="text-2xl font-bold text-slate-900 font-mono">{{ state.winRate() }}%</div>
+            <div class="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900 font-mono">{{ state.winRate() }}%</div>
             <div class="text-[10px] text-violet-600 font-bold mt-2 flex items-center gap-0.5 font-sans">
               <mat-icon class="text-[12px] w-3 h-3 flex items-center justify-center">check_circle</mat-icon> Won vs Lost deals
             </div>
           </div>
 
           <!-- Average Deal Size -->
-          <div class="glass-card rounded-2xl p-6 flex flex-col justify-between hover:shadow-md transition-all">
+          <div class="glass-card rounded-2xl p-4 lg:p-6 flex flex-col justify-between hover:shadow-md transition-all">
             <div class="flex items-center justify-between mb-4">
               <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-sans">Avg Deal Size</h3>
               <div class="h-9 w-9 bg-sky-50 text-sky-600 rounded-xl flex items-center justify-center border border-sky-100">
                 <mat-icon class="text-base w-4.5 h-4.5 flex items-center justify-center">monetization_on</mat-icon>
               </div>
             </div>
-            <div class="text-2xl font-bold text-slate-900 font-mono">{{ formatCurrency(state.avgDealSize()) }}</div>
+            <div class="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900 font-mono">{{ formatCurrency(state.avgDealSize()) }}</div>
             <div class="text-[10px] text-sky-600 font-bold mt-2 flex items-center gap-0.5 font-sans">
               <mat-icon class="text-[12px] w-3 h-3 flex items-center justify-center">analytics</mat-icon> Excludes lost opportunities
             </div>

@@ -37,26 +37,26 @@ import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-cal
         <div class="flex-1 min-w-0 space-y-5">
           <!-- Quick Actions (compact) -->
           <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <a routerLink="/sales" class="glass-card rounded-xl p-3 flex flex-col items-center justify-center transition-all group cursor-pointer no-underline text-indigo-700 hover:text-indigo-600">
-              <div class="glass-strong text-indigo-600 w-9 h-9 rounded-lg mb-1.5 group-hover:scale-110 transition-transform flex items-center justify-center">
+            <a routerLink="/sales" class="quick-action-btn rounded-xl p-3 flex flex-col items-center justify-center cursor-pointer no-underline text-indigo-700 hover:text-indigo-600">
+              <div class="icon-wrap icon-wrap--indigo glass-strong text-indigo-600 w-9 h-9 rounded-lg mb-1.5 flex items-center justify-center">
                 <mat-icon class="leading-none! flex items-center justify-center w-5 h-5 text-[20px]!">add_business</mat-icon>
               </div>
               <span class="font-semibold text-[11px]">New Proposal</span>
             </a>
-            <a routerLink="/partners" class="glass-card rounded-xl p-3 flex flex-col items-center justify-center transition-all group cursor-pointer no-underline text-emerald-700 hover:text-emerald-600">
-              <div class="glass-strong text-emerald-600 w-9 h-9 rounded-lg mb-1.5 group-hover:scale-110 transition-transform flex items-center justify-center">
+            <a routerLink="/partners" class="quick-action-btn rounded-xl p-3 flex flex-col items-center justify-center cursor-pointer no-underline text-emerald-700 hover:text-emerald-600">
+              <div class="icon-wrap icon-wrap--emerald glass-strong text-emerald-600 w-9 h-9 rounded-lg mb-1.5 flex items-center justify-center">
                 <mat-icon class="leading-none! flex items-center justify-center w-5 h-5 text-[20px]!">person_add</mat-icon>
               </div>
               <span class="font-semibold text-[11px]">Add Partner</span>
             </a>
-            <a routerLink="/marketing" class="glass-card rounded-xl p-3 flex flex-col items-center justify-center transition-all group cursor-pointer no-underline text-amber-700 hover:text-amber-600">
-              <div class="glass-strong text-amber-500 w-9 h-9 rounded-lg mb-1.5 group-hover:scale-110 transition-transform flex items-center justify-center">
+            <a routerLink="/marketing" class="quick-action-btn rounded-xl p-3 flex flex-col items-center justify-center cursor-pointer no-underline text-amber-700 hover:text-amber-600">
+              <div class="icon-wrap icon-wrap--amber glass-strong text-amber-500 w-9 h-9 rounded-lg mb-1.5 flex items-center justify-center">
                 <mat-icon class="leading-none! flex items-center justify-center w-5 h-5 text-[20px]!">campaign</mat-icon>
               </div>
               <span class="font-semibold text-[11px]">New Campaign</span>
             </a>
-            <a routerLink="/tickets" class="glass-card rounded-xl p-3 flex flex-col items-center justify-center transition-all group cursor-pointer no-underline text-rose-700 hover:text-rose-600">
-              <div class="glass-strong text-rose-500 w-9 h-9 rounded-lg mb-1.5 group-hover:scale-110 transition-transform flex items-center justify-center">
+            <a routerLink="/tickets" class="quick-action-btn rounded-xl p-3 flex flex-col items-center justify-center cursor-pointer no-underline text-rose-700 hover:text-rose-600">
+              <div class="icon-wrap icon-wrap--rose glass-strong text-rose-500 w-9 h-9 rounded-lg mb-1.5 flex items-center justify-center">
                 <mat-icon class="leading-none! flex items-center justify-center w-5 h-5 text-[20px]!">support_agent</mat-icon>
               </div>
               <span class="font-semibold text-[11px]">Create Ticket</span>
@@ -66,14 +66,14 @@ import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-cal
           <!-- Dynamic KPIs -->
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
             @if (isKpiActive('totalDeals')) {
-              <div class="glass-card rounded-2xl p-6 flex flex-col transition-all">
+              <div class="glass-card rounded-2xl p-4 lg:p-6 flex flex-col transition-all">
                 <div class="flex items-center justify-between mb-4">
                   <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Deals Value</h3>
                   <div class="h-10 w-10 glass-strong text-indigo-600 rounded-xl flex items-center justify-center">
                     <mat-icon class="text-[20px]">monetization_on</mat-icon>
                   </div>
                 </div>
-                <div class="text-3xl font-bold text-slate-900">{{ formatCurrency(totalDealsValue()) }}</div>
+                <div class="text-2xl md:text-3xl font-bold text-slate-900">{{ formatCurrency(totalDealsValue()) }}</div>
                 <div class="text-sm text-emerald-600 font-semibold mt-2 flex items-center">
                   <mat-icon class="text-sm! leading-none! w-4 h-4 mr-1">trending_up</mat-icon>
                   Active Pipeline
@@ -82,14 +82,14 @@ import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-cal
             }
 
             @if (isKpiActive('marketingSpend')) {
-              <div class="glass-card rounded-2xl p-6 flex flex-col transition-all">
+              <div class="glass-card rounded-2xl p-4 lg:p-6 flex flex-col transition-all">
                 <div class="flex items-center justify-between mb-4">
                   <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Marketing Spend</h3>
                   <div class="h-10 w-10 glass-strong text-pink-600 rounded-xl flex items-center justify-center">
                     <mat-icon class="text-[20px]">campaign</mat-icon>
                   </div>
                 </div>
-                <div class="text-3xl font-bold text-slate-900">{{ formatCurrency(12450) }}</div>
+                <div class="text-2xl md:text-3xl font-bold text-slate-900">{{ formatCurrency(12450) }}</div>
                 <div class="text-sm text-slate-500 font-semibold mt-2 flex items-center">
                   <mat-icon class="text-sm! leading-none! w-4 h-4 mr-1">trending_flat</mat-icon>
                   Stable across channels
@@ -98,14 +98,14 @@ import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-cal
             }
 
             @if (isKpiActive('latePayers')) {
-              <div class="glass-card rounded-2xl p-6 flex flex-col transition-all">
+              <div class="glass-card rounded-2xl p-4 lg:p-6 flex flex-col transition-all">
                 <div class="flex items-center justify-between mb-4">
                   <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Late Payers</h3>
                   <div class="h-10 w-10 glass-strong text-rose-600 rounded-xl flex items-center justify-center">
                     <mat-icon class="text-[20px]">warning</mat-icon>
                   </div>
                 </div>
-                <div class="text-3xl font-bold text-slate-900">{{ latePayersCount() }}</div>
+                <div class="text-2xl md:text-3xl font-bold text-slate-900">{{ latePayersCount() }}</div>
                 <div class="text-sm text-rose-600 font-semibold mt-2 flex items-center">
                   <mat-icon class="text-sm! leading-none! w-4 h-4 mr-1">trending_down</mat-icon>
                   Needs attention
@@ -114,14 +114,14 @@ import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-cal
             }
             
             @if (isKpiActive('activeCampaigns')) {
-              <div class="glass-card rounded-2xl p-6 flex flex-col transition-all">
+              <div class="glass-card rounded-2xl p-4 lg:p-6 flex flex-col transition-all">
                 <div class="flex items-center justify-between mb-4">
                   <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Active Campaigns</h3>
                   <div class="h-10 w-10 glass-strong text-emerald-600 rounded-xl flex items-center justify-center">
                     <mat-icon class="text-[20px]">email</mat-icon>
                   </div>
                 </div>
-                <div class="text-3xl font-bold text-slate-900">{{ activeCampaignsCount() }}</div>
+                <div class="text-2xl md:text-3xl font-bold text-slate-900">{{ activeCampaignsCount() }}</div>
                 <div class="text-sm text-emerald-600 font-semibold mt-2 flex items-center">
                   <mat-icon class="text-sm! leading-none! w-4 h-4 mr-1">check_circle</mat-icon>
                   Running smoothly
@@ -130,14 +130,14 @@ import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-cal
             }
             
             @if (isKpiActive('openTickets')) {
-              <div class="glass-card rounded-2xl p-6 flex flex-col transition-all">
+              <div class="glass-card rounded-2xl p-4 lg:p-6 flex flex-col transition-all">
                 <div class="flex items-center justify-between mb-4">
                   <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Open Tickets</h3>
                   <div class="h-10 w-10 glass-strong text-amber-600 rounded-xl flex items-center justify-center">
                     <mat-icon class="text-[20px]">support_agent</mat-icon>
                   </div>
                 </div>
-                <div class="text-3xl font-bold text-slate-900">{{ openTicketsCount() }}</div>
+                <div class="text-2xl md:text-3xl font-bold text-slate-900">{{ openTicketsCount() }}</div>
                 <div class="text-sm text-amber-600 font-semibold mt-2 flex items-center">
                   <mat-icon class="text-sm! leading-none! w-4 h-4 mr-1">pending_actions</mat-icon>
                   Pending resolution
@@ -146,14 +146,14 @@ import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-cal
             }
             
             @if (isKpiActive('totalProspects')) {
-              <div class="glass-card rounded-2xl p-6 flex flex-col transition-all">
+              <div class="glass-card rounded-2xl p-4 lg:p-6 flex flex-col transition-all">
                 <div class="flex items-center justify-between mb-4">
                   <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Prospects</h3>
                   <div class="h-10 w-10 glass-strong text-blue-600 rounded-xl flex items-center justify-center">
                     <mat-icon class="text-[20px]">person_search</mat-icon>
                   </div>
                 </div>
-                <div class="text-3xl font-bold text-slate-900">{{ prospectsCount() }}</div>
+                <div class="text-2xl md:text-3xl font-bold text-slate-900">{{ prospectsCount() }}</div>
                 <div class="text-sm text-emerald-600 font-semibold mt-2 flex items-center">
                   <mat-icon class="text-sm! leading-none! w-4 h-4 mr-1">trending_up</mat-icon>
                   Growing pipeline
@@ -162,14 +162,14 @@ import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-cal
             }
 
             @if (isKpiActive('newDeals')) {
-              <div class="glass-card rounded-2xl p-6 flex flex-col transition-all">
+              <div class="glass-card rounded-2xl p-4 lg:p-6 flex flex-col transition-all">
                 <div class="flex items-center justify-between mb-4">
                   <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">New Deals</h3>
                   <div class="h-10 w-10 glass-strong text-indigo-600 rounded-xl flex items-center justify-center">
                     <mat-icon class="text-[18px]">handshake</mat-icon>
                   </div>
                 </div>
-                <div class="text-3xl font-bold text-slate-900">{{ newDealsKPI().count }} <span class="text-sm font-semibold text-slate-400">deals</span></div>
+                <div class="text-2xl md:text-3xl font-bold text-slate-900">{{ newDealsKPI().count }} <span class="text-sm font-semibold text-slate-400">deals</span></div>
                 <div class="mt-2 pt-3 border-t border-white/30 flex items-center justify-between">
                   <div class="text-[10px] text-indigo-600 font-bold flex items-center gap-0.5">
                     <mat-icon class="text-[12px] w-3 h-3">trending_up</mat-icon> This month's profit
@@ -180,14 +180,14 @@ import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-cal
             }
 
             @if (isKpiActive('newProspects')) {
-              <div class="glass-card rounded-2xl p-6 flex flex-col transition-all">
+              <div class="glass-card rounded-2xl p-4 lg:p-6 flex flex-col transition-all">
                 <div class="flex items-center justify-between mb-4">
                   <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">New Prospects</h3>
                   <div class="h-10 w-10 glass-strong text-emerald-600 rounded-xl flex items-center justify-center">
                     <mat-icon class="text-[18px]">group_add</mat-icon>
                   </div>
                 </div>
-                <div class="text-3xl font-bold text-slate-900">{{ newProspectsKPI().count }} <span class="text-sm font-semibold text-slate-400">prospects</span></div>
+                <div class="text-2xl md:text-3xl font-bold text-slate-900">{{ newProspectsKPI().count }} <span class="text-sm font-semibold text-slate-400">prospects</span></div>
                 <div class="mt-2 pt-3 border-t border-white/30 flex items-center justify-between">
                   <div class="text-[10px] text-emerald-600 font-bold flex items-center gap-0.5">
                     <mat-icon class="text-[12px] w-3 h-3">insights</mat-icon> Pipeline potential
@@ -198,14 +198,14 @@ import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-cal
             }
 
             @if (isKpiActive('lostProspects')) {
-              <div class="glass-card rounded-2xl p-6 flex flex-col transition-all">
+              <div class="glass-card rounded-2xl p-4 lg:p-6 flex flex-col transition-all">
                 <div class="flex items-center justify-between mb-4">
                   <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Lost Prospects</h3>
                   <div class="h-10 w-10 glass-strong text-red-500 rounded-xl flex items-center justify-center">
                     <mat-icon class="text-[18px]">do_not_disturb_on</mat-icon>
                   </div>
                 </div>
-                <div class="text-3xl font-bold text-slate-900">{{ lostProspectsKPI().count }} <span class="text-sm font-semibold text-slate-400">closed lost</span></div>
+                <div class="text-2xl md:text-3xl font-bold text-slate-900">{{ lostProspectsKPI().count }} <span class="text-sm font-semibold text-slate-400">closed lost</span></div>
                 <div class="mt-2 pt-3 border-t border-white/30 flex items-center justify-between">
                   <div class="text-[10px] text-red-500 font-bold flex items-center gap-0.5">
                     <mat-icon class="text-[12px] w-3 h-3">trending_down</mat-icon> Value lost
@@ -216,7 +216,7 @@ import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-cal
             }
 
             @if (isKpiActive('todaysDeal')) {
-              <div class="glass-card rounded-2xl p-6 flex flex-col transition-all">
+              <div class="glass-card rounded-2xl p-4 lg:p-6 flex flex-col transition-all">
                 <div class="flex items-center justify-between mb-4">
                   <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Today's Deal</h3>
                   <div class="h-10 w-10 glass-strong text-amber-600 rounded-xl flex items-center justify-center">
@@ -243,14 +243,14 @@ import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-cal
             }
 
             @if (isKpiActive('newTasksWeek')) {
-              <div class="glass-card rounded-2xl p-6 flex flex-col transition-all">
+              <div class="glass-card rounded-2xl p-4 lg:p-6 flex flex-col transition-all">
                 <div class="flex items-center justify-between mb-4">
                   <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">New Tasks (Week)</h3>
                   <div class="h-10 w-10 glass-strong text-violet-600 rounded-xl flex items-center justify-center">
                     <mat-icon class="text-[18px]">assignment_add</mat-icon>
                   </div>
                 </div>
-                <div class="text-3xl font-bold text-slate-900">{{ formatNumber(newTasksWeek().weekCount) }} <span class="text-sm font-semibold text-slate-400">tasks</span></div>
+                <div class="text-2xl md:text-3xl font-bold text-slate-900">{{ formatNumber(newTasksWeek().weekCount) }} <span class="text-sm font-semibold text-slate-400">tasks</span></div>
                 <div class="mt-2 pt-3 border-t border-white/30 flex items-center justify-between">
                   <div class="text-[10px] text-violet-600 font-bold flex items-center gap-0.5">
                     <mat-icon class="text-[12px] w-3 h-3">trending_up</mat-icon> This week

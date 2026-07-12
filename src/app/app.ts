@@ -190,36 +190,35 @@ const SEARCH_ITEMS: SearchItem[] = [
       opacity: 1;
     }
 
-    .dark-glass-search {
-      background: rgba(17, 17, 17, 0.9) !important;
+    .glass-search {
+      background: rgba(255, 255, 255, 0.6) !important;
       backdrop-filter: blur(30px) saturate(2);
       -webkit-backdrop-filter: blur(30px) saturate(2);
-      border: 1px solid rgba(255, 255, 255, 0.1) !important;
-      color: #f1f5f9 !important;
-      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15) !important;
-      font-weight: 500;
+      border: 1px solid rgba(255, 255, 255, 0.7) !important;
+      color: #334155 !important;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04) !important;
     }
-    .dark-glass-search::placeholder {
-      color: rgba(255, 255, 255, 0.4) !important;
+    .glass-search::placeholder {
+      color: rgba(51, 65, 85, 0.4) !important;
     }
-    .dark-glass-search:focus {
-      background: rgba(17, 17, 17, 0.95) !important;
+    .glass-search:focus {
+      background: rgba(255, 255, 255, 0.85) !important;
       border-color: rgba(99, 102, 241, 0.3) !important;
-      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1), 0 4px 24px rgba(0, 0, 0, 0.2) !important;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1), 0 4px 24px rgba(0, 0, 0, 0.06) !important;
     }
-    .dark-glass-dropdown {
-      background: rgba(17, 17, 17, 0.95) !important;
+    .glass-dropdown {
+      background: rgba(255, 255, 255, 0.85) !important;
       backdrop-filter: blur(40px) saturate(2);
       -webkit-backdrop-filter: blur(40px) saturate(2);
-      border: 1px solid rgba(255, 255, 255, 0.1) !important;
-      box-shadow: 0 8px 64px rgba(0, 0, 0, 0.3) !important;
+      border: 1px solid rgba(255, 255, 255, 0.5) !important;
+      box-shadow: 0 8px 64px rgba(0, 0, 0, 0.08) !important;
     }
-    .search-result-btn {
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    .glass-dropdown-item {
+      border-bottom: 1px solid rgba(0, 0, 0, 0.04);
       transition: background-color 150ms ease;
     }
-    .search-result-btn:hover, .search-result-btn.selected-item {
-      background-color: rgba(255, 255, 255, 0.08) !important;
+    .glass-dropdown-item:hover, .glass-dropdown-item.selected-item {
+      background-color: rgba(99, 102, 241, 0.08) !important;
     }
   `],
   template: `
@@ -234,8 +233,8 @@ const SEARCH_ITEMS: SearchItem[] = [
               <span class="font-bold text-lg tracking-tight font-sans whitespace-nowrap" style="color: #0146e5">Bento</span>
             </div>
           </div>
-            <div class="relative max-w-xl flex-1">
-              <mat-icon class="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/60 text-[20px] w-5 h-5 pointer-events-none">search</mat-icon>
+            <div class="relative max-w-md flex-1">
+              <mat-icon class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px] w-4.5 h-4.5 pointer-events-none">search</mat-icon>
               <input
                 #searchInput
                 [ngModel]="searchQuery()"
@@ -244,42 +243,42 @@ const SEARCH_ITEMS: SearchItem[] = [
                 (keydown)="onSearchKeydown($event)"
                 type="text"
                 placeholder="Search menus and pages...  (Ctrl+K)"
-                class="w-full pl-11 pr-10 py-2.5 dark-glass-search rounded-full text-sm outline-none transition-all"
+                class="w-full pl-9 pr-9 py-1.5 glass-search rounded-full text-xs outline-none transition-all"
               />
               @if (searchQuery()) {
-                <button (click)="clearSearch()" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors">
-                  <mat-icon class="text-[18px] w-4.5 h-4.5">close</mat-icon>
+                <button (click)="clearSearch()" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
+                  <mat-icon class="text-[16px] w-4 h-4">close</mat-icon>
                 </button>
               }
               <!-- Results Dropdown -->
               @if (showSearchResults() && searchQuery().length >= 1 && filteredSearchItems().length > 0) {
-                <div class="absolute left-0 right-0 mt-2 dark-glass-dropdown rounded-2xl z-50 max-h-80 overflow-y-auto origin-top">
+                <div class="absolute left-0 right-0 mt-2 glass-dropdown rounded-2xl z-50 max-h-80 overflow-y-auto origin-top">
                   @for (item of filteredSearchItems(); track $index) {
                     <button
                       (click)="navigateToSearchItem(item)"
                       (mouseenter)="selectedSearchIndex.set($index)"
-                      [class]="(selectedSearchIndex() === $index ? 'selected-item' : '') + ' search-result-btn w-full flex items-start gap-3 px-5 py-3.5 text-left transition-colors last:border-b-0 cursor-pointer'"
+                      [class]="(selectedSearchIndex() === $index ? 'selected-item' : '') + ' glass-dropdown-item w-full flex items-start gap-3 px-5 py-3 text-left transition-colors last:border-b-0 cursor-pointer'"
                     >
-                      <mat-icon class="text-white/60 text-[18px] w-[18px] h-[18px] mt-0.5 shrink-0">{{ item.subIcon || item.mainIcon }}</mat-icon>
+                      <mat-icon class="text-slate-400 text-[18px] w-[18px] h-[18px] mt-0.5 shrink-0">{{ item.subIcon || item.mainIcon }}</mat-icon>
                       <div class="min-w-0 flex-1">
                         <div class="flex items-baseline gap-2">
-                          <span class="text-[10px] font-semibold text-white/40 uppercase tracking-wider shrink-0">{{ item.mainMenu }}</span>
+                          <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider shrink-0">{{ item.mainMenu }}</span>
                           @if (item.submenu) {
-                            <span class="text-xs font-bold text-white/90 truncate">{{ item.submenu }}</span>
+                            <span class="text-xs font-bold text-slate-800 truncate">{{ item.submenu }}</span>
                           } @else {
-                            <span class="text-xs font-bold text-white/90 truncate">{{ item.mainMenu }}</span>
+                            <span class="text-xs font-bold text-slate-800 truncate">{{ item.mainMenu }}</span>
                           }
                         </div>
-                        <p class="text-[11px] text-white/50 mt-0.5 leading-tight">{{ item.action }}</p>
+                        <p class="text-[11px] text-slate-500 mt-0.5 leading-tight">{{ item.action }}</p>
                       </div>
-                      <mat-icon class="text-white/30 text-[14px] w-3.5 h-3.5 mt-1 shrink-0">chevron_right</mat-icon>
+                      <mat-icon class="text-slate-300 text-[14px] w-3.5 h-3.5 mt-1 shrink-0">chevron_right</mat-icon>
                     </button>
                   }
                 </div>
               }
               @if (showSearchResults() && searchQuery().length >= 1 && filteredSearchItems().length === 0) {
-                <div class="absolute left-0 right-0 mt-2 dark-glass-dropdown rounded-2xl z-50 p-4 text-center">
-                  <p class="text-sm text-white/50">No results found for "{{ searchQuery() }}"</p>
+                <div class="absolute left-0 right-0 mt-2 glass-dropdown rounded-2xl z-50 p-4 text-center">
+                  <p class="text-sm text-slate-500">No results found for "{{ searchQuery() }}"</p>
                 </div>
               }
             </div>
