@@ -54,7 +54,7 @@ declare var Chart: any;
                 <mat-icon class="text-base" style="width:18px;height:18px;font-size:18px;display:flex;align-items:center">handshake</mat-icon>
               </div>
             </div>
-            <div class="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900 font-mono">{{ newDealsKPI().count }} <span class="text-sm font-semibold text-slate-400 font-sans">deals</span></div>
+            <div class="text-base sm:text-lg lg:text-xl font-bold text-slate-900 font-mono truncate">{{ newDealsKPI().count }} <span class="text-sm font-semibold text-slate-400 font-sans">deals</span></div>
             <div class="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
               <div class="text-[10px] text-indigo-600 font-bold flex items-center gap-0.5 font-sans">
                 <mat-icon class="text-[12px]" style="width:12px;height:12px;font-size:12px;display:flex;align-items:center">trending_up</mat-icon> This month's profit
@@ -71,7 +71,7 @@ declare var Chart: any;
                 <mat-icon class="text-base" style="width:18px;height:18px;font-size:18px;display:flex;align-items:center">group_add</mat-icon>
               </div>
             </div>
-            <div class="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900 font-mono">{{ newProspectsKPI().count }} <span class="text-sm font-semibold text-slate-400 font-sans">prospects</span></div>
+            <div class="text-base sm:text-lg lg:text-xl font-bold text-slate-900 font-mono truncate">{{ newProspectsKPI().count }} <span class="text-sm font-semibold text-slate-400 font-sans">prospects</span></div>
             <div class="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
               <div class="text-[10px] text-emerald-600 font-bold flex items-center gap-0.5 font-sans">
                 <mat-icon class="text-[12px]" style="width:12px;height:12px;font-size:12px;display:flex;align-items:center">insights</mat-icon> Pipeline potential
@@ -88,7 +88,7 @@ declare var Chart: any;
                 <mat-icon class="text-base" style="width:18px;height:18px;font-size:18px;display:flex;align-items:center">do_not_disturb_on</mat-icon>
               </div>
             </div>
-            <div class="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900 font-mono">{{ lostProspectsKPI().count }} <span class="text-sm font-semibold text-slate-400 font-sans">closed lost</span></div>
+            <div class="text-base sm:text-lg lg:text-xl font-bold text-slate-900 font-mono truncate">{{ lostProspectsKPI().count }} <span class="text-sm font-semibold text-slate-400 font-sans">closed lost</span></div>
             <div class="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
               <div class="text-[10px] text-red-500 font-bold flex items-center gap-0.5 font-sans">
                 <mat-icon class="text-[12px]" style="width:12px;height:12px;font-size:12px;display:flex;align-items:center">trending_down</mat-icon> Value lost
@@ -153,7 +153,7 @@ declare var Chart: any;
                 <mat-icon class="text-base w-4.5 h-4.5 flex items-center justify-center">paid</mat-icon>
               </div>
             </div>
-            <div class="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900 font-mono">{{ formatCurrency(state.salesThisMonth()) }}</div>
+            <div class="text-base sm:text-lg lg:text-xl font-bold text-slate-900 font-mono truncate">{{ formatCurrency(state.salesThisMonth()) }}</div>
             <div class="text-[10px] text-emerald-600 font-bold mt-2 flex items-center gap-0.5 font-sans">
               <mat-icon class="text-[12px] w-3 h-3 flex items-center justify-center">trending_up</mat-icon> Current month won/confirmed
             </div>
@@ -167,7 +167,7 @@ declare var Chart: any;
                 <mat-icon class="text-base w-4.5 h-4.5 flex items-center justify-center">query_stats</mat-icon>
               </div>
             </div>
-            <div class="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900 font-mono">{{ state.conversionRate() }}%</div>
+            <div class="text-base sm:text-lg lg:text-xl font-bold text-slate-900 font-mono truncate">{{ state.conversionRate() }}%</div>
             <div class="text-[10px] text-indigo-600 font-bold mt-2 flex items-center gap-0.5 font-sans">
               <mat-icon class="text-[12px] w-3 h-3 flex items-center justify-center">insights</mat-icon> Active vs Total pipeline
             </div>
@@ -181,7 +181,7 @@ declare var Chart: any;
                 <mat-icon class="text-base w-4.5 h-4.5 flex items-center justify-center">emoji_events</mat-icon>
               </div>
             </div>
-            <div class="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900 font-mono">{{ state.winRate() }}%</div>
+            <div class="text-base sm:text-lg lg:text-xl font-bold text-slate-900 font-mono truncate">{{ state.winRate() }}%</div>
             <div class="text-[10px] text-violet-600 font-bold mt-2 flex items-center gap-0.5 font-sans">
               <mat-icon class="text-[12px] w-3 h-3 flex items-center justify-center">check_circle</mat-icon> Won vs Lost deals
             </div>
@@ -195,7 +195,7 @@ declare var Chart: any;
                 <mat-icon class="text-base w-4.5 h-4.5 flex items-center justify-center">monetization_on</mat-icon>
               </div>
             </div>
-            <div class="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900 font-mono">{{ formatCurrency(state.avgDealSize()) }}</div>
+            <div class="text-base sm:text-lg lg:text-xl font-bold text-slate-900 font-mono truncate">{{ formatCurrency(state.avgDealSize()) }}</div>
             <div class="text-[10px] text-sky-600 font-bold mt-2 flex items-center gap-0.5 font-sans">
               <mat-icon class="text-[12px] w-3 h-3 flex items-center justify-center">analytics</mat-icon> Excludes lost opportunities
             </div>

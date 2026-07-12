@@ -73,7 +73,7 @@ import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-cal
                     <mat-icon class="text-[20px]">monetization_on</mat-icon>
                   </div>
                 </div>
-                <div class="text-2xl md:text-3xl font-bold text-slate-900">{{ formatCurrency(totalDealsValue()) }}</div>
+                <div class="text-xl lg:text-2xl font-bold text-slate-900 truncate">{{ formatCurrency(totalDealsValue()) }}</div>
                 <div class="text-sm text-emerald-600 font-semibold mt-2 flex items-center">
                   <mat-icon class="text-sm! leading-none! w-4 h-4 mr-1">trending_up</mat-icon>
                   Active Pipeline
@@ -89,7 +89,7 @@ import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-cal
                     <mat-icon class="text-[20px]">campaign</mat-icon>
                   </div>
                 </div>
-                <div class="text-2xl md:text-3xl font-bold text-slate-900">{{ formatCurrency(12450) }}</div>
+                <div class="text-xl lg:text-2xl font-bold text-slate-900 truncate">{{ formatCurrency(12450) }}</div>
                 <div class="text-sm text-slate-500 font-semibold mt-2 flex items-center">
                   <mat-icon class="text-sm! leading-none! w-4 h-4 mr-1">trending_flat</mat-icon>
                   Stable across channels
@@ -105,7 +105,7 @@ import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-cal
                     <mat-icon class="text-[20px]">warning</mat-icon>
                   </div>
                 </div>
-                <div class="text-2xl md:text-3xl font-bold text-slate-900">{{ latePayersCount() }}</div>
+                <div class="text-xl lg:text-2xl font-bold text-slate-900 truncate">{{ latePayersCount() }}</div>
                 <div class="text-sm text-rose-600 font-semibold mt-2 flex items-center">
                   <mat-icon class="text-sm! leading-none! w-4 h-4 mr-1">trending_down</mat-icon>
                   Needs attention
@@ -121,7 +121,7 @@ import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-cal
                     <mat-icon class="text-[20px]">email</mat-icon>
                   </div>
                 </div>
-                <div class="text-2xl md:text-3xl font-bold text-slate-900">{{ activeCampaignsCount() }}</div>
+                <div class="text-xl lg:text-2xl font-bold text-slate-900 truncate">{{ activeCampaignsCount() }}</div>
                 <div class="text-sm text-emerald-600 font-semibold mt-2 flex items-center">
                   <mat-icon class="text-sm! leading-none! w-4 h-4 mr-1">check_circle</mat-icon>
                   Running smoothly
@@ -137,7 +137,7 @@ import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-cal
                     <mat-icon class="text-[20px]">support_agent</mat-icon>
                   </div>
                 </div>
-                <div class="text-2xl md:text-3xl font-bold text-slate-900">{{ openTicketsCount() }}</div>
+                <div class="text-xl lg:text-2xl font-bold text-slate-900 truncate">{{ openTicketsCount() }}</div>
                 <div class="text-sm text-amber-600 font-semibold mt-2 flex items-center">
                   <mat-icon class="text-sm! leading-none! w-4 h-4 mr-1">pending_actions</mat-icon>
                   Pending resolution
@@ -153,7 +153,7 @@ import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-cal
                     <mat-icon class="text-[20px]">person_search</mat-icon>
                   </div>
                 </div>
-                <div class="text-2xl md:text-3xl font-bold text-slate-900">{{ prospectsCount() }}</div>
+                <div class="text-xl lg:text-2xl font-bold text-slate-900 truncate">{{ prospectsCount() }}</div>
                 <div class="text-sm text-emerald-600 font-semibold mt-2 flex items-center">
                   <mat-icon class="text-sm! leading-none! w-4 h-4 mr-1">trending_up</mat-icon>
                   Growing pipeline
@@ -169,7 +169,7 @@ import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-cal
                     <mat-icon class="text-[18px]">handshake</mat-icon>
                   </div>
                 </div>
-                <div class="text-2xl md:text-3xl font-bold text-slate-900">{{ newDealsKPI().count }} <span class="text-sm font-semibold text-slate-400">deals</span></div>
+                <div class="text-xl lg:text-2xl font-bold text-slate-900 truncate">{{ newDealsKPI().count }} <span class="text-sm font-semibold text-slate-400">deals</span></div>
                 <div class="mt-2 pt-3 border-t border-white/30 flex items-center justify-between">
                   <div class="text-[10px] text-indigo-600 font-bold flex items-center gap-0.5">
                     <mat-icon class="text-[12px] w-3 h-3">trending_up</mat-icon> This month's profit
@@ -187,7 +187,7 @@ import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-cal
                     <mat-icon class="text-[18px]">group_add</mat-icon>
                   </div>
                 </div>
-                <div class="text-2xl md:text-3xl font-bold text-slate-900">{{ newProspectsKPI().count }} <span class="text-sm font-semibold text-slate-400">prospects</span></div>
+                <div class="text-xl lg:text-2xl font-bold text-slate-900 truncate">{{ newProspectsKPI().count }} <span class="text-sm font-semibold text-slate-400">prospects</span></div>
                 <div class="mt-2 pt-3 border-t border-white/30 flex items-center justify-between">
                   <div class="text-[10px] text-emerald-600 font-bold flex items-center gap-0.5">
                     <mat-icon class="text-[12px] w-3 h-3">insights</mat-icon> Pipeline potential
@@ -205,7 +205,7 @@ import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-cal
                     <mat-icon class="text-[18px]">do_not_disturb_on</mat-icon>
                   </div>
                 </div>
-                <div class="text-2xl md:text-3xl font-bold text-slate-900">{{ lostProspectsKPI().count }} <span class="text-sm font-semibold text-slate-400">closed lost</span></div>
+                <div class="text-xl lg:text-2xl font-bold text-slate-900 truncate">{{ lostProspectsKPI().count }} <span class="text-sm font-semibold text-slate-400">closed lost</span></div>
                 <div class="mt-2 pt-3 border-t border-white/30 flex items-center justify-between">
                   <div class="text-[10px] text-red-500 font-bold flex items-center gap-0.5">
                     <mat-icon class="text-[12px] w-3 h-3">trending_down</mat-icon> Value lost
@@ -250,7 +250,7 @@ import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-cal
                     <mat-icon class="text-[18px]">assignment_add</mat-icon>
                   </div>
                 </div>
-                <div class="text-2xl md:text-3xl font-bold text-slate-900">{{ formatNumber(newTasksWeek().weekCount) }} <span class="text-sm font-semibold text-slate-400">tasks</span></div>
+                <div class="text-xl lg:text-2xl font-bold text-slate-900 truncate">{{ formatNumber(newTasksWeek().weekCount) }} <span class="text-sm font-semibold text-slate-400">tasks</span></div>
                 <div class="mt-2 pt-3 border-t border-white/30 flex items-center justify-between">
                   <div class="text-[10px] text-violet-600 font-bold flex items-center gap-0.5">
                     <mat-icon class="text-[12px] w-3 h-3">trending_up</mat-icon> This week

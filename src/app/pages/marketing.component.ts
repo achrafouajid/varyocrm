@@ -51,15 +51,15 @@ import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
         <!-- Overview Stats -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div class="glass-card rounded-xl p-4 lg:p-5 text-center">
-            <div class="text-2xl sm:text-3xl lg:text-4xl font-semibold text-slate-900 mb-1">3</div>
+            <div class="text-xl sm:text-2xl lg:text-3xl font-semibold text-slate-900 mb-1 truncate">3</div>
             <div class="text-xs font-bold tracking-wider text-slate-500 uppercase">Active Campaigns</div>
           </div>
           <div class="glass-card rounded-xl p-4 lg:p-5 text-center">
-            <div class="text-2xl sm:text-3xl lg:text-4xl font-semibold text-slate-900 mb-1">165</div>
+            <div class="text-xl sm:text-2xl lg:text-3xl font-semibold text-slate-900 mb-1 truncate">165</div>
             <div class="text-xs font-bold tracking-wider text-slate-500 uppercase">Messages Sent</div>
           </div>
           <div class="glass-card rounded-xl p-4 lg:p-5 text-center">
-            <div class="text-2xl sm:text-3xl lg:text-4xl font-semibold text-slate-900 mb-1">12%</div>
+            <div class="text-xl sm:text-2xl lg:text-3xl font-semibold text-slate-900 mb-1 truncate">12%</div>
             <div class="text-xs font-bold tracking-wider text-slate-500 uppercase">Conversion Target</div>
           </div>
         </div>
