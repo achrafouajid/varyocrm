@@ -72,8 +72,8 @@ import { UserAvatarComponent } from '../shared/user-avatar.component';
             </div>
           </div>
           <div class="glass-card rounded-2xl p-4">
-            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Est. Value</span>
-            <div class="text-lg font-bold text-slate-900 mt-1">{{ lead.estimatedDealValue ? '€' + (lead.estimatedDealValue | number) : '—' }}</div>
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Origin</span>
+            <div class="text-lg font-bold text-indigo-600 mt-1">{{ lead.origin || lead.campaigns?.[0]?.source || '—' }}</div>
           </div>
           <div class="glass-card rounded-2xl p-4">
             <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Probability</span>
@@ -129,11 +129,11 @@ import { UserAvatarComponent } from '../shared/user-avatar.component';
                     </div>
                   </div>
 
-                  <!-- Source & Campaign -->
+                  <!-- Origin & Campaign -->
                   <div class="glass rounded-xl p-5 space-y-3">
-                    <h3 class="text-xs font-bold text-indigo-700 uppercase tracking-wider">Source & Marketing Campaign</h3>
+                    <h3 class="text-xs font-bold text-indigo-700 uppercase tracking-wider">Origin & Marketing Campaign</h3>
                     <div class="grid grid-cols-2 gap-4 text-sm">
-                      <div><div class="text-[10px] uppercase font-semibold text-slate-400">Lead Source</div><div class="font-semibold text-slate-800 mt-0.5">{{ lead.campaigns?.[0]?.source || '—' }}</div></div>
+                      <div><div class="text-[10px] uppercase font-semibold text-slate-400">Origin</div><div class="font-semibold text-slate-800 mt-0.5">{{ lead.origin || lead.campaigns?.[0]?.source || '—' }}</div></div>
                       <div><div class="text-[10px] uppercase font-semibold text-slate-400">Campaign</div><div class="font-semibold text-slate-800 mt-0.5">{{ lead.campaigns?.[0]?.campaign || '—' }}</div></div>
                       @if (lead.campaigns?.[0]?.referralPartner) { <div><div class="text-[10px] uppercase font-semibold text-slate-400">Referral Partner</div><div class="font-semibold text-slate-800 mt-0.5">{{ lead.campaigns?.[0]?.referralPartner }}</div></div> }
                       @if (lead.campaigns?.[0]?.tradeShow) { <div><div class="text-[10px] uppercase font-semibold text-slate-400">Trade Show</div><div class="font-semibold text-slate-800 mt-0.5">{{ lead.campaigns?.[0]?.tradeShow }}</div></div> }
@@ -170,7 +170,7 @@ import { UserAvatarComponent } from '../shared/user-avatar.component';
                   <div class="grid grid-cols-2 gap-4 mt-3">
                     <div><div class="text-[10px] uppercase font-semibold text-slate-400">Interested Product</div><div class="font-semibold text-slate-800 mt-0.5">{{ lead.productInterests?.[0]?.product || '—' }}</div></div>
                     <div><div class="text-[10px] uppercase font-semibold text-slate-400">Solution</div><div class="font-semibold text-slate-700 mt-0.5">{{ lead.productInterests?.[0]?.solution || '—' }}</div></div>
-                    <div><div class="text-[10px] uppercase font-semibold text-slate-400">Estimated Budget</div><div class="font-bold text-indigo-700 mt-0.5">€{{ (lead.estimatedDealValue || 0) | number }}</div></div>
+                    <div><div class="text-[10px] uppercase font-semibold text-slate-400">Origin</div><div class="font-bold text-indigo-700 mt-0.5">{{ lead.origin || lead.campaigns?.[0]?.source || '—' }}</div></div>
                     <div><div class="text-[10px] uppercase font-semibold text-slate-400">Deal Probability</div><div class="font-semibold text-slate-700 mt-0.5">{{ lead.probability || '0' }}%</div></div>
                   </div>
                 </div>

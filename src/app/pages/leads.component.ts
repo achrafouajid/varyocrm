@@ -52,14 +52,14 @@ import { CrmStateService, Lead, LeadActivity, LeadAttachment } from '../services
           </div>
         </div>
 
-        <!-- Metric 4: Est. Pipeline -->
+        <!-- Metric 4: Conversion Rate -->
         <div class="bg-white rounded-2xl border border-slate-200 p-4 lg:p-6 flex items-center justify-between shadow-xs">
           <div class="space-y-1">
-            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Pipeline Value</span>
-            <div class="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900 truncate">€{{ pipelineValue() | number:'1.0-0' }}</div>
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Conversion Rate</span>
+            <div class="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900 truncate">{{ conversionRate() }}%</div>
           </div>
           <div class="p-3 bg-rose-50 text-rose-600 rounded-xl">
-            <mat-icon class="w-6 h-6 text-[24px]! leading-none!">euro_symbol</mat-icon>
+            <mat-icon class="w-6 h-6 text-[24px]! leading-none!">trending_up</mat-icon>
           </div>
         </div>
       </div>
@@ -116,7 +116,7 @@ import { CrmStateService, Lead, LeadActivity, LeadAttachment } from '../services
                 <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Company & Job</th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Qualification</th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Lead Score</th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Est. Value</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Origin</th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Owner</th>
                 <th scope="col" class="px-6 py-3 class-left text-xs font-bold text-slate-400 uppercase tracking-wider">Status</th>
               </tr>
@@ -158,10 +158,12 @@ import { CrmStateService, Lead, LeadActivity, LeadAttachment } from '../services
                     </div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm font-semibold text-slate-900">
-                      {{ lead.estimatedDealValue ? '€' + (lead.estimatedDealValue | number) : '—' }}
+                    <div class="flex items-center gap-1.5">
+                      <span class="px-2 py-0.5 text-[11px] font-semibold rounded-md bg-slate-100 text-slate-700">
+                        {{ lead.origin || lead.campaigns?.[0]?.source || '—' }}
+                      </span>
                     </div>
-                    <div class="text-xs text-slate-400">{{ lead.probability ? lead.probability + '%' : '—' }} prob.</div>
+                    <div class="text-xs text-slate-400 mt-0.5">{{ lead.campaigns?.[0]?.campaign || '—' }}</div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm text-slate-600 flex items-center gap-1.5">
@@ -317,13 +319,13 @@ import { CrmStateService, Lead, LeadActivity, LeadAttachment } from '../services
                       </div>
                     </div>
 
-                    <!-- Lead Source & Campaign -->
+                    <!-- Lead Origin & Campaign -->
                     <div class="bg-slate-50/50 rounded-xl p-4 border border-slate-100 space-y-3">
-                      <h3 class="text-xs font-bold text-indigo-700 uppercase tracking-wider">Source & Marketing Campaign</h3>
+                      <h3 class="text-xs font-bold text-indigo-700 uppercase tracking-wider">Origin & Marketing Campaign</h3>
                       <div class="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                          <div class="text-[10px] uppercase font-semibold text-slate-400">Lead Source</div>
-                          <div class="font-medium text-slate-800 mt-0.5">{{ lead.campaigns?.[0]?.source || '—' }}</div>
+                          <div class="text-[10px] uppercase font-semibold text-slate-400">Origin</div>
+                          <div class="font-medium text-slate-800 mt-0.5">{{ lead.origin || lead.campaigns?.[0]?.source || '—' }}</div>
                         </div>
                         <div>
                           <div class="text-[10px] uppercase font-semibold text-slate-400">Campaign</div>
@@ -400,8 +402,8 @@ import { CrmStateService, Lead, LeadActivity, LeadAttachment } from '../services
                           <div class="font-medium text-slate-700 mt-0.5">{{ lead.productInterests?.[0]?.solution || '—' }}</div>
                         </div>
                         <div>
-                          <div class="text-[10px] uppercase font-semibold text-slate-400">Estimated Budget</div>
-                          <div class="font-bold text-indigo-700 mt-0.5">€{{ (lead.estimatedDealValue || 0) | number }}</div>
+                          <div class="text-[10px] uppercase font-semibold text-slate-400">Origin</div>
+                          <div class="font-bold text-indigo-700 mt-0.5">{{ lead.origin || lead.campaigns?.[0]?.source || '—' }}</div>
                         </div>
                         <div>
                           <div class="text-[10px] uppercase font-semibold text-slate-400">Deal Probability</div>
@@ -648,16 +650,19 @@ import { CrmStateService, Lead, LeadActivity, LeadAttachment } from '../services
               </div>
               <div class="grid grid-cols-2 gap-3">
                 <div>
-                  <label class="block font-semibold text-slate-500 mb-1">Lead Source</label>
-                  <input [(ngModel)]="newLead.source" type="text" placeholder="Website, Social Media..." class="w-full border border-slate-200 rounded-lg p-2 focus:outline-indigo-600">
+                  <label class="block font-semibold text-slate-500 mb-1">Origin</label>
+                  <select [(ngModel)]="newLead.origin" class="w-full border border-slate-200 rounded-lg p-2 bg-white focus:outline-indigo-600">
+                    <option value="Landing Page">Landing Page</option>
+                    <option value="Marketing Campaign">Marketing Campaign</option>
+                    <option value="Email">Email</option>
+                    <option value="WhatsApp">WhatsApp</option>
+                    <option value="Facebook">Facebook</option>
+                    <option value="Other">Other</option>
+                  </select>
                 </div>
                 <div>
                   <label class="block font-semibold text-slate-500 mb-1">Product Interest</label>
                   <input [(ngModel)]="newLead.interestedProduct" type="text" placeholder="e.g. Cloud Hosting" class="w-full border border-slate-200 rounded-lg p-2 focus:outline-indigo-600">
-                </div>
-                <div>
-                  <label class="block font-semibold text-slate-500 mb-1">Est. Budget (€)</label>
-                  <input [(ngModel)]="newLead.estimatedBudget" type="number" placeholder="e.g. 50000" class="w-full border border-slate-200 rounded-lg p-2 focus:outline-indigo-600">
                 </div>
                 <div>
                   <label class="block font-semibold text-slate-500 mb-1">Assigned Salesperson</label>
@@ -726,9 +731,8 @@ export class LeadsComponent {
     status: 'New' as Lead['status'],
     priority: 'Medium' as Lead['priority'],
     temperature: 'Warm' as Lead['temperature'],
-    source: '',
+    origin: 'Landing Page' as Lead['origin'],
     interestedProduct: '',
-    estimatedBudget: 0,
     assignedSalesperson: '',
     notes: ''
   };
@@ -742,10 +746,11 @@ export class LeadsComponent {
     const total = list.reduce((sum, l) => sum + l.score, 0);
     return Math.round(total / list.length);
   });
-  pipelineValue = computed(() => {
-    return this.state.leadsData()
-      .filter(l => ['New', 'Contacted', 'Attempted Contact', 'Meeting Scheduled', 'Qualified', 'Proposal Requested'].includes(l.status))
-      .reduce((sum, l) => sum + (l.estimatedDealValue || 0), 0);
+  conversionRate = computed(() => {
+    const total = this.state.leadsData().length;
+    if (total === 0) return 0;
+    const converted = this.state.leadsData().filter(l => l.status === 'Converted').length;
+    return Math.round((converted / total) * 100);
   });
 
   // Filtered Leads list
@@ -852,9 +857,8 @@ export class LeadsComponent {
       status: 'New',
       priority: 'Medium',
       temperature: 'Warm',
-      source: 'Website',
+      origin: 'Landing Page',
       interestedProduct: '',
-      estimatedBudget: 0,
       assignedSalesperson: this.state.users()[0]?.name || '',
       notes: ''
     };
@@ -874,6 +878,7 @@ export class LeadsComponent {
       status: this.newLead.status,
       qualification: this.newLead.status === 'Qualified' ? 'Qualified' : 'Pending',
       priority: this.newLead.priority,
+      origin: this.newLead.origin,
       score: randomScore,
       temperature: this.newLead.temperature,
       stage: 'Discovery Meeting',
@@ -882,7 +887,6 @@ export class LeadsComponent {
       territory: this.newLead.country || 'International',
       businessUnit: 'Cloud Solutions',
       decisionMaker: 'IT Manager',
-      estimatedDealValue: this.newLead.estimatedBudget,
       probability: this.newLead.status === 'Qualified' ? 70 : 30,
       expectedCloseDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days out
       notes: this.newLead.notes,
@@ -904,7 +908,7 @@ export class LeadsComponent {
       ],
       campaigns: [
         {
-          source: this.newLead.source,
+          source: this.newLead.origin ?? '',
           campaign: 'General Lead Capture'
         }
       ],
