@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, effect } from '@angular/core';
 import { Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { CrmStateService, Partner, Lead, LeadActivity, LeadAttachment } from '../services/crm-state.service';
@@ -164,13 +164,13 @@ import { UserAvatarComponent } from '../shared/user-avatar.component';
                       <mat-icon class="w-5 h-5 text-[20px]!">search</mat-icon>
                     </span>
                     <input
-                      [(ngModel)]="searchQuery"
+                      [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event); currentPage.set(1)"
                       type="text"
                       placeholder="Search name, company..."
                       class="w-full glass-input rounded-xl pl-10 pr-4 py-2 text-sm outline-none placeholder:text-slate-400"
                     >
                   </div>
-                  <select [(ngModel)]="statusFilter" class="glass-input rounded-xl px-3 py-2 text-sm outline-none bg-transparent">
+                  <select [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event); currentPage.set(1)" class="glass-input rounded-xl px-3 py-2 text-sm outline-none bg-transparent">
                     <option value="">All Statuses</option>
                     <option value="New">New</option>
                     <option value="Contacted">Contacted</option>
@@ -182,7 +182,7 @@ import { UserAvatarComponent } from '../shared/user-avatar.component';
                     <option value="Lost">Lost</option>
                     <option value="Disqualified">Disqualified</option>
                   </select>
-                  <select [(ngModel)]="priorityFilter" class="glass-input rounded-xl px-3 py-2 text-sm outline-none bg-transparent">
+                  <select [ngModel]="priorityFilter()" (ngModelChange)="priorityFilter.set($event); currentPage.set(1)" class="glass-input rounded-xl px-3 py-2 text-sm outline-none bg-transparent">
                     <option value="">All Priorities</option>
                     <option value="High">High</option>
                     <option value="Medium">Medium</option>
@@ -190,7 +190,7 @@ import { UserAvatarComponent } from '../shared/user-avatar.component';
                   </select>
                 </div>
                 <div class="text-xs text-slate-400 font-semibold uppercase">
-                  Showing {{ filteredLeads().length }} of {{ state.leadsData().length }} leads
+                  Showing {{ pageStart() }}-{{ pageEnd() }} of {{ filteredLeads().length }} leads
                 </div>
               </div>
 
@@ -199,81 +199,89 @@ import { UserAvatarComponent } from '../shared/user-avatar.component';
                 <table class="min-w-full">
                   <thead>
                     <tr class="border-b border-white/20">
-                      <th scope="col" class="px-6 py-3.5 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Lead</th>
-                      <th scope="col" class="px-6 py-3.5 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Company & Job</th>
-                      <th scope="col" class="px-6 py-3.5 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Qualification</th>
-                      <th scope="col" class="px-6 py-3.5 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Lead Score</th>
-                      <th scope="col" class="px-6 py-3.5 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Est. Value</th>
-                      <th scope="col" class="px-6 py-3.5 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Owner</th>
-                      <th scope="col" class="px-6 py-3.5 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Status</th>
-                      <th scope="col" class="px-6 py-3.5 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Action</th>
+                      <th scope="col" class="px-3 py-3 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider">Lead</th>
+                      <th scope="col" class="px-3 py-3 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider">Company</th>
+                      <th scope="col" class="px-3 py-3 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider">Qual.</th>
+                      <th scope="col" class="px-3 py-3 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider">Score</th>
+                      <th scope="col" class="px-3 py-3 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider">Value</th>
+                      <th scope="col" class="px-3 py-3 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider">Owner</th>
+                      <th scope="col" class="px-3 py-3 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status</th>
+                      <th scope="col" class="px-3 py-3 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider">Action</th>
+                      <th scope="col" class="px-3 py-3 text-center text-[10px] font-bold text-slate-400 uppercase tracking-wider">View</th>
                     </tr>
                   </thead>
                   <tbody>
-                    @for (lead of filteredLeads(); track lead.id) {
-                      <tr (click)="selectLead(lead)" class="border-b border-white/10 hover:bg-white/30 transition-colors cursor-pointer group">
-                        <td class="px-6 py-4 whitespace-nowrap">
-                          <div class="flex items-center gap-3">
-                            <div class="h-10 w-10 glass-strong text-indigo-700 font-bold rounded-xl flex items-center justify-center">
+                    @for (lead of paginatedLeads(); track lead.id) {
+                      <tr (click)="openLeadDetail(lead)" class="border-b border-white/10 hover:bg-white/30 transition-colors cursor-pointer group">
+                        <td class="px-3 py-2.5 whitespace-nowrap">
+                          <div class="flex items-center gap-2">
+                            <div class="h-8 w-8 glass-strong text-indigo-700 font-bold rounded-lg text-[11px] flex items-center justify-center shrink-0">
                               {{ getInitials(lead.name) }}
                             </div>
-                            <div>
-                              <div class="text-sm font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors">{{ lead.name }}</div>
-                              <div class="text-xs text-slate-400">{{ lead.id }}</div>
+                            <div class="min-w-0">
+                              <div class="text-xs font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors truncate max-w-[120px]">{{ lead.name }}</div>
+                              <div class="text-[10px] text-slate-400">{{ lead.id }}</div>
                             </div>
                           </div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                          <div class="text-sm font-semibold text-slate-800">{{ lead.companyName }}</div>
-                          <div class="text-xs text-slate-400">{{ lead.company?.city || 'No city' }}, {{ lead.company?.country || 'No country' }}</div>
+                        <td class="px-3 py-2.5 whitespace-nowrap">
+                          <div class="text-xs font-semibold text-slate-800 truncate max-w-[130px]">{{ lead.companyName }}</div>
+                          <div class="text-[10px] text-slate-400 truncate max-w-[130px]">{{ lead.company?.city || 'No city' }}, {{ lead.company?.country || 'No country' }}</div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                          <div class="flex items-center gap-1.5">
-                            <span [class]="getPriorityBadge(lead.priority)" class="px-2 py-0.5 text-[10px] font-bold uppercase rounded-md glass-chip">
+                        <td class="px-3 py-2.5 whitespace-nowrap">
+                          <div class="flex items-center gap-1">
+                            <span [class]="getPriorityBadge(lead.priority)" class="px-1.5 py-0.5 text-[9px] font-bold uppercase rounded-md glass-chip">
                               {{ lead.priority }}
                             </span>
-                            <span [class]="getTempBadge(lead.temperature)" class="px-2 py-0.5 text-[10px] font-bold uppercase rounded-md glass-chip">
+                            <span [class]="getTempBadge(lead.temperature)" class="px-1.5 py-0.5 text-[9px] font-bold uppercase rounded-md glass-chip">
                               {{ lead.temperature }}
                             </span>
                           </div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                          <div class="flex items-center gap-2">
-                            <div class="w-12 bg-white/30 rounded-full h-1.5 overflow-hidden">
+                        <td class="px-3 py-2.5 whitespace-nowrap">
+                          <div class="flex items-center gap-1.5">
+                            <div class="w-10 bg-white/30 rounded-full h-1.5 overflow-hidden">
                               <div [style.width.%]="lead.score" [class]="getScoreColor(lead.score)" class="h-full rounded-full"></div>
                             </div>
-                            <span class="text-xs font-bold text-slate-700">{{ lead.score }}</span>
+                            <span class="text-[10px] font-bold text-slate-700">{{ lead.score }}</span>
                           </div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                          <div class="text-sm font-semibold text-slate-900">
+                        <td class="px-3 py-2.5 whitespace-nowrap">
+                          <div class="text-xs font-semibold text-slate-900">
                             {{ lead.estimatedDealValue ? '€' + (lead.estimatedDealValue | number) : '—' }}
                           </div>
-                          <div class="text-xs text-slate-400">{{ lead.probability ? lead.probability + '%' : '—' }} prob.</div>
+                          <div class="text-[10px] text-slate-400">{{ lead.probability ? lead.probability + '%' : '—' }}</div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                          <div class="text-sm text-slate-600 flex items-center gap-1.5">
-                            <mat-icon class="w-4 h-4 text-[16px]! text-slate-400">person_outline</mat-icon>
+                        <td class="px-3 py-2.5 whitespace-nowrap">
+                          <div class="text-xs text-slate-600 flex items-center gap-1 truncate max-w-[110px]">
+                            <mat-icon class="w-3 h-3 text-[12px]! text-slate-400 shrink-0">person_outline</mat-icon>
                             {{ lead.assignedSalesperson || 'Unassigned' }}
                           </div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                          <span [class]="getStatusClass(lead.status)" class="px-2.5 py-1 text-xs font-semibold rounded-full glass-chip">
+                        <td class="px-3 py-2.5 whitespace-nowrap">
+                          <span [class]="getStatusClass(lead.status)" class="px-2 py-0.5 text-[10px] font-semibold rounded-full glass-chip whitespace-nowrap">
                             {{ lead.status }}
                           </span>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
+                        <td class="px-3 py-2.5 whitespace-nowrap">
                           @if (lead.status !== 'Converted') {
-                            <button (click)="$event.stopPropagation(); convertLeadToProspect(lead)" class="glass-button rounded-lg px-2.5 py-1.5 text-xs font-semibold text-indigo-600 transition-all flex items-center gap-1 whitespace-nowrap">
-                              <mat-icon class="text-[14px] w-3.5 h-3.5">arrow_forward</mat-icon>
-                              Convert to Prospect
+                            <button (click)="$event.stopPropagation(); convertLeadToProspect(lead)" class="glass-button rounded-lg px-2 py-1 text-[10px] font-semibold text-indigo-600 transition-all flex items-center gap-1 whitespace-nowrap">
+                              <mat-icon class="text-[12px] w-3 h-3">arrow_forward</mat-icon>
+                              Convert
                             </button>
+                          } @else {
+                            <span class="px-2 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 whitespace-nowrap">Converted</span>
                           }
+                        </td>
+                        <td class="px-3 py-2.5 whitespace-nowrap text-center">
+                          <button (click)="$event.stopPropagation(); selectLead(lead)" class="w-7 h-7 rounded-lg glass-button flex items-center justify-center text-slate-400 hover:text-indigo-600 transition-all mx-auto" title="Quick view">
+                            <mat-icon class="text-[16px]! w-4 h-4">visibility</mat-icon>
+                          </button>
                         </td>
                       </tr>
                     } @empty {
                       <tr>
-                        <td colspan="8" class="px-6 py-12 text-center text-slate-400">
+                        <td colspan="9" class="px-6 py-12 text-center text-slate-400">
                           <mat-icon class="text-[48px]! w-12 h-12 mb-3 text-slate-300 block mx-auto">people_alt</mat-icon>
                           <p class="font-semibold text-slate-500">No leads found</p>
                           <p class="text-xs text-slate-400 mt-1">Try resetting filters or adding a new lead record.</p>
@@ -282,6 +290,36 @@ import { UserAvatarComponent } from '../shared/user-avatar.component';
                     }
                   </tbody>
                 </table>
+              </div>
+
+              <!-- Pagination -->
+              <div class="px-5 py-3 border-t border-white/20 flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center gap-1.5 text-xs text-slate-500">
+                  <span>Rows per page:</span>
+                  <select [ngModel]="pageSize()" (ngModelChange)="pageSize.set($event); currentPage.set(1)" class="glass-input rounded-lg px-2 py-1 text-xs outline-none bg-transparent">
+                    <option [value]="5">5</option>
+                    <option [value]="10">10</option>
+                    <option [value]="20">20</option>
+                    <option [value]="50">50</option>
+                  </select>
+                </div>
+                <div class="flex items-center gap-1">
+                  <button (click)="goToPage(1)" [disabled]="currentPage() === 1" class="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-semibold transition-all" [class]="currentPage() === 1 ? 'text-slate-300 cursor-not-allowed' : 'glass-button text-slate-600 hover:text-indigo-600'">
+                    <mat-icon class="text-[14px]! w-3.5 h-3.5">first_page</mat-icon>
+                  </button>
+                  <button (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() === 1" class="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-semibold transition-all" [class]="currentPage() === 1 ? 'text-slate-300 cursor-not-allowed' : 'glass-button text-slate-600 hover:text-indigo-600'">
+                    <mat-icon class="text-[14px]! w-3.5 h-3.5">chevron_left</mat-icon>
+                  </button>
+                  <span class="text-xs text-slate-500 font-semibold px-2">
+                    Page {{ currentPage() }} of {{ totalPages() }}
+                  </span>
+                  <button (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() === totalPages()" class="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-semibold transition-all" [class]="currentPage() === totalPages() ? 'text-slate-300 cursor-not-allowed' : 'glass-button text-slate-600 hover:text-indigo-600'">
+                    <mat-icon class="text-[14px]! w-3.5 h-3.5">chevron_right</mat-icon>
+                  </button>
+                  <button (click)="goToPage(totalPages())" [disabled]="currentPage() === totalPages()" class="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-semibold transition-all" [class]="currentPage() === totalPages() ? 'text-slate-300 cursor-not-allowed' : 'glass-button text-slate-600 hover:text-indigo-600'">
+                    <mat-icon class="text-[14px]! w-3.5 h-3.5">last_page</mat-icon>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -796,12 +834,14 @@ export class PartnersComponent {
   showCreateModal = signal(false);
 
   // Leads-specific state
-  searchQuery = '';
-  statusFilter = '';
-  priorityFilter = '';
+  searchQuery = signal('');
+  statusFilter = signal('');
+  priorityFilter = signal('');
   selectedLead = signal<Lead | null>(null);
   activeDetailTab = signal<'info' | 'activities' | 'attachments' | 'history'>('info');
   addLeadModalOpen = signal(false);
+  pageSize = signal(10);
+  currentPage = signal(1);
 
   newActivity = {
     type: 'Call' as LeadActivity['type'],
@@ -839,6 +879,11 @@ export class PartnersComponent {
     }
     const label = this.activeTab() === 'Lead' ? 'Leads' : this.activeTab() === 'Customer' ? 'Customers' : this.activeTab() === 'Prospect' ? 'Prospects' : 'Vendors';
     this.state.breadcrumbLabel.set(label);
+    effect(() => {
+      if (this.currentPage() > this.totalPages()) {
+        this.currentPage.set(this.totalPages());
+      }
+    });
   }
 
   // Leads KPI computed
@@ -859,14 +904,14 @@ export class PartnersComponent {
   // Filtered Leads
   filteredLeads = computed(() => {
     let list = this.state.leadsData();
-    if (this.statusFilter) {
-      list = list.filter(l => l.status === this.statusFilter);
+    if (this.statusFilter()) {
+      list = list.filter(l => l.status === this.statusFilter());
     }
-    if (this.priorityFilter) {
-      list = list.filter(l => l.priority === this.priorityFilter);
+    if (this.priorityFilter()) {
+      list = list.filter(l => l.priority === this.priorityFilter());
     }
-    if (this.searchQuery.trim()) {
-      const q = this.searchQuery.toLowerCase();
+    if (this.searchQuery().trim()) {
+      const q = this.searchQuery().toLowerCase();
       list = list.filter(l => 
         l.name.toLowerCase().includes(q) || 
         l.companyName.toLowerCase().includes(q) ||
@@ -875,6 +920,24 @@ export class PartnersComponent {
     }
     return list;
   });
+
+  totalPages = computed(() => Math.max(1, Math.ceil(this.filteredLeads().length / this.pageSize())));
+  paginatedLeads = computed(() => {
+    const start = (this.currentPage() - 1) * this.pageSize();
+    return this.filteredLeads().slice(start, start + this.pageSize());
+  });
+  pageStart = computed(() => (this.currentPage() - 1) * this.pageSize() + 1);
+  pageEnd = computed(() => Math.min(this.currentPage() * this.pageSize(), this.filteredLeads().length));
+
+  goToPage(page: number) {
+    if (page >= 1 && page <= this.totalPages()) {
+      this.currentPage.set(page);
+    }
+  }
+
+  openLeadDetail(lead: Lead) {
+    this.router.navigate(['/partners/lead', lead.id]);
+  }
 
   openCreateModal() {
     this.newPartner.id = undefined;

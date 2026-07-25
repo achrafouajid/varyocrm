@@ -80,7 +80,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
             </thead>
             <tbody class="bg-white divide-y divide-slate-100">
               @for (deal of state.deals(); track deal.id) {
-                <tr (click)="openDealDrawer(deal)" class="hover:bg-slate-50/80 cursor-pointer transition-colors">
+                <tr [routerLink]="['/sales/deals', deal.id]" class="hover:bg-slate-50/80 cursor-pointer transition-colors">
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm font-semibold text-slate-900">{{deal.title}}</div>
                     @if (deal.dealNumber) {
@@ -113,9 +113,9 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                     <app-created-by-badge [createdBy]="deal.createdBy" [createdAt]="deal.createdAt" />
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-right text-xs font-semibold">
-                    <a [routerLink]="['/sales/deals', deal.id]" class="text-indigo-600 hover:text-indigo-900 flex items-center gap-1 ml-auto" (click)="$event.stopPropagation()">
-                      View details <mat-icon class="text-sm w-4 h-4 flex items-center justify-center">chevron_right</mat-icon>
-                    </a>
+                    <button (click)="$event.stopPropagation(); openDealDrawer(deal)" class="text-indigo-600 hover:text-indigo-900 p-1.5 rounded-lg hover:bg-indigo-50 transition-colors" title="View details">
+                      <mat-icon class="text-lg w-5 h-5 flex items-center justify-center">visibility</mat-icon>
+                    </button>
                   </td>
                 </tr>
               } @empty {
@@ -247,6 +247,9 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
               </div>
 
               <div class="mt-5 pt-3 border-t border-slate-100 flex justify-between gap-2">
+                <button (click)="openProposalDrawer(prop)" class="bg-slate-50 hover:bg-indigo-50 border border-slate-200 text-indigo-600 p-2 rounded-lg transition-colors flex items-center justify-center shrink-0" title="View Details">
+                  <mat-icon class="text-[18px] w-[18px] h-[18px] flex items-center justify-center">visibility</mat-icon>
+                </button>
                 <button (click)="openEditProposalModal(prop)" class="bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-650 p-2 rounded-lg transition-colors flex items-center justify-center shrink-0" title="Edit Proposal">
                   <mat-icon class="text-[18px] w-[18px] h-[18px] flex items-center justify-center">edit</mat-icon>
                 </button>
@@ -324,6 +327,9 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                     <app-created-by-badge [createdBy]="po.createdBy" [createdAt]="po.createdAt" />
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-right text-xs font-semibold space-x-1.5">
+                    <button (click)="openPODrawer(po)" class="bg-white border border-slate-200 text-indigo-600 px-2 py-1 rounded-lg hover:bg-indigo-50" title="View Details">
+                      <mat-icon class="text-[14px] w-3.5 h-3.5 flex items-center justify-center">visibility</mat-icon>
+                    </button>
                     <button (click)="openAssignTaskModal('po', po.id, 'PO #' + po.id)" class="bg-white border border-slate-200 text-indigo-600 px-2 py-1 rounded-lg hover:bg-indigo-50 flex items-center gap-1 ml-auto" title="Assign Task">
                       <mat-icon class="text-[14px] w-3.5 h-3.5">assignment</mat-icon> Assign
                     </button>
@@ -1433,6 +1439,243 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
       </div>
     }
 
+    <!-- Slide-Over Drawer for Proposal Details -->
+    @if (selectedProposal(); as prop) {
+      <div class="fixed inset-0 z-50 overflow-hidden" aria-labelledby="proposal-drawer-title" role="dialog" aria-modal="true">
+        <div (click)="closeProposalDrawer()" class="absolute inset-0 overflow-hidden bg-slate-900/40 backdrop-blur-sm transition-opacity"></div>
+        <div class="absolute inset-y-0 right-0 max-w-full flex pl-10">
+          <div class="w-screen max-w-2xl bg-white shadow-2xl flex flex-col h-full animate-in slide-in-from-right-12 duration-300">
+            <div class="px-6 py-5 bg-slate-50 border-b border-slate-200 flex justify-between items-center shrink-0">
+              <div>
+                <h2 class="text-lg font-bold text-slate-900" id="proposal-drawer-title">{{prop.title}}</h2>
+                <p class="text-xs text-slate-500 mt-0.5">Prospect: {{getPartnerName(prop.partnerId)}} · #{{prop.id}}</p>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="px-3 py-1 text-xs font-semibold rounded-full uppercase"
+                  [class]="prop.status === 'Confirmed' ? 'bg-emerald-100 text-emerald-800' : (prop.status === 'Sent' ? 'bg-indigo-100 text-indigo-800' : 'bg-slate-100 text-slate-800')">
+                  {{prop.status}}
+                </span>
+                <button (click)="closeProposalDrawer()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-6 space-y-6">
+              <div class="bg-slate-50 rounded-xl p-4 border border-slate-100 space-y-3">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Lines & Pricing</span>
+                @for (line of prop.lines; track $index) {
+                  <div class="flex justify-between text-xs text-slate-700">
+                    <span>{{line.qty}}x {{line.product}}</span>
+                    <span class="font-mono">{{formatCurrency(line.total)}}</span>
+                  </div>
+                }
+                <div class="flex justify-between border-t border-slate-200 pt-1.5 text-xs font-bold text-slate-900 font-mono">
+                  <span>Total Amount</span>
+                  <span>{{formatCurrency(prop.amount)}}</span>
+                </div>
+              </div>
+
+              <div class="border-t border-slate-100 pt-3">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Sales Intelligence</span>
+                <div class="grid grid-cols-2 gap-3 glass p-3 rounded-xl border border-slate-150/60 text-xs">
+                  <div>
+                    <span class="text-slate-400 block text-[10px] font-medium">Opportunity Value</span>
+                    <span class="font-bold text-slate-900 font-mono">{{ formatCurrency(prop.opportunityValue || 0) }}</span>
+                  </div>
+                  <div>
+                    <span class="text-slate-400 block text-[10px] font-medium">Probability</span>
+                    <div class="flex items-center gap-1.5 mt-0.5">
+                      <div class="w-full bg-slate-200 rounded-full h-1.5 max-w-[60px]">
+                        <div class="bg-indigo-600 h-1.5 rounded-full" [style.width.%]="prop.closingProbability || 0"></div>
+                      </div>
+                      <span class="font-bold text-slate-900 font-mono">{{ prop.closingProbability || 0 }}%</span>
+                    </div>
+                  </div>
+                  <div>
+                    <span class="text-slate-400 block text-[10px] font-medium">Expected Close</span>
+                    <span class="font-semibold text-slate-700 font-mono">{{ prop.expectedClosingDate || 'TBD' }}</span>
+                  </div>
+                  <div>
+                    <span class="text-slate-400 block text-[10px] font-medium">Stage</span>
+                    <span class="inline-block px-2 py-0.5 text-[10px] font-bold rounded border uppercase mt-0.5" [class]="getStageBadgeClass(prop.stage)">
+                      {{ prop.stage || 'New Lead' }}
+                    </span>
+                  </div>
+                  @if (prop.competitors && prop.competitors.length > 0) {
+                    <div class="col-span-2">
+                      <span class="text-slate-400 block text-[10px] font-medium">Competitors</span>
+                      <div class="flex flex-wrap gap-1 mt-1">
+                        @for (comp of prop.competitors; track comp) {
+                          <span class="bg-slate-100 text-slate-600 border border-slate-200 px-1.5 py-0.5 rounded text-[10px] font-medium">{{comp}}</span>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              @if (prop.status === 'Confirmed' && prop.confirmationMethod) {
+                <div class="border-t border-slate-100 pt-3">
+                  <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Confirmation Proof</span>
+                  <div class="bg-emerald-50/40 border border-emerald-100 rounded-xl p-3 text-xs text-emerald-950 space-y-2">
+                    <div class="flex items-center gap-1.5 font-semibold text-emerald-800 text-[11px]">
+                      @if (prop.confirmationMethod === 'Email') {
+                        <mat-icon class="text-sm w-4 h-4 flex items-center justify-center">email</mat-icon>
+                        <span>Email confirmation</span>
+                      } @else if (prop.confirmationMethod === 'WhatsApp') {
+                        <mat-icon class="text-sm w-4 h-4 flex items-center justify-center">chat</mat-icon>
+                        <span>WhatsApp screenshot</span>
+                      } @else {
+                        <mat-icon class="text-sm w-4 h-4 flex items-center justify-center">phone</mat-icon>
+                        <span>Call Summary</span>
+                      }
+                      @if (prop.confirmedAt) {
+                        <span class="text-[10px] text-emerald-600 font-normal ml-auto font-mono">{{ prop.confirmedAt }}</span>
+                      }
+                    </div>
+                    @if (prop.confirmationAttachmentName) {
+                      <div class="flex items-center gap-1.5 bg-white border border-emerald-200/60 p-2 rounded-lg text-emerald-900 font-mono text-[10px] truncate">
+                        <mat-icon class="text-[14px] w-3.5 h-3.5 text-emerald-600">attach_file</mat-icon>
+                        <span class="truncate flex-1">{{ prop.confirmationAttachmentName }}</span>
+                        @if (prop.confirmationAttachmentData) {
+                          <a [href]="prop.confirmationAttachmentData" [download]="prop.confirmationAttachmentName"
+                             class="text-indigo-650 hover:underline font-sans font-semibold ml-1 shrink-0">Download</a>
+                        }
+                      </div>
+                    }
+                    @if (prop.confirmationNote) {
+                      <p class="text-[11px] text-slate-650 leading-relaxed bg-white border border-emerald-150 p-2 rounded-lg italic">
+                        "{{ prop.confirmationNote }}"
+                      </p>
+                    }
+                  </div>
+                </div>
+              }
+
+              <div class="border-t border-slate-100 pt-3 text-xs text-slate-500 space-y-1">
+                <app-created-by-badge [createdBy]="prop.createdBy" [createdAt]="prop.createdAt" />
+              </div>
+            </div>
+
+            <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex justify-between items-center shrink-0">
+              <span class="text-xs text-slate-500">{{ prop.lines.length }} line item(s)</span>
+              <div class="flex gap-2">
+                <button (click)="openEditProposalModal(prop); closeProposalDrawer()" class="bg-white border border-slate-300 text-indigo-600 hover:bg-indigo-50 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                  <mat-icon class="text-[16px] w-4 h-4">edit</mat-icon> Edit
+                </button>
+                @if (prop.status === 'Draft') {
+                  <button (click)="openSendProposalModal(prop); closeProposalDrawer()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
+                    Send to Prospect
+                  </button>
+                } @else if (prop.status === 'Sent') {
+                  <button (click)="openConfirmProposalModal(prop); closeProposalDrawer()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                    <mat-icon class="text-[16px] w-4 h-4">task_alt</mat-icon> Confirm
+                  </button>
+                } @else {
+                  <button (click)="openConvertProposalModal(prop); closeProposalDrawer()" class="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-all flex items-center gap-1">
+                    <mat-icon class="text-[16px] w-4 h-4">swap_horiz</mat-icon> Convert to Deal
+                  </button>
+                }
+                <button (click)="closeProposalDrawer()" class="bg-white border border-slate-300 text-slate-700 px-4 py-1.5 rounded-lg text-xs font-semibold">Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Slide-Over Drawer for PO Details -->
+    @if (selectedPO(); as po) {
+      <div class="fixed inset-0 z-50 overflow-hidden" aria-labelledby="po-drawer-title" role="dialog" aria-modal="true">
+        <div (click)="closePODrawer()" class="absolute inset-0 overflow-hidden bg-slate-900/40 backdrop-blur-sm transition-opacity"></div>
+        <div class="absolute inset-y-0 right-0 max-w-full flex pl-10">
+          <div class="w-screen max-w-2xl bg-white shadow-2xl flex flex-col h-full animate-in slide-in-from-right-12 duration-300">
+            <div class="px-6 py-5 bg-slate-50 border-b border-slate-200 flex justify-between items-center shrink-0">
+              <div>
+                <h2 class="text-lg font-bold text-slate-900" id="po-drawer-title">PO #{{po.id}}</h2>
+                <p class="text-xs text-slate-500 mt-0.5">Vendor: {{getPartnerName(po.vendorId)}} · Deal: {{getDealTitle(po.dealId)}}</p>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="px-3 py-1 text-xs font-bold uppercase rounded-full"
+                  [class]="po.status === 'Delivered' ? 'bg-emerald-100 text-emerald-800' : (po.status === 'Sent' ? 'bg-indigo-100 text-indigo-800' : 'bg-slate-100 text-slate-800')">
+                  {{po.status}}
+                </span>
+                <button (click)="closePODrawer()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-6 space-y-6">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100 text-xs">
+                <div>
+                  <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">PO Reference</span>
+                  <span class="font-mono text-slate-900 font-bold text-sm">#{{po.id}}</span>
+                </div>
+                <div>
+                  <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Delivery Date</span>
+                  <span class="text-slate-900 font-mono">{{po.deliveryDate || 'Pending Conf.'}}</span>
+                </div>
+                <div>
+                  <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Sent Via</span>
+                  <span class="text-slate-900">{{po.sentVia || 'N/A'}}</span>
+                </div>
+                <div>
+                  <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Total Amount</span>
+                  <span class="font-mono text-slate-900 font-bold">{{formatCurrency(po.amount)}}</span>
+                </div>
+              </div>
+
+              <div>
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Order Lines</span>
+                <div class="border border-slate-200 rounded-xl overflow-hidden">
+                  <table class="min-w-full divide-y divide-slate-200">
+                    <thead class="bg-slate-50">
+                      <tr>
+                        <th class="px-3 py-2 text-left text-[10px] font-semibold text-slate-500 uppercase">Item</th>
+                        <th class="px-3 py-2 text-right text-[10px] font-semibold text-slate-500 uppercase">Qty</th>
+                        <th class="px-3 py-2 text-right text-[10px] font-semibold text-slate-500 uppercase">Unit Cost</th>
+                        <th class="px-3 py-2 text-right text-[10px] font-semibold text-slate-500 uppercase">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-slate-100">
+                      @for (line of po.lines; track $index) {
+                        <tr class="hover:bg-slate-50/50">
+                          <td class="px-3 py-2 text-xs text-slate-900 font-medium">{{line.product}}{{line.description ? ' - ' + line.description : ''}}</td>
+                          <td class="px-3 py-2 text-xs text-slate-700 font-mono text-right">{{line.qty}}</td>
+                          <td class="px-3 py-2 text-xs text-slate-700 font-mono text-right">{{formatCurrency(line.cost)}}</td>
+                          <td class="px-3 py-2 text-xs text-slate-900 font-mono font-bold text-right">{{formatCurrency(line.qty * line.cost)}}</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div class="border-t border-slate-100 pt-3 text-xs text-slate-500 space-y-1">
+                <app-created-by-badge [createdBy]="po.createdBy" [createdAt]="po.createdAt" />
+              </div>
+            </div>
+
+            <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex justify-between items-center shrink-0">
+              <span class="text-xs text-slate-500">{{ po.lines.length }} item(s)</span>
+              <div class="flex gap-2">
+                <button (click)="openAssignTaskModal('po', po.id, 'PO #' + po.id); closePODrawer()" class="bg-white border border-slate-300 text-indigo-600 hover:bg-indigo-50 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                  <mat-icon class="text-[16px] w-4 h-4">assignment</mat-icon> Assign Task
+                </button>
+                @if (po.status === 'Sent') {
+                  <button (click)="openSetDeliveryDatePOModal(po); closePODrawer()" class="bg-white border border-slate-200 text-slate-700 px-3 py-1.5 rounded-lg hover:bg-slate-50 text-xs font-semibold">Set Del. Date</button>
+                  <button (click)="state.updatePurchaseOrderStatus(po.id, 'Delivered'); closePODrawer()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-lg shadow-indigo-200">Receive Goods</button>
+                }
+                <button (click)="closePODrawer()" class="bg-white border border-slate-300 text-slate-700 px-4 py-1.5 rounded-lg text-xs font-semibold">Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
     <!-- Slide-Over Drawer for Deal Details -->
     @if (selectedDeal(); as deal) {
       <div class="fixed inset-0 z-50 overflow-hidden" aria-labelledby="deal-drawer-title" role="dialog" aria-modal="true">
@@ -2133,6 +2376,36 @@ export class SalesComponent {
 
   closeDealDrawer() {
     this.selectedDealForDrawer.set(null);
+  }
+
+  selectedProposalForDrawer = signal<Proposal | null>(null);
+  selectedProposal = computed(() => {
+    const id = this.selectedProposalForDrawer()?.id;
+    if (!id) return null;
+    return this.state.proposals().find(p => p.id === id) || null;
+  });
+
+  openProposalDrawer(prop: Proposal) {
+    this.selectedProposalForDrawer.set(prop);
+  }
+
+  closeProposalDrawer() {
+    this.selectedProposalForDrawer.set(null);
+  }
+
+  selectedPOForDrawer = signal<PurchaseOrder | null>(null);
+  selectedPO = computed(() => {
+    const id = this.selectedPOForDrawer()?.id;
+    if (!id) return null;
+    return this.state.purchaseOrders().find(p => p.id === id) || null;
+  });
+
+  openPODrawer(po: PurchaseOrder) {
+    this.selectedPOForDrawer.set(po);
+  }
+
+  closePODrawer() {
+    this.selectedPOForDrawer.set(null);
   }
 
   expandedDeals = signal<{ [key: string]: boolean }>({});

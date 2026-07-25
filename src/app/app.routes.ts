@@ -8,6 +8,7 @@ export const routes: Routes = [
   { path: 'sales/deals/:dealId', loadComponent: () => import('./pages/deal-detail.component').then(m => m.DealDetailComponent) },
   { path: 'marketing', loadComponent: () => import('./pages/marketing.component').then(m => m.MarketingComponent) },
   { path: 'partners', loadComponent: () => import('./pages/partners.component').then(m => m.PartnersComponent) },
+  { path: 'partners/lead/:id', loadComponent: () => import('./pages/lead-detail.component').then(m => m.LeadDetailComponent) },
   { path: 'finance', loadComponent: () => import('./pages/finance.component').then(m => m.FinanceComponent) },
   { path: 'tickets', loadComponent: () => import('./pages/tickets.component').then(m => m.TicketsComponent) },
   { path: 'automation', loadComponent: () => import('./pages/automation.component').then(m => m.AutomationComponent) },
