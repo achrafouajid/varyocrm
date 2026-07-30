@@ -18,13 +18,13 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/settings-shell.component').then(m => m.SettingsShellComponent),
     children: [
       { path: '', redirectTo: 'organization', pathMatch: 'full' },
-      { path: 'organization', loadComponent: () => import('./pages/org-settings.component').then(m => m.OrgSettingsComponent) },
       { path: 'users', loadComponent: () => import('./pages/users.component').then(m => m.UsersComponent) },
-      { path: 'users/:userId', loadComponent: () => import('./pages/user-profile.component').then(m => m.UserProfileComponent) },
       { path: 'teams', loadComponent: () => import('./pages/teams.component').then(m => m.TeamsComponent) },
       { path: 'groups', loadComponent: () => import('./pages/groups.component').then(m => m.GroupsComponent) }
     ]
   },
-  { path: 'groups', loadComponent: () => import('./pages/groups.component').then(m => m.GroupsComponent) }
+  { path: 'groups', loadComponent: () => import('./pages/groups.component').then(m => m.GroupsComponent) },
+  { path: 'settings/organization', loadComponent: () => import('./pages/org-settings.component').then(m => m.OrgSettingsComponent) },
+  { path: 'settings/users/:userId', loadComponent: () => import('./pages/user-profile.component').then(m => m.UserProfileComponent) }
 ];
 

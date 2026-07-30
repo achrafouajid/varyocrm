@@ -10,7 +10,7 @@ import { RouterModule } from '@angular/router';
   selector: 'app-tickets',
   imports: [MatIconModule, CommonModule, FormsModule, CreatedByBadgeComponent, RouterModule],
   template: `
-    <div class="max-w-6xl mx-auto space-y-8">
+    <div class="space-y-8">
       <div class="flex justify-end">
         <button (click)="openNewTicketModal()" class="bg-zinc-900 hover:bg-zinc-950 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm shadow-lg shadow-zinc-300">
           <mat-icon class="w-5 h-5 text-[20px]! leading-none! flex items-center justify-center">add</mat-icon>

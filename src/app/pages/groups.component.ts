@@ -33,7 +33,7 @@ import { MatIconModule } from '@angular/material/icon';
     }
   `],
   template: `
-    <div class="font-sans flex flex-col md:flex-row card rounded-2xl overflow-hidden h-[calc(100vh-10rem)] max-w-6xl mx-auto">
+    <div class="font-sans flex flex-col md:flex-row card rounded-2xl overflow-hidden h-[calc(100vh-10rem)]">
       
       <!-- LEFT PANEL: Group list -->
       <aside class="w-full md:w-[300px] border-r border-zinc-200 flex flex-col h-full shrink-0">

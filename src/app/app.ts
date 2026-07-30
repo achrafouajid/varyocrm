@@ -3,11 +3,12 @@ import { RouterOutlet, RouterLink, Router, NavigationEnd } from '@angular/router
 import { MatIconModule } from '@angular/material/icon'
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { CrmStateService } from './services/crm-state.service';
+import { CrmStateService, CRM_ROLES } from './services/crm-state.service';
 import { UserAvatarComponent } from './shared/user-avatar.component';
 import { SupportModalComponent } from './shared/support-modal.component';
 import { NotificationInboxDrawerComponent } from './shared/notification-inbox-drawer.component';
 import { ToastContainerComponent } from './shared/toast.component';
+import { LoginComponent } from './pages/login.component';
 import { filter } from 'rxjs/operators';
 
 interface NavItem {
@@ -103,7 +104,7 @@ const SEARCH_ITEMS: SearchItem[] = [
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, MatIconModule, CommonModule, FormsModule, UserAvatarComponent, SupportModalComponent, NotificationInboxDrawerComponent, ToastContainerComponent],
+  imports: [RouterOutlet, RouterLink, MatIconModule, CommonModule, FormsModule, UserAvatarComponent, SupportModalComponent, NotificationInboxDrawerComponent, ToastContainerComponent, LoginComponent],
   styles: [`
     :host {
       display: block;
@@ -356,6 +357,85 @@ const SEARCH_ITEMS: SearchItem[] = [
 
     .sidebar-user:hover {
       background: #F3F4F6;
+    }
+
+    .sidebar-user-chevron {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+      color: #9CA3AF;
+      flex-shrink: 0;
+      transition: transform 200ms ease;
+    }
+
+    .sidebar-profile-wrapper {
+      position: relative;
+      border-top: 1px solid #F3F4F6;
+      margin-top: 4px;
+    }
+
+    .sidebar-profile-wrapper .sidebar-user {
+      border-top: none;
+      margin-top: 0;
+      background: none;
+      border: none;
+      width: 100%;
+      text-align: left;
+      font-family: inherit;
+      font-size: inherit;
+      line-height: inherit;
+    }
+
+    .profile-menu {
+      position: absolute;
+      bottom: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      background: #FFFFFF;
+      border: 1px solid #E5E7EB;
+      border-radius: 10px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+      padding: 4px;
+      z-index: 60;
+      overflow: hidden;
+    }
+
+    .app-sidebar.collapsed .profile-menu {
+      left: 56px;
+      bottom: 0;
+      right: auto;
+      min-width: 180px;
+    }
+
+    .profile-menu-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #6B7280;
+      cursor: pointer;
+      transition: all 150ms ease;
+      text-decoration: none;
+      background: none;
+      border: none;
+      width: 100%;
+      text-align: left;
+      font-family: inherit;
+    }
+
+    .profile-menu-item:hover {
+      background: #F3F4F6;
+      color: #111827;
+    }
+
+    .profile-menu-item mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
     }
 
     .sidebar-user-info {
@@ -658,210 +738,236 @@ const SEARCH_ITEMS: SearchItem[] = [
     }
   `],
   template: `
-    <div class="app-layout font-sans search-container">
+    @if (state.isAuthenticated()) {
+      <div class="app-layout font-sans search-container">
 
-      <!-- Mobile overlay -->
-      @if (mobileMenuOpen()) {
-        <div class="mobile-overlay" (click)="mobileMenuOpen.set(false)"></div>
-      }
+        <!-- Mobile overlay -->
+        @if (mobileMenuOpen()) {
+          <div class="mobile-overlay" (click)="mobileMenuOpen.set(false)"></div>
+        }
 
-      <!-- Sidebar -->
-      <aside class="app-sidebar" [class.mobile-open]="mobileMenuOpen()" [class.collapsed]="sidebarCollapsed()">
+        <!-- Sidebar -->
+        <aside class="app-sidebar" [class.mobile-open]="mobileMenuOpen()" [class.collapsed]="sidebarCollapsed()">
 
-        <!-- Logo + collapse toggle -->
-        <div class="sidebar-logo" (click)="onLogoClick()">
-          <img src="logo.webp" alt="Bento Logo" />
-          <span>Bento</span>
-          <button
-            class="sidebar-collapse-btn"
-            (click)="toggleCollapse($event)"
-            [title]="sidebarCollapsed() ? 'Expand sidebar' : 'Collapse sidebar'"
-          >
-            <mat-icon>{{ sidebarCollapsed() ? 'menu' : 'menu_open' }}</mat-icon>
-          </button>
-        </div>
-
-        <!-- Navigation -->
-        <nav class="sidebar-nav">
-          @for (section of navSections; track section.label) {
-            <div class="sidebar-section-title">{{ section.label }}</div>
-            @for (item of section.items; track item.route) {
-              <a
-                [routerLink]="item.route"
-                class="sidebar-link"
-                [class.active]="isNavActive(item)"
-                [title]="item.label"
-                (click)="mobileMenuOpen.set(false)"
-              >
-                <mat-icon>{{ item.icon }}</mat-icon>
-                <span class="nav-label">{{ item.label }}</span>
-              </a>
-            }
-          }
-        </nav>
-
-        <!-- Bottom Section -->
-        <div class="sidebar-bottom">
-          <a
-            routerLink="/settings"
-            class="sidebar-bottom-link"
-            [class.active]="activeRoute().startsWith('/settings')"
-            title="Settings"
-            (click)="mobileMenuOpen.set(false)"
-          >
-            <mat-icon>settings</mat-icon>
-            <span class="nav-label">Settings</span>
-          </a>
-          <button
-            class="sidebar-bottom-link"
-            title="Help & Support"
-            (click)="openSupportModal()"
-          >
-            <mat-icon>help_outline</mat-icon>
-            <span class="nav-label">Help & Support</span>
-          </button>
-          <a
-            [routerLink]="['/settings/users', state.currentUserId()]"
-            class="sidebar-user"
-            title="Profile"
-            (click)="mobileMenuOpen.set(false)"
-          >
-            <app-user-avatar [userId]="state.currentUserId()" [size]="32" class="shrink-0 rounded-full block"></app-user-avatar>
-            <div class="sidebar-user-info">
-              <div class="sidebar-user-name">{{ currentUserName() }}</div>
-              <div class="sidebar-user-role">Administrator</div>
-            </div>
-          </a>
-        </div>
-      </aside>
-
-      <!-- Content Area -->
-      <div class="app-content">
-
-        <!-- Top Bar -->
-        <header class="content-topbar">
-          <!-- Mobile menu button -->
-          <button
-            class="topbar-icon-btn mobile-sidebar-toggle"
-            (click)="mobileMenuOpen.set(!mobileMenuOpen())"
-            title="Toggle menu"
-          >
-            <mat-icon>menu</mat-icon>
-          </button>
-
-          <!-- Search -->
-          <div class="topbar-search">
-            <mat-icon>search</mat-icon>
-            <input
-              #searchInput
-              [ngModel]="searchQuery()"
-              (ngModelChange)="onSearchInput($event)"
-              (focus)="showSearchResults.set(true)"
-              (keydown)="onSearchKeydown($event)"
-              type="text"
-              placeholder="Search menus and pages...  (Ctrl+K)"
-            />
-            @if (searchQuery()) {
-              <button class="clear-btn" (click)="clearSearch()" title="Clear search">
-                <mat-icon class="text-[14px] w-3.5 h-3.5">close</mat-icon>
-              </button>
-            }
-
-            <!-- Search Results Dropdown -->
-            @if (showSearchResults() && searchQuery().length >= 1 && filteredSearchItems().length > 0) {
-              <div class="search-dropdown">
-                @for (item of filteredSearchItems(); track $index) {
-                  <div
-                    class="search-result-item"
-                    [class.selected]="selectedSearchIndex() === $index"
-                    (click)="navigateToSearchItem(item)"
-                    (mouseenter)="selectedSearchIndex.set($index)"
-                  >
-                    <mat-icon>{{ item.subIcon || item.mainIcon }}</mat-icon>
-                    <div class="search-result-info">
-                      <div class="flex items-baseline gap-2">
-                        <span class="search-result-breadcrumb">{{ item.mainMenu }}</span>
-                        <span class="search-result-title">{{ item.submenu || item.mainMenu }}</span>
-                      </div>
-                      <p class="search-result-desc">{{ item.action }}</p>
-                    </div>
-                  </div>
-                }
-              </div>
-            }
-            @if (showSearchResults() && searchQuery().length >= 1 && filteredSearchItems().length === 0) {
-              <div class="search-dropdown" style="padding: 20px; text-align: center;">
-                <p class="text-sm text-zinc-500">No results found for "{{ searchQuery() }}"</p>
-              </div>
-            }
+          <!-- Logo + collapse toggle -->
+          <div class="sidebar-logo" (click)="onLogoClick()">
+            <img src="logo.webp" alt="Bento Logo" />
+            <span>Bento</span>
+            <button
+              class="sidebar-collapse-btn"
+              (click)="toggleCollapse($event)"
+              [title]="sidebarCollapsed() ? 'Expand sidebar' : 'Collapse sidebar'"
+            >
+              <mat-icon>{{ sidebarCollapsed() ? 'menu' : 'menu_open' }}</mat-icon>
+            </button>
           </div>
 
-          <!-- Right Actions -->
-          <div class="topbar-actions">
-            <button
-              class="topbar-icon-btn"
-              (click)="state.isCustomizing.set(!state.isCustomizing())"
-              [title]="state.isCustomizing() ? 'Done Customizing' : 'Customize KPIs'"
-            >
-              <mat-icon>{{ state.isCustomizing() ? 'check' : 'edit_square' }}</mat-icon>
-            </button>
-            <button
-              class="topbar-icon-btn"
-              (click)="openInbox()"
-              title="Mail"
-            >
-              <mat-icon>mail</mat-icon>
-            </button>
-            <button
-              class="topbar-icon-btn"
-              (click)="openNotifications()"
-              title="Notifications"
-            >
-              <mat-icon>notifications_none</mat-icon>
-              @if (unreadCount() > 0) {
-                <span class="notification-dot">{{ unreadCount() }}</span>
+          <!-- Navigation -->
+          <nav class="sidebar-nav">
+            @for (section of navSections; track section.label) {
+              <div class="sidebar-section-title">{{ section.label }}</div>
+              @for (item of section.items; track item.route) {
+                <a
+                  [routerLink]="item.route"
+                  class="sidebar-link"
+                  [class.active]="isNavActive(item)"
+                  [title]="item.label"
+                  (click)="mobileMenuOpen.set(false)"
+                >
+                  <mat-icon>{{ item.icon }}</mat-icon>
+                  <span class="nav-label">{{ item.label }}</span>
+                </a>
               }
-            </button>
-            <a
-              [routerLink]="['/settings/users', state.currentUserId()]"
-              class="topbar-avatar"
-              title="View Profile"
-            >
-              <app-user-avatar [userId]="state.currentUserId()" [size]="32" class="shrink-0 rounded-full block"></app-user-avatar>
-            </a>
-          </div>
-        </header>
-
-        <!-- Breadcrumbs -->
-        <div class="content-breadcrumbs">
-          @for (crumb of breadcrumbs(); track crumb.label; let last = $last) {
-            @if (!last && crumb.route) {
-              <a [routerLink]="crumb.route" class="breadcrumb-link">{{ crumb.label }}</a>
-              <mat-icon class="breadcrumb-sep text-[14px] w-3.5 h-3.5">chevron_right</mat-icon>
-            } @else {
-              <span class="breadcrumb-current">{{ crumb.label }}</span>
             }
-          }
+          </nav>
+
+          <!-- Bottom Section -->
+          <div class="sidebar-bottom">
+            <a
+              routerLink="/settings"
+              class="sidebar-bottom-link"
+              [class.active]="activeRoute().startsWith('/settings')"
+              title="Settings"
+              (click)="mobileMenuOpen.set(false)"
+            >
+              <mat-icon>settings</mat-icon>
+              <span class="nav-label">Settings</span>
+            </a>
+            <button
+              class="sidebar-bottom-link"
+              title="Help & Support"
+              (click)="openSupportModal()"
+            >
+              <mat-icon>help_outline</mat-icon>
+              <span class="nav-label">Help & Support</span>
+            </button>
+            <div class="sidebar-profile-wrapper" #profileWrapper>
+              <button
+                class="sidebar-user"
+                (click)="toggleProfileMenu()"
+                title="Profile"
+              >
+                <app-user-avatar [userId]="state.currentUserId()" [size]="32" class="shrink-0 rounded-full block"></app-user-avatar>
+                <div class="sidebar-user-info">
+                  <div class="sidebar-user-name">{{ currentUserName() }}</div>
+                  <div class="sidebar-user-role">{{ currentUserRole() }}</div>
+                </div>
+                <mat-icon class="sidebar-user-chevron">keyboard_arrow_up</mat-icon>
+              </button>
+
+              @if (profileMenuOpen()) {
+                <div class="profile-menu">
+                  <a
+                    [routerLink]="['/settings/users', state.currentUserId()]"
+                    class="profile-menu-item"
+                    (click)="closeProfileMenu()"
+                  >
+                    <mat-icon>person</mat-icon>
+                    <span>Settings</span>
+                  </a>
+                  <button
+                    class="profile-menu-item"
+                    (click)="onLogout()"
+                  >
+                    <mat-icon>logout</mat-icon>
+                    <span>Logout</span>
+                  </button>
+                </div>
+              }
+            </div>
+          </div>
+        </aside>
+
+        <!-- Content Area -->
+        <div class="app-content">
+
+          <!-- Top Bar -->
+          <header class="content-topbar">
+            <!-- Mobile menu button -->
+            <button
+              class="topbar-icon-btn mobile-sidebar-toggle"
+              (click)="mobileMenuOpen.set(!mobileMenuOpen())"
+              title="Toggle menu"
+            >
+              <mat-icon>menu</mat-icon>
+            </button>
+
+            <!-- Search -->
+            <div class="topbar-search">
+              <mat-icon>search</mat-icon>
+              <input
+                #searchInput
+                [ngModel]="searchQuery()"
+                (ngModelChange)="onSearchInput($event)"
+                (focus)="showSearchResults.set(true)"
+                (keydown)="onSearchKeydown($event)"
+                type="text"
+                placeholder="Search menus and pages...  (Ctrl+K)"
+              />
+              @if (searchQuery()) {
+                <button class="clear-btn" (click)="clearSearch()" title="Clear search">
+                  <mat-icon class="text-[14px] w-3.5 h-3.5">close</mat-icon>
+                </button>
+              }
+
+              <!-- Search Results Dropdown -->
+              @if (showSearchResults() && searchQuery().length >= 1 && filteredSearchItems().length > 0) {
+                <div class="search-dropdown">
+                  @for (item of filteredSearchItems(); track $index) {
+                    <div
+                      class="search-result-item"
+                      [class.selected]="selectedSearchIndex() === $index"
+                      (click)="navigateToSearchItem(item)"
+                      (mouseenter)="selectedSearchIndex.set($index)"
+                    >
+                      <mat-icon>{{ item.subIcon || item.mainIcon }}</mat-icon>
+                      <div class="search-result-info">
+                        <div class="flex items-baseline gap-2">
+                          <span class="search-result-breadcrumb">{{ item.mainMenu }}</span>
+                          <span class="search-result-title">{{ item.submenu || item.mainMenu }}</span>
+                        </div>
+                        <p class="search-result-desc">{{ item.action }}</p>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+              @if (showSearchResults() && searchQuery().length >= 1 && filteredSearchItems().length === 0) {
+                <div class="search-dropdown" style="padding: 20px; text-align: center;">
+                  <p class="text-sm text-zinc-500">No results found for "{{ searchQuery() }}"</p>
+                </div>
+              }
+            </div>
+
+            <!-- Right Actions -->
+            <div class="topbar-actions">
+              <button
+                class="topbar-icon-btn"
+                (click)="state.isCustomizing.set(!state.isCustomizing())"
+                [title]="state.isCustomizing() ? 'Done Customizing' : 'Customize KPIs'"
+              >
+                <mat-icon>{{ state.isCustomizing() ? 'check' : 'edit_square' }}</mat-icon>
+              </button>
+              <button
+                class="topbar-icon-btn"
+                (click)="openInbox()"
+                title="Mail"
+              >
+                <mat-icon>mail</mat-icon>
+              </button>
+              <button
+                class="topbar-icon-btn"
+                (click)="openNotifications()"
+                title="Notifications"
+              >
+                <mat-icon>notifications_none</mat-icon>
+                @if (unreadCount() > 0) {
+                  <span class="notification-dot">{{ unreadCount() }}</span>
+                }
+              </button>
+              <a
+                [routerLink]="['/settings/users', state.currentUserId()]"
+                class="topbar-avatar"
+                title="View Profile"
+              >
+                <app-user-avatar [userId]="state.currentUserId()" [size]="32" class="shrink-0 rounded-full block"></app-user-avatar>
+              </a>
+            </div>
+          </header>
+
+          <!-- Breadcrumbs -->
+          <div class="content-breadcrumbs">
+            @for (crumb of breadcrumbs(); track crumb.label; let last = $last) {
+              @if (!last && crumb.route) {
+                <a [routerLink]="crumb.route" class="breadcrumb-link">{{ crumb.label }}</a>
+                <mat-icon class="breadcrumb-sep text-[14px] w-3.5 h-3.5">chevron_right</mat-icon>
+              } @else {
+                <span class="breadcrumb-current">{{ crumb.label }}</span>
+              }
+            }
+          </div>
+
+          <!-- Main Content -->
+          <main class="content-main">
+            <router-outlet></router-outlet>
+          </main>
         </div>
 
-        <!-- Main Content -->
-        <main class="content-main">
-          <router-outlet></router-outlet>
-        </main>
       </div>
 
-    </div>
+      <app-support-modal></app-support-modal>
 
-    <app-support-modal></app-support-modal>
+      <app-notification-inbox-drawer
+        [drawerType]="drawerType()"
+        [open]="drawerOpen()"
+        (closed)="closeDrawer()"
+        (switchType)="drawerType.set($event)"
+      ></app-notification-inbox-drawer>
 
-    <app-notification-inbox-drawer
-      [drawerType]="drawerType()"
-      [open]="drawerOpen()"
-      (closed)="closeDrawer()"
-      (switchType)="drawerType.set($event)"
-    ></app-notification-inbox-drawer>
-
-    <app-toast-container></app-toast-container>
+      <app-toast-container></app-toast-container>
+    } @else {
+      <app-login></app-login>
+    }
   `
 })
 export class App implements OnInit, OnDestroy {
@@ -896,9 +1002,36 @@ export class App implements OnInit, OnDestroy {
   currentUserName = computed(() => {
     const users = this.state.users();
     const userId = this.state.currentUserId();
-    const user = users.find((u: any) => u.id === userId);
+    const user = users.find(u => u.id === userId);
     return user?.displayName || 'User';
   });
+
+  currentUserRole = computed(() => {
+    const users = this.state.users();
+    const userId = this.state.currentUserId();
+    const user = users.find(u => u.id === userId);
+    if (!user) return '';
+    const role = CRM_ROLES.find(r => r.id === user.roleId);
+    return role?.label || '';
+  });
+
+  // Profile menu
+  profileMenuOpen = signal(false);
+
+  toggleProfileMenu() {
+    this.profileMenuOpen.update(v => !v);
+  }
+
+  closeProfileMenu() {
+    this.profileMenuOpen.set(false);
+  }
+
+  onLogout() {
+    this.profileMenuOpen.set(false);
+    this.mobileMenuOpen.set(false);
+    this.state.logout();
+    this.router.navigate(['/']);
+  }
 
   // Global search
   readonly searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');
@@ -949,6 +1082,9 @@ export class App implements OnInit, OnDestroy {
     const target = event.target as HTMLElement;
     if (this.showSearchResults() && !target.closest('.search-container')) {
       this.showSearchResults.set(false);
+    }
+    if (this.profileMenuOpen() && !target.closest('.sidebar-profile-wrapper')) {
+      this.profileMenuOpen.set(false);
     }
   }
 

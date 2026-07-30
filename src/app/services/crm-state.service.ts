@@ -848,6 +848,10 @@ export class CrmStateService {
   private toast = inject(ToastService);
   private router = inject(Router);
 
+  // Auth
+  isAuthenticated = signal<boolean>(this.loadAuthState());
+  currentUserId = signal<string>('usr_rachid');
+
   // Config signals
   organization = signal<Organization>(SEED_ORG);
   users = signal<CrmUser[]>(SEED_USERS);
@@ -855,7 +859,6 @@ export class CrmStateService {
   groups = signal<CrmGroup[]>(SEED_GROUPS);
   groupMessages = signal<GroupMessage[]>(SEED_MESSAGES);
   groupMeetings = signal<GroupMeeting[]>(SEED_MEETINGS);
-  currentUserId = signal<string>('usr_rachid');
 
   // Shared tab state for section pages
   salesSubTab = signal<'deals' | 'proposals' | 'pos'>('deals');
@@ -1136,6 +1139,52 @@ export class CrmStateService {
     }
   }
 
+  private loadAuthState(): boolean {
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      return localStorage.getItem('bento_auth') === 'true';
+    }
+    return false;
+  }
+
+  private saveAuthState(authenticated: boolean): void {
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      if (authenticated) {
+        localStorage.setItem('bento_auth', 'true');
+      } else {
+        localStorage.removeItem('bento_auth');
+      }
+    }
+  }
+
+  login(email: string): boolean {
+    const user = this.users().find(
+      u => u.email.toLowerCase() === email.toLowerCase() && u.isActive
+    );
+    if (user) {
+      this.currentUserId.set(user.id);
+      this.isAuthenticated.set(true);
+      this.saveAuthState(true);
+      return true;
+    }
+    return false;
+  }
+
+  loginWithGoogle(): boolean {
+    const firstActive = this.users().find(u => u.isActive);
+    if (firstActive) {
+      this.currentUserId.set(firstActive.id);
+      this.isAuthenticated.set(true);
+      this.saveAuthState(true);
+      return true;
+    }
+    return false;
+  }
+
+  logout(): void {
+    this.isAuthenticated.set(false);
+    this.currentUserId.set('usr_rachid');
+    this.saveAuthState(false);
+  }
 
   // Proposal templates
   proposalTemplates = signal<ProposalTemplate[]>([

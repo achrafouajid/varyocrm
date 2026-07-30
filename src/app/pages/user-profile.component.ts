@@ -12,7 +12,7 @@ import { MatIconModule } from '@angular/material/icon';
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink, UserAvatarComponent, RoleBadgeComponent, MatIconModule],
   template: `
-    <div class="space-y-6 font-sans max-w-3xl mx-auto">
+    <div class="space-y-8 font-sans">
       <!-- Back button -->
       <a routerLink="/settings/users" class="inline-flex items-center gap-1 text-xs font-semibold text-zinc-500 hover:text-zinc-800 transition-colors">
         <mat-icon class="text-sm w-4 h-4 flex items-center justify-center">arrow_back</mat-icon>
@@ -115,6 +115,23 @@ import { MatIconModule } from '@angular/material/icon';
           </div>
         </div>
 
+        <!-- Tabs -->
+        <div class="flex gap-5 sm:gap-6 border-b border-zinc-200">
+          <button (click)="profileTab.set('profile')" [class]="profileTab() === 'profile' ? 'border-zinc-900 text-zinc-900' : 'border-transparent text-zinc-400 hover:text-zinc-600'" class="px-1 py-3 -mb-px border-b-2 text-sm font-medium transition-all whitespace-nowrap">
+            Profile
+          </button>
+          <button (click)="profileTab.set('preferences')" [class]="profileTab() === 'preferences' ? 'border-zinc-900 text-zinc-900' : 'border-transparent text-zinc-400 hover:text-zinc-600'" class="px-1 py-3 -mb-px border-b-2 text-sm font-medium transition-all whitespace-nowrap">
+            Preferences
+          </button>
+          <button (click)="profileTab.set('groups')" [class]="profileTab() === 'groups' ? 'border-zinc-900 text-zinc-900' : 'border-transparent text-zinc-400 hover:text-zinc-600'" class="px-1 py-3 -mb-px border-b-2 text-sm font-medium transition-all whitespace-nowrap">
+            Groups
+          </button>
+          <button (click)="profileTab.set('activity')" [class]="profileTab() === 'activity' ? 'border-zinc-900 text-zinc-900' : 'border-transparent text-zinc-400 hover:text-zinc-600'" class="px-1 py-3 -mb-px border-b-2 text-sm font-medium transition-all whitespace-nowrap">
+            Activity
+          </button>
+        </div>
+
+        @if (profileTab() === 'profile') {
         <!-- ROLE & TEAM SECTION -->
         <div class="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-xs space-y-4">
           <h3 class="font-bold text-zinc-800 text-sm">Role & Team Assignment</h3>
@@ -166,7 +183,9 @@ import { MatIconModule } from '@angular/material/icon';
             </div>
           </div>
         </div>
+        }
 
+        @if (profileTab() === 'preferences') {
         <!-- PREFERENCES SECTION -->
         <div class="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-xs space-y-6">
           <h3 class="font-bold text-zinc-800 text-sm">Notification Preferences</h3>
@@ -229,7 +248,9 @@ import { MatIconModule } from '@angular/material/icon';
             </select>
           </div>
         </div>
+        }
 
+        @if (profileTab() === 'groups') {
         <!-- GROUPS SECTION -->
         <div class="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-xs space-y-4">
           <div class="flex items-center gap-2">
@@ -253,7 +274,9 @@ import { MatIconModule } from '@angular/material/icon';
             }
           </div>
         </div>
+        }
 
+        @if (profileTab() === 'activity') {
         <!-- ACTIVITY SECTION -->
         <div class="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-xs space-y-4">
           <h3 class="font-bold text-zinc-800 text-sm">Activity Details</h3>
@@ -308,6 +331,7 @@ import { MatIconModule } from '@angular/material/icon';
             }
           </div>
         }
+        }
       } @else {
         <!-- 404 Empty State -->
         <div class="bg-white border border-zinc-200/80 rounded-2xl p-16 text-center space-y-3">
@@ -335,6 +359,7 @@ export class UserProfileComponent {
   private router = inject(Router);
 
   userId = signal<string | null>(null);
+  profileTab = signal('profile');
 
   // Edit fields
   isEditingName = signal(false);

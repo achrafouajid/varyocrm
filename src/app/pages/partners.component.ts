@@ -11,7 +11,7 @@ import { UserAvatarComponent } from '../shared/user-avatar.component';
   selector: 'app-partners',
   imports: [MatIconModule, CommonModule, FormsModule, CreatedByBadgeComponent, UserAvatarComponent],
   template: `
-    <div class="space-y-6">
+    <div class="space-y-8">
       <div class="flex gap-5 sm:gap-6 border-b border-zinc-200">
         <button
           (click)="activeTab.set('Lead'); state.breadcrumbLabel.set('Leads')"
@@ -68,7 +68,7 @@ import { UserAvatarComponent } from '../shared/user-avatar.component';
 
         @if (activeTab() === 'Lead') {
           <!-- Leads Management -->
-          <div class="max-w-7xl mx-auto space-y-6">
+          <div class="space-y-6">
             <!-- KPI Metrics Dashboard -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div class="card rounded-2xl p-4 lg:p-5 flex items-center justify-between">

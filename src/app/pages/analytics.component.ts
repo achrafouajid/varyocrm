@@ -10,24 +10,26 @@ declare var Chart: any;
   selector: 'app-analytics',
   imports: [MatIconModule, CommonModule, Customer360Component],
   template: `
-    <div class="max-w-6xl mx-auto space-y-8">
+    <div class="space-y-8">
 
-      <div class="flex gap-5 sm:gap-6 border-b border-zinc-200 mb-8">
+      <div class="flex gap-5 sm:gap-6 border-b border-zinc-200">
         <button
-          (click)="activeTab.set('overview')"
+          (click)="activeTab.set('overview'); state.breadcrumbLabel.set('Overview')"
           [class]="activeTab() === 'overview' ? 'border-zinc-900 text-zinc-900' : 'border-transparent text-zinc-400 hover:text-zinc-600'"
           class="px-1 py-3 -mb-px border-b-2 text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap"
         >
           <mat-icon class="text-[18px] w-[18px] h-[18px]">dashboard</mat-icon>
           Overview
+          <span class="text-xs">{{ state.deals().length }}</span>
         </button>
         <button
-          (click)="activeTab.set('customers360')"
+          (click)="activeTab.set('customers360'); state.breadcrumbLabel.set('Customers 360')"
           [class]="activeTab() === 'customers360' ? 'border-zinc-900 text-zinc-900' : 'border-transparent text-zinc-400 hover:text-zinc-600'"
           class="px-1 py-3 -mb-px border-b-2 text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap"
         >
           <mat-icon class="text-[18px] w-[18px] h-[18px]">contact_page</mat-icon>
           Customers 360°
+          <span class="text-xs">{{ state.customers().length }}</span>
         </button>
       </div>
 

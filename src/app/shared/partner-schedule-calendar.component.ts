@@ -15,35 +15,35 @@ interface CalendarDay {
   selector: 'app-partner-schedule-calendar',
   imports: [CommonModule, MatIconModule],
   template: `
-    <div class="card rounded-2xl p-5">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-sm font-bold text-zinc-700 uppercase tracking-wide">Partner Schedule</h3>
-        <div class="flex items-center gap-1">
+    <div class="card rounded-2xl p-4">
+      <div class="flex items-center justify-between mb-2">
+        <h3 class="text-[11px] font-bold text-zinc-700 uppercase tracking-wide">Partner Schedule</h3>
+        <div class="flex items-center gap-0.5">
           <button
             (click)="prevMonth()"
-            class="w-8 h-8 rounded-full btn-secondary flex items-center justify-center text-zinc-500 hover:text-zinc-900 transition-all border-0"
+            class="w-7 h-7 rounded-full btn-secondary flex items-center justify-center text-zinc-500 hover:text-zinc-900 transition-all border-0"
           >
-            <mat-icon class="text-[18px] w-[18px] h-[18px] leading-none">chevron_left</mat-icon>
+            <mat-icon class="text-[16px] w-[16px] h-[16px] leading-none">chevron_left</mat-icon>
           </button>
-          <span class="text-sm font-bold text-zinc-800 min-w-[120px] text-center select-none">
+          <span class="text-xs font-bold text-zinc-800 min-w-[110px] text-center select-none">
             {{ monthNames[currentMonth()] }} {{ currentYear() }}
           </span>
           <button
             (click)="nextMonth()"
-            class="w-8 h-8 rounded-full btn-secondary flex items-center justify-center text-zinc-500 hover:text-zinc-900 transition-all border-0"
+            class="w-7 h-7 rounded-full btn-secondary flex items-center justify-center text-zinc-500 hover:text-zinc-900 transition-all border-0"
           >
-            <mat-icon class="text-[18px] w-[18px] h-[18px] leading-none">chevron_right</mat-icon>
+            <mat-icon class="text-[16px] w-[16px] h-[16px] leading-none">chevron_right</mat-icon>
           </button>
         </div>
       </div>
 
-      <div class="grid grid-cols-7 gap-1.5 mb-2">
+      <div class="grid grid-cols-7 gap-1 mb-1">
         @for (h of dayHeaders; track h) {
-          <div class="text-center text-[10px] font-bold text-zinc-400 uppercase tracking-wider py-1">{{ h }}</div>
+          <div class="text-center text-[9px] font-bold text-zinc-400 uppercase tracking-wider py-0.5">{{ h }}</div>
         }
       </div>
 
-      <div class="grid grid-cols-7 gap-1.5">
+      <div class="grid grid-cols-7 gap-1">
         @for (cell of calendarDays(); track cell ? cell.dateStr : $index) {
           @if (cell) {
             <div
@@ -54,12 +54,12 @@ interface CalendarDay {
                     ? 'bg-white/80'
                     : 'bg-white/30'
               "
-              class="rounded-xl p-1.5 min-h-[72px] flex flex-col justify-between transition-all border border-white/40"
+              class="rounded-xl p-1 min-h-[48px] flex flex-col justify-between transition-all border border-white/40"
             >
               <div class="flex flex-wrap gap-0.5">
                 @for (member of cell.teamMembers.slice(0, 4); track member) {
                   <span
-                    class="w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold text-white shrink-0"
+                    class="w-4 h-4 rounded-full flex items-center justify-center text-[7px] font-bold text-white shrink-0"
                     [style.background-color]="getUserColor(member)"
                     [title]="member"
                   >
@@ -67,17 +67,17 @@ interface CalendarDay {
                   </span>
                 }
                 @if (cell.teamMembers.length > 4) {
-                  <span class="w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold text-zinc-500 bg-zinc-200 shrink-0">
+                  <span class="w-4 h-4 rounded-full flex items-center justify-center text-[7px] font-bold text-zinc-500 bg-zinc-200 shrink-0">
                     +{{ cell.teamMembers.length - 4 }}
                   </span>
                 }
               </div>
-              <div class="text-[11px] font-bold mt-1" [class]="cell.isToday ? 'text-zinc-950' : cell.isPast ? 'text-zinc-700' : 'text-zinc-400'">
+              <div class="text-[10px] font-bold" [class]="cell.isToday ? 'text-zinc-950' : cell.isPast ? 'text-zinc-700' : 'text-zinc-400'">
                 {{ cell.day }}
               </div>
             </div>
           } @else {
-            <div class="min-h-[72px]"></div>
+            <div class="min-h-[48px]"></div>
           }
         }
       </div>
