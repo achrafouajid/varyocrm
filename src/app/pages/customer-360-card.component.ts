@@ -13,76 +13,76 @@ import { CrmStateService, Customer360View } from '../services/crm-state.service'
       <div class="col-span-12 lg:col-span-5 space-y-6">
 
         <!-- Profile Card -->
-        <div class="glass-card rounded-[32px] p-10 flex flex-col items-center text-center hover:shadow-lg transition-all relative overflow-hidden">
+        <div class="card rounded-[32px] p-10 flex flex-col items-center text-center hover:shadow-lg transition-all relative overflow-hidden">
           <div class="absolute inset-0 bg-gradient-to-b from-white/60 to-transparent pointer-events-none"></div>
           <div class="w-32 h-32 rounded-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 text-white flex items-center justify-center font-extrabold text-5xl uppercase shadow-xl mb-6 relative z-10 border-4 border-white/50">
             {{ initials() }}
           </div>
-          <h2 class="text-2xl font-extrabold text-slate-900 font-sans relative z-10">{{ view().partner.name }}</h2>
-          <p class="text-sm font-semibold text-slate-500 font-sans mt-1 relative z-10">{{ jobTitle() }}</p>
+          <h2 class="text-2xl font-extrabold text-zinc-900 font-sans relative z-10">{{ view().partner.name }}</h2>
+          <p class="text-sm font-semibold text-zinc-500 font-sans mt-1 relative z-10">{{ jobTitle() }}</p>
           <div class="flex items-center gap-4 mt-8 relative z-10">
-            <button class="w-12 h-12 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900 flex items-center justify-center transition-all cursor-pointer shadow-sm">
+            <button class="w-12 h-12 rounded-full bg-zinc-100 text-zinc-600 hover:bg-zinc-200 hover:text-zinc-900 flex items-center justify-center transition-all cursor-pointer shadow-sm">
               <mat-icon style="font-size:20px;width:20px;height:20px">edit</mat-icon>
             </button>
-            <button class="w-12 h-12 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900 flex items-center justify-center transition-all cursor-pointer shadow-sm">
+            <button class="w-12 h-12 rounded-full bg-zinc-100 text-zinc-600 hover:bg-zinc-200 hover:text-zinc-900 flex items-center justify-center transition-all cursor-pointer shadow-sm">
               <mat-icon style="font-size:20px;width:20px;height:20px">mail</mat-icon>
             </button>
-            <button class="w-12 h-12 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900 flex items-center justify-center transition-all cursor-pointer shadow-sm">
+            <button class="w-12 h-12 rounded-full bg-zinc-100 text-zinc-600 hover:bg-zinc-200 hover:text-zinc-900 flex items-center justify-center transition-all cursor-pointer shadow-sm">
               <mat-icon style="font-size:20px;width:20px;height:20px">call</mat-icon>
             </button>
-            <button class="w-12 h-12 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900 flex items-center justify-center transition-all cursor-pointer shadow-sm">
+            <button class="w-12 h-12 rounded-full bg-zinc-100 text-zinc-600 hover:bg-zinc-200 hover:text-zinc-900 flex items-center justify-center transition-all cursor-pointer shadow-sm">
               <mat-icon style="font-size:20px;width:20px;height:20px">add</mat-icon>
             </button>
-            <button class="w-12 h-12 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900 flex items-center justify-center transition-all cursor-pointer shadow-sm">
+            <button class="w-12 h-12 rounded-full bg-zinc-100 text-zinc-600 hover:bg-zinc-200 hover:text-zinc-900 flex items-center justify-center transition-all cursor-pointer shadow-sm">
               <mat-icon style="font-size:20px;width:20px;height:20px">calendar_today</mat-icon>
             </button>
           </div>
         </div>
 
         <!-- Detailed Information Card -->
-        <div class="glass-card rounded-[32px] p-8 space-y-6 hover:shadow-lg transition-all">
-          <h3 class="text-base font-extrabold text-slate-900 font-sans flex items-center justify-between">
+        <div class="card rounded-[32px] p-8 space-y-6 hover:shadow-lg transition-all">
+          <h3 class="text-base font-extrabold text-zinc-900 font-sans flex items-center justify-between">
             Detailed Information
-            <button class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors">
-              <mat-icon style="font-size:16px;width:16px;height:16px" class="text-slate-600">edit</mat-icon>
+            <button class="w-8 h-8 rounded-full bg-zinc-100 hover:bg-zinc-200 flex items-center justify-center transition-colors">
+              <mat-icon style="font-size:16px;width:16px;height:16px" class="text-zinc-600">edit</mat-icon>
             </button>
           </h3>
           <div class="space-y-5">
             <div class="flex items-center gap-4 group">
-              <mat-icon class="text-slate-400 shrink-0" style="font-size:20px;width:20px;height:20px">person_outline</mat-icon>
+              <mat-icon class="text-zinc-400 shrink-0" style="font-size:20px;width:20px;height:20px">person_outline</mat-icon>
               <div class="flex-1">
-                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-sans block">First Name</span>
-                <span class="text-base font-bold text-slate-900 font-sans">{{ firstName() }}</span>
+                <span class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider font-sans block">First Name</span>
+                <span class="text-base font-bold text-zinc-900 font-sans">{{ firstName() }}</span>
               </div>
             </div>
             <div class="flex items-center gap-4 group">
-              <mat-icon class="text-slate-400 shrink-0" style="font-size:20px;width:20px;height:20px">person_outline</mat-icon>
+              <mat-icon class="text-zinc-400 shrink-0" style="font-size:20px;width:20px;height:20px">person_outline</mat-icon>
               <div class="flex-1">
-                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-sans block">Last Name</span>
-                <span class="text-base font-bold text-slate-900 font-sans">{{ lastName() }}</span>
+                <span class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider font-sans block">Last Name</span>
+                <span class="text-base font-bold text-zinc-900 font-sans">{{ lastName() }}</span>
               </div>
             </div>
             <div class="flex items-center gap-4 group">
-              <mat-icon class="text-slate-400 shrink-0" style="font-size:20px;width:20px;height:20px">mail_outline</mat-icon>
+              <mat-icon class="text-zinc-400 shrink-0" style="font-size:20px;width:20px;height:20px">mail_outline</mat-icon>
               <div class="flex-1 min-w-0">
-                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-sans block">Email</span>
-                <span class="text-base font-bold text-slate-900 font-sans truncate block">{{ view().partner.email || '—' }}</span>
+                <span class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider font-sans block">Email</span>
+                <span class="text-base font-bold text-zinc-900 font-sans truncate block">{{ view().partner.email || '—' }}</span>
               </div>
             </div>
             <div class="flex items-center gap-4 group">
-              <mat-icon class="text-slate-400 shrink-0" style="font-size:20px;width:20px;height:20px">phone_outline</mat-icon>
+              <mat-icon class="text-zinc-400 shrink-0" style="font-size:20px;width:20px;height:20px">phone_outline</mat-icon>
               <div class="flex-1">
-                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-sans block">Phone Number</span>
-                <span class="text-base font-bold text-slate-900 font-sans">{{ view().partner.phone || '—' }}</span>
+                <span class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider font-sans block">Phone Number</span>
+                <span class="text-base font-bold text-zinc-900 font-sans">{{ view().partner.phone || '—' }}</span>
               </div>
             </div>
             <div class="flex items-start gap-4 group">
-              <mat-icon class="text-slate-400 shrink-0 mt-1" style="font-size:20px;width:20px;height:20px">hub</mat-icon>
+              <mat-icon class="text-zinc-400 shrink-0 mt-1" style="font-size:20px;width:20px;height:20px">hub</mat-icon>
               <div class="flex-1">
-                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-sans block mb-1">Sources</span>
+                <span class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider font-sans block mb-1">Sources</span>
                 <div class="flex flex-wrap gap-2">
                   @for (src of sources(); track src) {
-                    <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center shadow-sm" [title]="src">
+                    <div class="w-8 h-8 rounded-full bg-zinc-100 flex items-center justify-center shadow-sm" [title]="src">
                       <mat-icon style="font-size:16px;width:16px;height:16px" [class]="sourceIconColor(src)">{{ sourceIcon(src) }}</mat-icon>
                     </div>
                   }
@@ -90,10 +90,10 @@ import { CrmStateService, Customer360View } from '../services/crm-state.service'
               </div>
             </div>
             <div class="flex items-center gap-4 group">
-              <mat-icon class="text-slate-400 shrink-0" style="font-size:20px;width:20px;height:20px">calendar_month</mat-icon>
+              <mat-icon class="text-zinc-400 shrink-0" style="font-size:20px;width:20px;height:20px">calendar_month</mat-icon>
               <div class="flex-1">
-                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-sans block">Last Contacted</span>
-                <span class="text-base font-bold text-slate-900 font-sans">{{ lastContacted() }}</span>
+                <span class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider font-sans block">Last Contacted</span>
+                <span class="text-base font-bold text-zinc-900 font-sans">{{ lastContacted() }}</span>
               </div>
             </div>
           </div>
@@ -104,11 +104,11 @@ import { CrmStateService, Customer360View } from '../services/crm-state.service'
       <div class="col-span-12 lg:col-span-7 space-y-6">
 
         <!-- Interaction History Card -->
-        <div class="glass-card rounded-[32px] p-8 hover:shadow-lg transition-all">
+        <div class="card rounded-[32px] p-8 hover:shadow-lg transition-all">
           <div class="flex items-center justify-between mb-6">
-            <h3 class="font-extrabold text-slate-900 text-lg font-sans">Interaction History</h3>
-            <button class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors">
-              <mat-icon style="font-size:20px;width:20px;height:20px" class="text-slate-600">more_horiz</mat-icon>
+            <h3 class="font-extrabold text-zinc-900 text-lg font-sans">Interaction History</h3>
+            <button class="w-8 h-8 rounded-full bg-zinc-100 hover:bg-zinc-200 flex items-center justify-center transition-colors">
+              <mat-icon style="font-size:20px;width:20px;height:20px" class="text-zinc-600">more_horiz</mat-icon>
             </button>
           </div>
 
@@ -117,7 +117,7 @@ import { CrmStateService, Customer360View } from '../services/crm-state.service'
               <div class="p-5 rounded-[24px] flex flex-col justify-between shadow-md hover:scale-[1.02] transition-transform min-h-[140px]" [class]="dealCardClass(order.stage)">
                 <div class="flex items-start justify-between gap-2 mb-2">
                   <div>
-                    <div class="text-[11px] font-bold opacity-80 uppercase tracking-wide font-mono mb-1">
+                    <div class="text-[11px] font-bold opacity-80 uppercase tracking-wide font-sans mb-1">
                       {{ order.date ? (order.date | date:'MMM d') : '—' }}
                     </div>
                     <span class="font-bold text-sm font-sans leading-snug line-clamp-2" [title]="order.title">{{ order.title }}</span>
@@ -127,7 +127,7 @@ import { CrmStateService, Customer360View } from '../services/crm-state.service'
                   </button>
                 </div>
                 <div class="flex items-end justify-between mt-4">
-                  <span class="font-extrabold font-mono text-2xl">{{ formatCurrencyWithoutSymbol(order.amount) }}<span class="text-sm font-bold opacity-80">{{ currencySymbol() }}</span></span>
+                  <span class="font-extrabold font-sans text-2xl">{{ formatCurrencyWithoutSymbol(order.amount) }}<span class="text-sm font-bold opacity-80">{{ currencySymbol() }}</span></span>
                   <div class="flex -space-x-2">
                     @for (member of teamMembers().slice(0, 3); track member.name) {
                       <div class="w-6 h-6 rounded-full flex items-center justify-center text-white text-[8px] font-bold font-sans border border-white/50 shadow-sm"
@@ -140,7 +140,7 @@ import { CrmStateService, Customer360View } from '../services/crm-state.service'
                 </div>
               </div>
             } @empty {
-              <div class="col-span-2 text-center py-12 text-slate-400 text-sm font-sans glass rounded-[24px]">No interactions recorded.</div>
+              <div class="col-span-2 text-center py-12 text-zinc-400 text-sm font-sans bg-white border border-zinc-200 rounded-[24px]">No interactions recorded.</div>
             }
           </div>
         </div>
@@ -148,60 +148,60 @@ import { CrmStateService, Customer360View } from '../services/crm-state.service'
         <!-- Bottom Row: Task Schedule + Stage Funnel -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <!-- Task Schedule Card -->
-          <div class="glass-card rounded-[32px] p-8 hover:shadow-lg transition-all">
+          <div class="card rounded-[32px] p-8 hover:shadow-lg transition-all">
             <div class="flex items-center justify-between mb-6">
-              <h3 class="font-extrabold text-slate-900 text-lg font-sans">Tasks Schedule</h3>
-              <button class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors">
-                <mat-icon style="font-size:20px;width:20px;height:20px" class="text-slate-600">open_in_new</mat-icon>
+              <h3 class="font-extrabold text-zinc-900 text-lg font-sans">Tasks Schedule</h3>
+              <button class="w-8 h-8 rounded-full bg-zinc-100 hover:bg-zinc-200 flex items-center justify-center transition-colors">
+                <mat-icon style="font-size:20px;width:20px;height:20px" class="text-zinc-600">open_in_new</mat-icon>
               </button>
             </div>
             <div class="space-y-3">
               @for (item of scheduleItems(); track item.id) {
-                <div class="flex items-center gap-4 p-3 glass rounded-[16px] hover:bg-white/80 transition-colors shadow-sm">
+                <div class="flex items-center gap-4 p-3 bg-white border border-zinc-200 rounded-[16px] hover:bg-white/80 transition-colors shadow-sm">
                   <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 font-bold text-white text-xs font-sans shadow-inner"
-                       [class]="item.type === 'task' ? (item.status === 'Completed' ? 'bg-emerald-500' : item.status === 'In Progress' ? 'bg-amber-500' : 'bg-[#2E5AAC]') : 'bg-indigo-400'">
+                       [class]="item.type === 'task' ? (item.status === 'Completed' ? 'bg-zinc-700' : item.status === 'In Progress' ? 'bg-zinc-700' : 'bg-[#2E5AAC]') : 'bg-zinc-500'">
                     {{ item.dateLabel | slice:8:10 }}
                   </div>
                   <div class="min-w-0 flex-1">
-                    <span class="text-sm font-bold text-slate-800 font-sans block truncate">{{ item.title }}</span>
-                    <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wide font-sans">{{ item.status || 'Scheduled' }}</span>
+                    <span class="text-sm font-bold text-zinc-800 font-sans block truncate">{{ item.title }}</span>
+                    <span class="text-[11px] font-bold text-zinc-400 uppercase tracking-wide font-sans">{{ item.status || 'Scheduled' }}</span>
                   </div>
                 </div>
               } @empty {
-                <div class="text-center py-6 text-slate-400 text-sm font-sans glass rounded-[16px]">No scheduled tasks</div>
+                <div class="text-center py-6 text-zinc-400 text-sm font-sans bg-white border border-zinc-200 rounded-[16px]">No scheduled tasks</div>
               }
             </div>
           </div>
 
           <!-- Stage Funnel Card -->
-          <div class="glass-card rounded-[32px] p-8 hover:shadow-lg transition-all">
+          <div class="card rounded-[32px] p-8 hover:shadow-lg transition-all">
             <div class="flex items-center justify-between mb-6">
-              <h3 class="font-extrabold text-slate-900 text-lg font-sans">Stage Funnel</h3>
-              <button class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors">
-                <mat-icon style="font-size:20px;width:20px;height:20px" class="text-slate-600">open_in_new</mat-icon>
+              <h3 class="font-extrabold text-zinc-900 text-lg font-sans">Stage Funnel</h3>
+              <button class="w-8 h-8 rounded-full bg-zinc-100 hover:bg-zinc-200 flex items-center justify-center transition-colors">
+                <mat-icon style="font-size:20px;width:20px;height:20px" class="text-zinc-600">open_in_new</mat-icon>
               </button>
             </div>
             <div class="space-y-5">
               <div class="flex items-center justify-between mb-2">
-                <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-sans bg-slate-100 px-3 py-1 rounded-full">Total in Pipeline</div>
+                <div class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider font-sans bg-zinc-100 px-3 py-1 rounded-full">Total in Pipeline</div>
               </div>
               <div>
-                <span class="text-3xl font-extrabold font-mono text-slate-900">{{ formatCurrencyWithoutSymbol(totalValue()) }}<span class="text-lg font-bold opacity-60">{{ currencySymbol() }}</span></span>
+                <span class="text-3xl font-extrabold font-sans text-zinc-900">{{ formatCurrencyWithoutSymbol(totalValue()) }}<span class="text-lg font-bold opacity-60">{{ currencySymbol() }}</span></span>
               </div>
               
               <div class="pt-4 space-y-3">
                 @for (item of stageBreakdown(); track item.stage) {
-                  <div class="glass rounded-[16px] p-3 flex items-center justify-between shadow-sm">
+                  <div class="bg-white border border-zinc-200 rounded-[16px] p-3 flex items-center justify-between shadow-sm">
                     <div class="min-w-0 pr-2">
-                      <span class="text-[11px] font-bold text-slate-500 font-sans block truncate uppercase tracking-wider mb-0.5">{{ item.stage }}</span>
-                      <span class="text-sm font-extrabold font-mono text-slate-800">{{ formatCurrency(item.value) }}</span>
+                      <span class="text-[11px] font-bold text-zinc-500 font-sans block truncate uppercase tracking-wider mb-0.5">{{ item.stage }}</span>
+                      <span class="text-sm font-extrabold font-sans text-zinc-800">{{ formatCurrency(item.value) }}</span>
                     </div>
                     <div class="flex items-center gap-1">
-                      <button class="w-6 h-6 rounded-full hover:bg-slate-200 flex items-center justify-center transition-colors">
-                         <mat-icon style="font-size:14px;width:14px;height:14px" class="text-slate-400">refresh</mat-icon>
+                      <button class="w-6 h-6 rounded-full hover:bg-zinc-200 flex items-center justify-center transition-colors">
+                         <mat-icon style="font-size:14px;width:14px;height:14px" class="text-zinc-400">refresh</mat-icon>
                       </button>
-                      <button class="w-6 h-6 rounded-full hover:bg-slate-200 flex items-center justify-center transition-colors">
-                         <mat-icon style="font-size:14px;width:14px;height:14px" class="text-slate-400">open_in_full</mat-icon>
+                      <button class="w-6 h-6 rounded-full hover:bg-zinc-200 flex items-center justify-center transition-colors">
+                         <mat-icon style="font-size:14px;width:14px;height:14px" class="text-zinc-400">open_in_full</mat-icon>
                       </button>
                     </div>
                   </div>
@@ -404,43 +404,43 @@ export class Customer360Component {
   stageBadgeClass(stage: string): string {
     switch (stage) {
       case 'Confirmed':
-      case 'Closed Won': return 'bg-emerald-50 text-emerald-700 border-emerald-100';
+      case 'Closed Won': return 'bg-zinc-100 text-zinc-950 border-zinc-200';
       case 'Awaiting Invoicing':
-      case 'Invoiced': return 'bg-indigo-50 text-indigo-700 border-indigo-100';
+      case 'Invoiced': return 'bg-zinc-100 text-zinc-950 border-zinc-200';
       case 'New':
-      case 'Proposal sent': return 'bg-amber-50 text-amber-700 border-amber-100';
-      case 'Closed Lost': return 'bg-red-50 text-red-700 border-red-100';
-      default: return 'bg-slate-50 text-slate-700 border-slate-100';
+      case 'Proposal sent': return 'bg-zinc-100 text-zinc-950 border-zinc-200';
+      case 'Closed Lost': return 'bg-zinc-100 text-zinc-950 border-zinc-200';
+      default: return 'bg-zinc-50 text-zinc-700 border-zinc-100';
     }
   }
 
   sourceBadgeClass(source: string): string {
     switch (source) {
-      case 'LinkedIn': return 'bg-blue-50 text-blue-700 border-blue-100';
-      case 'Call': return 'bg-emerald-50 text-emerald-700 border-emerald-100';
-      case 'Email': return 'bg-indigo-50 text-indigo-700 border-indigo-100';
-      case 'Teams': return 'bg-cyan-50 text-cyan-700 border-cyan-100';
-      case 'In-Person': return 'bg-orange-50 text-orange-700 border-orange-100';
-      case 'Support': return 'bg-violet-50 text-violet-700 border-violet-100';
-      case 'Website form': return 'bg-sky-50 text-sky-700 border-sky-100';
-      case 'Referral': return 'bg-amber-50 text-amber-700 border-amber-100';
-      case 'Marketing campaign': return 'bg-pink-50 text-pink-700 border-pink-100';
-      default: return 'bg-slate-50 text-slate-700 border-slate-100';
+      case 'LinkedIn': return 'bg-zinc-100 text-zinc-950 border-zinc-200';
+      case 'Call': return 'bg-zinc-100 text-zinc-950 border-zinc-200';
+      case 'Email': return 'bg-zinc-100 text-zinc-950 border-zinc-200';
+      case 'Teams': return 'bg-zinc-100 text-zinc-950 border-zinc-200';
+      case 'In-Person': return 'bg-zinc-100 text-zinc-950 border-zinc-200';
+      case 'Support': return 'bg-zinc-100 text-zinc-950 border-zinc-200';
+      case 'Website form': return 'bg-zinc-100 text-zinc-950 border-zinc-200';
+      case 'Referral': return 'bg-zinc-100 text-zinc-950 border-zinc-200';
+      case 'Marketing campaign': return 'bg-zinc-100 text-zinc-950 border-zinc-200';
+      default: return 'bg-zinc-50 text-zinc-700 border-zinc-100';
     }
   }
 
   sourceIconColor(source: string): string {
     switch (source) {
-      case 'LinkedIn': return 'text-blue-500';
-      case 'Call': return 'text-emerald-500';
-      case 'Email': return 'text-indigo-500';
-      case 'Teams': return 'text-cyan-500';
-      case 'In-Person': return 'text-orange-500';
-      case 'Support': return 'text-violet-500';
-      case 'Website form': return 'text-sky-500';
-      case 'Referral': return 'text-amber-500';
-      case 'Marketing campaign': return 'text-pink-500';
-      default: return 'text-slate-500';
+      case 'LinkedIn': return 'text-zinc-700';
+      case 'Call': return 'text-zinc-700';
+      case 'Email': return 'text-zinc-700';
+      case 'Teams': return 'text-zinc-700';
+      case 'In-Person': return 'text-zinc-700';
+      case 'Support': return 'text-zinc-700';
+      case 'Website form': return 'text-zinc-700';
+      case 'Referral': return 'text-zinc-700';
+      case 'Marketing campaign': return 'text-zinc-700';
+      default: return 'text-zinc-500';
     }
   }
 
@@ -461,14 +461,14 @@ export class Customer360Component {
 
   dealCardClass(stage: string): string {
     switch (stage) {
-      case 'Closed Won': return 'bg-slate-900 text-white';
+      case 'Closed Won': return 'bg-zinc-900 text-white';
       case 'Confirmed':
       case 'Invoiced':
       case 'Awaiting Invoicing': return 'bg-[#4A8FA0] text-white';
       case 'Proposal sent': return 'bg-[#2E5AAC] text-white';
-      case 'New': return 'bg-[#F5C518] text-slate-900';
-      case 'Closed Lost': return 'bg-red-500 text-white';
-      default: return 'bg-white text-slate-900';
+      case 'New': return 'bg-[#F5C518] text-zinc-900';
+      case 'Closed Lost': return 'bg-zinc-700 text-white';
+      default: return 'bg-white text-zinc-900';
     }
   }
 

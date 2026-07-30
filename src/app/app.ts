@@ -7,6 +7,7 @@ import { CrmStateService } from './services/crm-state.service';
 import { UserAvatarComponent } from './shared/user-avatar.component';
 import { SupportModalComponent } from './shared/support-modal.component';
 import { NotificationInboxDrawerComponent } from './shared/notification-inbox-drawer.component';
+import { ToastContainerComponent } from './shared/toast.component';
 import { filter } from 'rxjs/operators';
 
 interface NavItem {
@@ -15,19 +16,51 @@ interface NavItem {
   route: string;
 }
 
-const NAV_ITEMS: NavItem[] = [
-  { label: 'Dashboard', icon: 'home', route: '/' },
-  { label: 'Sales', icon: 'monetization_on', route: '/sales' },
-  { label: 'Marketing', icon: 'campaign', route: '/marketing' },
-  { label: 'Tasks', icon: 'task_alt', route: '/tasks' },
-  { label: 'Tickets', icon: 'support_agent', route: '/tickets' },
-  { label: 'Analytics', icon: 'bar_chart', route: '/analytics' },
-  { label: 'Partners', icon: 'handshake', route: '/partners' },
-  { label: 'Finance', icon: 'account_balance', route: '/finance' },
-  { label: 'Automation', icon: 'smart_toy', route: '/automation' },
-  { label: 'Groups', icon: 'group_work', route: '/groups' },
-  { label: 'Settings', icon: 'settings', route: '/settings' },
+interface NavSection {
+  label: string;
+  items: NavItem[];
+}
+
+const NAV_SECTIONS: NavSection[] = [
+  {
+    label: 'Overview',
+    items: [
+      { label: 'Dashboard', icon: 'home', route: '/' },
+    ]
+  },
+  {
+    label: 'Sales',
+    items: [
+      { label: 'Sales Pipeline', icon: 'monetization_on', route: '/sales' },
+      { label: 'Marketing', icon: 'campaign', route: '/marketing' },
+    ]
+  },
+  {
+    label: 'Operations',
+    items: [
+      { label: 'Tasks', icon: 'task_alt', route: '/tasks' },
+      { label: 'Tickets', icon: 'support_agent', route: '/tickets' },
+      { label: 'Automation', icon: 'smart_toy', route: '/automation' },
+    ]
+  },
+  {
+    label: 'Intelligence',
+    items: [
+      { label: 'Analytics', icon: 'bar_chart', route: '/analytics' },
+    ]
+  },
+  {
+    label: 'CRM',
+    items: [
+      { label: 'Partners', icon: 'handshake', route: '/partners' },
+      { label: 'Groups', icon: 'group_work', route: '/groups' },
+      { label: 'Finance', icon: 'account_balance', route: '/finance' },
+    ]
+  }
 ];
+
+// Flat list for breadcrumb matching
+const ALL_NAV_ITEMS: NavItem[] = NAV_SECTIONS.flatMap(s => s.items);
 
 interface SearchItem {
   mainMenu: string;
@@ -70,328 +103,751 @@ const SEARCH_ITEMS: SearchItem[] = [
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, MatIconModule, CommonModule, FormsModule, UserAvatarComponent, SupportModalComponent, NotificationInboxDrawerComponent],
+  imports: [RouterOutlet, RouterLink, MatIconModule, CommonModule, FormsModule, UserAvatarComponent, SupportModalComponent, NotificationInboxDrawerComponent, ToastContainerComponent],
   styles: [`
-    .sidebar {
-      width: 72px;
-      transition: width 250ms cubic-bezier(0.4, 0, 0.2, 1);
-      flex-shrink: 0;
+    :host {
+      display: block;
       height: 100vh;
-      margin: 0;
-      padding: 0 0 16px 0;
+      overflow: hidden;
+    }
+
+    .app-layout {
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ── Sidebar ── */
+    .app-sidebar {
+      width: 224px;
+      min-width: 224px;
+      height: 100vh;
+      background: #FFFFFF;
+      border-right: 1px solid #E5E7EB;
       display: flex;
       flex-direction: column;
-      box-sizing: border-box;
-    }
-    .sidebar.expanded {
-      width: 240px;
-    }
-    .sidebar-pill {
-      border-radius: 36px;
       overflow: hidden;
-      margin: auto 8px;
-      max-height: calc((100vh - 148px) * 0.67);
+      z-index: 40;
+      flex-shrink: 0;
+      transition: width 200ms ease, min-width 200ms ease;
     }
-    .logo-container-wrap {
-      transition: padding 250ms ease, justify-content 250ms ease;
+
+    .app-sidebar.collapsed {
+      width: 60px;
+      min-width: 60px;
     }
-    .sidebar:not(.expanded) .logo-container-wrap {
-      justify-content: center;
-      padding: 0;
+
+    .app-sidebar.collapsed .sidebar-section-title {
+      max-height: 0;
+      opacity: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+      overflow: hidden;
     }
-    .toggle-container-wrap {
-      transition: padding 250ms ease, justify-content 250ms ease;
+
+    .app-sidebar.collapsed .nav-label {
+      max-width: 0;
+      opacity: 0;
+      margin-left: 0;
     }
-    .sidebar:not(.expanded) .toggle-container-wrap {
-      justify-content: center;
-      padding: 0;
+
+    .app-sidebar.collapsed .sidebar-logo span {
+      max-width: 0;
+      opacity: 0;
     }
-    .nav-item-link {
-      height: 48px;
-      width: 100%;
-      padding: 0 16px;
-      box-sizing: border-box;
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      gap: 16px;
-      border-radius: 9999px;
-      transition: width 250ms ease, padding 250ms ease, justify-content 250ms ease;
+
+    .app-sidebar.collapsed .sidebar-user-info {
+      max-width: 0;
+      opacity: 0;
     }
-    .sidebar:not(.expanded) .nav-item-link {
-      width: 40px;
-      height: 40px;
-      padding: 0;
-      justify-content: center;
+
+    .app-sidebar.collapsed .sidebar-user {
       gap: 0;
     }
-    .nav-item-wrap {
-      width: 100%;
+
+    .sidebar-logo {
       display: flex;
-      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      padding: 20px 16px 16px;
+      flex-shrink: 0;
     }
-    .nav-label {
+
+    .app-sidebar.collapsed .sidebar-logo {
+      gap: 0;
+    }
+
+    .sidebar-logo img {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+      border-radius: 6px;
+    }
+
+    .sidebar-collapse-btn {
+      margin-left: auto;
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: none;
+      color: #9CA3AF;
+      cursor: pointer;
+      transition: all 150ms ease;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .sidebar-collapse-btn:hover {
+      background: #F3F4F6;
+      color: #111827;
+    }
+
+    .sidebar-collapse-btn mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+
+    .app-sidebar.collapsed .sidebar-collapse-btn {
       opacity: 0;
-      max-width: 0;
+      pointer-events: none;
+      width: 0;
+      margin-left: 0;
+      overflow: hidden;
+    }
+
+    .app-sidebar.collapsed .sidebar-link,
+    .app-sidebar.collapsed .sidebar-bottom-link {
+      justify-content: center;
+      gap: 0;
+      padding: 7px 0;
+    }
+
+    .sidebar-logo span {
+      font-weight: 700;
+      font-size: 16px;
+      letter-spacing: -0.02em;
+      color: #111827;
+      max-width: 100px;
+      opacity: 1;
       overflow: hidden;
       white-space: nowrap;
-      color: rgba(255, 255, 255, 0.8);
-      transition: opacity 140ms cubic-bezier(0.4, 0, 0.2, 1),
-                  max-width 200ms cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .sidebar.expanded .nav-label {
-      opacity: 1;
-      max-width: 160px;
+      transition: max-width 200ms ease, opacity 150ms ease;
     }
 
-    .sidebar-tooltip {
-      position: absolute;
-      left: calc(100% + 12px);
-      top: 50%;
-      transform: translateY(-50%);
-      background: rgba(30, 41, 59, 0.9);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      color: #f1f5f9;
+    .sidebar-nav {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 4px 10px;
+    }
+
+    .sidebar-section-title {
       font-size: 11px;
       font-weight: 600;
-      padding: 5px 12px;
-      border-radius: 8px;
-      white-space: nowrap;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 100ms ease;
-      z-index: 1000;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-    }
-    .sidebar:not(.expanded) .nav-item-wrap:hover .sidebar-tooltip {
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #9CA3AF;
+      padding: 18px 12px 6px;
+      max-height: 40px;
       opacity: 1;
-    }
-    .sidebar:not(.expanded) .nav-item-wrap:hover .icon-badge {
-      background: rgba(99, 102, 241, 0.12);
-      color: #6366f1;
-    }
-    .toggle-btn {
-      transition: transform 250ms cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .toggle-btn.expanded {
-      transform: rotate(180deg);
-    }
-    .nav-item-glow {
-      position: absolute;
-      inset: 0;
-      border-radius: 12px;
-      opacity: 0;
-      background: linear-gradient(135deg, rgba(99, 102, 241, 0.06), rgba(139, 92, 246, 0.06));
-      transition: opacity 200ms ease;
-      pointer-events: none;
-    }
-    .nav-item-wrap:hover .nav-item-glow {
-      opacity: 1;
+      overflow: hidden;
+      transition: max-height 200ms ease, opacity 150ms ease, padding 200ms ease;
     }
 
-    .glass-search {
-      background: rgba(255, 255, 255, 0.6) !important;
-      backdrop-filter: blur(30px) saturate(2);
-      -webkit-backdrop-filter: blur(30px) saturate(2);
-      border: 1px solid rgba(255, 255, 255, 0.7) !important;
-      color: #334155 !important;
-      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04) !important;
+    .sidebar-section-title:first-child {
+      padding-top: 6px;
     }
-    .glass-search::placeholder {
-      color: rgba(51, 65, 85, 0.4) !important;
+
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #6B7280;
+      cursor: pointer;
+      transition: all 200ms ease;
+      text-decoration: none;
+      margin: 1px 0;
     }
-    .glass-search:focus {
-      background: rgba(255, 255, 255, 0.85) !important;
-      border-color: rgba(99, 102, 241, 0.3) !important;
-      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1), 0 4px 24px rgba(0, 0, 0, 0.06) !important;
+
+    .sidebar-link:hover {
+      background: #F3F4F6;
+      color: #111827;
     }
-    .glass-dropdown {
-      background: rgba(255, 255, 255, 0.85) !important;
-      backdrop-filter: blur(40px) saturate(2);
-      -webkit-backdrop-filter: blur(40px) saturate(2);
-      border: 1px solid rgba(255, 255, 255, 0.5) !important;
-      box-shadow: 0 8px 64px rgba(0, 0, 0, 0.08) !important;
+
+    .sidebar-link.active {
+      background: var(--color-accent-light);
+      color: var(--color-accent);
+      font-weight: 600;
     }
-    .glass-dropdown-item {
-      border-bottom: 1px solid rgba(0, 0, 0, 0.04);
-      transition: background-color 150ms ease;
+
+    .sidebar-link mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+      line-height: 20px;
     }
-    .glass-dropdown-item:hover, .glass-dropdown-item.selected-item {
-      background-color: rgba(99, 102, 241, 0.08) !important;
+
+    .nav-label {
+      margin-left: 10px;
+      overflow: hidden;
+      white-space: nowrap;
+      max-width: 200px;
+      opacity: 1;
+      transition: max-width 200ms ease, opacity 150ms ease, margin-left 200ms ease;
+    }
+
+    .sidebar-bottom {
+      flex-shrink: 0;
+      border-top: 1px solid #E5E7EB;
+      padding: 8px 10px;
+    }
+
+    .sidebar-bottom-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #6B7280;
+      cursor: pointer;
+      transition: all 200ms ease;
+      text-decoration: none;
+      background: transparent;
+      border: none;
+      width: 100%;
+      text-align: left;
+    }
+
+    .sidebar-bottom-link:hover {
+      background: #F3F4F6;
+      color: #111827;
+    }
+
+    .sidebar-bottom-link.active {
+      background: var(--color-accent-light);
+      color: var(--color-accent);
+      font-weight: 600;
+    }
+
+    .sidebar-user {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-top: 1px solid #F3F4F6;
+      margin-top: 4px;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: background 150ms ease;
+      text-decoration: none;
+    }
+
+    .sidebar-user:hover {
+      background: #F3F4F6;
+    }
+
+    .sidebar-user-info {
+      flex: 1;
+      min-width: 0;
+      max-width: 150px;
+      opacity: 1;
+      overflow: hidden;
+      white-space: nowrap;
+      transition: max-width 200ms ease, opacity 150ms ease;
+    }
+
+    .sidebar-user-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #111827;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sidebar-user-role {
+      font-size: 11px;
+      color: #9CA3AF;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* ── Content Area ── */
+    .app-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .content-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 12px 24px;
+      background: #FFFFFF;
+      border-bottom: 1px solid #E5E7EB;
+      flex-shrink: 0;
+      z-index: 30;
+    }
+
+    .topbar-search {
+      position: relative;
+      max-width: 400px;
+      flex: 1;
+    }
+
+    .topbar-search input {
+      width: 100%;
+      padding: 7px 12px 7px 36px;
+      background: #F9FAFB;
+      border: 1px solid #E5E7EB;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #111827;
+      outline: none;
+      transition: all 150ms ease;
+    }
+
+    .topbar-search input::placeholder {
+      color: #9CA3AF;
+    }
+
+    .topbar-search input:focus {
+      background: var(--color-surface);
+      border-color: var(--color-accent);
+      box-shadow: 0 0 0 3px rgba(9, 9, 11, 0.08); /* zinc-950 with opacity */
+    }
+
+    .topbar-search mat-icon {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      color: #9CA3AF;
+      pointer-events: none;
+    }
+
+    .topbar-search .clear-btn {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #9CA3AF;
+      cursor: pointer;
+      padding: 0;
+      display: flex;
+      align-items: center;
+    }
+
+    .topbar-search .clear-btn:hover {
+      color: #6B7280;
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .topbar-icon-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: 1px solid transparent;
+      color: #6B7280;
+      cursor: pointer;
+      transition: all 150ms ease;
+      position: relative;
+    }
+
+    .topbar-icon-btn:hover {
+      background: #F3F4F6;
+      color: #111827;
+      border-color: #E5E7EB;
+    }
+
+    .topbar-icon-btn mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+
+    .notification-dot {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 16px;
+      height: 16px;
+      background: #DC2626;
+      border: 2px solid #FFFFFF;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      font-weight: 700;
+      color: white;
+    }
+
+    .topbar-avatar {
+      flex-shrink: 0;
+      border-radius: 9999px;
+      overflow: hidden;
+    }
+
+    .search-dropdown {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: calc(100% + 6px);
+      background: #FFFFFF;
+      border: 1px solid #E5E7EB;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+      max-height: 320px;
+      overflow-y: auto;
+      z-index: 50;
+    }
+
+    .search-result-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 16px;
+      border-bottom: 1px solid #F3F4F6;
+      cursor: pointer;
+      transition: background 150ms ease;
+    }
+
+    .search-result-item:last-child {
+      border-bottom: none;
+    }
+
+    .search-result-item:hover,
+    .search-result-item.selected {
+      background: #F9FAFB;
+    }
+
+    .search-result-item mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      color: #9CA3AF;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+
+    .search-result-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .search-result-breadcrumb {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #9CA3AF;
+    }
+
+    .search-result-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #111827;
+      margin-left: 8px;
+    }
+
+    .search-result-desc {
+      font-size: 11px;
+      color: #6B7280;
+      margin-top: 2px;
+      line-height: 1.3;
+    }
+
+    /* ── Breadcrumbs ── */
+    .content-breadcrumbs {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 12px 24px 0;
+      font-size: 13px;
+    }
+
+    .breadcrumb-link {
+      color: #6B7280;
+      font-weight: 500;
+      text-decoration: none;
+      transition: color 150ms ease;
+    }
+
+    .breadcrumb-link:hover {
+      color: #111827;
+    }
+
+    .breadcrumb-current {
+      color: #111827;
+      font-weight: 600;
+    }
+
+    .breadcrumb-sep {
+      color: #D1D5DB;
+    }
+
+    /* ── Main content ── */
+    .content-main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 56px 24px 24px;
+    }
+
+    /* ── Mobile sidebar toggle ── */
+    .mobile-sidebar-toggle {
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      .app-sidebar {
+        position: fixed;
+        left: -224px;
+        top: 0;
+        bottom: 0;
+        transition: left 250ms ease;
+        z-index: 50;
+      }
+
+      .app-sidebar.mobile-open {
+        left: 0;
+      }
+
+      .mobile-sidebar-toggle {
+        display: flex;
+      }
+
+      .mobile-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.3);
+        z-index: 45;
+      }
     }
   `],
   template: `
-    <div class="min-h-screen text-slate-900 font-sans flex flex-col" style="height:100vh; overflow:hidden;">
+    <div class="app-layout font-sans search-container">
 
-      <!-- Top Bar: Logo + Search + Right Icons (full width) -->
-      <div class="shrink-0 px-6 lg:px-8 pt-5 pb-2 relative z-30 search-container">
-        <div class="flex items-center justify-between gap-4">
-          <div class="flex items-center gap-4 shrink-0">
-            <div class="flex items-center gap-2.5 shrink-0">
-              <img src="logo.webp" alt="Company Logo" class="w-8 h-8 object-contain rounded-lg shadow-sm" />
-              <span class="font-bold text-lg tracking-tight font-sans whitespace-nowrap" style="color: #0146e5">Bento</span>
-            </div>
-          </div>
-            <div class="relative max-w-md flex-1">
-              <mat-icon class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px] w-4.5 h-4.5 pointer-events-none">search</mat-icon>
-              <input
-                #searchInput
-                [ngModel]="searchQuery()"
-                (ngModelChange)="onSearchInput($event)"
-                (focus)="showSearchResults.set(true)"
-                (keydown)="onSearchKeydown($event)"
-                type="text"
-                placeholder="Search menus and pages...  (Ctrl+K)"
-                class="w-full pl-9 pr-9 py-1.5 glass-search rounded-full text-xs outline-none transition-all"
-              />
-              @if (searchQuery()) {
-                <button (click)="clearSearch()" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
-                  <mat-icon class="text-[16px] w-4 h-4">close</mat-icon>
-                </button>
-              }
-              <!-- Results Dropdown -->
-              @if (showSearchResults() && searchQuery().length >= 1 && filteredSearchItems().length > 0) {
-                <div class="absolute left-0 right-0 mt-2 glass-dropdown rounded-2xl z-50 max-h-80 overflow-y-auto origin-top">
-                  @for (item of filteredSearchItems(); track $index) {
-                    <button
-                      (click)="navigateToSearchItem(item)"
-                      (mouseenter)="selectedSearchIndex.set($index)"
-                      [class]="(selectedSearchIndex() === $index ? 'selected-item' : '') + ' glass-dropdown-item w-full flex items-start gap-3 px-5 py-3 text-left transition-colors last:border-b-0 cursor-pointer'"
-                    >
-                      <mat-icon class="text-slate-400 text-[18px] w-[18px] h-[18px] mt-0.5 shrink-0">{{ item.subIcon || item.mainIcon }}</mat-icon>
-                      <div class="min-w-0 flex-1">
-                        <div class="flex items-baseline gap-2">
-                          <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider shrink-0">{{ item.mainMenu }}</span>
-                          @if (item.submenu) {
-                            <span class="text-xs font-bold text-slate-800 truncate">{{ item.submenu }}</span>
-                          } @else {
-                            <span class="text-xs font-bold text-slate-800 truncate">{{ item.mainMenu }}</span>
-                          }
-                        </div>
-                        <p class="text-[11px] text-slate-500 mt-0.5 leading-tight">{{ item.action }}</p>
-                      </div>
-                      <mat-icon class="text-slate-300 text-[14px] w-3.5 h-3.5 mt-1 shrink-0">chevron_right</mat-icon>
-                    </button>
-                  }
-                </div>
-              }
-              @if (showSearchResults() && searchQuery().length >= 1 && filteredSearchItems().length === 0) {
-                <div class="absolute left-0 right-0 mt-2 glass-dropdown rounded-2xl z-50 p-4 text-center">
-                  <p class="text-sm text-slate-500">No results found for "{{ searchQuery() }}"</p>
-                </div>
-              }
-            </div>
-            <div class="flex items-center gap-2 shrink-0">
-              <button
-                (click)="state.isCustomizing.set(!state.isCustomizing())"
-                class="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all duration-150 shrink-0"
-                [title]="state.isCustomizing() ? 'Done Customizing' : 'Customize KPIs'"
-              >
-                <mat-icon class="text-[18px] w-[18px] h-[18px]">{{ state.isCustomizing() ? 'check' : 'edit_square' }}</mat-icon>
-              </button>
-              <button
-                (click)="openInbox()"
-                class="w-10 h-10 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-200/50 bg-white/60 border border-slate-200/50 transition-all duration-150 shrink-0 shadow-sm"
-                title="Inbox"
-              >
-                <mat-icon class="text-[20px] w-5 h-5">inbox</mat-icon>
-              </button>
-              <button
-                (click)="openNotifications()"
-                class="w-10 h-10 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-200/50 bg-white/60 border border-slate-200/50 transition-all duration-150 shrink-0 shadow-sm relative"
-                title="Notifications"
-              >
-                <mat-icon class="text-[20px] w-5 h-5">notifications</mat-icon>
-                @if (unreadCount() > 0) {
-                  <span class="absolute -top-1 -right-1 w-[18px] h-[18px] bg-red-500 border-2 border-white rounded-full flex items-center justify-center text-[9px] font-bold text-white">{{ unreadCount() }}</span>
-                }
-              </button>
-              <a
-                [routerLink]="['/settings/users', state.currentUserId()]"
-                class="shrink-0"
-                title="View Profile"
-              >
-                <app-user-avatar [userId]="state.currentUserId()" [size]="36" class="shrink-0 border-2 border-white/80 rounded-full block"></app-user-avatar>
-              </a>
-            </div>
-          </div>
+      <!-- Mobile overlay -->
+      @if (mobileMenuOpen()) {
+        <div class="mobile-overlay" (click)="mobileMenuOpen.set(false)"></div>
+      }
+
+      <!-- Sidebar -->
+      <aside class="app-sidebar" [class.mobile-open]="mobileMenuOpen()" [class.collapsed]="sidebarCollapsed()">
+
+        <!-- Logo + collapse toggle -->
+        <div class="sidebar-logo" (click)="onLogoClick()">
+          <img src="logo.webp" alt="Bento Logo" />
+          <span>Bento</span>
+          <button
+            class="sidebar-collapse-btn"
+            (click)="toggleCollapse($event)"
+            [title]="sidebarCollapsed() ? 'Expand sidebar' : 'Collapse sidebar'"
+          >
+            <mat-icon>{{ sidebarCollapsed() ? 'menu' : 'menu_open' }}</mat-icon>
+          </button>
         </div>
 
-        <!-- Sidebar + Content Row -->
-        <div class="flex flex-1 min-h-0 overflow-hidden">
-
-          <!-- Sidebar -->
-          <aside
-            class="sidebar flex flex-col relative z-40 self-center -mt-[76px] pt-[76px]"
-            [class.expanded]="isExpanded()"
-            (mouseenter)="onSidebarMouseEnter()"
-            (mouseleave)="onSidebarMouseLeave()"
-          >
-            <div class="flex items-center justify-start px-4 h-12 shrink-0 mb-2 toggle-container-wrap sticky top-0 z-50">
-              <button
-                (click)="togglePin()"
-                class="w-10 h-10 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-200/50 bg-white/60 border border-slate-200/50 transition-all duration-150 shrink-0 shadow-sm"
-                [title]="pinnedOpen() ? 'Unpin sidebar' : 'Pin sidebar open'"
+        <!-- Navigation -->
+        <nav class="sidebar-nav">
+          @for (section of navSections; track section.label) {
+            <div class="sidebar-section-title">{{ section.label }}</div>
+            @for (item of section.items; track item.route) {
+              <a
+                [routerLink]="item.route"
+                class="sidebar-link"
+                [class.active]="isNavActive(item)"
+                [title]="item.label"
+                (click)="mobileMenuOpen.set(false)"
               >
-                <mat-icon class="text-[20px] w-5 h-5 toggle-btn" [class.expanded]="isExpanded()">chevron_right</mat-icon>
-              </button>
+                <mat-icon>{{ item.icon }}</mat-icon>
+                <span class="nav-label">{{ item.label }}</span>
+              </a>
+            }
+          }
+        </nav>
+
+        <!-- Bottom Section -->
+        <div class="sidebar-bottom">
+          <a
+            routerLink="/settings"
+            class="sidebar-bottom-link"
+            [class.active]="activeRoute().startsWith('/settings')"
+            title="Settings"
+            (click)="mobileMenuOpen.set(false)"
+          >
+            <mat-icon>settings</mat-icon>
+            <span class="nav-label">Settings</span>
+          </a>
+          <button
+            class="sidebar-bottom-link"
+            title="Help & Support"
+            (click)="openSupportModal()"
+          >
+            <mat-icon>help_outline</mat-icon>
+            <span class="nav-label">Help & Support</span>
+          </button>
+          <a
+            [routerLink]="['/settings/users', state.currentUserId()]"
+            class="sidebar-user"
+            title="Profile"
+            (click)="mobileMenuOpen.set(false)"
+          >
+            <app-user-avatar [userId]="state.currentUserId()" [size]="32" class="shrink-0 rounded-full block"></app-user-avatar>
+            <div class="sidebar-user-info">
+              <div class="sidebar-user-name">{{ currentUserName() }}</div>
+              <div class="sidebar-user-role">Administrator</div>
             </div>
-            <!-- Pill-shaped Sidebar Menu -->
-            <div class="sidebar-pill flex flex-col glass-sidebar shadow-2xl overflow-hidden">
-              <!-- Nav Items -->
-              <nav class="flex-1 overflow-y-auto overflow-x-hidden py-4 px-1.5 flex flex-col gap-2">
-                @for (item of navItems; track item.route + item.label) {
-                  <div class="nav-item-wrap relative group">
-                    <a
-                      [routerLink]="item.route"
-                      class="nav-item-link relative transition-all duration-200 cursor-pointer"
-                      [class]="isNavActive(item) ? 'bg-[#c6f6d5] text-slate-900 shadow-sm' : 'text-white/60 hover:text-white hover:bg-white/10'"
-                    >
-                      <mat-icon class="icon-badge text-[22px] w-[22px] h-[22px] shrink-0 transition-colors duration-150">{{ item.icon }}</mat-icon>
-                      <span class="nav-label text-[15px] font-semibold tracking-tight" [class]="isNavActive(item) ? '!text-slate-900' : ''">{{ item.label }}</span>
-                    </a>
-                    <div class="sidebar-tooltip">{{ item.label }}</div>
+          </a>
+        </div>
+      </aside>
+
+      <!-- Content Area -->
+      <div class="app-content">
+
+        <!-- Top Bar -->
+        <header class="content-topbar">
+          <!-- Mobile menu button -->
+          <button
+            class="topbar-icon-btn mobile-sidebar-toggle"
+            (click)="mobileMenuOpen.set(!mobileMenuOpen())"
+            title="Toggle menu"
+          >
+            <mat-icon>menu</mat-icon>
+          </button>
+
+          <!-- Search -->
+          <div class="topbar-search">
+            <mat-icon>search</mat-icon>
+            <input
+              #searchInput
+              [ngModel]="searchQuery()"
+              (ngModelChange)="onSearchInput($event)"
+              (focus)="showSearchResults.set(true)"
+              (keydown)="onSearchKeydown($event)"
+              type="text"
+              placeholder="Search menus and pages...  (Ctrl+K)"
+            />
+            @if (searchQuery()) {
+              <button class="clear-btn" (click)="clearSearch()" title="Clear search">
+                <mat-icon class="text-[14px] w-3.5 h-3.5">close</mat-icon>
+              </button>
+            }
+
+            <!-- Search Results Dropdown -->
+            @if (showSearchResults() && searchQuery().length >= 1 && filteredSearchItems().length > 0) {
+              <div class="search-dropdown">
+                @for (item of filteredSearchItems(); track $index) {
+                  <div
+                    class="search-result-item"
+                    [class.selected]="selectedSearchIndex() === $index"
+                    (click)="navigateToSearchItem(item)"
+                    (mouseenter)="selectedSearchIndex.set($index)"
+                  >
+                    <mat-icon>{{ item.subIcon || item.mainIcon }}</mat-icon>
+                    <div class="search-result-info">
+                      <div class="flex items-baseline gap-2">
+                        <span class="search-result-breadcrumb">{{ item.mainMenu }}</span>
+                        <span class="search-result-title">{{ item.submenu || item.mainMenu }}</span>
+                      </div>
+                      <p class="search-result-desc">{{ item.action }}</p>
+                    </div>
                   </div>
                 }
-              </nav>
-
-              <!-- Bottom: Help -->
-              <div class="shrink-0 py-3 px-1.5 border-t border-white/5 flex flex-col items-center">
-                <button
-                  (click)="openSupportModal()"
-                  class="nav-item-link text-white/60 hover:text-white hover:bg-white/10 transition-all duration-150 cursor-pointer"
-                  title="Help & Support"
-                >
-                  <mat-icon class="text-[22px] w-[22px] h-[22px] shrink-0">help</mat-icon>
-                  <span class="nav-label text-[15px] font-semibold tracking-tight">Help & Support</span>
-                </button>
               </div>
-            </div>
-          </aside>
-
-          <!-- Main Content -->
-          <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
-
-        <!-- Breadcrumbs & Nav Tabs -->
-        <div class="shrink-0 px-6 lg:px-10 pt-3 pb-0 flex items-center gap-6">
-          <nav class="flex items-center gap-2 text-sm font-semibold text-slate-500" aria-label="Breadcrumb">
-            @for (crumb of breadcrumbs(); track crumb.label; let last = $last) {
-              @if (!last && crumb.route) {
-                <a [routerLink]="crumb.route" class="hover:text-slate-800 transition-colors truncate max-w-[120px]">{{ crumb.label }}</a>
-                <mat-icon class="text-[16px] w-4 h-4 mx-1 shrink-0 text-slate-400">chevron_right</mat-icon>
-              } @else {
-                <span class="text-slate-900 font-bold truncate max-w-[180px]">{{ crumb.label }}</span>
-              }
             }
-          </nav>
+            @if (showSearchResults() && searchQuery().length >= 1 && filteredSearchItems().length === 0) {
+              <div class="search-dropdown" style="padding: 20px; text-align: center;">
+                <p class="text-sm text-zinc-500">No results found for "{{ searchQuery() }}"</p>
+              </div>
+            }
+          </div>
+
+          <!-- Right Actions -->
+          <div class="topbar-actions">
+            <button
+              class="topbar-icon-btn"
+              (click)="state.isCustomizing.set(!state.isCustomizing())"
+              [title]="state.isCustomizing() ? 'Done Customizing' : 'Customize KPIs'"
+            >
+              <mat-icon>{{ state.isCustomizing() ? 'check' : 'edit_square' }}</mat-icon>
+            </button>
+            <button
+              class="topbar-icon-btn"
+              (click)="openInbox()"
+              title="Mail"
+            >
+              <mat-icon>mail</mat-icon>
+            </button>
+            <button
+              class="topbar-icon-btn"
+              (click)="openNotifications()"
+              title="Notifications"
+            >
+              <mat-icon>notifications_none</mat-icon>
+              @if (unreadCount() > 0) {
+                <span class="notification-dot">{{ unreadCount() }}</span>
+              }
+            </button>
+            <a
+              [routerLink]="['/settings/users', state.currentUserId()]"
+              class="topbar-avatar"
+              title="View Profile"
+            >
+              <app-user-avatar [userId]="state.currentUserId()" [size]="32" class="shrink-0 rounded-full block"></app-user-avatar>
+            </a>
+          </div>
+        </header>
+
+        <!-- Breadcrumbs -->
+        <div class="content-breadcrumbs">
+          @for (crumb of breadcrumbs(); track crumb.label; let last = $last) {
+            @if (!last && crumb.route) {
+              <a [routerLink]="crumb.route" class="breadcrumb-link">{{ crumb.label }}</a>
+              <mat-icon class="breadcrumb-sep text-[14px] w-3.5 h-3.5">chevron_right</mat-icon>
+            } @else {
+              <span class="breadcrumb-current">{{ crumb.label }}</span>
+            }
+          }
         </div>
 
-          <main class="flex-1 overflow-y-auto p-6 lg:p-8">
-            <router-outlet></router-outlet>
-          </main>
-        </div>
-
+        <!-- Main Content -->
+        <main class="content-main">
+          <router-outlet></router-outlet>
+        </main>
       </div>
 
     </div>
@@ -404,6 +860,8 @@ const SEARCH_ITEMS: SearchItem[] = [
       (closed)="closeDrawer()"
       (switchType)="drawerType.set($event)"
     ></app-notification-inbox-drawer>
+
+    <app-toast-container></app-toast-container>
   `
 })
 export class App implements OnInit, OnDestroy {
@@ -411,6 +869,36 @@ export class App implements OnInit, OnDestroy {
   private router = inject(Router);
 
   @ViewChild(SupportModalComponent) supportModal!: SupportModalComponent;
+
+  // Navigation sections
+  navSections = NAV_SECTIONS;
+
+  // Mobile menu
+  mobileMenuOpen = signal(false);
+
+  // Sidebar collapse
+  sidebarCollapsed = signal(false);
+
+  onLogoClick() {
+    if (this.sidebarCollapsed()) {
+      this.sidebarCollapsed.set(false);
+    } else {
+      this.router.navigate(['/']);
+    }
+  }
+
+  toggleCollapse(event: Event) {
+    event.stopPropagation();
+    this.sidebarCollapsed.update(v => !v);
+  }
+
+  // Current user display name
+  currentUserName = computed(() => {
+    const users = this.state.users();
+    const userId = this.state.currentUserId();
+    const user = users.find((u: any) => u.id === userId);
+    return user?.displayName || 'User';
+  });
 
   // Global search
   readonly searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');
@@ -520,23 +1008,9 @@ export class App implements OnInit, OnDestroy {
     this.supportModal?.openModal();
   }
 
-  /** True when user has clicked the toggle to permanently pin the sidebar open */
-  pinnedOpen = signal<boolean>(false);
-
-  /** True when hover-expanded (auto, not pinned) */
-  hoverOpen = signal<boolean>(false);
-
-  /** Final computed expanded state */
-  isExpanded() {
-    return this.pinnedOpen() || this.hoverOpen();
-  }
-
-  navItems = NAV_ITEMS;
-
   /** Tracks which primary route is currently active */
   activeRoute = signal<string>('/');
 
-  private hoverTimer: ReturnType<typeof setTimeout> | null = null;
   private routerSub: any;
 
   ngOnInit() {
@@ -561,7 +1035,7 @@ export class App implements OnInit, OnDestroy {
     }
 
     // Find the matching parent nav item
-    const navItem = this.navItems.find(item => route.startsWith(item.route) && item.route !== '/');
+    const navItem = ALL_NAV_ITEMS.find(item => route.startsWith(item.route) && item.route !== '/');
     if (navItem) {
       crumbs.push({ label: navItem.label, route: navItem.route });
 
@@ -585,31 +1059,6 @@ export class App implements OnInit, OnDestroy {
     return crumbs;
   });
 
-  onSidebarMouseEnter() {
-    if (this.pinnedOpen()) return;
-    this.hoverTimer = setTimeout(() => {
-      this.hoverOpen.set(true);
-    }, 1000);
-  }
-
-  onSidebarMouseLeave() {
-    if (this.hoverTimer) {
-      clearTimeout(this.hoverTimer);
-      this.hoverTimer = null;
-    }
-    if (!this.pinnedOpen()) {
-      this.hoverOpen.set(false);
-    }
-  }
-
-  togglePin() {
-    const next = !this.pinnedOpen();
-    this.pinnedOpen.set(next);
-    if (!next) {
-      this.hoverOpen.set(false);
-    }
-  }
-
   isNavActive(item: NavItem): boolean {
     const route = this.activeRoute();
     if (item.route === '/') return route === '/';
@@ -617,7 +1066,6 @@ export class App implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.hoverTimer) clearTimeout(this.hoverTimer);
     if (this.routerSub) this.routerSub.unsubscribe();
   }
 

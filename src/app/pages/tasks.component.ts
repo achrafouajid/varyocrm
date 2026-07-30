@@ -59,7 +59,7 @@ const SUB_MODULE_LABELS: Record<string, string> = {
   template: `
     <div class="space-y-8">
       <div class="flex justify-end">
-        <button (click)="openCreateTaskModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm shadow-lg shadow-indigo-200">
+        <button (click)="openCreateTaskModal()" class="bg-zinc-900 hover:bg-zinc-950 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm shadow-lg shadow-zinc-300">
           <mat-icon class="w-5 h-5 text-[20px]! leading-none! flex items-center justify-center">add</mat-icon>
           New Task
         </button>
@@ -68,32 +68,32 @@ const SUB_MODULE_LABELS: Record<string, string> = {
       <!-- Priority Filter Banner -->
       @if (activePriorityFilter()) {
         <div class="flex items-center gap-2">
-          <div class="glass rounded-xl px-4 py-2 flex items-center gap-2 text-sm">
-            <mat-icon class="text-[18px] w-4.5 h-4.5 text-indigo-500">filter_alt</mat-icon>
-            <span class="font-semibold text-slate-700">Filtered by priority:</span>
-            <span [class]="activePriorityFilter() === 'Urgent' ? 'bg-rose-100 text-rose-700' : activePriorityFilter() === 'Medium' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-700'" class="px-2 py-0.5 rounded text-xs font-bold">{{activePriorityFilter()}}</span>
-            <button (click)="clearFilter()" class="text-slate-400 hover:text-slate-600 ml-1 transition-colors">
+          <div class="bg-white border border-zinc-200 rounded-xl px-4 py-2 flex items-center gap-2 text-sm">
+            <mat-icon class="text-[18px] w-4.5 h-4.5 text-zinc-700">filter_alt</mat-icon>
+            <span class="font-semibold text-zinc-700">Filtered by priority:</span>
+            <span [class]="activePriorityFilter() === 'Urgent' ? 'text-red-600' : activePriorityFilter() === 'Medium' ? 'text-amber-600' : 'text-emerald-600'" class="px-2 py-0.5 rounded text-xs font-medium">{{activePriorityFilter()}}</span>
+            <button (click)="clearFilter()" title="Clear filter" class="text-zinc-400 hover:text-zinc-600 ml-1 transition-colors">
               <mat-icon class="text-[16px] w-4 h-4">close</mat-icon>
             </button>
           </div>
-          <span class="text-xs text-slate-400 font-medium">{{ filteredTasks().length }} task{{ filteredTasks().length !== 1 ? 's' : '' }}</span>
+          <span class="text-xs text-zinc-400 font-medium">{{ filteredTasks().length }} task{{ filteredTasks().length !== 1 ? 's' : '' }}</span>
         </div>
       }
 
       <!-- View Tabs -->
-      <div class="flex gap-1 glass-card rounded-xl p-1 w-fit">
+      <div class="flex gap-5 sm:gap-6 border-b border-zinc-200">
         <button
           (click)="activeView.set('list')"
-          [class]="activeView() === 'list' ? 'bg-indigo-50 text-indigo-700 shadow-xs' : 'text-slate-500 hover:text-slate-700'"
-          class="px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2"
+          [class]="activeView() === 'list' ? 'border-zinc-900 text-zinc-900' : 'border-transparent text-zinc-400 hover:text-zinc-600'"
+          class="px-1 py-3 -mb-px border-b-2 text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap"
         >
           <mat-icon class="text-[18px] w-[18px] h-[18px]">list_alt</mat-icon>
           List
         </button>
         <button
           (click)="activeView.set('kanban')"
-          [class]="activeView() === 'kanban' ? 'bg-indigo-50 text-indigo-700 shadow-xs' : 'text-slate-500 hover:text-slate-700'"
-          class="px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2"
+          [class]="activeView() === 'kanban' ? 'border-zinc-900 text-zinc-900' : 'border-transparent text-zinc-400 hover:text-zinc-600'"
+          class="px-1 py-3 -mb-px border-b-2 text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap"
         >
           <mat-icon class="text-[18px] w-[18px] h-[18px]">view_column</mat-icon>
           Kanban
@@ -104,7 +104,7 @@ const SUB_MODULE_LABELS: Record<string, string> = {
       @if (activeView() === 'list') {
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           @for (task of filteredTasks(); track task.id) {
-            <div class="glass-card rounded-xl p-5 flex flex-col justify-between hover:shadow-md transition-all">
+            <div class="card rounded-xl p-5 flex flex-col justify-between hover:shadow-md transition-all">
               <div>
                 <div class="flex justify-between items-start mb-3">
                   <div class="flex items-center gap-1.5">
@@ -115,50 +115,50 @@ const SUB_MODULE_LABELS: Record<string, string> = {
                       <span [class]="getPriorityColor(task.priority)" class="text-[9px] font-bold px-1.5 py-0.5 rounded-full">{{task.priority}}</span>
                     }
                   </div>
-                  <span class="text-xs text-slate-400 font-mono">#{{task.id}}</span>
+                  <span class="text-xs text-zinc-400 font-sans">#{{task.id}}</span>
                 </div>
-                <h4 class="text-slate-900 font-semibold text-base mb-1">{{task.title}}</h4>
-                <p class="text-xs text-slate-500 mb-3">{{task.description}}</p>
+                <h4 class="text-zinc-900 font-semibold text-base mb-1">{{task.title}}</h4>
+                <p class="text-xs text-zinc-500 mb-3">{{task.description}}</p>
 
                 @if (task.relatedTo) {
-                  <div class="text-xs text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-lg p-1.5 px-2 mb-4 inline-flex items-center gap-1 font-medium">
+                  <div class="text-xs text-zinc-900 bg-zinc-100 border border-zinc-200 rounded-lg p-1.5 px-2 mb-4 inline-flex items-center gap-1 font-medium">
                     <mat-icon class="text-[14px] w-3.5 h-3.5 leading-none">link</mat-icon>
                     {{task.relatedTo}}
                   </div>
                 }
               </div>
 
-              <div class="border-t border-slate-100 pt-3 flex flex-col gap-2 mt-4">
+              <div class="border-t border-zinc-100 pt-3 flex flex-col gap-2 mt-4">
                 <div class="flex justify-between items-center text-xs">
-                  <span class="text-slate-400 font-medium">Created By:</span>
+                  <span class="text-zinc-400 font-medium">Created By:</span>
                   <app-created-by-badge [createdBy]="task.createdBy" [createdAt]="task.createdAt" />
                 </div>
                 <div class="flex justify-between items-center text-xs">
-                  <span class="text-slate-400 font-medium">Assigned Team:</span>
-                  <span class="font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded">{{task.assignedTeam || 'Sales'}}</span>
+                  <span class="text-zinc-400 font-medium">Assigned Team:</span>
+                  <span class="font-bold text-zinc-700 bg-zinc-100 px-2 py-0.5 rounded">{{task.assignedTeam || 'Sales'}}</span>
                 </div>
                 <div class="flex justify-between items-center text-xs">
-                  <span class="text-slate-400 font-medium">Assigned Person:</span>
-                  <span class="font-bold text-slate-700">{{task.assignedTo || 'Unassigned'}}</span>
+                  <span class="text-zinc-400 font-medium">Assigned Person:</span>
+                  <span class="font-bold text-zinc-700">{{task.assignedTo || 'Unassigned'}}</span>
                 </div>
 
-                <div class="flex gap-2 pt-2 border-t border-slate-50">
+                <div class="flex gap-2 pt-2 border-t border-zinc-50">
                   @if (task.status === 'Pending') {
-                    <button (click)="state.updateTaskStatus(task.id, 'In Progress')" class="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 text-indigo-600 py-1.5 rounded-lg text-xs font-semibold transition-colors">
+                    <button (click)="state.updateTaskStatus(task.id, 'In Progress')" class="w-full bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 text-zinc-900 py-1.5 rounded-lg text-xs font-semibold transition-colors">
                       Start Task
                     </button>
                   } @else if (task.status === 'In Progress') {
-                    <button (click)="state.updateTaskStatus(task.id, 'Completed')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-1.5 rounded-lg text-xs font-semibold transition-colors">
+                    <button (click)="state.updateTaskStatus(task.id, 'Completed')" class="w-full bg-zinc-900 hover:bg-zinc-950 text-white py-1.5 rounded-lg text-xs font-semibold transition-colors">
                       Complete Task
                     </button>
                   } @else {
-                    <span class="text-emerald-600 text-xs font-bold py-1.5 text-center w-full flex items-center justify-center">
+                    <span class="text-zinc-900 text-xs font-bold py-1.5 text-center w-full flex items-center justify-center">
                       <mat-icon class="text-[16px] w-4 h-4 mr-0.5">check_circle</mat-icon> Completed
                     </span>
                   }
 
                   @if (task.status !== 'Completed') {
-                    <button (click)="openAssignModal(task)" class="bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 px-2 py-1.5 rounded-lg text-xs transition-colors flex items-center justify-center">
+                    <button (click)="openAssignModal(task)" class="bg-white hover:bg-zinc-50 border border-zinc-200 text-zinc-600 px-2 py-1.5 rounded-lg text-xs transition-colors flex items-center justify-center">
                       <mat-icon class="text-[16px] w-4 h-4">person</mat-icon> Assign
                     </button>
                   }
@@ -166,7 +166,7 @@ const SUB_MODULE_LABELS: Record<string, string> = {
               </div>
             </div>
           } @empty {
-            <div class="col-span-full text-center py-12 text-slate-500 glass-card rounded-2xl">
+            <div class="col-span-full text-center py-12 text-zinc-500 card rounded-2xl">
               No tasks found. Create a new task to get started.
             </div>
           }
@@ -176,13 +176,13 @@ const SUB_MODULE_LABELS: Record<string, string> = {
       <!-- Kanban View -->
       @if (activeView() === 'kanban') {
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 min-h-[600px]" cdkDropListGroup>
-          <div class="glass rounded-2xl p-4 flex flex-col">
+          <div class="bg-white border border-zinc-200 rounded-2xl p-4 flex flex-col">
             <div class="flex items-center justify-between mb-4 px-1">
               <div class="flex items-center gap-2">
-                <div class="w-2.5 h-2.5 rounded-full bg-slate-400"></div>
-                <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Pending</h3>
+                <div class="w-2.5 h-2.5 rounded-full bg-zinc-400"></div>
+                <h3 class="text-sm font-bold text-zinc-700 uppercase tracking-wide">Pending</h3>
               </div>
-              <span class="text-xs font-semibold text-slate-400 bg-white px-2 py-0.5 rounded-full border border-white/30">{{pendingTasks().length}}</span>
+              <span class="text-xs font-semibold text-zinc-400 bg-white px-2 py-0.5 rounded-full border border-white/30">{{pendingTasks().length}}</span>
             </div>
             <div
               cdkDropList
@@ -191,9 +191,9 @@ const SUB_MODULE_LABELS: Record<string, string> = {
               class="kanban-column flex-1 space-y-3 min-h-[100px] rounded-xl"
             >
               @for (task of pendingTasks(); track task.id) {
-                <div cdkDrag [cdkDragData]="task" class="kanban-card glass-card rounded-xl p-4 cursor-grab active:cursor-grabbing hover:shadow-md">
+                <div cdkDrag [cdkDragData]="task" class="kanban-card card rounded-xl p-4 cursor-grab active:cursor-grabbing hover:shadow-md">
                   <div class="flex items-start justify-between mb-2">
-                    <span class="text-[10px] font-mono text-slate-400">#{{task.id}}</span>
+                    <span class="text-[10px] font-sans text-zinc-400">#{{task.id}}</span>
                     <div class="flex items-center gap-1">
                       @if (task.priority) {
                         <span [class]="getPriorityColor(task.priority)" class="text-[9px] font-bold px-1.5 py-0.5 rounded-full">{{task.priority}}</span>
@@ -201,37 +201,37 @@ const SUB_MODULE_LABELS: Record<string, string> = {
                       <span [class]="getStatusColor(task.status)" class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full">{{task.status}}</span>
                     </div>
                   </div>
-                  <h4 class="text-sm font-semibold text-slate-900 mb-2 leading-snug">{{task.title}}</h4>
+                  <h4 class="text-sm font-semibold text-zinc-900 mb-2 leading-snug">{{task.title}}</h4>
                   @if (task.relatedTo) {
-                    <div class="text-[11px] text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-lg px-2 py-1 mb-2 inline-flex items-center gap-1 font-medium">
+                    <div class="text-[11px] text-zinc-900 bg-zinc-100 border border-zinc-200 rounded-lg px-2 py-1 mb-2 inline-flex items-center gap-1 font-medium">
                       <mat-icon class="text-[12px] w-3 h-3 leading-none">link</mat-icon>
                       <span class="truncate max-w-[180px]">{{task.relatedTo}}</span>
                     </div>
                   }
-                  <div class="flex items-center gap-2 text-[11px] text-slate-500 pt-2 border-t border-slate-100">
+                  <div class="flex items-center gap-2 text-[11px] text-zinc-500 pt-2 border-t border-zinc-100">
                     <mat-icon class="text-[14px] w-3.5 h-3.5">person</mat-icon>
                     <span class="font-medium truncate">{{task.assignedTo || 'Unassigned'}}</span>
                     @if (task.assignedTeam) {
-                      <span class="ml-auto text-[10px] font-semibold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">{{task.assignedTeam}}</span>
+                      <span class="ml-auto text-[10px] font-semibold text-zinc-400 bg-zinc-100 px-1.5 py-0.5 rounded">{{task.assignedTeam}}</span>
                     }
                   </div>
-                  <div class="mt-2 pt-2 border-t border-slate-50 flex items-center gap-2 text-[10px] text-slate-400">
+                  <div class="mt-2 pt-2 border-t border-zinc-50 flex items-center gap-2 text-[10px] text-zinc-400">
                     <app-created-by-badge [createdBy]="task.createdBy" [createdAt]="task.createdAt" [size]="20" />
                   </div>
                 </div>
               } @empty {
-                <div class="text-center py-8 text-xs text-slate-400 italic">No tasks</div>
+                <div class="text-center py-8 text-xs text-zinc-400 italic">No tasks</div>
               }
             </div>
           </div>
 
-          <div class="glass rounded-2xl p-4 flex flex-col">
+          <div class="bg-white border border-zinc-200 rounded-2xl p-4 flex flex-col">
             <div class="flex items-center justify-between mb-4 px-1">
               <div class="flex items-center gap-2">
-                <div class="w-2.5 h-2.5 rounded-full bg-indigo-500"></div>
-                <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">In Progress</h3>
+                <div class="w-2.5 h-2.5 rounded-full bg-zinc-700"></div>
+                <h3 class="text-sm font-bold text-zinc-700 uppercase tracking-wide">In Progress</h3>
               </div>
-              <span class="text-xs font-semibold text-slate-400 bg-white px-2 py-0.5 rounded-full border border-white/30">{{inProgressTasks().length}}</span>
+              <span class="text-xs font-semibold text-zinc-400 bg-white px-2 py-0.5 rounded-full border border-white/30">{{inProgressTasks().length}}</span>
             </div>
             <div
               cdkDropList
@@ -240,9 +240,9 @@ const SUB_MODULE_LABELS: Record<string, string> = {
               class="kanban-column flex-1 space-y-3 min-h-[100px] rounded-xl"
             >
               @for (task of inProgressTasks(); track task.id) {
-                <div cdkDrag [cdkDragData]="task" class="kanban-card glass-card rounded-xl p-4 cursor-grab active:cursor-grabbing hover:shadow-md">
+                <div cdkDrag [cdkDragData]="task" class="kanban-card card rounded-xl p-4 cursor-grab active:cursor-grabbing hover:shadow-md">
                   <div class="flex items-start justify-between mb-2">
-                    <span class="text-[10px] font-mono text-slate-400">#{{task.id}}</span>
+                    <span class="text-[10px] font-sans text-zinc-400">#{{task.id}}</span>
                     <div class="flex items-center gap-1">
                       @if (task.priority) {
                         <span [class]="getPriorityColor(task.priority)" class="text-[9px] font-bold px-1.5 py-0.5 rounded-full">{{task.priority}}</span>
@@ -250,37 +250,37 @@ const SUB_MODULE_LABELS: Record<string, string> = {
                       <span [class]="getStatusColor(task.status)" class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full">{{task.status}}</span>
                     </div>
                   </div>
-                  <h4 class="text-sm font-semibold text-slate-900 mb-2 leading-snug">{{task.title}}</h4>
+                  <h4 class="text-sm font-semibold text-zinc-900 mb-2 leading-snug">{{task.title}}</h4>
                   @if (task.relatedTo) {
-                    <div class="text-[11px] text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-lg px-2 py-1 mb-2 inline-flex items-center gap-1 font-medium">
+                    <div class="text-[11px] text-zinc-900 bg-zinc-100 border border-zinc-200 rounded-lg px-2 py-1 mb-2 inline-flex items-center gap-1 font-medium">
                       <mat-icon class="text-[12px] w-3 h-3 leading-none">link</mat-icon>
                       <span class="truncate max-w-[180px]">{{task.relatedTo}}</span>
                     </div>
                   }
-                  <div class="flex items-center gap-2 text-[11px] text-slate-500 pt-2 border-t border-slate-100">
+                  <div class="flex items-center gap-2 text-[11px] text-zinc-500 pt-2 border-t border-zinc-100">
                     <mat-icon class="text-[14px] w-3.5 h-3.5">person</mat-icon>
                     <span class="font-medium truncate">{{task.assignedTo || 'Unassigned'}}</span>
                     @if (task.assignedTeam) {
-                      <span class="ml-auto text-[10px] font-semibold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">{{task.assignedTeam}}</span>
+                      <span class="ml-auto text-[10px] font-semibold text-zinc-400 bg-zinc-100 px-1.5 py-0.5 rounded">{{task.assignedTeam}}</span>
                     }
                   </div>
-                  <div class="mt-2 pt-2 border-t border-slate-50 flex items-center gap-2 text-[10px] text-slate-400">
+                  <div class="mt-2 pt-2 border-t border-zinc-50 flex items-center gap-2 text-[10px] text-zinc-400">
                     <app-created-by-badge [createdBy]="task.createdBy" [createdAt]="task.createdAt" [size]="20" />
                   </div>
                 </div>
               } @empty {
-                <div class="text-center py-8 text-xs text-slate-400 italic">No tasks</div>
+                <div class="text-center py-8 text-xs text-zinc-400 italic">No tasks</div>
               }
             </div>
           </div>
 
-          <div class="glass rounded-2xl p-4 flex flex-col">
+          <div class="bg-white border border-zinc-200 rounded-2xl p-4 flex flex-col">
             <div class="flex items-center justify-between mb-4 px-1">
               <div class="flex items-center gap-2">
-                <div class="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
-                <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Completed</h3>
+                <div class="w-2.5 h-2.5 rounded-full bg-zinc-700"></div>
+                <h3 class="text-sm font-bold text-zinc-700 uppercase tracking-wide">Completed</h3>
               </div>
-              <span class="text-xs font-semibold text-slate-400 bg-white px-2 py-0.5 rounded-full border border-white/30">{{completedTasks().length}}</span>
+              <span class="text-xs font-semibold text-zinc-400 bg-white px-2 py-0.5 rounded-full border border-white/30">{{completedTasks().length}}</span>
             </div>
             <div
               cdkDropList
@@ -289,9 +289,9 @@ const SUB_MODULE_LABELS: Record<string, string> = {
               class="kanban-column flex-1 space-y-3 min-h-[100px] rounded-xl"
             >
               @for (task of completedTasks(); track task.id) {
-                <div cdkDrag [cdkDragData]="task" class="kanban-card glass-card rounded-xl p-4 cursor-grab active:cursor-grabbing hover:shadow-md">
+                <div cdkDrag [cdkDragData]="task" class="kanban-card card rounded-xl p-4 cursor-grab active:cursor-grabbing hover:shadow-md">
                   <div class="flex items-start justify-between mb-2">
-                    <span class="text-[10px] font-mono text-slate-400">#{{task.id}}</span>
+                    <span class="text-[10px] font-sans text-zinc-400">#{{task.id}}</span>
                     <div class="flex items-center gap-1">
                       @if (task.priority) {
                         <span [class]="getPriorityColor(task.priority)" class="text-[9px] font-bold px-1.5 py-0.5 rounded-full">{{task.priority}}</span>
@@ -299,26 +299,26 @@ const SUB_MODULE_LABELS: Record<string, string> = {
                       <span [class]="getStatusColor(task.status)" class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full">{{task.status}}</span>
                     </div>
                   </div>
-                  <h4 class="text-sm font-semibold text-slate-900 mb-2 leading-snug">{{task.title}}</h4>
+                  <h4 class="text-sm font-semibold text-zinc-900 mb-2 leading-snug">{{task.title}}</h4>
                   @if (task.relatedTo) {
-                    <div class="text-[11px] text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-lg px-2 py-1 mb-2 inline-flex items-center gap-1 font-medium">
+                    <div class="text-[11px] text-zinc-900 bg-zinc-100 border border-zinc-200 rounded-lg px-2 py-1 mb-2 inline-flex items-center gap-1 font-medium">
                       <mat-icon class="text-[12px] w-3 h-3 leading-none">link</mat-icon>
                       <span class="truncate max-w-[180px]">{{task.relatedTo}}</span>
                     </div>
                   }
-                  <div class="flex items-center gap-2 text-[11px] text-slate-500 pt-2 border-t border-slate-100">
+                  <div class="flex items-center gap-2 text-[11px] text-zinc-500 pt-2 border-t border-zinc-100">
                     <mat-icon class="text-[14px] w-3.5 h-3.5">person</mat-icon>
                     <span class="font-medium truncate">{{task.assignedTo || 'Unassigned'}}</span>
                     @if (task.assignedTeam) {
-                      <span class="ml-auto text-[10px] font-semibold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">{{task.assignedTeam}}</span>
+                      <span class="ml-auto text-[10px] font-semibold text-zinc-400 bg-zinc-100 px-1.5 py-0.5 rounded">{{task.assignedTeam}}</span>
                     }
                   </div>
-                  <div class="mt-2 pt-2 border-t border-slate-50 flex items-center gap-2 text-[10px] text-slate-400">
+                  <div class="mt-2 pt-2 border-t border-zinc-50 flex items-center gap-2 text-[10px] text-zinc-400">
                     <app-created-by-badge [createdBy]="task.createdBy" [createdAt]="task.createdAt" [size]="20" />
                   </div>
                 </div>
               } @empty {
-                <div class="text-center py-8 text-xs text-slate-400 italic">No tasks</div>
+                <div class="text-center py-8 text-xs text-zinc-400 italic">No tasks</div>
               }
             </div>
           </div>
@@ -328,25 +328,25 @@ const SUB_MODULE_LABELS: Record<string, string> = {
 
     <!-- Create Task Modal -->
     @if (taskModalOpen()) {
-      <div class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-        <div class="glass-dialog rounded-2xl max-w-sm w-full p-6 space-y-4 animate-in zoom-in-95 duration-200">
-          <h3 class="text-lg font-bold text-slate-950">Create New Task</h3>
+      <div class="fixed inset-0 z-50 bg-zinc-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="bg-white shadow-xl rounded-2xl max-w-sm w-full p-6 space-y-4 animate-in zoom-in-95 duration-200">
+          <h3 class="text-lg font-bold text-zinc-950">Create New Task</h3>
 
           <div class="space-y-3">
             <div>
-              <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Task Title</label>
-              <input [(ngModel)]="newTaskData.title" type="text" placeholder="e.g. Generate Customer Invoice" class="w-full glass-input rounded-lg p-2 text-sm focus:outline-indigo-600">
+              <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Task Title</label>
+              <input [(ngModel)]="newTaskData.title" type="text" placeholder="e.g. Generate Customer Invoice" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600">
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Description</label>
-              <textarea [(ngModel)]="newTaskData.description" rows="2" class="w-full glass-input rounded-lg p-2 text-sm focus:outline-indigo-600"></textarea>
+              <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Description</label>
+              <textarea [(ngModel)]="newTaskData.description" rows="2" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600"></textarea>
             </div>
 
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Assigned Team</label>
-                <select [(ngModel)]="newTaskData.assignedTeam" class="w-full glass-input rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Assigned Team</label>
+                <select [(ngModel)]="newTaskData.assignedTeam" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
                   <option value="Sales">Sales</option>
                   <option value="Operations">Operations</option>
                   <option value="Finance">Finance</option>
@@ -354,8 +354,8 @@ const SUB_MODULE_LABELS: Record<string, string> = {
                 </select>
               </div>
               <div>
-                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Assigned Person</label>
-                <select [(ngModel)]="newTaskData.assignedTo" class="w-full glass-input rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Assigned Person</label>
+                <select [(ngModel)]="newTaskData.assignedTo" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
                   <option value="">Unassigned</option>
                   @for (user of state.users(); track user.name) {
                     <option [value]="user.name">{{user.name}}</option>
@@ -365,8 +365,8 @@ const SUB_MODULE_LABELS: Record<string, string> = {
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Module</label>
-              <select [(ngModel)]="selectedModule" (ngModelChange)="onModuleChange()" class="w-full glass-input rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+              <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Module</label>
+              <select [(ngModel)]="selectedModule" (ngModelChange)="onModuleChange()" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
                 <option value="">None</option>
                 @for (mod of moduleList; track mod) {
                   <option [value]="mod">{{mod}}</option>
@@ -376,8 +376,8 @@ const SUB_MODULE_LABELS: Record<string, string> = {
 
             @if (selectedModule()) {
               <div>
-                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Sub-module</label>
-                <select [(ngModel)]="selectedSubModule" (ngModelChange)="onSubModuleChange()" class="w-full glass-input rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Sub-module</label>
+                <select [(ngModel)]="selectedSubModule" (ngModelChange)="onSubModuleChange()" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
                   <option value="">Select...</option>
                   @for (sub of subModules(); track sub) {
                     <option [value]="sub">{{subModuleLabel(sub)}}</option>
@@ -388,8 +388,8 @@ const SUB_MODULE_LABELS: Record<string, string> = {
 
             @if (selectedModule() && selectedSubModule()) {
               <div>
-                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">{{subModuleLabel(selectedSubModule())}}</label>
-                <select [(ngModel)]="newTaskData.relatedEntityId" class="w-full glass-input rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">{{subModuleLabel(selectedSubModule())}}</label>
+                <select [(ngModel)]="newTaskData.relatedEntityId" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
                   <option value="">Select...</option>
                   @for (entity of relatedEntities(); track entity.id) {
                     <option [value]="entity.id">{{entity.label}}</option>
@@ -399,9 +399,9 @@ const SUB_MODULE_LABELS: Record<string, string> = {
             }
           </div>
 
-          <div class="flex justify-end gap-2 pt-4 border-t border-slate-100">
-            <button (click)="closeTaskModal()" class="px-4 py-2 border border-slate-200 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-50 font-sans">Cancel</button>
-            <button (click)="saveTask()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm shadow-lg shadow-indigo-200 font-sans">Save Task</button>
+          <div class="flex justify-end gap-2 pt-4 border-t border-zinc-100">
+            <button (click)="closeTaskModal()" class="px-4 py-2 border border-zinc-200 text-zinc-600 text-sm font-semibold rounded-lg hover:bg-zinc-50 font-sans">Cancel</button>
+            <button (click)="saveTask()" class="px-4 py-2 bg-zinc-900 hover:bg-zinc-950 text-white text-sm font-semibold rounded-lg shadow-sm shadow-lg shadow-zinc-300 font-sans">Save Task</button>
           </div>
         </div>
       </div>
@@ -409,20 +409,20 @@ const SUB_MODULE_LABELS: Record<string, string> = {
 
     <!-- Assign Modal -->
     @if (assignModalOpen()) {
-      <div class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-        <div class="glass-dialog rounded-2xl max-w-sm w-full p-6 space-y-4 animate-in zoom-in-95 duration-200">
-          <h3 class="text-lg font-bold text-slate-950">Assign Task: {{selectedTask()?.title}}</h3>
+      <div class="fixed inset-0 z-50 bg-zinc-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="bg-white shadow-xl rounded-2xl max-w-sm w-full p-6 space-y-4 animate-in zoom-in-95 duration-200">
+          <h3 class="text-lg font-bold text-zinc-950">Assign Task: {{selectedTask()?.title}}</h3>
           <div>
-            <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Select Assignee</label>
-            <select [(ngModel)]="reassignedUser" class="w-full glass-input rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+            <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Select Assignee</label>
+            <select [(ngModel)]="reassignedUser" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
               @for (user of state.users(); track user.name) {
                 <option [value]="user.name">{{user.name}} ({{user.role}})</option>
               }
             </select>
           </div>
           <div class="flex justify-end gap-2 pt-2">
-            <button (click)="assignModalOpen.set(false)" class="px-4 py-2 border border-slate-200 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-50">Cancel</button>
-            <button (click)="saveAssignment()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm shadow-lg shadow-indigo-200">Assign</button>
+            <button (click)="assignModalOpen.set(false)" class="px-4 py-2 border border-zinc-200 text-zinc-600 text-sm font-semibold rounded-lg hover:bg-zinc-50">Cancel</button>
+            <button (click)="saveAssignment()" class="px-4 py-2 bg-zinc-900 hover:bg-zinc-950 text-white text-sm font-semibold rounded-lg shadow-sm shadow-lg shadow-zinc-300">Assign</button>
           </div>
         </div>
       </div>
@@ -503,18 +503,18 @@ export class TasksComponent {
 
   getStatusColor(status: string) {
     switch (status) {
-      case 'Completed': return 'bg-emerald-100 text-emerald-800 border border-emerald-200';
-      case 'In Progress': return 'bg-indigo-100 text-indigo-800 border border-indigo-200';
-      default: return 'bg-slate-100 text-slate-800 border border-slate-200';
+      case 'Completed': return 'bg-zinc-200 text-zinc-950 border border-zinc-300';
+      case 'In Progress': return 'bg-zinc-200 text-zinc-950 border border-zinc-300';
+      default: return 'bg-zinc-100 text-zinc-800 border border-zinc-200';
     }
   }
 
   getPriorityColor(priority: string) {
     switch (priority) {
-      case 'Urgent': return 'bg-rose-100 text-rose-700 border border-rose-200';
-      case 'Medium': return 'bg-amber-100 text-amber-700 border border-amber-200';
-      case 'Low': return 'bg-slate-100 text-slate-600 border border-slate-200';
-      default: return 'bg-slate-100 text-slate-600 border border-slate-200';
+      case 'Urgent': return 'text-red-600 border border-red-200';
+      case 'Medium': return 'text-amber-600 border border-amber-200';
+      case 'Low': return 'text-emerald-600 border border-emerald-200';
+      default: return 'text-zinc-400 border border-zinc-200';
     }
   }
 

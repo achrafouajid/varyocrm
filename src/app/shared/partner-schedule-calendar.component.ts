@@ -15,22 +15,22 @@ interface CalendarDay {
   selector: 'app-partner-schedule-calendar',
   imports: [CommonModule, MatIconModule],
   template: `
-    <div class="glass-card rounded-2xl p-5">
+    <div class="card rounded-2xl p-5">
       <div class="flex items-center justify-between mb-4">
-        <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Partner Schedule</h3>
+        <h3 class="text-sm font-bold text-zinc-700 uppercase tracking-wide">Partner Schedule</h3>
         <div class="flex items-center gap-1">
           <button
             (click)="prevMonth()"
-            class="w-8 h-8 rounded-full glass-button flex items-center justify-center text-slate-500 hover:text-indigo-600 transition-all border-0"
+            class="w-8 h-8 rounded-full btn-secondary flex items-center justify-center text-zinc-500 hover:text-zinc-900 transition-all border-0"
           >
             <mat-icon class="text-[18px] w-[18px] h-[18px] leading-none">chevron_left</mat-icon>
           </button>
-          <span class="text-sm font-bold text-slate-800 min-w-[120px] text-center select-none">
+          <span class="text-sm font-bold text-zinc-800 min-w-[120px] text-center select-none">
             {{ monthNames[currentMonth()] }} {{ currentYear() }}
           </span>
           <button
             (click)="nextMonth()"
-            class="w-8 h-8 rounded-full glass-button flex items-center justify-center text-slate-500 hover:text-indigo-600 transition-all border-0"
+            class="w-8 h-8 rounded-full btn-secondary flex items-center justify-center text-zinc-500 hover:text-zinc-900 transition-all border-0"
           >
             <mat-icon class="text-[18px] w-[18px] h-[18px] leading-none">chevron_right</mat-icon>
           </button>
@@ -39,7 +39,7 @@ interface CalendarDay {
 
       <div class="grid grid-cols-7 gap-1.5 mb-2">
         @for (h of dayHeaders; track h) {
-          <div class="text-center text-[10px] font-bold text-slate-400 uppercase tracking-wider py-1">{{ h }}</div>
+          <div class="text-center text-[10px] font-bold text-zinc-400 uppercase tracking-wider py-1">{{ h }}</div>
         }
       </div>
 
@@ -49,7 +49,7 @@ interface CalendarDay {
             <div
               [class]="
                 cell.isToday
-                  ? 'ring-2 ring-indigo-500 bg-indigo-50/80'
+                  ? 'ring-2 ring-zinc-700 bg-zinc-100/80'
                   : cell.isPast
                     ? 'bg-white/80'
                     : 'bg-white/30'
@@ -67,12 +67,12 @@ interface CalendarDay {
                   </span>
                 }
                 @if (cell.teamMembers.length > 4) {
-                  <span class="w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold text-slate-500 bg-slate-200 shrink-0">
+                  <span class="w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold text-zinc-500 bg-zinc-200 shrink-0">
                     +{{ cell.teamMembers.length - 4 }}
                   </span>
                 }
               </div>
-              <div class="text-[11px] font-bold mt-1" [class]="cell.isToday ? 'text-indigo-700' : cell.isPast ? 'text-slate-700' : 'text-slate-400'">
+              <div class="text-[11px] font-bold mt-1" [class]="cell.isToday ? 'text-zinc-950' : cell.isPast ? 'text-zinc-700' : 'text-zinc-400'">
                 {{ cell.day }}
               </div>
             </div>

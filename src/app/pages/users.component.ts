@@ -29,7 +29,7 @@ import { MatIconModule } from '@angular/material/icon';
       <div class="flex justify-end">
         <button
           (click)="openAddPanel()"
-          class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-sm transition-colors flex items-center gap-1.5 cursor-pointer"
+          class="bg-zinc-900 hover:bg-zinc-950 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-sm transition-colors flex items-center gap-1.5 cursor-pointer"
         >
           <mat-icon class="text-base w-4 h-4 flex items-center justify-center">add</mat-icon>
           Add User
@@ -37,64 +37,64 @@ import { MatIconModule } from '@angular/material/icon';
       </div>
 
       <!-- Add/Edit User Panel (Inline) -->
-      <div [class.open]="showAddPanel()" class="panel bg-slate-50 border border-slate-200/80 rounded-2xl p-0 shadow-xs">
+      <div [class.open]="showAddPanel()" class="panel bg-zinc-50 border border-zinc-200/80 rounded-2xl p-0 shadow-xs">
         <div class="p-6 space-y-4">
-          <h3 class="font-bold text-slate-800 text-sm">
+          <h3 class="font-bold text-zinc-800 text-sm">
             {{ editingUser() ? 'Edit User details' : 'Add New User Account' }}
           </h3>
           
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <!-- Display Name -->
             <div>
-              <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Display Name *</label>
+              <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Display Name *</label>
               <input
                 [(ngModel)]="formDisplayName"
                 type="text"
                 placeholder="e.g. Amina Alaoui"
-                class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-indigo-600 text-slate-800"
+                class="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-indigo-600 text-zinc-800"
               />
             </div>
 
             <!-- Email -->
             <div>
-              <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Email address *</label>
+              <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Email address *</label>
               <input
                 [(ngModel)]="formEmail"
                 [disabled]="!!editingUser()"
                 type="email"
                 placeholder="e.g. a.alaoui@acg.ma"
-                class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-indigo-600 text-slate-800 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed"
+                class="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-indigo-600 text-zinc-800 disabled:bg-zinc-100 disabled:text-zinc-400 disabled:cursor-not-allowed"
               />
             </div>
 
             <!-- Job Title -->
             <div>
-              <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Job Title</label>
+              <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Job Title</label>
               <input
                 [(ngModel)]="formJobTitle"
                 type="text"
                 placeholder="e.g. Accountant Specialist"
-                class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-indigo-600 text-slate-800"
+                class="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-indigo-600 text-zinc-800"
               />
             </div>
 
             <!-- Phone -->
             <div>
-              <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Phone number</label>
+              <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Phone number</label>
               <input
                 [(ngModel)]="formPhone"
                 type="text"
                 placeholder="e.g. +212-661-234567"
-                class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-indigo-600 text-slate-800"
+                class="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-indigo-600 text-zinc-800"
               />
             </div>
 
             <!-- Role Dropdown -->
             <div>
-              <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">System Role</label>
+              <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">System Role</label>
               <select
                 [(ngModel)]="formRoleId"
-                class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-indigo-600 text-slate-700 cursor-pointer font-semibold"
+                class="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-indigo-600 text-zinc-700 cursor-pointer font-semibold"
               >
                 <option value="admin">Admin</option>
                 <option value="manager">Manager</option>
@@ -106,10 +106,10 @@ import { MatIconModule } from '@angular/material/icon';
 
             <!-- Team Dropdown -->
             <div>
-              <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Team Assignment</label>
+              <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Team Assignment</label>
               <select
                 [(ngModel)]="formTeamId"
-                class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-indigo-600 text-slate-700 cursor-pointer font-semibold"
+                class="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-indigo-600 text-zinc-700 cursor-pointer font-semibold"
               >
                 <option value="">Unassigned</option>
                 @for (team of state.teams(); track team.id) {
@@ -119,17 +119,17 @@ import { MatIconModule } from '@angular/material/icon';
             </div>
           </div>
 
-          <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+          <div class="flex justify-end gap-2 pt-2 border-t border-zinc-100">
             <button
               (click)="closeAddPanel()"
-              class="px-4 py-2 border border-slate-200 text-slate-600 text-xs font-semibold rounded-xl hover:bg-slate-100 cursor-pointer"
+              class="px-4 py-2 border border-zinc-200 text-zinc-600 text-xs font-semibold rounded-xl hover:bg-zinc-100 cursor-pointer"
             >
               Cancel
             </button>
             <button
               (click)="saveUser()"
               [disabled]="!formDisplayName.trim() || !formEmail.trim()"
-              class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white text-xs font-semibold rounded-xl shadow-xs transition-colors cursor-pointer"
+              class="px-4 py-2 bg-zinc-900 hover:bg-zinc-950 disabled:bg-zinc-200 disabled:text-zinc-400 disabled:cursor-not-allowed text-white text-xs font-semibold rounded-xl shadow-xs transition-colors cursor-pointer"
             >
               {{ editingUser() ? 'Save changes' : 'Add User' }}
             </button>
@@ -138,7 +138,7 @@ import { MatIconModule } from '@angular/material/icon';
       </div>
 
       <!-- Filter Bar -->
-      <div class="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-xs flex flex-wrap gap-4 items-center justify-between">
+      <div class="bg-white border border-zinc-200/80 rounded-2xl p-4 shadow-xs flex flex-wrap gap-4 items-center justify-between">
         <div class="flex flex-wrap items-center gap-3 flex-1 min-w-[280px]">
           <!-- Search input -->
           <div class="relative flex-1 max-w-xs">
@@ -146,9 +146,9 @@ import { MatIconModule } from '@angular/material/icon';
               [(ngModel)]="searchTerm"
               type="text"
               placeholder="Search by name or email..."
-              class="w-full border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-xs focus:outline-indigo-600 text-slate-800"
+              class="w-full border border-zinc-200 rounded-xl pl-9 pr-3 py-2 text-xs focus:outline-indigo-600 text-zinc-800"
             />
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-400">
               <mat-icon class="text-sm w-4 h-4 flex items-center justify-center">search</mat-icon>
             </div>
           </div>
@@ -156,7 +156,7 @@ import { MatIconModule } from '@angular/material/icon';
           <!-- Role Select -->
           <select
             [(ngModel)]="selectedRole"
-            class="border border-slate-200 rounded-xl px-3 py-2 text-xs bg-white text-slate-600 cursor-pointer font-semibold focus:outline-indigo-600"
+            class="border border-zinc-200 rounded-xl px-3 py-2 text-xs bg-white text-zinc-600 cursor-pointer font-semibold focus:outline-indigo-600"
           >
             <option value="all">All Roles</option>
             <option value="admin">Admin</option>
@@ -169,7 +169,7 @@ import { MatIconModule } from '@angular/material/icon';
           <!-- Team Select -->
           <select
             [(ngModel)]="selectedTeam"
-            class="border border-slate-200 rounded-xl px-3 py-2 text-xs bg-white text-slate-600 cursor-pointer font-semibold focus:outline-indigo-600"
+            class="border border-zinc-200 rounded-xl px-3 py-2 text-xs bg-white text-zinc-600 cursor-pointer font-semibold focus:outline-indigo-600"
           >
             <option value="all">All Teams</option>
             <option value="unassigned">Unassigned</option>
@@ -184,29 +184,29 @@ import { MatIconModule } from '@angular/material/icon';
           <input
             type="checkbox"
             [(ngModel)]="showInactive"
-            class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4"
+            class="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-700 h-4 w-4"
           />
-          <span class="text-xs font-semibold text-slate-600">Show Inactive accounts</span>
+          <span class="text-xs font-semibold text-zinc-600">Show Inactive accounts</span>
         </label>
       </div>
 
       <!-- Table / User List -->
-      <div class="bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-xs">
+      <div class="bg-white border border-zinc-200/80 rounded-2xl overflow-hidden shadow-xs">
         <table class="min-w-full divide-y divide-slate-200">
-          <thead class="bg-slate-50">
+          <thead class="bg-zinc-50">
             <tr>
-              <th class="px-6 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">User details</th>
-              <th class="px-6 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Email</th>
-              <th class="px-6 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">System Role</th>
-              <th class="px-6 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Team</th>
-              <th class="px-6 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
-              <th class="px-6 py-3.5 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Actions</th>
+              <th class="px-6 py-3.5 text-left text-xs font-bold text-zinc-500 uppercase tracking-wider">User details</th>
+              <th class="px-6 py-3.5 text-left text-xs font-bold text-zinc-500 uppercase tracking-wider">Email</th>
+              <th class="px-6 py-3.5 text-left text-xs font-bold text-zinc-500 uppercase tracking-wider">System Role</th>
+              <th class="px-6 py-3.5 text-left text-xs font-bold text-zinc-500 uppercase tracking-wider">Team</th>
+              <th class="px-6 py-3.5 text-left text-xs font-bold text-zinc-500 uppercase tracking-wider">Status</th>
+              <th class="px-6 py-3.5 text-right text-xs font-bold text-zinc-500 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 bg-white">
             @for (user of filteredUsers(); track user.id) {
               <!-- Standard row -->
-              <tr class="hover:bg-slate-50/40 transition-colors">
+              <tr class="hover:bg-zinc-50/40 transition-colors">
                 <!-- Avatar + Name -->
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center gap-3">
@@ -214,16 +214,16 @@ import { MatIconModule } from '@angular/material/icon';
                       <app-user-avatar [userId]="user.id" [size]="36"></app-user-avatar>
                     </a>
                     <div>
-                      <a [routerLink]="['/settings/users', user.id]" class="font-bold text-xs text-slate-800 hover:text-indigo-600 block transition-colors">
+                      <a [routerLink]="['/settings/users', user.id]" class="font-bold text-xs text-zinc-800 hover:text-zinc-900 block transition-colors">
                         {{ user.displayName }}
                       </a>
-                      <span class="text-[10px] text-slate-400 block font-medium mt-0.5">{{ user.jobTitle || 'No title' }}</span>
+                      <span class="text-[10px] text-zinc-400 block font-medium mt-0.5">{{ user.jobTitle || 'No title' }}</span>
                     </div>
                   </div>
                 </td>
 
                 <!-- Email -->
-                <td class="px-6 py-4 whitespace-nowrap text-xs text-slate-600 font-medium font-mono">
+                <td class="px-6 py-4 whitespace-nowrap text-xs text-zinc-600 font-medium font-mono">
                   {{ user.email }}
                 </td>
 
@@ -236,7 +236,7 @@ import { MatIconModule } from '@angular/material/icon';
                         (change)="changeUserRole(user.id, $event)"
                         (blur)="cancelRoleEdit()"
                         (keydown.esc)="cancelRoleEdit()"
-                        class="border border-slate-200 rounded-lg px-2 py-1 text-xs bg-white text-slate-700 focus:outline-indigo-600 focus:ring-1 focus:ring-indigo-500"
+                        class="border border-zinc-200 rounded-lg px-2 py-1 text-xs bg-white text-zinc-700 focus:outline-indigo-600 focus:ring-1 focus:ring-zinc-700"
                         autofocus
                       >
                         <option value="admin">Admin</option>
@@ -246,7 +246,7 @@ import { MatIconModule } from '@angular/material/icon';
                         <option value="viewer">Viewer</option>
                       </select>
                       @if (roleErrorUserId() === user.id) {
-                        <p class="text-[10px] text-rose-600 leading-tight font-medium">{{ roleErrorMessage() }}</p>
+                        <p class="text-[10px] text-zinc-900 leading-tight font-medium">{{ roleErrorMessage() }}</p>
                       }
                     </div>
                   } @else {
@@ -255,14 +255,14 @@ import { MatIconModule } from '@angular/material/icon';
                 </td>
 
                 <!-- Team -->
-                <td class="px-6 py-4 whitespace-nowrap text-xs font-semibold text-slate-700">
+                <td class="px-6 py-4 whitespace-nowrap text-xs font-semibold text-zinc-700">
                   {{ getTeamName(user.teamId) }}
                 </td>
 
                 <!-- Status -->
                 <td class="px-6 py-4 whitespace-nowrap text-xs">
                   <span
-                    [class]="user.isActive ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-slate-100 text-slate-500 border-slate-200'"
+                    [class]="user.isActive ? 'bg-zinc-100 text-zinc-950 border-zinc-200' : 'bg-zinc-100 text-zinc-500 border-zinc-200'"
                     class="inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold border"
                   >
                     {{ user.isActive ? 'Active' : 'Inactive' }}
@@ -273,34 +273,34 @@ import { MatIconModule } from '@angular/material/icon';
                 <td class="px-6 py-4 whitespace-nowrap text-right text-xs relative">
                   <button
                     (click)="toggleMenu(user.id, $event)"
-                    class="text-slate-400 hover:text-slate-700 p-1 rounded-lg transition-colors flex items-center ml-auto cursor-pointer"
+                    class="text-zinc-400 hover:text-zinc-700 p-1 rounded-lg transition-colors flex items-center ml-auto cursor-pointer"
                   >
                     <mat-icon class="text-base w-5 h-5 flex items-center justify-center">more_vert</mat-icon>
                   </button>
 
                   <!-- Actions Dropdown panel -->
                   @if (activeMenuUserId() === user.id) {
-                    <div class="absolute right-6 top-11 bg-white border border-slate-200 rounded-xl shadow-lg py-1.5 z-10 w-36 text-left animate-in fade-in slide-in-from-top-1 duration-100">
+                    <div class="absolute right-6 top-11 bg-white border border-zinc-200 rounded-xl shadow-lg py-1.5 z-10 w-36 text-left animate-in fade-in slide-in-from-top-1 duration-100">
                       <button
                         (click)="editUser(user)"
-                        class="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 font-medium cursor-pointer"
+                        class="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-zinc-700 hover:bg-zinc-50 font-medium cursor-pointer"
                       >
-                        <mat-icon class="text-slate-400 text-sm w-4 h-4 flex items-center justify-center">edit</mat-icon>
+                        <mat-icon class="text-zinc-400 text-sm w-4 h-4 flex items-center justify-center">edit</mat-icon>
                         Edit Details
                       </button>
                       <button
                         (click)="startRoleEdit(user.id)"
-                        class="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 font-medium cursor-pointer"
+                        class="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-zinc-700 hover:bg-zinc-50 font-medium cursor-pointer"
                       >
-                        <mat-icon class="text-slate-400 text-sm w-4 h-4 flex items-center justify-center">swap_horiz</mat-icon>
+                        <mat-icon class="text-zinc-400 text-sm w-4 h-4 flex items-center justify-center">swap_horiz</mat-icon>
                         Change Role
                       </button>
                       @if (user.isActive && user.id !== state.currentUserId()) {
                         <button
                           (click)="confirmDeactivate(user.id)"
-                          class="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-rose-600 hover:bg-rose-50 font-medium cursor-pointer"
+                          class="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-zinc-900 hover:bg-zinc-100 font-medium cursor-pointer"
                         >
-                          <mat-icon class="text-rose-400 text-sm w-4 h-4 flex items-center justify-center">block</mat-icon>
+                          <mat-icon class="text-zinc-500 text-sm w-4 h-4 flex items-center justify-center">block</mat-icon>
                           Deactivate
                         </button>
                       }
@@ -311,26 +311,26 @@ import { MatIconModule } from '@angular/material/icon';
 
               <!-- Inline Deactivation Confirmation row -->
               @if (deactivateConfirmUserId() === user.id) {
-                <tr class="bg-rose-50/40">
-                  <td colspan="6" class="px-6 py-3 border-t border-rose-100">
+                <tr class="bg-zinc-100/40">
+                  <td colspan="6" class="px-6 py-3 border-t border-zinc-200">
                     <div class="flex items-center justify-between">
-                      <div class="flex items-center gap-2 text-rose-800 text-xs font-semibold">
-                        <mat-icon class="text-rose-500 text-sm w-4 h-4 flex items-center justify-center">warning</mat-icon>
+                      <div class="flex items-center gap-2 text-zinc-950 text-xs font-semibold">
+                        <mat-icon class="text-zinc-700 text-sm w-4 h-4 flex items-center justify-center">warning</mat-icon>
                         <span>Deactivate {{ user.displayName }}? This cannot be undone.</span>
                       </div>
                       <div class="flex items-center gap-2">
                         @if (deactivateErrorMessage()) {
-                          <span class="text-[10px] text-rose-700 font-bold mr-2">{{ deactivateErrorMessage() }}</span>
+                          <span class="text-[10px] text-zinc-950 font-bold mr-2">{{ deactivateErrorMessage() }}</span>
                         }
                         <button
                           (click)="cancelDeactivate()"
-                          class="bg-white border border-slate-200 text-slate-600 px-3 py-1 rounded-lg text-[10px] font-bold hover:bg-slate-50 cursor-pointer"
+                          class="bg-white border border-zinc-200 text-zinc-600 px-3 py-1 rounded-lg text-[10px] font-bold hover:bg-zinc-50 cursor-pointer"
                         >
                           Cancel
                         </button>
                         <button
                           (click)="executeDeactivate(user.id)"
-                          class="bg-rose-600 text-white px-3 py-1 rounded-lg text-[10px] font-bold hover:bg-rose-750 cursor-pointer shadow-xs"
+                          class="bg-zinc-900 text-white px-3 py-1 rounded-lg text-[10px] font-bold hover:bg-rose-750 cursor-pointer shadow-xs"
                         >
                           Confirm Deactivation
                         </button>
@@ -344,14 +344,14 @@ import { MatIconModule } from '@angular/material/icon';
               <tr>
                 <td colspan="6" class="px-6 py-12 text-center">
                   <div class="flex flex-col items-center justify-center max-w-sm mx-auto space-y-3">
-                    <div class="w-12 h-12 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center">
+                    <div class="w-12 h-12 bg-zinc-100 text-zinc-400 rounded-full flex items-center justify-center">
                       <i class="ti ti-users-off text-2xl leading-none"></i>
                     </div>
-                    <p class="text-xs font-bold text-slate-800 font-sans">No users match your filters</p>
-                    <p class="text-[10px] text-slate-500">Try adjusting your filters, query string or toggle settings to locate the user.</p>
+                    <p class="text-xs font-bold text-zinc-800 font-sans">No users match your filters</p>
+                    <p class="text-[10px] text-zinc-500">Try adjusting your filters, query string or toggle settings to locate the user.</p>
                     <button
                       (click)="clearFilters()"
-                      class="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-100/50 px-3 py-1.5 rounded-lg text-[10px] font-bold tracking-wide transition-colors cursor-pointer"
+                      class="bg-zinc-100 text-zinc-950 hover:bg-zinc-200 border border-zinc-200/50 px-3 py-1.5 rounded-lg text-[10px] font-bold tracking-wide transition-colors cursor-pointer"
                     >
                       Clear Filters
                     </button>

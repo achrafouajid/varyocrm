@@ -1,5 +1,7 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { SEED_ORG, SEED_USERS, SEED_TEAMS, SEED_GROUPS, SEED_MESSAGES, SEED_MEETINGS } from '../data/seed-data';
+import { ToastService } from './toast.service';
 
 export interface Organization {
   id: string;
@@ -843,6 +845,9 @@ export interface InboxMessage {
 
 @Injectable({ providedIn: 'root' })
 export class CrmStateService {
+  private toast = inject(ToastService);
+  private router = inject(Router);
+
   // Config signals
   organization = signal<Organization>(SEED_ORG);
   users = signal<CrmUser[]>(SEED_USERS);
@@ -957,6 +962,11 @@ export class CrmStateService {
     if (draft.teamId) {
       this.addTeamMember(draft.teamId, id);
     }
+    this.toast.show(`User <strong>${patched.displayName}</strong> created`, {
+      undo: () => {
+        this.users.update(list => list.filter(u => u.id !== patched.id));
+      }
+    });
     return patched;
   }
 
@@ -971,10 +981,13 @@ export class CrmStateService {
       }
       return u;
     }));
+    const user = this.users().find(u => u.id === id);
+    this.toast.show(`User <strong>${user?.displayName || id}</strong> updated`, { type: 'info' });
   }
 
   deactivateUser(id: string): void {
     this.assertNotLastAdmin(id);
+    const user = this.users().find(u => u.id === id);
     this.users.update(list => list.map(u => {
       if (u.id === id) {
         return { ...u, isActive: false };
@@ -988,6 +1001,11 @@ export class CrmStateService {
       }
       return t;
     }));
+    this.toast.show(`User <strong>${user?.displayName || id}</strong> deactivated`, {
+      undo: () => {
+        this.users.update(list => list.map(u => u.id === id ? { ...u, isActive: true } : u));
+      }
+    });
   }
 
   addTeam(draft: Omit<CrmTeam, 'id' | 'createdAt'>): CrmTeam {
@@ -1006,11 +1024,16 @@ export class CrmStateService {
     draft.memberUserIds.forEach(mid => {
       this.updateUser(mid, { teamId: id });
     });
-
+    this.toast.show(`Team <strong>${newTeam.name}</strong> created`, {
+      undo: () => {
+        this.teams.update(list => list.filter(t => t.id !== newTeam.id));
+      }
+    });
     return newTeam;
   }
 
   updateTeam(id: string, patch: Partial<CrmTeam>): void {
+    const prev = this.teams().find(t => t.id === id);
     this.teams.update(list => list.map(t => {
       if (t.id === id) {
         return { ...t, ...patch };
@@ -1021,9 +1044,12 @@ export class CrmStateService {
       this.addTeamMember(id, patch.leadUserId);
       this.updateUser(patch.leadUserId, { roleId: 'manager' });
     }
+    this.toast.show(`Team <strong>${prev?.name || id}</strong> updated`, { type: 'info' });
   }
 
   addTeamMember(teamId: string, userId: string): void {
+    const team = this.teams().find(t => t.id === teamId);
+    const user = this.users().find(u => u.id === userId);
     this.teams.update(list => list.map(t => {
       if (t.id === teamId) {
         if (!t.memberUserIds.includes(userId)) {
@@ -1033,10 +1059,17 @@ export class CrmStateService {
       return t;
     }));
     this.updateUser(userId, { teamId });
+    this.toast.show(`<strong>${user?.displayName || userId}</strong> added to ${team?.name || teamId}`, {
+      undo: () => {
+        this.removeTeamMember(teamId, userId);
+      }
+    });
   }
 
   removeTeamMember(teamId: string, userId: string): void {
     this.assertNotTeamLead(teamId, userId);
+    const team = this.teams().find(t => t.id === teamId);
+    const user = this.users().find(u => u.id === userId);
     this.teams.update(list => list.map(t => {
       if (t.id === teamId) {
         return { ...t, memberUserIds: t.memberUserIds.filter(id => id !== userId) };
@@ -1044,6 +1077,11 @@ export class CrmStateService {
       return t;
     }));
     this.updateUser(userId, { teamId: null });
+    this.toast.show(`<strong>${user?.displayName || userId}</strong> removed from ${team?.name || teamId}`, {
+      undo: () => {
+        this.addTeamMember(teamId, userId);
+      }
+    });
   }
 
   updateUserRole(userId: string, roleId: RoleId): void {
@@ -3405,6 +3443,11 @@ export class CrmStateService {
       changeHistory: []
     };
     this.automationRules.update(rules => [...rules, newRule]);
+    this.toast.show(`Rule <strong>${newRule.name}</strong> created`, {
+      undo: () => {
+        this.automationRules.update(rules => rules.filter(r => r.id !== newRule.id));
+      }
+    });
     return newRule;
   }
 
@@ -3439,13 +3482,37 @@ export class CrmStateService {
   }
 
   toggleAutomationRule(ruleId: string) {
-    this.automationRules.update(rules => rules.map(r =>
-      r.id === ruleId ? { ...r, isActive: !r.isActive, updatedAt: new Date().toISOString().split('T')[0] } : r
-    ));
+    let wasActive = false;
+    this.automationRules.update(rules => rules.map(r => {
+      if (r.id === ruleId) {
+        wasActive = r.isActive;
+        return { ...r, isActive: !r.isActive, updatedAt: new Date().toISOString().split('T')[0] };
+      }
+      return r;
+    }));
+    const rule = this.automationRules().find(r => r.id === ruleId);
+    this.toast.show(`Rule <strong>${rule?.name || ruleId}</strong> ${wasActive ? 'paused' : 'activated'}`, {
+      undo: () => {
+        this.automationRules.update(rules => rules.map(r =>
+          r.id === ruleId ? { ...r, isActive: wasActive } : r
+        ));
+      }
+    });
   }
 
   deleteAutomationRule(ruleId: string) {
-    this.automationRules.update(rules => rules.filter(r => r.id !== ruleId));
+    let deleted: AutomationRule | undefined;
+    this.automationRules.update(rules => {
+      deleted = rules.find(r => r.id === ruleId);
+      return rules.filter(r => r.id !== ruleId);
+    });
+    this.toast.show(`Rule <strong>${deleted?.name || ruleId}</strong> deleted`, {
+      undo: () => {
+        if (deleted) {
+          this.automationRules.update(rules => [...rules, deleted!]);
+        }
+      }
+    });
   }
 
   // ────────────────────────────────────────────────────────
@@ -3479,14 +3546,23 @@ export class CrmStateService {
     this.leadsData.update(list => [...list, newLead]);
     // Fire automation rules after lead is persisted
     setTimeout(() => this.evaluateRules('LeadCreated', newLead as unknown as Record<string, any>, `Lead: ${newLead.name} (${newLead.companyName})`), 0);
+    const leadName = newLead.name;
+    this.toast.show(`Lead <strong>${leadName}</strong> created`, {
+      undo: () => {
+        this.leadsData.update(list => list.filter(l => l.id !== newLead.id));
+      }
+    });
     return newLead;
   }
 
   updateLeadStatus(leadId: string, status: Lead['status']) {
+    let prevStatus: string | undefined;
     const currentUser = this.users().find(u => u.id === this.currentUserId());
     const currentUserName = currentUser?.displayName || 'Achraf';
+    const lead = this.leadsData().find(l => l.id === leadId);
     this.leadsData.update(list => list.map(l => {
       if (l.id === leadId) {
+        prevStatus = l.status;
         const history = l.statusHistory || [];
         return {
           ...l,
@@ -3505,6 +3581,13 @@ export class CrmStateService {
       }
       return l;
     }));
+    this.toast.show(`Lead <strong>${lead?.name || leadId}</strong> status changed to ${status}`, {
+      undo: () => {
+        if (prevStatus) {
+          this.updateLeadStatus(leadId, prevStatus as Lead['status']);
+        }
+      }
+    });
   }
 
   updateLead(leadId: string, updates: Partial<Lead>) {
@@ -3537,9 +3620,11 @@ export class CrmStateService {
     if (updatedLead) {
       setTimeout(() => this.evaluateRules('LeadUpdated', updatedLead as unknown as Record<string, any>, `Lead: ${updatedLead.name} (${updatedLead.companyName})`), 0);
     }
+    this.toast.show(`Lead <strong>${updatedLead?.name || leadId}</strong> updated`, { type: 'info' });
   }
 
   addLeadActivity(leadId: string, activity: Omit<LeadActivity, 'id'>) {
+    const lead = this.leadsData().find(l => l.id === leadId);
     this.leadsData.update(list => list.map(l => {
       if (l.id === leadId) {
         const activities = l.activities || [];
@@ -3556,6 +3641,7 @@ export class CrmStateService {
       }
       return l;
     }));
+    this.toast.show(`${activity.type} added to <strong>${lead?.name || leadId}</strong>`);
   }
 
   addLeadAttachment(leadId: string, attachment: Omit<LeadAttachment, 'id'>) {
@@ -3757,19 +3843,56 @@ export class CrmStateService {
 
   // State transitions & helpers
   convertToCustomer(partnerId: string) {
+    let prevType = '';
     this.partners.update(partners =>
-      partners.map(p => p.id === partnerId ? { ...p, type: 'Customer' } : p)
+      partners.map(p => {
+        if (p.id === partnerId) {
+          prevType = p.type;
+          return { ...p, type: 'Customer' };
+        }
+        return p;
+      })
     );
+    const partner = this.partners().find(p => p.id === partnerId);
+    this.toast.show(`<strong>${partner?.name || 'Partner'}</strong> converted to Customer`, {
+      undo: () => {
+        this.partners.update(partners =>
+          partners.map(p => p.id === partnerId ? { ...p, type: prevType as PartnerType } : p)
+        );
+      },
+      action: {
+        label: 'View in Customers',
+        onClick: () => {
+          this.navigateTab.set('Customer');
+          this.router.navigate(['/partners']);
+        }
+      }
+    });
   }
 
   convertLeadToProspect(partnerId: string) {
     this.partners.update(partners =>
       partners.map(p => p.id === partnerId ? { ...p, type: 'Prospect' } : p)
     );
+    const partner = this.partners().find(p => p.id === partnerId);
+    this.toast.show(`<strong>${partner?.name || 'Partner'}</strong> converted to Prospect`, {
+      undo: () => {
+        this.partners.update(partners =>
+          partners.map(p => p.id === partnerId ? { ...p, type: 'Lead' } : p)
+        );
+      },
+      action: {
+        label: 'View in Prospects',
+        onClick: () => {
+          this.navigateTab.set('Prospect');
+          this.router.navigate(['/partners']);
+        }
+      }
+    });
   }
 
   convertLeadDataToProspect(lead: Lead) {
-    this.addPartner({
+    const newPartner = this.addPartner({
       name: lead.name,
       type: 'Prospect',
       email: lead.contacts?.[0]?.email || '',
@@ -3780,7 +3903,21 @@ export class CrmStateService {
       source: lead.campaigns?.[0]?.source || 'Website form' as any,
       assignedTo: lead.assignedSalesperson || ''
     });
+    const prevStatus = lead.status;
     this.updateLeadStatus(lead.id, 'Converted');
+    this.toast.show(`<strong>${lead.name}</strong> converted to Prospect`, {
+      undo: () => {
+        this.partners.update(pList => pList.filter(p => p.id !== newPartner.id));
+        this.updateLeadStatus(lead.id, prevStatus);
+      },
+      action: {
+        label: 'View in Prospects',
+        onClick: () => {
+          this.navigateTab.set('Prospect');
+          this.router.navigate(['/partners']);
+        }
+      }
+    });
   }
 
   getCustomerCard(partnerId: string): CustomerCard | undefined {
@@ -3876,7 +4013,11 @@ export class CrmStateService {
     const now = new Date().toISOString().split('T')[0];
     const newPartner = { ...partner, id: newId, createdBy: this.currentUserId(), createdAt: now };
     this.partners.update(pList => [...pList, newPartner]);
-
+    this.toast.show(`Partner <strong>${newPartner.name}</strong> added`, {
+      undo: () => {
+        this.partners.update(pList => pList.filter(p => p.id !== newPartner.id));
+      }
+    });
     return newPartner;
   }
 
@@ -3885,13 +4026,20 @@ export class CrmStateService {
     const now = new Date().toISOString().split('T')[0];
     const newTask = { ...task, id: newId, createdBy: this.currentUserId(), createdAt: now };
     this.tasks.update(tList => [...tList, newTask]);
+    this.toast.show(`Task <strong>${newTask.title}</strong> created`, {
+      undo: () => {
+        this.tasks.update(tList => tList.filter(t => t.id !== newTask.id));
+      }
+    });
     return newTask;
   }
 
   updateTaskStatus(taskId: string, status: TaskStatus, assignedTo?: string) {
+    let prevStatus: TaskStatus | undefined;
     this.tasks.update(tasks =>
       tasks.map(t => {
         if (t.id === taskId) {
+          prevStatus = t.status;
           const updated = { ...t, status };
           if (assignedTo !== undefined) updated.assignedTo = assignedTo;
           return updated;
@@ -3899,6 +4047,15 @@ export class CrmStateService {
         return t;
       })
     );
+    this.toast.show(`Task status updated`, {
+      undo: () => {
+        if (prevStatus) {
+          this.tasks.update(tasks =>
+            tasks.map(t => t.id === taskId ? { ...t, status: prevStatus! } : t)
+          );
+        }
+      }
+    });
   }
 
   getRelatedEntities(module: string, subModule: string): { id: string; label: string }[] {
@@ -3940,19 +4097,41 @@ export class CrmStateService {
     const now = new Date().toISOString().split('T')[0];
     const newProp = { ...proposal, id: newId, createdBy: this.currentUserId(), createdAt: now };
     this.proposals.update(props => [...props, newProp]);
+    this.toast.show(`Proposal <strong>${newProp.title || newId}</strong> created`, {
+      undo: () => {
+        this.proposals.update(props => props.filter(p => p.id !== newProp.id));
+      }
+    });
     return newProp;
   }
 
   updateProposalStatus(propId: string, status: 'Draft' | 'Sent' | 'Confirmed' | 'Rejected') {
+    let prevStatus: Proposal['status'] | undefined;
     this.proposals.update(props =>
-      props.map(p => p.id === propId ? { ...p, status } : p)
+      props.map(p => {
+        if (p.id === propId) {
+          prevStatus = p.status;
+          return { ...p, status };
+        }
+        return p;
+      })
     );
+    this.toast.show(`Proposal <strong>#${propId}</strong> status updated`, {
+      undo: () => {
+        if (prevStatus) {
+          this.proposals.update(props =>
+            props.map(p => p.id === propId ? { ...p, status: prevStatus! } : p)
+          );
+        }
+      }
+    });
   }
 
   updateProposal(id: string, data: Partial<Proposal>) {
     this.proposals.update(proposals =>
       proposals.map(p => p.id === id ? { ...p, ...data } : p)
     );
+    this.toast.show(`Proposal <strong>#${id}</strong> updated`);
   }
 
   addDeal(deal: Omit<Deal, 'id' | 'createdBy' | 'createdAt'> & { createdBy?: string; createdAt?: string }) {
@@ -3962,14 +4141,21 @@ export class CrmStateService {
     this.deals.update(dList => [...dList, newDeal]);
     // Fire automation rules after deal is persisted
     setTimeout(() => this.evaluateRules('DealCreated', newDeal as unknown as Record<string, any>, `Deal: ${newDeal.title}`), 0);
+    this.toast.show(`Deal <strong>${newDeal.title}</strong> created`, {
+      undo: () => {
+        this.deals.update(dList => dList.filter(d => d.id !== newDeal.id));
+      }
+    });
     return newDeal;
   }
 
   updateDealStage(dealId: string, stage: DealStage) {
+    let prevStage: DealStage | undefined;
     let updatedDeal: Deal | undefined;
     this.deals.update(deals =>
       deals.map(d => {
         if (d.id === dealId) {
+          prevStage = d.stage;
           updatedDeal = { ...d, stage };
           return updatedDeal;
         }
@@ -3979,6 +4165,15 @@ export class CrmStateService {
     if (updatedDeal) {
       setTimeout(() => this.evaluateRules('DealUpdated', (updatedDeal as Deal) as unknown as Record<string, any>, `Deal: ${(updatedDeal as Deal).title}`), 0);
     }
+    this.toast.show(`Deal stage updated to <strong>${stage}</strong>`, {
+      undo: () => {
+        if (prevStage) {
+          this.deals.update(deals =>
+            deals.map(d => d.id === dealId ? { ...d, stage: prevStage! } : d)
+          );
+        }
+      }
+    });
   }
 
   addCallLog(dealId: string, call: Omit<CallLog, 'id'>) {
@@ -3998,6 +4193,7 @@ export class CrmStateService {
         return d;
       })
     );
+    this.toast.show('Call logged');
   }
 
   addEmailLog(dealId: string, email: Omit<EmailLog, 'id'>) {
@@ -4017,6 +4213,7 @@ export class CrmStateService {
         return d;
       })
     );
+    this.toast.show('Email logged');
   }
 
   addMeeting(dealId: string, meeting: Omit<Meeting, 'id'>) {
@@ -4036,6 +4233,7 @@ export class CrmStateService {
         return d;
       })
     );
+    this.toast.show('Meeting logged');
   }
 
   addRecording(dealId: string, recording: Omit<TeamsRecording, 'id'>) {
@@ -4055,6 +4253,7 @@ export class CrmStateService {
         return d;
       })
     );
+    this.toast.show('Recording logged');
   }
 
   addNote(dealId: string, note: Omit<Note, 'id'>) {
@@ -4074,6 +4273,7 @@ export class CrmStateService {
         return d;
       })
     );
+    this.toast.show('Note added');
   }
 
   addFollowUp(dealId: string, followUp: Omit<FollowUp, 'id'>) {
@@ -4093,6 +4293,7 @@ export class CrmStateService {
         return d;
       })
     );
+    this.toast.show('Follow-up added');
   }
 
   updateFollowUpStatus(dealId: string, followUpId: string, status: 'pending' | 'done') {
@@ -4111,6 +4312,7 @@ export class CrmStateService {
         return d;
       })
     );
+    this.toast.show(`Follow-up marked as ${status}`);
   }
 
 
@@ -4123,13 +4325,20 @@ export class CrmStateService {
       newPo.vendorId = vendorId;
     }
     this.purchaseOrders.update(pos => [...pos, newPo]);
+    this.toast.show(`Purchase Order <strong>#${newId}</strong> created`, {
+      undo: () => {
+        this.purchaseOrders.update(pos => pos.filter(p => p.id !== newPo.id));
+      }
+    });
     return newPo;
   }
 
   updatePurchaseOrderStatus(poId: string, status: 'Draft' | 'Sent' | 'Delivered' | 'Invoiced', deliveryDate?: string) {
+    let prevStatus: PurchaseOrder['status'] | undefined;
     this.purchaseOrders.update(pos =>
       pos.map(po => {
         if (po.id === poId) {
+          prevStatus = po.status;
           const updated = { ...po, status };
           if (deliveryDate) updated.deliveryDate = deliveryDate;
           return updated;
@@ -4137,6 +4346,15 @@ export class CrmStateService {
         return po;
       })
     );
+    this.toast.show(`Purchase Order <strong>#${poId}</strong> status updated`, {
+      undo: () => {
+        if (prevStatus) {
+          this.purchaseOrders.update(pos =>
+            pos.map(p => p.id === poId ? { ...p, status: prevStatus! } : p)
+          );
+        }
+      }
+    });
   }
 
   addInvoice(invoice: Omit<Invoice, 'id' | 'createdBy' | 'createdAt'> & { createdBy?: string; createdAt?: string }) {
@@ -4144,13 +4362,34 @@ export class CrmStateService {
     const now = new Date().toISOString().split('T')[0];
     const newInv = { ...invoice, id: newId, createdBy: this.currentUserId(), createdAt: now };
     this.invoices.update(invs => [...invs, newInv]);
+    this.toast.show(`Invoice <strong>#${newId}</strong> created`, {
+      undo: () => {
+        this.invoices.update(invs => invs.filter(i => i.id !== newInv.id));
+      }
+    });
     return newInv;
   }
 
   updateInvoiceStatus(invoiceId: string, status: InvoiceStatus) {
+    let prevStatus: InvoiceStatus | undefined;
     this.invoices.update(invs =>
-      invs.map(i => i.id === invoiceId ? { ...i, status } : i)
+      invs.map(i => {
+        if (i.id === invoiceId) {
+          prevStatus = i.status;
+          return { ...i, status };
+        }
+        return i;
+      })
     );
+    this.toast.show(`Invoice <strong>#${invoiceId}</strong> status updated`, {
+      undo: () => {
+        if (prevStatus) {
+          this.invoices.update(invs =>
+            invs.map(i => i.id === invoiceId ? { ...i, status: prevStatus! } : i)
+          );
+        }
+      }
+    });
   }
 
   addTicket(ticket: Omit<Ticket, 'id' | 'createdBy' | 'createdAt'> & { createdBy?: string; createdAt?: string }) {
@@ -4158,17 +4397,47 @@ export class CrmStateService {
     const now = new Date().toISOString().split('T')[0];
     const newTicket = { ...ticket, id: newId, createdBy: this.currentUserId(), createdAt: now };
     this.tickets.update(tList => [...tList, newTicket]);
+    this.toast.show(`Ticket <strong>#${newId}</strong> created`, {
+      undo: () => {
+        this.tickets.update(tList => tList.filter(t => t.id !== newTicket.id));
+      }
+    });
     return newTicket;
   }
 
   updateTicket(id: string, data: Partial<Ticket>) {
+    let prevTicket: Partial<Ticket> | undefined;
     this.tickets.update(tickets =>
-      tickets.map(t => t.id === id ? { ...t, ...data } : t)
+      tickets.map(t => {
+        if (t.id === id) {
+          prevTicket = { status: t.status, assignedTo: t.assignedTo, priority: t.priority };
+          return { ...t, ...data };
+        }
+        return t;
+      })
     );
+    this.toast.show(`Ticket <strong>#${id}</strong> updated`, {
+      undo: () => {
+        this.tickets.update(tickets =>
+          tickets.map(t => t.id === id ? { ...t, ...prevTicket } : t)
+        );
+      }
+    });
   }
 
   deleteTicket(id: string) {
-    this.tickets.update(tickets => tickets.filter(t => t.id !== id));
+    let deleted: Ticket | undefined;
+    this.tickets.update(tickets => {
+      deleted = tickets.find(t => t.id === id);
+      return tickets.filter(t => t.id !== id);
+    });
+    this.toast.show(`Ticket <strong>#${id}</strong> deleted`, {
+      undo: () => {
+        if (deleted) {
+          this.tickets.update(tickets => [...tickets, deleted!]);
+        }
+      }
+    });
   }
 
   addActivityLog(log: Omit<ActivityLog, 'id'>) {

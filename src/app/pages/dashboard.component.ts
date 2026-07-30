@@ -12,18 +12,18 @@ import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-cal
     <div class="space-y-6">
 
       @if (state.isCustomizing()) {
-        <div class="glass rounded-xl p-5">
-          <h3 class="text-sm font-bold text-slate-700 mb-3 flex items-center">
-            <mat-icon class="mr-2 text-[18px] w-4.5 h-4.5 text-slate-400">view_carousel</mat-icon>
+        <div class="card p-5">
+          <h3 class="text-sm font-bold text-zinc-700 mb-3 flex items-center">
+            <mat-icon class="mr-2 text-[18px] w-4.5 h-4.5">view_carousel</mat-icon>
             Select KPIs to display
           </h3>
           <div class="flex flex-wrap gap-3">
              @for (kpi of availableKpis; track kpi.id) {
                 <button 
                   (click)="toggleKpi(kpi.id)"
-                  [class]="isKpiActive(kpi.id) ? 'bg-indigo-600/80 text-white shadow-sm backdrop-blur-sm' : 'glass-button text-slate-600'"
-                  class="px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2">
-                  <mat-icon class="text-[18px] w-4.5 h-4.5" [class.text-indigo-200]="isKpiActive(kpi.id)">{{ kpi.icon }}</mat-icon>
+                  [class]="isKpiActive(kpi.id) ? 'btn-primary' : 'btn-secondary text-zinc-600'"
+                  class="transition-all">
+                  <mat-icon class="text-[18px] w-4.5 h-4.5" [class.text-zinc-300]="isKpiActive(kpi.id)">{{ kpi.icon }}</mat-icon>
                   {{ kpi.name }}
                 </button>
              }
@@ -33,48 +33,20 @@ import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-cal
 
       <!-- Main Content + Right Sidebar -->
       <div class="flex gap-6">
-        <!-- Left: Quick Actions + KPI Cards + Charts -->
+        <!-- Left: KPI Cards + Charts -->
         <div class="flex-1 min-w-0 space-y-5">
-          <!-- Quick Actions (compact) -->
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <a routerLink="/sales" class="quick-action-btn rounded-xl p-3 flex flex-col items-center justify-center cursor-pointer no-underline text-indigo-700 hover:text-indigo-600">
-              <div class="icon-wrap icon-wrap--indigo glass-strong text-indigo-600 w-9 h-9 rounded-lg mb-1.5 flex items-center justify-center">
-                <mat-icon class="leading-none! flex items-center justify-center w-5 h-5 text-[20px]!">add_business</mat-icon>
-              </div>
-              <span class="font-semibold text-[11px]">New Proposal</span>
-            </a>
-            <a routerLink="/partners" class="quick-action-btn rounded-xl p-3 flex flex-col items-center justify-center cursor-pointer no-underline text-emerald-700 hover:text-emerald-600">
-              <div class="icon-wrap icon-wrap--emerald glass-strong text-emerald-600 w-9 h-9 rounded-lg mb-1.5 flex items-center justify-center">
-                <mat-icon class="leading-none! flex items-center justify-center w-5 h-5 text-[20px]!">person_add</mat-icon>
-              </div>
-              <span class="font-semibold text-[11px]">Add Partner</span>
-            </a>
-            <a routerLink="/marketing" class="quick-action-btn rounded-xl p-3 flex flex-col items-center justify-center cursor-pointer no-underline text-amber-700 hover:text-amber-600">
-              <div class="icon-wrap icon-wrap--amber glass-strong text-amber-500 w-9 h-9 rounded-lg mb-1.5 flex items-center justify-center">
-                <mat-icon class="leading-none! flex items-center justify-center w-5 h-5 text-[20px]!">campaign</mat-icon>
-              </div>
-              <span class="font-semibold text-[11px]">New Campaign</span>
-            </a>
-            <a routerLink="/tickets" class="quick-action-btn rounded-xl p-3 flex flex-col items-center justify-center cursor-pointer no-underline text-rose-700 hover:text-rose-600">
-              <div class="icon-wrap icon-wrap--rose glass-strong text-rose-500 w-9 h-9 rounded-lg mb-1.5 flex items-center justify-center">
-                <mat-icon class="leading-none! flex items-center justify-center w-5 h-5 text-[20px]!">support_agent</mat-icon>
-              </div>
-              <span class="font-semibold text-[11px]">Create Ticket</span>
-            </a>
-          </div>
-
           <!-- Dynamic KPIs -->
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
             @if (isKpiActive('totalDeals')) {
-              <div class="glass-card rounded-2xl p-4 lg:p-6 flex flex-col transition-all">
+              <div class="stat-card flex flex-col transition-all">
                 <div class="flex items-center justify-between mb-4">
-                  <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Deals Value</h3>
-                  <div class="h-10 w-10 glass-strong text-indigo-600 rounded-xl flex items-center justify-center">
+                  <h3 class="section-label !px-0">Total Deals Value</h3>
+                  <div class="h-10 w-10 bg-zinc-100 text-zinc-900 rounded-xl flex items-center justify-center">
                     <mat-icon class="text-[20px]">monetization_on</mat-icon>
                   </div>
                 </div>
-                <div class="text-xl lg:text-2xl font-bold text-slate-900 truncate">{{ formatCurrency(totalDealsValue()) }}</div>
-                <div class="text-sm text-emerald-600 font-semibold mt-2 flex items-center">
+                <div class="text-xl lg:text-2xl font-bold text-zinc-900 truncate">{{ formatCurrency(totalDealsValue()) }}</div>
+                <div class="text-sm text-zinc-900 font-semibold mt-2 flex items-center">
                   <mat-icon class="text-sm! leading-none! w-4 h-4 mr-1">trending_up</mat-icon>
                   Active Pipeline
                 </div>
@@ -82,15 +54,15 @@ import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-cal
             }
 
             @if (isKpiActive('marketingSpend')) {
-              <div class="glass-card rounded-2xl p-4 lg:p-6 flex flex-col transition-all">
+              <div class="stat-card flex flex-col transition-all">
                 <div class="flex items-center justify-between mb-4">
-                  <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Marketing Spend</h3>
-                  <div class="h-10 w-10 glass-strong text-pink-600 rounded-xl flex items-center justify-center">
+                  <h3 class="section-label !px-0">Marketing Spend</h3>
+                  <div class="h-10 w-10 bg-zinc-100 text-zinc-900 rounded-xl flex items-center justify-center">
                     <mat-icon class="text-[20px]">campaign</mat-icon>
                   </div>
                 </div>
-                <div class="text-xl lg:text-2xl font-bold text-slate-900 truncate">{{ formatCurrency(12450) }}</div>
-                <div class="text-sm text-slate-500 font-semibold mt-2 flex items-center">
+                <div class="text-xl lg:text-2xl font-bold text-zinc-900 truncate">{{ formatCurrency(12450) }}</div>
+                <div class="text-sm text-zinc-500 font-semibold mt-2 flex items-center">
                   <mat-icon class="text-sm! leading-none! w-4 h-4 mr-1">trending_flat</mat-icon>
                   Stable across channels
                 </div>
@@ -98,15 +70,15 @@ import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-cal
             }
 
             @if (isKpiActive('latePayers')) {
-              <div class="glass-card rounded-2xl p-4 lg:p-6 flex flex-col transition-all">
+              <div class="stat-card flex flex-col transition-all">
                 <div class="flex items-center justify-between mb-4">
-                  <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Late Payers</h3>
-                  <div class="h-10 w-10 glass-strong text-rose-600 rounded-xl flex items-center justify-center">
+                  <h3 class="section-label !px-0">Late Payers</h3>
+                  <div class="h-10 w-10 bg-zinc-100 text-zinc-900 rounded-xl flex items-center justify-center">
                     <mat-icon class="text-[20px]">warning</mat-icon>
                   </div>
                 </div>
-                <div class="text-xl lg:text-2xl font-bold text-slate-900 truncate">{{ latePayersCount() }}</div>
-                <div class="text-sm text-rose-600 font-semibold mt-2 flex items-center">
+                <div class="text-xl lg:text-2xl font-bold text-zinc-900 truncate">{{ latePayersCount() }}</div>
+                <div class="text-sm text-zinc-900 font-semibold mt-2 flex items-center">
                   <mat-icon class="text-sm! leading-none! w-4 h-4 mr-1">trending_down</mat-icon>
                   Needs attention
                 </div>
@@ -114,15 +86,15 @@ import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-cal
             }
             
             @if (isKpiActive('activeCampaigns')) {
-              <div class="glass-card rounded-2xl p-4 lg:p-6 flex flex-col transition-all">
+              <div class="stat-card flex flex-col transition-all">
                 <div class="flex items-center justify-between mb-4">
-                  <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Active Campaigns</h3>
-                  <div class="h-10 w-10 glass-strong text-emerald-600 rounded-xl flex items-center justify-center">
+                  <h3 class="section-label !px-0">Active Campaigns</h3>
+                  <div class="h-10 w-10 bg-zinc-100 text-zinc-900 rounded-xl flex items-center justify-center">
                     <mat-icon class="text-[20px]">email</mat-icon>
                   </div>
                 </div>
-                <div class="text-xl lg:text-2xl font-bold text-slate-900 truncate">{{ activeCampaignsCount() }}</div>
-                <div class="text-sm text-emerald-600 font-semibold mt-2 flex items-center">
+                <div class="text-xl lg:text-2xl font-bold text-zinc-900 truncate">{{ activeCampaignsCount() }}</div>
+                <div class="text-sm text-zinc-900 font-semibold mt-2 flex items-center">
                   <mat-icon class="text-sm! leading-none! w-4 h-4 mr-1">check_circle</mat-icon>
                   Running smoothly
                 </div>
@@ -130,15 +102,15 @@ import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-cal
             }
             
             @if (isKpiActive('openTickets')) {
-              <div class="glass-card rounded-2xl p-4 lg:p-6 flex flex-col transition-all">
+              <div class="stat-card flex flex-col transition-all">
                 <div class="flex items-center justify-between mb-4">
-                  <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Open Tickets</h3>
-                  <div class="h-10 w-10 glass-strong text-amber-600 rounded-xl flex items-center justify-center">
+                  <h3 class="section-label !px-0">Open Tickets</h3>
+                  <div class="h-10 w-10 bg-zinc-100 text-zinc-900 rounded-xl flex items-center justify-center">
                     <mat-icon class="text-[20px]">support_agent</mat-icon>
                   </div>
                 </div>
-                <div class="text-xl lg:text-2xl font-bold text-slate-900 truncate">{{ openTicketsCount() }}</div>
-                <div class="text-sm text-amber-600 font-semibold mt-2 flex items-center">
+                <div class="text-xl lg:text-2xl font-bold text-zinc-900 truncate">{{ openTicketsCount() }}</div>
+                <div class="text-sm text-zinc-900 font-semibold mt-2 flex items-center">
                   <mat-icon class="text-sm! leading-none! w-4 h-4 mr-1">pending_actions</mat-icon>
                   Pending resolution
                 </div>
@@ -146,15 +118,15 @@ import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-cal
             }
             
             @if (isKpiActive('totalProspects')) {
-              <div class="glass-card rounded-2xl p-4 lg:p-6 flex flex-col transition-all">
+              <div class="stat-card flex flex-col transition-all">
                 <div class="flex items-center justify-between mb-4">
-                  <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Prospects</h3>
-                  <div class="h-10 w-10 glass-strong text-blue-600 rounded-xl flex items-center justify-center">
+                  <h3 class="section-label !px-0">Total Prospects</h3>
+                  <div class="h-10 w-10 bg-zinc-100 text-zinc-900 rounded-xl flex items-center justify-center">
                     <mat-icon class="text-[20px]">person_search</mat-icon>
                   </div>
                 </div>
-                <div class="text-xl lg:text-2xl font-bold text-slate-900 truncate">{{ prospectsCount() }}</div>
-                <div class="text-sm text-emerald-600 font-semibold mt-2 flex items-center">
+                <div class="text-xl lg:text-2xl font-bold text-zinc-900 truncate">{{ prospectsCount() }}</div>
+                <div class="text-sm text-zinc-900 font-semibold mt-2 flex items-center">
                   <mat-icon class="text-sm! leading-none! w-4 h-4 mr-1">trending_up</mat-icon>
                   Growing pipeline
                 </div>
@@ -162,79 +134,79 @@ import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-cal
             }
 
             @if (isKpiActive('newDeals')) {
-              <div class="glass-card rounded-2xl p-4 lg:p-6 flex flex-col transition-all">
+              <div class="stat-card flex flex-col transition-all">
                 <div class="flex items-center justify-between mb-4">
-                  <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">New Deals</h3>
-                  <div class="h-10 w-10 glass-strong text-indigo-600 rounded-xl flex items-center justify-center">
+                  <h3 class="section-label !px-0">New Deals</h3>
+                  <div class="h-10 w-10 bg-zinc-100 text-zinc-900 rounded-xl flex items-center justify-center">
                     <mat-icon class="text-[18px]">handshake</mat-icon>
                   </div>
                 </div>
-                <div class="text-xl lg:text-2xl font-bold text-slate-900 truncate">{{ newDealsKPI().count }} <span class="text-sm font-semibold text-slate-400">deals</span></div>
+                <div class="text-xl lg:text-2xl font-bold text-zinc-900 truncate">{{ newDealsKPI().count }} <span class="text-sm font-semibold text-zinc-400">deals</span></div>
                 <div class="mt-2 pt-3 border-t border-white/30 flex items-center justify-between">
-                  <div class="text-[10px] text-indigo-600 font-bold flex items-center gap-0.5">
+                  <div class="text-[10px] text-zinc-900 font-bold flex items-center gap-0.5">
                     <mat-icon class="text-[12px] w-3 h-3">trending_up</mat-icon> This month's profit
                   </div>
-                  <span class="text-[11px] font-bold font-mono text-slate-700">{{ formatNumber(newDealsKPI().profit) }} <span class="text-slate-400 font-normal">{{ state.globalCurrency() }}</span></span>
+                  <span class="text-[11px] font-bold font-sans text-zinc-700">{{ formatNumber(newDealsKPI().profit) }} <span class="text-zinc-400 font-normal">{{ state.globalCurrency() }}</span></span>
                 </div>
               </div>
             }
 
             @if (isKpiActive('newProspects')) {
-              <div class="glass-card rounded-2xl p-4 lg:p-6 flex flex-col transition-all">
+              <div class="stat-card flex flex-col transition-all">
                 <div class="flex items-center justify-between mb-4">
-                  <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">New Prospects</h3>
-                  <div class="h-10 w-10 glass-strong text-emerald-600 rounded-xl flex items-center justify-center">
+                  <h3 class="section-label !px-0">New Prospects</h3>
+                  <div class="h-10 w-10 bg-zinc-100 text-zinc-900 rounded-xl flex items-center justify-center">
                     <mat-icon class="text-[18px]">group_add</mat-icon>
                   </div>
                 </div>
-                <div class="text-xl lg:text-2xl font-bold text-slate-900 truncate">{{ newProspectsKPI().count }} <span class="text-sm font-semibold text-slate-400">prospects</span></div>
+                <div class="text-xl lg:text-2xl font-bold text-zinc-900 truncate">{{ newProspectsKPI().count }} <span class="text-sm font-semibold text-zinc-400">prospects</span></div>
                 <div class="mt-2 pt-3 border-t border-white/30 flex items-center justify-between">
-                  <div class="text-[10px] text-emerald-600 font-bold flex items-center gap-0.5">
+                  <div class="text-[10px] text-zinc-900 font-bold flex items-center gap-0.5">
                     <mat-icon class="text-[12px] w-3 h-3">insights</mat-icon> Pipeline potential
                   </div>
-                  <span class="text-[11px] font-bold font-mono text-slate-700">{{ formatNumber(newProspectsKPI().potential) }} <span class="text-slate-400 font-normal">{{ state.globalCurrency() }}</span></span>
+                  <span class="text-[11px] font-bold font-sans text-zinc-700">{{ formatNumber(newProspectsKPI().potential) }} <span class="text-zinc-400 font-normal">{{ state.globalCurrency() }}</span></span>
                 </div>
               </div>
             }
 
             @if (isKpiActive('lostProspects')) {
-              <div class="glass-card rounded-2xl p-4 lg:p-6 flex flex-col transition-all">
+              <div class="stat-card flex flex-col transition-all">
                 <div class="flex items-center justify-between mb-4">
-                  <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Lost Prospects</h3>
-                  <div class="h-10 w-10 glass-strong text-red-500 rounded-xl flex items-center justify-center">
+                  <h3 class="section-label !px-0">Lost Prospects</h3>
+                  <div class="h-10 w-10 bg-zinc-100 text-zinc-700 rounded-xl flex items-center justify-center">
                     <mat-icon class="text-[18px]">do_not_disturb_on</mat-icon>
                   </div>
                 </div>
-                <div class="text-xl lg:text-2xl font-bold text-slate-900 truncate">{{ lostProspectsKPI().count }} <span class="text-sm font-semibold text-slate-400">closed lost</span></div>
+                <div class="text-xl lg:text-2xl font-bold text-zinc-900 truncate">{{ lostProspectsKPI().count }} <span class="text-sm font-semibold text-zinc-400">closed lost</span></div>
                 <div class="mt-2 pt-3 border-t border-white/30 flex items-center justify-between">
-                  <div class="text-[10px] text-red-500 font-bold flex items-center gap-0.5">
+                  <div class="text-[10px] text-zinc-700 font-bold flex items-center gap-0.5">
                     <mat-icon class="text-[12px] w-3 h-3">trending_down</mat-icon> Value lost
                   </div>
-                  <span class="text-[11px] font-bold font-mono text-slate-700">{{ formatNumber(lostProspectsKPI().potentialLost) }} <span class="text-slate-400 font-normal">{{ state.globalCurrency() }}</span></span>
+                  <span class="text-[11px] font-bold font-sans text-zinc-700">{{ formatNumber(lostProspectsKPI().potentialLost) }} <span class="text-zinc-400 font-normal">{{ state.globalCurrency() }}</span></span>
                 </div>
               </div>
             }
 
             @if (isKpiActive('todaysDeal')) {
-              <div class="glass-card rounded-2xl p-4 lg:p-6 flex flex-col transition-all">
+              <div class="stat-card flex flex-col transition-all">
                 <div class="flex items-center justify-between mb-4">
-                  <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Today's Deal</h3>
-                  <div class="h-10 w-10 glass-strong text-amber-600 rounded-xl flex items-center justify-center">
+                  <h3 class="section-label !px-0">Today's Deal</h3>
+                  <div class="h-10 w-10 bg-zinc-100 text-zinc-900 rounded-xl flex items-center justify-center">
                     <mat-icon class="text-[18px]">star</mat-icon>
                   </div>
                 </div>
                 @if (todaysDealKPI(); as deal) {
-                  <div class="text-base font-bold text-slate-900 truncate" [title]="deal.name">{{ deal.name }}</div>
+                  <div class="text-base font-bold text-zinc-900 truncate" [title]="deal.name">{{ deal.name }}</div>
                   <div class="mt-2 pt-3 border-t border-white/30 flex items-center justify-between">
-                    <div class="text-[10px] text-amber-600 font-bold flex items-center gap-0.5">
+                    <div class="text-[10px] text-zinc-900 font-bold flex items-center gap-0.5">
                       <mat-icon class="text-[12px] w-3 h-3">bolt</mat-icon> Deal value
                     </div>
-                    <span class="text-[11px] font-bold font-mono text-slate-700">{{ formatNumber(deal.profit) }} <span class="text-slate-400 font-normal">{{ state.globalCurrency() }}</span></span>
+                    <span class="text-[11px] font-bold font-sans text-zinc-700">{{ formatNumber(deal.profit) }} <span class="text-zinc-400 font-normal">{{ state.globalCurrency() }}</span></span>
                   </div>
                 } @else {
-                  <div class="text-sm font-semibold text-slate-400">No transactions today</div>
+                  <div class="text-sm font-semibold text-zinc-400">No transactions today</div>
                   <div class="mt-2 pt-3 border-t border-white/30">
-                    <div class="text-[10px] text-slate-300 font-bold flex items-center gap-0.5">
+                    <div class="text-[10px] text-zinc-300 font-bold flex items-center gap-0.5">
                       <mat-icon class="text-[12px] w-3 h-3">bolt</mat-icon> Check back later
                     </div>
                   </div>
@@ -243,19 +215,19 @@ import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-cal
             }
 
             @if (isKpiActive('newTasksWeek')) {
-              <div class="glass-card rounded-2xl p-4 lg:p-6 flex flex-col transition-all">
+              <div class="stat-card flex flex-col transition-all">
                 <div class="flex items-center justify-between mb-4">
-                  <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">New Tasks (Week)</h3>
-                  <div class="h-10 w-10 glass-strong text-violet-600 rounded-xl flex items-center justify-center">
+                  <h3 class="section-label !px-0">New Tasks (Week)</h3>
+                  <div class="h-10 w-10 bg-zinc-100 text-zinc-900 rounded-xl flex items-center justify-center">
                     <mat-icon class="text-[18px]">assignment_add</mat-icon>
                   </div>
                 </div>
-                <div class="text-xl lg:text-2xl font-bold text-slate-900 truncate">{{ formatNumber(newTasksWeek().weekCount) }} <span class="text-sm font-semibold text-slate-400">tasks</span></div>
+                <div class="text-xl lg:text-2xl font-bold text-zinc-900 truncate">{{ formatNumber(newTasksWeek().weekCount) }} <span class="text-sm font-semibold text-zinc-400">tasks</span></div>
                 <div class="mt-2 pt-3 border-t border-white/30 flex items-center justify-between">
-                  <div class="text-[10px] text-violet-600 font-bold flex items-center gap-0.5">
+                  <div class="text-[10px] text-zinc-900 font-bold flex items-center gap-0.5">
                     <mat-icon class="text-[12px] w-3 h-3">trending_up</mat-icon> This week
                   </div>
-                  <span class="text-[11px] font-bold font-mono text-emerald-600">+{{ newTasksWeek().todayCount }} Today</span>
+                  <span class="text-[11px] font-bold font-sans text-zinc-900">+{{ newTasksWeek().todayCount }} Today</span>
                 </div>
               </div>
             }
@@ -264,8 +236,8 @@ import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-cal
           <!-- Charts Section -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
             <!-- Partner Distribution -->
-            <div class="glass-card rounded-2xl p-6">
-              <h3 class="text-base font-bold text-slate-800 mb-6">Partner Directory</h3>
+            <div class="card p-6">
+              <h3 class="text-base font-bold text-zinc-800 mb-6">Partner Directory</h3>
               <div class="flex items-center">
                 <div class="relative w-32 h-32 shrink-0">
                   <svg viewBox="0 0 36 36" class="w-full h-full transform -rotate-90">
@@ -286,9 +258,9 @@ import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-cal
                     <div class="flex items-center justify-between text-sm">
                       <div class="flex items-center">
                         <span class="w-3 h-3 rounded-full mr-2" [class]="slice.color"></span>
-                        <span class="text-slate-600 font-semibold">{{slice.label}}</span>
+                        <span class="text-zinc-600 font-semibold">{{slice.label}}</span>
                       </div>
-                      <span class="text-slate-900 font-bold">{{slice.count}}</span>
+                      <span class="text-zinc-900 font-bold">{{slice.count}}</span>
                     </div>
                   }
                 </div>
@@ -296,8 +268,8 @@ import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-cal
             </div>
 
             <!-- System Task Distribution -->
-            <div class="glass-card rounded-2xl p-6">
-              <h3 class="text-base font-bold text-slate-800 mb-6">Tasks Status</h3>
+            <div class="card p-6">
+              <h3 class="text-base font-bold text-zinc-800 mb-6">Tasks Status</h3>
               <div class="flex items-center">
                 <div class="relative w-32 h-32 shrink-0">
                   <svg viewBox="0 0 36 36" class="w-full h-full transform -rotate-90">
@@ -318,9 +290,9 @@ import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-cal
                     <div class="flex items-center justify-between text-sm">
                       <div class="flex items-center">
                         <span class="w-3 h-3 rounded-full mr-2" [class]="slice.color"></span>
-                        <span class="text-slate-600 font-semibold">{{slice.label}}</span>
+                        <span class="text-zinc-600 font-semibold">{{slice.label}}</span>
                       </div>
-                      <span class="text-slate-900 font-bold">{{slice.count}}</span>
+                      <span class="text-zinc-900 font-bold">{{slice.count}}</span>
                     </div>
                   }
                 </div>
@@ -332,31 +304,31 @@ import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-cal
           <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
             <app-partner-schedule-calendar />
 
-            <div class="glass-card rounded-2xl p-6 flex flex-col">
-              <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide mb-4">Pipeline Overview</h3>
+            <div class="card p-6 flex flex-col">
+              <h3 class="text-sm font-bold text-zinc-700 uppercase tracking-wide mb-4">Pipeline Overview</h3>
 
-              <div class="glass rounded-xl p-4 mb-4">
-                <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Total in Pipeline</div>
-                <div class="text-2xl font-bold text-slate-900 mt-1">{{ formatCurrency(totalPipelineValue()) }}</div>
+              <div class="bg-zinc-50 rounded-xl p-4 mb-4 border border-zinc-200">
+                <div class="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">Total in Pipeline</div>
+                <div class="text-2xl font-bold text-zinc-900 mt-1">{{ formatCurrency(totalPipelineValue()) }}</div>
               </div>
 
-              <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3">Top Deals</div>
+              <div class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-3">Top Deals</div>
               <div class="flex-1 space-y-2">
                 @for (deal of topPipelineDeals(); track deal.id; let i = $index) {
-                  <div class="flex items-center gap-3 glass rounded-xl p-3">
+                  <div class="flex items-center gap-3 bg-white border border-zinc-200 rounded-xl p-3">
                     <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
-                      [class]="i === 0 ? 'bg-amber-100 text-amber-700' : i === 1 ? 'bg-slate-100 text-slate-500' : 'bg-orange-100 text-orange-700'"
+                      [class]="i === 0 ? 'bg-zinc-200 text-zinc-950' : i === 1 ? 'bg-zinc-100 text-zinc-500' : 'bg-zinc-200 text-zinc-950'"
                     >
                       {{ i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉' }}
                     </div>
                     <div class="flex-1 min-w-0">
-                      <div class="text-sm font-semibold text-slate-800 truncate">{{ getPartnerName(deal.partnerId) }}</div>
-                      <div class="text-[11px] text-slate-400 font-medium truncate">{{ deal.title }}</div>
+                      <div class="text-sm font-semibold text-zinc-800 truncate">{{ getPartnerName(deal.partnerId) }}</div>
+                      <div class="text-[11px] text-zinc-400 font-medium truncate">{{ deal.title }}</div>
                     </div>
-                    <div class="text-sm font-bold font-mono text-slate-900 shrink-0">{{ formatCurrency(deal.amount) }}</div>
+                    <div class="text-sm font-bold font-sans text-zinc-900 shrink-0">{{ formatCurrency(deal.amount) }}</div>
                   </div>
                 } @empty {
-                  <div class="text-center py-6 text-xs text-slate-400">No active deals in pipeline</div>
+                  <div class="text-center py-6 text-xs text-zinc-400">No active deals in pipeline</div>
                 }
               </div>
             </div>
@@ -366,58 +338,45 @@ import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-cal
         <!-- Right Sidebar: Pending Tasks + Pending Tickets -->
         <div class="w-96 shrink-0 space-y-5">
           <!-- Pending Tasks Card -->
-          <div class="glass-card rounded-2xl p-5">
+          <div class="card p-5">
             <div class="flex items-center justify-between mb-4">
               <div class="flex items-center gap-2">
-                <mat-icon class="text-indigo-500 text-[20px] w-5 h-5">task_alt</mat-icon>
-                <h3 class="text-sm font-bold text-slate-800">Pending Tasks</h3>
-                <span class="text-[10px] font-bold text-white bg-indigo-500 px-1.5 py-0.5 rounded-full min-w-[20px] text-center">{{ pendingTasksCount() }}</span>
-              </div>
-              <div class="flex bg-slate-100 rounded-lg p-0.5 text-[11px] font-semibold">
-                <button
-                  (click)="taskSort.set('priority')"
-                  [class]="taskSort() === 'priority' ? 'bg-white text-indigo-600 shadow-xs' : 'text-slate-500 hover:text-slate-700'"
-                  class="px-2.5 py-1 rounded-md transition-all"
-                >Priority</button>
-                <button
-                  (click)="taskSort.set('urgency')"
-                  [class]="taskSort() === 'urgency' ? 'bg-white text-indigo-600 shadow-xs' : 'text-slate-500 hover:text-slate-700'"
-                  class="px-2.5 py-1 rounded-md transition-all"
-                >Urgency</button>
+                <mat-icon class="text-[20px] w-5 h-5">task_alt</mat-icon>
+                <h3 class="text-sm font-bold text-zinc-800">Pending Tasks</h3>
+                <span class="text-[10px] font-medium text-white bg-zinc-700 px-1.5 py-0.5 rounded-full min-w-[20px] text-center">{{ pendingTasksCount() }}</span>
               </div>
             </div>
 
             <div class="max-h-80 overflow-y-auto space-y-1 -mr-2 pr-2">
-              @if (taskSort() === 'priority') {
-                <!-- Urgent tasks -->
+              <!-- Urgent tasks -->
                 @let urgentTasks = groupedPendingTasks().urgent;
                 @if (urgentTasks.length > 0) {
                   <div>
-                    <button (click)="navigateToFilteredTasks('Urgent')" class="flex items-center gap-1.5 text-[11px] font-bold text-rose-600 uppercase tracking-wider mb-1 px-1 hover:text-rose-700 transition-colors">
+                    <button (click)="navigateToFilteredTasks('Urgent')" class="flex items-center gap-1.5 text-[11px] font-bold text-zinc-900 uppercase tracking-wider mb-1 px-1 hover:text-zinc-950 hover:underline transition-colors">
                       <mat-icon class="text-[14px] w-3.5 h-3.5">flag</mat-icon>
                       Urgent
-                      <span class="text-[10px] text-rose-400 font-semibold ml-auto">{{ urgentTasks.length }}</span>
+                      <span class="text-[10px] text-zinc-500 font-semibold ml-auto">{{ urgentTasks.length }}</span>
                     </button>
                     @for (task of urgentTasks; track task.id) {
                       <div
-                        class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-rose-50/60 transition-colors group"
-                        [class.bg-rose-50/60]="selectedTaskIds().has(task.id)"
+                        class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-zinc-100/60 transition-colors group"
+                        [class.bg-zinc-100/60]="selectedTaskIds().has(task.id)"
                       >
                         <mat-icon
                           (click)="$event.stopPropagation(); toggleTaskSelection(task.id)"
                           class="text-[16px] w-4 h-4 shrink-0 transition-colors cursor-pointer"
-                          [class.text-indigo-500]="selectedTaskIds().has(task.id)"
-                          [class.text-slate-300]="!selectedTaskIds().has(task.id)"
+                          [class.text-zinc-700]="selectedTaskIds().has(task.id)"
+                          [class.text-zinc-300]="!selectedTaskIds().has(task.id)"
                         >
                           {{ selectedTaskIds().has(task.id) ? 'check_circle' : 'radio_button_unchecked' }}
                         </mat-icon>
                         <div (click)="navigateToTasks()" class="flex-1 min-w-0 flex items-center gap-2 cursor-pointer">
-                          <span class="text-xs font-medium text-slate-700 truncate flex-1">{{ task.title }}</span>
+                          <span class="text-xs font-medium text-zinc-700 truncate flex-1 hover:underline">{{ task.title }}</span>
                           <div class="flex flex-col items-end gap-0.5 shrink-0">
                             @if (task.deadline) {
-                              <span class="text-[10px] font-mono leading-tight" [class]="deadlineClass(task.deadline)">{{ formatDate(task.deadline) }}</span>
+                              <span class="text-[10px] font-sans leading-tight" [class]="deadlineClass(task.deadline)">{{ formatDate(task.deadline) }}</span>
                             }
-                            <span class="text-[10px] font-bold text-white bg-rose-500 px-1.5 py-0.5 rounded">Urgent</span>
+                            <span class="text-[10px] text-red-600 px-1.5 py-0.5 rounded">Urgent</span>
                           </div>
                         </div>
                       </div>
@@ -429,31 +388,31 @@ import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-cal
                 @let mediumTasks = groupedPendingTasks().medium;
                 @if (mediumTasks.length > 0) {
                   <div>
-                    <button (click)="navigateToFilteredTasks('Medium')" class="flex items-center gap-1.5 text-[11px] font-bold text-amber-600 uppercase tracking-wider mb-1 px-1 hover:text-amber-700 transition-colors">
+                    <button (click)="navigateToFilteredTasks('Medium')" class="flex items-center gap-1.5 text-[11px] font-bold text-zinc-900 uppercase tracking-wider mb-1 px-1 hover:text-zinc-950 hover:underline transition-colors">
                       <mat-icon class="text-[14px] w-3.5 h-3.5">flag</mat-icon>
                       Medium
-                      <span class="text-[10px] text-amber-400 font-semibold ml-auto">{{ mediumTasks.length }}</span>
+                      <span class="text-[10px] text-zinc-500 font-semibold ml-auto">{{ mediumTasks.length }}</span>
                     </button>
                     @for (task of mediumTasks; track task.id) {
                       <div
-                        class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-amber-50/60 transition-colors group"
-                        [class.bg-amber-50/60]="selectedTaskIds().has(task.id)"
+                        class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-zinc-100/60 transition-colors group"
+                        [class.bg-zinc-100/60]="selectedTaskIds().has(task.id)"
                       >
                         <mat-icon
                           (click)="$event.stopPropagation(); toggleTaskSelection(task.id)"
                           class="text-[16px] w-4 h-4 shrink-0 transition-colors cursor-pointer"
-                          [class.text-indigo-500]="selectedTaskIds().has(task.id)"
-                          [class.text-slate-300]="!selectedTaskIds().has(task.id)"
+                          [class.text-zinc-700]="selectedTaskIds().has(task.id)"
+                          [class.text-zinc-300]="!selectedTaskIds().has(task.id)"
                         >
                           {{ selectedTaskIds().has(task.id) ? 'check_circle' : 'radio_button_unchecked' }}
                         </mat-icon>
                         <div (click)="navigateToTasks()" class="flex-1 min-w-0 flex items-center gap-2 cursor-pointer">
-                          <span class="text-xs font-medium text-slate-700 truncate flex-1">{{ task.title }}</span>
+                          <span class="text-xs font-medium text-zinc-700 truncate flex-1 hover:underline">{{ task.title }}</span>
                           <div class="flex flex-col items-end gap-0.5 shrink-0">
                             @if (task.deadline) {
-                              <span class="text-[10px] font-mono leading-tight" [class]="deadlineClass(task.deadline)">{{ formatDate(task.deadline) }}</span>
+                              <span class="text-[10px] font-sans leading-tight" [class]="deadlineClass(task.deadline)">{{ formatDate(task.deadline) }}</span>
                             }
-                            <span class="text-[10px] font-bold text-white bg-amber-500 px-1.5 py-0.5 rounded">Medium</span>
+                            <span class="text-[10px] text-amber-600 px-1.5 py-0.5 rounded">Medium</span>
                           </div>
                         </div>
                       </div>
@@ -465,31 +424,31 @@ import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-cal
                 @let lowTasks = groupedPendingTasks().low;
                 @if (lowTasks.length > 0) {
                   <div>
-                    <button (click)="navigateToFilteredTasks('Low')" class="flex items-center gap-1.5 text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 px-1 hover:text-slate-700 transition-colors">
+                    <button (click)="navigateToFilteredTasks('Low')" class="flex items-center gap-1.5 text-[11px] font-bold text-zinc-500 uppercase tracking-wider mb-1 px-1 hover:text-zinc-700 hover:underline transition-colors">
                       <mat-icon class="text-[14px] w-3.5 h-3.5">flag</mat-icon>
                       Low
-                      <span class="text-[10px] text-slate-400 font-semibold ml-auto">{{ lowTasks.length }}</span>
+                      <span class="text-[10px] text-zinc-400 font-semibold ml-auto">{{ lowTasks.length }}</span>
                     </button>
                     @for (task of lowTasks; track task.id) {
                       <div
-                        class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-slate-50/60 transition-colors group"
-                        [class.bg-slate-50/60]="selectedTaskIds().has(task.id)"
+                        class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-zinc-50/60 transition-colors group"
+                        [class.bg-zinc-50/60]="selectedTaskIds().has(task.id)"
                       >
                         <mat-icon
                           (click)="$event.stopPropagation(); toggleTaskSelection(task.id)"
                           class="text-[16px] w-4 h-4 shrink-0 transition-colors cursor-pointer"
-                          [class.text-indigo-500]="selectedTaskIds().has(task.id)"
-                          [class.text-slate-300]="!selectedTaskIds().has(task.id)"
+                          [class.text-zinc-700]="selectedTaskIds().has(task.id)"
+                          [class.text-zinc-300]="!selectedTaskIds().has(task.id)"
                         >
                           {{ selectedTaskIds().has(task.id) ? 'check_circle' : 'radio_button_unchecked' }}
                         </mat-icon>
                         <div (click)="navigateToTasks()" class="flex-1 min-w-0 flex items-center gap-2 cursor-pointer">
-                          <span class="text-xs font-medium text-slate-700 truncate flex-1">{{ task.title }}</span>
+                          <span class="text-xs font-medium text-zinc-700 truncate flex-1 hover:underline">{{ task.title }}</span>
                           <div class="flex flex-col items-end gap-0.5 shrink-0">
                             @if (task.deadline) {
-                              <span class="text-[10px] font-mono leading-tight" [class]="deadlineClass(task.deadline)">{{ formatDate(task.deadline) }}</span>
+                              <span class="text-[10px] font-sans leading-tight" [class]="deadlineClass(task.deadline)">{{ formatDate(task.deadline) }}</span>
                             }
-                            <span class="text-[10px] font-bold text-white bg-slate-400 px-1.5 py-0.5 rounded">Low</span>
+                            <span class="text-[10px] text-emerald-600 px-1.5 py-0.5 rounded">Low</span>
                           </div>
                         </div>
                       </div>
@@ -498,99 +457,54 @@ import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-cal
                 }
 
                 @if (urgentTasks.length === 0 && mediumTasks.length === 0 && lowTasks.length === 0) {
-                  <div class="text-center py-6 text-xs text-slate-400">No pending tasks</div>
+                  <div class="text-center py-6 text-xs text-zinc-400">No pending tasks</div>
                 }
-              } @else {
-                <!-- Sorted by urgency (createdAt ascending = oldest first) -->
-                @for (task of pendingTasksByUrgency(); track task.id) {
-                  <div
-                    class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-slate-50/60 transition-colors group"
-                    [class.bg-slate-50/60]="selectedTaskIds().has(task.id)"
-                  >
-                    <mat-icon
-                      (click)="$event.stopPropagation(); toggleTaskSelection(task.id)"
-                      class="text-[16px] w-4 h-4 shrink-0 transition-colors cursor-pointer"
-                      [class.text-indigo-500]="selectedTaskIds().has(task.id)"
-                      [class.text-slate-300]="!selectedTaskIds().has(task.id)"
-                    >
-                      {{ selectedTaskIds().has(task.id) ? 'check_circle' : 'radio_button_unchecked' }}
-                    </mat-icon>
-                    <div (click)="navigateToTasks()" class="flex-1 min-w-0 flex items-center gap-2 cursor-pointer">
-                      <span class="text-xs font-medium text-slate-700 truncate flex-1">{{ task.title }}</span>
-                      <div class="flex flex-col items-end gap-0.5 shrink-0">
-                        @if (task.deadline) {
-                          <span class="text-[10px] font-mono leading-tight" [class]="deadlineClass(task.deadline)">{{ formatDate(task.deadline) }}</span>
-                        }
-                        <span
-                          class="text-[10px] font-bold px-1.5 py-0.5 rounded"
-                          [class]="task.priority === 'Urgent' ? 'text-white bg-rose-500' : task.priority === 'Medium' ? 'text-white bg-amber-500' : 'text-white bg-slate-400'"
-                        >{{ task.priority || 'Low' }}</span>
-                      </div>
-                    </div>
-                  </div>
-                } @empty {
-                  <div class="text-center py-6 text-xs text-slate-400">No pending tasks</div>
-                }
-              }
-            </div>
+              </div>
           </div>
 
           <!-- Pending Tickets Card -->
-          <div class="glass-card rounded-2xl p-5">
+          <div class="card p-5">
             <div class="flex items-center justify-between mb-4">
               <div class="flex items-center gap-2">
-                <mat-icon class="text-amber-500 text-[20px] w-5 h-5">support_agent</mat-icon>
-                <h3 class="text-sm font-bold text-slate-800">Pending Tickets</h3>
-                <span class="text-[10px] font-bold text-white bg-amber-500 px-1.5 py-0.5 rounded-full min-w-[20px] text-center">{{ pendingTicketsCount() }}</span>
-              </div>
-              <div class="flex bg-slate-100 rounded-lg p-0.5 text-[11px] font-semibold">
-                <button
-                  (click)="ticketSort.set('priority')"
-                  [class]="ticketSort() === 'priority' ? 'bg-white text-amber-600 shadow-xs' : 'text-slate-500 hover:text-slate-700'"
-                  class="px-2.5 py-1 rounded-md transition-all"
-                >Priority</button>
-                <button
-                  (click)="ticketSort.set('urgency')"
-                  [class]="ticketSort() === 'urgency' ? 'bg-white text-amber-600 shadow-xs' : 'text-slate-500 hover:text-slate-700'"
-                  class="px-2.5 py-1 rounded-md transition-all"
-                >Urgency</button>
+                <mat-icon class="text-[20px] w-5 h-5">support_agent</mat-icon>
+                <h3 class="text-sm font-bold text-zinc-800">Pending Tickets</h3>
+                <span class="text-[10px] font-medium text-white bg-zinc-700 px-1.5 py-0.5 rounded-full min-w-[20px] text-center">{{ pendingTicketsCount() }}</span>
               </div>
             </div>
 
             <div class="max-h-80 overflow-y-auto space-y-1 -mr-2 pr-2">
-              @if (ticketSort() === 'priority') {
-                <!-- High priority -->
+              <!-- High priority -->
                 @let highTickets = groupedPendingTickets().high;
                 @if (highTickets.length > 0) {
                   <div>
-                    <button (click)="navigateToFilteredTickets('High')" class="flex items-center gap-1.5 text-[11px] font-bold text-rose-600 uppercase tracking-wider mb-1 px-1 hover:text-rose-700 transition-colors">
+                    <button (click)="navigateToFilteredTickets('High')" class="flex items-center gap-1.5 text-[11px] font-bold text-zinc-900 uppercase tracking-wider mb-1 px-1 hover:text-zinc-950 hover:underline transition-colors">
                       <mat-icon class="text-[14px] w-3.5 h-3.5">flag</mat-icon>
                       High
-                      <span class="text-[10px] text-rose-400 font-semibold ml-auto">{{ highTickets.length }}</span>
+                      <span class="text-[10px] text-zinc-500 font-semibold ml-auto">{{ highTickets.length }}</span>
                     </button>
                     @for (ticket of highTickets; track ticket.id) {
                       <div
-                        class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-rose-50/60 transition-colors group"
-                        [class.bg-rose-50/60]="selectedTicketIds().has(ticket.id)"
+                        class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-zinc-100/60 transition-colors group"
+                        [class.bg-zinc-100/60]="selectedTicketIds().has(ticket.id)"
                       >
                         <mat-icon
                           (click)="$event.stopPropagation(); toggleTicketSelection(ticket.id)"
                           class="text-[16px] w-4 h-4 shrink-0 transition-colors cursor-pointer"
-                          [class.text-amber-500]="selectedTicketIds().has(ticket.id)"
-                          [class.text-slate-300]="!selectedTicketIds().has(ticket.id)"
+                          [class.text-zinc-700]="selectedTicketIds().has(ticket.id)"
+                          [class.text-zinc-300]="!selectedTicketIds().has(ticket.id)"
                         >
                           {{ selectedTicketIds().has(ticket.id) ? 'check_circle' : 'radio_button_unchecked' }}
                         </mat-icon>
                         <div (click)="navigateToTickets()" class="flex-1 min-w-0 cursor-pointer">
                           <div class="flex items-center gap-1.5">
-                            <span class="text-xs font-medium text-slate-700 truncate">{{ ticket.title }}</span>
+                            <span class="text-xs font-medium text-zinc-700 truncate hover:underline">{{ ticket.title }}</span>
                             @if (ticket.deadline) {
-                              <span class="text-[10px] font-mono shrink-0 leading-tight ml-auto" [class]="deadlineClass(ticket.deadline)">{{ formatDate(ticket.deadline) }}</span>
+                              <span class="text-[10px] font-sans shrink-0 leading-tight ml-auto" [class]="deadlineClass(ticket.deadline)">{{ formatDate(ticket.deadline) }}</span>
                             }
                           </div>
                           <div class="flex items-center justify-between">
-                            <span class="text-[10px] text-slate-400 font-mono">#{{ ticket.id }}</span>
-                            <span class="text-[10px] font-bold text-white bg-rose-500 px-1.5 py-0.5 rounded">High</span>
+                            <span class="text-[10px] text-zinc-400 font-sans">#{{ ticket.id }}</span>
+                            <span class="text-[10px] text-red-600 px-1.5 py-0.5 rounded">High</span>
                           </div>
                         </div>
                       </div>
@@ -602,34 +516,34 @@ import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-cal
                 @let mediumTickets = groupedPendingTickets().medium;
                 @if (mediumTickets.length > 0) {
                   <div>
-                    <button (click)="navigateToFilteredTickets('Medium')" class="flex items-center gap-1.5 text-[11px] font-bold text-amber-600 uppercase tracking-wider mb-1 px-1 hover:text-amber-700 transition-colors">
+                    <button (click)="navigateToFilteredTickets('Medium')" class="flex items-center gap-1.5 text-[11px] font-bold text-zinc-900 uppercase tracking-wider mb-1 px-1 hover:text-zinc-950 hover:underline transition-colors">
                       <mat-icon class="text-[14px] w-3.5 h-3.5">flag</mat-icon>
                       Medium
-                      <span class="text-[10px] text-amber-400 font-semibold ml-auto">{{ mediumTickets.length }}</span>
+                      <span class="text-[10px] text-zinc-500 font-semibold ml-auto">{{ mediumTickets.length }}</span>
                     </button>
                     @for (ticket of mediumTickets; track ticket.id) {
                       <div
-                        class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-amber-50/60 transition-colors group"
-                        [class.bg-amber-50/60]="selectedTicketIds().has(ticket.id)"
+                        class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-zinc-100/60 transition-colors group"
+                        [class.bg-zinc-100/60]="selectedTicketIds().has(ticket.id)"
                       >
                         <mat-icon
                           (click)="$event.stopPropagation(); toggleTicketSelection(ticket.id)"
                           class="text-[16px] w-4 h-4 shrink-0 transition-colors cursor-pointer"
-                          [class.text-amber-500]="selectedTicketIds().has(ticket.id)"
-                          [class.text-slate-300]="!selectedTicketIds().has(ticket.id)"
+                          [class.text-zinc-700]="selectedTicketIds().has(ticket.id)"
+                          [class.text-zinc-300]="!selectedTicketIds().has(ticket.id)"
                         >
                           {{ selectedTicketIds().has(ticket.id) ? 'check_circle' : 'radio_button_unchecked' }}
                         </mat-icon>
                         <div (click)="navigateToTickets()" class="flex-1 min-w-0 cursor-pointer">
                           <div class="flex items-center gap-1.5">
-                            <span class="text-xs font-medium text-slate-700 truncate">{{ ticket.title }}</span>
+                            <span class="text-xs font-medium text-zinc-700 truncate hover:underline">{{ ticket.title }}</span>
                             @if (ticket.deadline) {
-                              <span class="text-[10px] font-mono shrink-0 leading-tight ml-auto" [class]="deadlineClass(ticket.deadline)">{{ formatDate(ticket.deadline) }}</span>
+                              <span class="text-[10px] font-sans shrink-0 leading-tight ml-auto" [class]="deadlineClass(ticket.deadline)">{{ formatDate(ticket.deadline) }}</span>
                             }
                           </div>
                           <div class="flex items-center justify-between">
-                            <span class="text-[10px] text-slate-400 font-mono">#{{ ticket.id }}</span>
-                            <span class="text-[10px] font-bold text-white bg-amber-500 px-1.5 py-0.5 rounded">Medium</span>
+                            <span class="text-[10px] text-zinc-400 font-sans">#{{ ticket.id }}</span>
+                            <span class="text-[10px] text-amber-600 px-1.5 py-0.5 rounded">Medium</span>
                           </div>
                         </div>
                       </div>
@@ -641,34 +555,34 @@ import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-cal
                 @let lowTickets = groupedPendingTickets().low;
                 @if (lowTickets.length > 0) {
                   <div>
-                    <button (click)="navigateToFilteredTickets('Low')" class="flex items-center gap-1.5 text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 px-1 hover:text-slate-700 transition-colors">
+                    <button (click)="navigateToFilteredTickets('Low')" class="flex items-center gap-1.5 text-[11px] font-bold text-zinc-500 uppercase tracking-wider mb-1 px-1 hover:text-zinc-700 hover:underline transition-colors">
                       <mat-icon class="text-[14px] w-3.5 h-3.5">flag</mat-icon>
                       Low
-                      <span class="text-[10px] text-slate-400 font-semibold ml-auto">{{ lowTickets.length }}</span>
+                      <span class="text-[10px] text-zinc-400 font-semibold ml-auto">{{ lowTickets.length }}</span>
                     </button>
                     @for (ticket of lowTickets; track ticket.id) {
                       <div
-                        class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-slate-50/60 transition-colors group"
-                        [class.bg-slate-50/60]="selectedTicketIds().has(ticket.id)"
+                        class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-zinc-50/60 transition-colors group"
+                        [class.bg-zinc-50/60]="selectedTicketIds().has(ticket.id)"
                       >
                         <mat-icon
                           (click)="$event.stopPropagation(); toggleTicketSelection(ticket.id)"
                           class="text-[16px] w-4 h-4 shrink-0 transition-colors cursor-pointer"
-                          [class.text-amber-500]="selectedTicketIds().has(ticket.id)"
-                          [class.text-slate-300]="!selectedTicketIds().has(ticket.id)"
+                          [class.text-zinc-700]="selectedTicketIds().has(ticket.id)"
+                          [class.text-zinc-300]="!selectedTicketIds().has(ticket.id)"
                         >
                           {{ selectedTicketIds().has(ticket.id) ? 'check_circle' : 'radio_button_unchecked' }}
                         </mat-icon>
                         <div (click)="navigateToTickets()" class="flex-1 min-w-0 cursor-pointer">
                           <div class="flex items-center gap-1.5">
-                            <span class="text-xs font-medium text-slate-700 truncate">{{ ticket.title }}</span>
+                            <span class="text-xs font-medium text-zinc-700 truncate hover:underline">{{ ticket.title }}</span>
                             @if (ticket.deadline) {
-                              <span class="text-[10px] font-mono shrink-0 leading-tight ml-auto" [class]="deadlineClass(ticket.deadline)">{{ formatDate(ticket.deadline) }}</span>
+                              <span class="text-[10px] font-sans shrink-0 leading-tight ml-auto" [class]="deadlineClass(ticket.deadline)">{{ formatDate(ticket.deadline) }}</span>
                             }
                           </div>
                           <div class="flex items-center justify-between">
-                            <span class="text-[10px] text-slate-400 font-mono">#{{ ticket.id }}</span>
-                            <span class="text-[10px] font-bold text-white bg-slate-400 px-1.5 py-0.5 rounded">Low</span>
+                            <span class="text-[10px] text-zinc-400 font-sans">#{{ ticket.id }}</span>
+                            <span class="text-[10px] text-emerald-600 px-1.5 py-0.5 rounded">Low</span>
                           </div>
                         </div>
                       </div>
@@ -677,57 +591,162 @@ import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-cal
                 }
 
                 @if (highTickets.length === 0 && mediumTickets.length === 0 && lowTickets.length === 0) {
-                  <div class="text-center py-6 text-xs text-slate-400">No pending tickets</div>
+                  <div class="text-center py-6 text-xs text-zinc-400">No pending tickets</div>
                 }
-              } @else {
-                <!-- Sorted by urgency (createdAt ascending) -->
-                @for (ticket of pendingTicketsByUrgency(); track ticket.id) {
-                  <div
-                    class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-slate-50/60 transition-colors group"
-                    [class.bg-slate-50/60]="selectedTicketIds().has(ticket.id)"
-                  >
-                    <mat-icon
-                      (click)="$event.stopPropagation(); toggleTicketSelection(ticket.id)"
-                      class="text-[16px] w-4 h-4 shrink-0 transition-colors cursor-pointer"
-                      [class.text-amber-500]="selectedTicketIds().has(ticket.id)"
-                      [class.text-slate-300]="!selectedTicketIds().has(ticket.id)"
-                    >
-                      {{ selectedTicketIds().has(ticket.id) ? 'check_circle' : 'radio_button_unchecked' }}
-                    </mat-icon>
-                    <div (click)="navigateToTickets()" class="flex-1 min-w-0 cursor-pointer">
-                      <div class="flex items-center gap-1.5">
-                        <span class="text-xs font-medium text-slate-700 truncate">{{ ticket.title }}</span>
-                        @if (ticket.deadline) {
-                          <span class="text-[10px] font-mono shrink-0 leading-tight ml-auto" [class]="deadlineClass(ticket.deadline)">{{ formatDate(ticket.deadline) }}</span>
-                        }
-                      </div>
-                      <div class="flex items-center justify-between">
-                        <span class="text-[10px] text-slate-400 font-mono">#{{ ticket.id }}</span>
-                        <span
-                          class="text-[10px] font-bold px-1.5 py-0.5 rounded"
-                          [class]="ticket.priority === 'High' ? 'text-white bg-rose-500' : ticket.priority === 'Medium' ? 'text-white bg-amber-500' : 'text-white bg-slate-400'"
-                        >{{ ticket.priority }}</span>
-                      </div>
-                    </div>
-                  </div>
-                } @empty {
-                  <div class="text-center py-6 text-xs text-slate-400">No pending tickets</div>
-                }
-              }
-            </div>
+              </div>
           </div>
         </div>
       </div>
 
     </div>
-  `
+
+      <!-- Quick Actions FAB -->
+      @if (quickActionsOpen()) {
+        <div class="fab-backdrop" (click)="quickActionsOpen.set(false)"></div>
+      }
+      <div class="quick-actions-fab">
+        <button
+          class="fab-btn"
+          (click)="quickActionsOpen.set(!quickActionsOpen())"
+        >
+          <mat-icon>{{ quickActionsOpen() ? 'close' : 'add' }}</mat-icon>
+        </button>
+
+        @if (quickActionsOpen()) {
+          <div class="fab-dropdown">
+            <a routerLink="/sales" class="fab-item hover:underline" (click)="quickActionsOpen.set(false)">
+              <div class="fab-item-icon fab-item-icon--indigo">
+                <mat-icon>add_business</mat-icon>
+              </div>
+              <span>New Proposal</span>
+            </a>
+            <a routerLink="/partners" class="fab-item hover:underline" (click)="quickActionsOpen.set(false)">
+              <div class="fab-item-icon fab-item-icon--emerald">
+                <mat-icon>person_add</mat-icon>
+              </div>
+              <span>Add Partner</span>
+            </a>
+            <a routerLink="/marketing" class="fab-item hover:underline" (click)="quickActionsOpen.set(false)">
+              <div class="fab-item-icon fab-item-icon--amber">
+                <mat-icon>campaign</mat-icon>
+              </div>
+              <span>New Campaign</span>
+            </a>
+            <a routerLink="/tickets" class="fab-item hover:underline" (click)="quickActionsOpen.set(false)">
+              <div class="fab-item-icon fab-item-icon--rose">
+                <mat-icon>support_agent</mat-icon>
+              </div>
+              <span>Create Ticket</span>
+            </a>
+          </div>
+        }
+      </div>
+
+  `,
+  styles: [`
+    .quick-actions-fab {
+      position: fixed;
+      bottom: 32px;
+      right: 24px;
+      z-index: 50;
+    }
+
+    .fab-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: #FFFFFF;
+      border: 1px solid #09090B;
+      color: #09090B;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .fab-btn mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+      line-height: 20px;
+    }
+
+    .fab-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 49;
+    }
+
+    .fab-dropdown {
+      position: absolute;
+      bottom: calc(100% + 12px);
+      right: 0;
+      background: #FFFFFF;
+      border: 1px solid #E4E4E7;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.04);
+      padding: 6px;
+      min-width: 200px;
+      z-index: 50;
+    }
+
+    .fab-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      text-decoration: none;
+      color: #09090B;
+      font-size: 13px;
+      font-weight: 600;
+      transition: background 150ms ease;
+    }
+
+    .fab-item:hover {
+      background: #F4F4F5;
+    }
+
+    .fab-item-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #F4F4F5;
+      flex-shrink: 0;
+    }
+
+    .fab-item-icon mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      line-height: 18px;
+      color: #09090B;
+    }
+
+    mat-icon {
+      color: #3B82F6;
+    }
+
+    .fab-btn mat-icon,
+    .fab-dropdown mat-icon {
+      color: inherit;
+    }
+
+    @media (max-width: 768px) {
+      .quick-actions-fab {
+        right: 16px;
+      }
+    }
+  `]
 })
 export class DashboardComponent {
   state = inject(CrmStateService);
   private router = inject(Router);
-  // Sort states
-  taskSort = signal<'priority' | 'urgency'>('priority');
-  ticketSort = signal<'priority' | 'urgency'>('priority');
+  quickActionsOpen = signal(false);
 
   // Selection states
   selectedTaskIds = signal<Set<string>>(new Set());
@@ -759,20 +778,20 @@ export class DashboardComponent {
   /** Count of pending tasks */
   pendingTasksCount = computed(() => this.pendingTasks().length);
 
-  /** Group pending tasks by priority */
+  /** Group pending tasks by priority, sorted by urgency (deadline) within each group */
   groupedPendingTasks = computed(() => {
     const tasks = this.pendingTasks();
+    const sortByDeadline = (a: Task, b: Task) => {
+      if (!a.deadline) return 1;
+      if (!b.deadline) return -1;
+      return a.deadline.localeCompare(b.deadline);
+    };
     return {
-      urgent: tasks.filter(t => t.priority === 'Urgent'),
-      medium: tasks.filter(t => t.priority === 'Medium' || !t.priority),
-      low: tasks.filter(t => t.priority === 'Low')
+      urgent: tasks.filter(t => t.priority === 'Urgent').sort(sortByDeadline),
+      medium: tasks.filter(t => t.priority === 'Medium' || !t.priority).sort(sortByDeadline),
+      low: tasks.filter(t => t.priority === 'Low').sort(sortByDeadline)
     };
   });
-
-  /** Pending tasks sorted by urgency (oldest createdAt first) */
-  pendingTasksByUrgency = computed(() =>
-    this.pendingTasks().sort((a, b) => a.createdAt.localeCompare(b.createdAt))
-  );
 
   /** All open/in-progress tickets */
   private pendingTickets = computed(() =>
@@ -782,20 +801,20 @@ export class DashboardComponent {
   /** Count of pending tickets */
   pendingTicketsCount = computed(() => this.pendingTickets().length);
 
-  /** Group pending tickets by priority */
+  /** Group pending tickets by priority, sorted by urgency (deadline) within each group */
   groupedPendingTickets = computed(() => {
     const tickets = this.pendingTickets();
+    const sortByDeadline = (a: Ticket, b: Ticket) => {
+      if (!a.deadline) return 1;
+      if (!b.deadline) return -1;
+      return a.deadline.localeCompare(b.deadline);
+    };
     return {
-      high: tickets.filter(t => t.priority === 'High'),
-      medium: tickets.filter(t => t.priority === 'Medium'),
-      low: tickets.filter(t => t.priority === 'Low')
+      high: tickets.filter(t => t.priority === 'High').sort(sortByDeadline),
+      medium: tickets.filter(t => t.priority === 'Medium').sort(sortByDeadline),
+      low: tickets.filter(t => t.priority === 'Low').sort(sortByDeadline)
     };
   });
-
-  /** Pending tickets sorted by urgency (oldest createdAt first) */
-  pendingTicketsByUrgency = computed(() =>
-    this.pendingTickets().sort((a, b) => a.createdAt.localeCompare(b.createdAt))
-  );
 
   /** Deals created in the current calendar month */
   newDealsKPI = computed(() => {
@@ -893,9 +912,9 @@ export class DashboardComponent {
     const total = customers + prospects + vendors || 1;
 
     const slices = [
-      { label: 'Customers', count: customers, color: 'bg-indigo-500', stroke: 'text-indigo-500' },
-      { label: 'Prospects', count: prospects, color: 'bg-emerald-400', stroke: 'text-emerald-400' },
-      { label: 'Vendors', count: vendors, color: 'bg-amber-400', stroke: 'text-amber-400' }
+      { label: 'Customers', count: customers, color: 'bg-blue-700', stroke: 'text-blue-700' },
+      { label: 'Prospects', count: prospects, color: 'bg-blue-500', stroke: 'text-blue-500' },
+      { label: 'Vendors', count: vendors, color: 'bg-blue-400', stroke: 'text-blue-400' }
     ].filter(s => s.count > 0);
 
     let cumulativePercent = 0;
@@ -919,9 +938,9 @@ export class DashboardComponent {
     const total = tasks.length || 1;
 
     const slices = [
-      { label: 'Completed', count: completed, color: 'bg-emerald-500', stroke: 'text-emerald-500' },
-      { label: 'In Progress', count: inProgress, color: 'bg-indigo-400', stroke: 'text-indigo-400' },
-      { label: 'Pending', count: pending, color: 'bg-slate-300', stroke: 'text-slate-300' }
+      { label: 'Completed', count: completed, color: 'bg-blue-700', stroke: 'text-blue-700' },
+      { label: 'In Progress', count: inProgress, color: 'bg-blue-500', stroke: 'text-blue-500' },
+      { label: 'Pending', count: pending, color: 'bg-blue-300', stroke: 'text-blue-300' }
     ].filter(s => s.count > 0);
 
     let cumulativePercent = 0;
@@ -958,7 +977,7 @@ export class DashboardComponent {
   deadlineClass(deadline: string | undefined): string {
     if (!deadline) return '';
     const today = new Date().toISOString().split('T')[0];
-    return deadline < today ? 'text-rose-500' : 'text-slate-400';
+    return deadline < today ? 'text-red-500' : 'text-zinc-400';
   }
 
   formatDate(date: string | undefined): string {

@@ -13,20 +13,20 @@ import { MatIconModule } from '@angular/material/icon';
 
       <!-- Success Banner -->
       @if (showSuccess()) {
-        <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm px-4 py-3 rounded-xl flex items-center gap-2 animate-in fade-in duration-200">
-          <mat-icon class="text-emerald-600 text-base w-5 h-5 flex items-center justify-center">check_circle</mat-icon>
+        <div class="bg-zinc-100 border border-zinc-300 text-zinc-950 text-sm px-4 py-3 rounded-xl flex items-center gap-2 animate-in fade-in duration-200">
+          <mat-icon class="text-zinc-900 text-base w-5 h-5 flex items-center justify-center">check_circle</mat-icon>
           <span>Changes saved successfully.</span>
         </div>
       }
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <!-- LEFT COLUMN: Organization Card -->
-        <div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs space-y-6">
-          <div class="flex items-center justify-between pb-4 border-b border-slate-100">
-            <h3 class="font-bold text-slate-800 text-base">Profile Details</h3>
+        <div class="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-xs space-y-6">
+          <div class="flex items-center justify-between pb-4 border-b border-zinc-100">
+            <h3 class="font-bold text-zinc-800 text-base">Profile Details</h3>
             <button
               (click)="toggleEdit()"
-              class="text-indigo-600 hover:bg-indigo-50 p-1.5 rounded-lg transition-colors flex items-center cursor-pointer"
+              class="text-zinc-900 hover:bg-zinc-100 p-1.5 rounded-lg transition-colors flex items-center cursor-pointer"
               title="Edit Profile"
             >
               <mat-icon class="text-lg w-5 h-5 flex items-center justify-center">{{ isEditing() ? 'close' : 'edit' }}</mat-icon>
@@ -46,11 +46,11 @@ import { MatIconModule } from '@angular/material/icon';
                 <input
                   [(ngModel)]="editName"
                   placeholder="Organization Name"
-                  class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-indigo-600 font-semibold text-slate-800"
+                  class="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm focus:outline-indigo-600 font-semibold text-zinc-800"
                 />
               } @else {
-                <h2 class="text-lg font-bold text-slate-900 truncate">{{ state.organization().name }}</h2>
-                <p class="text-xs text-slate-400 font-mono mt-0.5">ID: {{ state.organization().id }}</p>
+                <h2 class="text-lg font-bold text-zinc-900 truncate">{{ state.organization().name }}</h2>
+                <p class="text-xs text-zinc-400 font-sans mt-0.5">ID: {{ state.organization().id }}</p>
               }
             </div>
           </div>
@@ -58,11 +58,11 @@ import { MatIconModule } from '@angular/material/icon';
           <div class="space-y-4">
             <!-- Industry -->
             <div>
-              <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Industry</label>
+              <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1">Industry</label>
               @if (isEditing()) {
                 <select
                   [(ngModel)]="editIndustry"
-                  class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-indigo-600 font-semibold text-slate-700 cursor-pointer"
+                  class="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-indigo-600 font-semibold text-zinc-700 cursor-pointer"
                 >
                   <option value="Technology">Technology</option>
                   <option value="Finance">Finance</option>
@@ -72,38 +72,38 @@ import { MatIconModule } from '@angular/material/icon';
                   <option value="Education">Education</option>
                 </select>
               } @else {
-                <div class="text-sm font-semibold text-slate-800">{{ state.organization().industry }}</div>
+                <div class="text-sm font-semibold text-zinc-800">{{ state.organization().industry }}</div>
               }
             </div>
 
             <!-- Timezone -->
             <div>
-              <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Timezone</label>
+              <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1">Timezone</label>
               @if (isEditing()) {
                 <input
                   [(ngModel)]="editTimezone"
                   placeholder="e.g. Africa/Casablanca"
-                  class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-indigo-600 text-slate-700"
+                  class="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm focus:outline-indigo-600 text-zinc-700"
                 />
               } @else {
-                <div class="text-sm font-semibold text-slate-800 font-mono">{{ state.organization().timezone }}</div>
+                <div class="text-sm font-semibold text-zinc-800 font-sans">{{ state.organization().timezone }}</div>
               }
             </div>
 
             <!-- Fiscal Year Start -->
             <div>
-              <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Fiscal Year Start Month</label>
+              <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1">Fiscal Year Start Month</label>
               @if (isEditing()) {
                 <select
                   [(ngModel)]="editFiscalStart"
-                  class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-indigo-600 font-semibold text-slate-700 cursor-pointer"
+                  class="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-indigo-600 font-semibold text-zinc-700 cursor-pointer"
                 >
                   @for (m of months; track m.value) {
                     <option [value]="m.value">{{ m.name }}</option>
                   }
                 </select>
               } @else {
-                <div class="text-sm font-semibold text-slate-800">{{ getMonthName(state.organization().fiscalYearStart) }}</div>
+                <div class="text-sm font-semibold text-zinc-800">{{ getMonthName(state.organization().fiscalYearStart) }}</div>
               }
             </div>
           </div>
@@ -112,7 +112,7 @@ import { MatIconModule } from '@angular/material/icon';
             <div class="pt-2">
               <button
                 (click)="saveOrgDetails()"
-                class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-xl text-sm font-semibold shadow-sm transition-colors cursor-pointer font-sans"
+                class="w-full bg-zinc-900 hover:bg-zinc-950 text-white py-2 px-4 rounded-xl text-sm font-semibold shadow-sm transition-colors cursor-pointer font-sans"
               >
                 Save Changes
               </button>
@@ -122,42 +122,42 @@ import { MatIconModule } from '@angular/material/icon';
 
         <!-- RIGHT COLUMN: Metrics -->
         <div class="space-y-6">
-          <h3 class="font-bold text-slate-800 text-base px-1">Organization Metrics</h3>
+          <h3 class="font-bold text-zinc-800 text-base px-1">Organization Metrics</h3>
           <div class="grid grid-cols-2 gap-4">
             <!-- Total Users -->
-            <div class="bg-white border border-slate-200/80 rounded-2xl p-4 lg:p-5 shadow-xs hover:shadow-md transition-shadow">
-              <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Users</div>
-              <div class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-2 font-mono">{{ state.users().length }}</div>
+            <div class="bg-white border border-zinc-200/80 rounded-2xl p-4 lg:p-5 shadow-xs hover:shadow-md transition-shadow">
+              <div class="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Total Users</div>
+              <div class="text-2xl sm:text-3xl font-extrabold text-zinc-900 mt-2 font-sans">{{ state.users().length }}</div>
             </div>
 
             <!-- Active Users -->
-            <div class="bg-white border border-slate-200/80 rounded-2xl p-4 lg:p-5 shadow-xs hover:shadow-md transition-shadow">
-              <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Active Users</div>
-              <div class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-2 font-mono">{{ state.activeUsers().length }}</div>
+            <div class="bg-white border border-zinc-200/80 rounded-2xl p-4 lg:p-5 shadow-xs hover:shadow-md transition-shadow">
+              <div class="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Active Users</div>
+              <div class="text-2xl sm:text-3xl font-extrabold text-zinc-900 mt-2 font-sans">{{ state.activeUsers().length }}</div>
             </div>
 
             <!-- Active Teams -->
-            <div class="bg-white border border-slate-200/80 rounded-2xl p-4 lg:p-5 shadow-xs hover:shadow-md transition-shadow">
-              <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Active Teams</div>
-              <div class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-2 font-mono">{{ state.teams().length }}</div>
+            <div class="bg-white border border-zinc-200/80 rounded-2xl p-4 lg:p-5 shadow-xs hover:shadow-md transition-shadow">
+              <div class="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Active Teams</div>
+              <div class="text-2xl sm:text-3xl font-extrabold text-zinc-900 mt-2 font-sans">{{ state.teams().length }}</div>
             </div>
 
             <!-- Groups -->
-            <div class="bg-white border border-slate-200/80 rounded-2xl p-4 lg:p-5 shadow-xs hover:shadow-md transition-shadow">
-              <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Collaboration Groups</div>
-              <div class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-2 font-mono">{{ state.groups().length }}</div>
+            <div class="bg-white border border-zinc-200/80 rounded-2xl p-4 lg:p-5 shadow-xs hover:shadow-md transition-shadow">
+              <div class="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Collaboration Groups</div>
+              <div class="text-2xl sm:text-3xl font-extrabold text-zinc-900 mt-2 font-sans">{{ state.groups().length }}</div>
             </div>
           </div>
         </div>
       </div>
 
       <!-- BELOW COLUMNS: Danger Zone -->
-      <div class="bg-rose-50 border border-rose-200/80 rounded-2xl p-6 shadow-xs">
-        <h3 class="font-bold text-rose-800 text-base mb-2">Danger Zone</h3>
-        <p class="text-xs text-rose-600/90 mb-4">Deactivating the organization will disable all user accounts and freeze CRM data collections. This action requires high administrative verification.</p>
+      <div class="bg-zinc-100 border border-zinc-300/80 rounded-2xl p-6 shadow-xs">
+        <h3 class="font-bold text-zinc-950 text-base mb-2">Danger Zone</h3>
+        <p class="text-xs text-zinc-900/90 mb-4">Deactivating the organization will disable all user accounts and freeze CRM data collections. This action requires high administrative verification.</p>
         <button
           disabled
-          class="bg-rose-100/50 text-rose-450 px-4 py-2.5 rounded-xl text-sm font-semibold border border-rose-200/50 cursor-not-allowed select-none"
+          class="bg-zinc-200/50 text-rose-450 px-4 py-2.5 rounded-xl text-sm font-semibold border border-zinc-300/50 cursor-not-allowed select-none"
           title="Contact support to deactivate your organization"
         >
           Deactivate Organization

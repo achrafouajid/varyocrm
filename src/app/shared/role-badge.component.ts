@@ -21,16 +21,16 @@ export class RoleBadgeComponent {
   getBadgeClass(): string {
     switch (this.roleId) {
       case 'admin':
-        return 'bg-purple-50 text-purple-700 border-purple-100';
+        return 'bg-zinc-100 text-zinc-950 border-zinc-200';
       case 'manager':
-        return 'bg-blue-50 text-blue-700 border-blue-100';
+        return 'bg-zinc-100 text-zinc-950 border-zinc-200';
       case 'salesperson':
-        return 'bg-emerald-50 text-emerald-700 border-emerald-100';
+        return 'bg-zinc-100 text-zinc-950 border-zinc-200';
       case 'support':
-        return 'bg-amber-50 text-amber-700 border-amber-100';
+        return 'bg-zinc-100 text-zinc-950 border-zinc-200';
       case 'viewer':
       default:
-        return 'bg-slate-50 text-slate-600 border-slate-200';
+        return 'bg-zinc-50 text-zinc-600 border-zinc-200';
     }
   }
 

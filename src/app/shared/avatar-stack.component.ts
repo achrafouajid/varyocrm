@@ -19,7 +19,7 @@ import { UserAvatarComponent } from './user-avatar.component';
         }
       </div>
       @if (userIds.length > maxVisible) {
-        <span class="text-xs font-semibold text-slate-500 ml-2 font-sans">
+        <span class="text-xs font-semibold text-zinc-500 ml-2 font-sans">
           +{{ userIds.length - maxVisible }}
         </span>
       }

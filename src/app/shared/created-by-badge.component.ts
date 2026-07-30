@@ -11,8 +11,8 @@ import { UserAvatarComponent } from './user-avatar.component';
     <div class="flex items-center gap-2">
       <app-user-avatar [userId]="createdBy" [size]="size" />
       <div class="flex flex-col">
-        <span class="font-semibold text-slate-700" [class.text-xs]="size <= 28" [class.text-sm]="size > 28">{{ userName() }}</span>
-        <span class="text-[10px] text-slate-400 font-medium">{{ createdAt | date:'mediumDate' }}</span>
+        <span class="font-semibold text-zinc-700" [class.text-xs]="size <= 28" [class.text-sm]="size > 28">{{ userName() }}</span>
+        <span class="text-[10px] text-zinc-400 font-medium">{{ createdAt | date:'mediumDate' }}</span>
       </div>
     </div>
   `
