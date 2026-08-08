@@ -61,7 +61,7 @@ import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
           </div>
         </div>
 
-      <div class="card rounded-2xl overflow-hidden">
+      <div class="card rounded-2xl overflow-x-auto">
         <table class="min-w-full divide-y divide-slate-200">
           <thead class="bg-white border border-zinc-200">
             <tr>

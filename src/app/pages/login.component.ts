@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { CrmStateService } from '../services/crm-state.service';
+import { AuthApiService } from '../core/services/auth-api.service';
 
 @Component({
   selector: 'app-login',
@@ -105,14 +106,14 @@ import { CrmStateService } from '../services/crm-state.service';
 
     .form-input:focus {
       background: #FFFFFF;
-      border-color: #09090B;
-      box-shadow: 0 0 0 3px rgba(9, 9, 11, 0.08);
+      border-color: var(--color-accent);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
     }
 
     .login-btn {
       width: 100%;
       padding: 10px 16px;
-      background: #09090B;
+      background: var(--color-accent);
       color: #FFFFFF;
       border: none;
       border-radius: 8px;
@@ -124,7 +125,7 @@ import { CrmStateService } from '../services/crm-state.service';
     }
 
     .login-btn:hover {
-      background: #27272A;
+      background: var(--color-accent-hover);
     }
 
     .login-btn:disabled {
@@ -289,6 +290,7 @@ import { CrmStateService } from '../services/crm-state.service';
 export class LoginComponent {
   private state = inject(CrmStateService);
   private router = inject(Router);
+  private authApi = inject(AuthApiService);
 
   email = signal('');
   password = signal('');
@@ -307,15 +309,26 @@ export class LoginComponent {
     this.loading.set(true);
     this.error.set('');
 
-    setTimeout(() => {
-      const success = this.state.login(email);
-      if (success) {
+    this.authApi.login({ email, password }).subscribe({
+      next: (response) => {
+        localStorage.setItem('accessToken', response.accessToken);
+        if (response.refreshToken) {
+          localStorage.setItem('refreshToken', response.refreshToken);
+        }
+        // Set auth flag for persistence across page refreshes
+        localStorage.setItem('bento_auth', 'true');
+        this.loading.set(false);
+        // Set authentication state directly from API response
+        (this.state as any).isAuthenticated.set(true);
+        (this.state as any).currentUserId.set(response.user.id);
         this.router.navigate(['/']);
-      } else {
-        this.error.set('Invalid email or password');
+      },
+      error: (err) => {
+        console.error('Login failed:', err);
+        this.error.set('Invalid email or password. Please try again.');
         this.loading.set(false);
       }
-    }, 600);
+    });
   }
 
   onGoogleLogin(): void {

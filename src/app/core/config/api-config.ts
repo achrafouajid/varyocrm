@@ -1,0 +1,56 @@
+export const API_CONFIG = {
+  baseUrl: 'http://localhost:8080/api/v1',
+  endpoints: {
+    auth: {
+      login: '/auth/login',
+      refresh: '/auth/refresh',
+      logout: '/auth/logout',
+      me: '/auth/me',
+    },
+    users: {
+      list: '/users',
+      create: '/users',
+      get: (id: string) => `/users/${id}`,
+      update: (id: string) => `/users/${id}`,
+    },
+    partners: {
+      list: '/partners',
+      create: '/partners',
+      get: (id: string) => `/partners/${id}`,
+      update: (id: string) => `/partners/${id}`,
+      delete: (id: string) => `/partners/${id}`,
+    },
+    deals: {
+      list: '/deals',
+      create: '/deals',
+      get: (id: string) => `/deals/${id}`,
+      update: (id: string) => `/deals/${id}`,
+    },
+    proposals: {
+      list: '/proposals',
+      create: '/proposals',
+      get: (id: string) => `/proposals/${id}`,
+    },
+    invoices: {
+      list: '/invoices',
+      create: '/invoices',
+      get: (id: string) => `/invoices/${id}`,
+    },
+    tickets: {
+      list: '/tickets',
+      create: '/tickets',
+      get: (id: string) => `/tickets/${id}`,
+    },
+    tasks: {
+      list: '/tasks',
+      create: '/tasks',
+      get: (id: string) => `/tasks/${id}`,
+    },
+  },
+} as const;
+
+export const HTTP_CONFIG = {
+  timeout: 30000,
+  retryAttempts: 3,
+  retryDelay: 1000,
+} as const;

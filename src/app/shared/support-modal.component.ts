@@ -56,8 +56,8 @@ const SEARCH_ITEMS: SearchItem[] = [
       transition: all 150ms ease;
     }
     .drop-zone.dragging {
-      background: #eef2ff;
-      border-color: #6366f1;
+      background: #EFF6FF;
+      border-color: #3B82F6;
     }
   `],
   template: `

@@ -28,7 +28,7 @@ import { MatIconModule } from '@angular/material/icon';
       color: #0f172a;
     }
     .chat-bubble-me {
-      background-color: #4f46e5;
+      background-color: #2563EB;
       color: #ffffff;
     }
   `],
@@ -42,7 +42,7 @@ import { MatIconModule } from '@angular/material/icon';
           <h2 class="text-sm font-bold text-zinc-800 uppercase tracking-wide">Collaboration Groups</h2>
           <button
             (click)="toggleCreateGroupForm()"
-            class="text-indigo-650 hover:bg-zinc-100 p-1.5 rounded-lg transition-colors cursor-pointer flex items-center"
+            class="text-blue-700 hover:bg-zinc-100 p-1.5 rounded-lg transition-colors cursor-pointer flex items-center"
             title="Create Group"
           >
             <mat-icon class="text-base w-4.5 h-4.5 flex items-center justify-center">add_circle</mat-icon>
@@ -57,14 +57,14 @@ import { MatIconModule } from '@angular/material/icon';
             <input
               [(ngModel)]="newGroupName"
               placeholder="Group name (e.g. Finance Sync)"
-              class="w-full input-field rounded-xl px-2.5 py-1.5 text-xs focus:outline-indigo-600 text-zinc-850"
+              class="w-full input-field rounded-xl px-2.5 py-1.5 text-xs focus:outline-blue-600 text-zinc-850"
             />
             
             <textarea
               [(ngModel)]="newGroupDesc"
               placeholder="Description (Optional)"
               rows="2"
-              class="w-full input-field rounded-xl px-2.5 py-1.5 text-xs focus:outline-indigo-600 text-zinc-850"
+              class="w-full input-field rounded-xl px-2.5 py-1.5 text-xs focus:outline-blue-600 text-zinc-850"
             ></textarea>
 
             <!-- Search members -->
@@ -76,7 +76,7 @@ import { MatIconModule } from '@angular/material/icon';
                 (input)="searchUsers(searchBox.value)"
                 (focus)="searchUsers(searchBox.value)"
                 (blur)="clearSearchDelay()"
-                class="w-full input-field rounded-xl px-2.5 py-1.5 text-xs focus:outline-indigo-600 text-zinc-850"
+                class="w-full input-field rounded-xl px-2.5 py-1.5 text-xs focus:outline-blue-600 text-zinc-850"
               />
               @if (userSearchMatches().length > 0) {
                 <div class="absolute left-0 right-0 mt-1 bg-white border border-zinc-200 rounded-xl shadow-lg z-20 overflow-hidden max-h-36 overflow-y-auto">
@@ -129,7 +129,7 @@ import { MatIconModule } from '@angular/material/icon';
               (click)="selectGroup(grp.id)"
               [class.bg-zinc-50]="selectedGroupId() === grp.id"
               [class.border-l-4]="selectedGroupId() === grp.id"
-              [style.border-left-color]="selectedGroupId() === grp.id ? '#4f46e5' : 'transparent'"
+              [style.border-left-color]="selectedGroupId() === grp.id ? '#3B82F6' : 'transparent'"
               class="p-4 cursor-pointer hover:bg-zinc-50/50 transition-colors flex items-start justify-between gap-2"
             >
               <div class="min-w-0 flex-1 space-y-1">
@@ -172,7 +172,7 @@ import { MatIconModule } from '@angular/material/icon';
               <button
                 (click)="activeTab.set('chat')"
                 [class.bg-white]="activeTab() === 'chat'"
-                [class.text-indigo-650]="activeTab() === 'chat'"
+                [class.text-blue-700]="activeTab() === 'chat'"
                 [class.shadow-xs]="activeTab() === 'chat'"
                 class="px-3 py-1 rounded-md text-[10px] font-bold text-zinc-650 cursor-pointer transition-all"
               >
@@ -181,7 +181,7 @@ import { MatIconModule } from '@angular/material/icon';
               <button
                 (click)="activeTab.set('meetings')"
                 [class.bg-white]="activeTab() === 'meetings'"
-                [class.text-indigo-650]="activeTab() === 'meetings'"
+                [class.text-blue-700]="activeTab() === 'meetings'"
                 [class.shadow-xs]="activeTab() === 'meetings'"
                 class="px-3 py-1 rounded-md text-[10px] font-bold text-zinc-650 cursor-pointer transition-all"
               >
@@ -242,7 +242,7 @@ import { MatIconModule } from '@angular/material/icon';
                   (keydown.enter)="sendMessage(grp.id)"
                   type="text"
 placeholder="Type your message..."
-                   class="flex-1 input-field rounded-xl px-4 py-2 text-xs focus:outline-indigo-650"
+                   class="flex-1 input-field rounded-xl px-4 py-2 text-xs focus:outline-blue-700"
                 />
                 <button
                   (click)="sendMessage(grp.id)"
@@ -280,7 +280,7 @@ placeholder="Type your message..."
                       <input
                         [(ngModel)]="meetTitle"
                         placeholder="e.g. Post-Mortem Briefing"
-                        class="w-full input-field rounded-xl px-3 py-1.5 text-xs focus:outline-indigo-600 text-zinc-800"
+                        class="w-full input-field rounded-xl px-3 py-1.5 text-xs focus:outline-blue-600 text-zinc-800"
                       />
                     </div>
 
@@ -289,7 +289,7 @@ placeholder="Type your message..."
                       <input
                         [(ngModel)]="meetDateStr"
                         type="datetime-local"
-                        class="w-full input-field rounded-xl px-3 py-1.5 text-xs focus:outline-indigo-600 text-zinc-800 font-mono"
+                        class="w-full input-field rounded-xl px-3 py-1.5 text-xs focus:outline-blue-600 text-zinc-800 font-mono"
                       />
                     </div>
 
@@ -298,7 +298,7 @@ placeholder="Type your message..."
                         <label class="block text-[10px] font-bold text-zinc-400 uppercase mb-1">Duration (minutes)</label>
                         <select
                           [(ngModel)]="meetDuration"
-                          class="w-full input-field rounded-xl px-3 py-1.5 text-xs focus:outline-indigo-600 text-zinc-700 font-semibold cursor-pointer"
+                          class="w-full input-field rounded-xl px-3 py-1.5 text-xs focus:outline-blue-600 text-zinc-700 font-semibold cursor-pointer"
                         >
                           <option value="30">30 min</option>
                           <option value="60">60 min</option>
@@ -312,7 +312,7 @@ placeholder="Type your message..."
                         <input
                           [(ngModel)]="meetDesc"
                           placeholder="Agenda details..."
-                          class="w-full input-field rounded-xl px-3 py-1.5 text-xs focus:outline-indigo-600 text-zinc-800"
+                          class="w-full input-field rounded-xl px-3 py-1.5 text-xs focus:outline-blue-600 text-zinc-800"
                         />
                       </div>
                     </div>
@@ -327,7 +327,7 @@ placeholder="Type your message..."
                               type="checkbox"
                               [checked]="meetAttendeeIds().includes(uid)"
                               (change)="toggleMeetingAttendee(uid)"
-                              class="rounded border-zinc-350 text-indigo-650 h-4.5 w-4.5"
+                              class="rounded border-zinc-350 text-blue-700 h-4.5 w-4.5"
                             />
                             <app-user-avatar [userId]="uid" [size]="24"></app-user-avatar>
                             <span class="text-[11px] font-semibold text-zinc-750 truncate">{{ getSenderName(uid) }}</span>

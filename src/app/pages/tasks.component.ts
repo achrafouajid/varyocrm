@@ -335,18 +335,18 @@ const SUB_MODULE_LABELS: Record<string, string> = {
           <div class="space-y-3">
             <div>
               <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Task Title</label>
-              <input [(ngModel)]="newTaskData.title" type="text" placeholder="e.g. Generate Customer Invoice" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600">
+              <input [(ngModel)]="newTaskData.title" type="text" placeholder="e.g. Generate Customer Invoice" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600">
             </div>
 
             <div>
               <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Description</label>
-              <textarea [(ngModel)]="newTaskData.description" rows="2" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600"></textarea>
+              <textarea [(ngModel)]="newTaskData.description" rows="2" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600"></textarea>
             </div>
 
             <div class="grid grid-cols-2 gap-3">
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Assigned Team</label>
-                <select [(ngModel)]="newTaskData.assignedTeam" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                <select [(ngModel)]="newTaskData.assignedTeam" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-blue-600">
                   <option value="Sales">Sales</option>
                   <option value="Operations">Operations</option>
                   <option value="Finance">Finance</option>
@@ -355,7 +355,7 @@ const SUB_MODULE_LABELS: Record<string, string> = {
               </div>
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Assigned Person</label>
-                <select [(ngModel)]="newTaskData.assignedTo" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                <select [(ngModel)]="newTaskData.assignedTo" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-blue-600">
                   <option value="">Unassigned</option>
                   @for (user of state.users(); track user.name) {
                     <option [value]="user.name">{{user.name}}</option>
@@ -366,7 +366,7 @@ const SUB_MODULE_LABELS: Record<string, string> = {
 
             <div>
               <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Module</label>
-              <select [(ngModel)]="selectedModule" (ngModelChange)="onModuleChange()" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+              <select [(ngModel)]="selectedModule" (ngModelChange)="onModuleChange()" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-blue-600">
                 <option value="">None</option>
                 @for (mod of moduleList; track mod) {
                   <option [value]="mod">{{mod}}</option>
@@ -377,7 +377,7 @@ const SUB_MODULE_LABELS: Record<string, string> = {
             @if (selectedModule()) {
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Sub-module</label>
-                <select [(ngModel)]="selectedSubModule" (ngModelChange)="onSubModuleChange()" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                <select [(ngModel)]="selectedSubModule" (ngModelChange)="onSubModuleChange()" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-blue-600">
                   <option value="">Select...</option>
                   @for (sub of subModules(); track sub) {
                     <option [value]="sub">{{subModuleLabel(sub)}}</option>
@@ -389,7 +389,7 @@ const SUB_MODULE_LABELS: Record<string, string> = {
             @if (selectedModule() && selectedSubModule()) {
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">{{subModuleLabel(selectedSubModule())}}</label>
-                <select [(ngModel)]="newTaskData.relatedEntityId" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                <select [(ngModel)]="newTaskData.relatedEntityId" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-blue-600">
                   <option value="">Select...</option>
                   @for (entity of relatedEntities(); track entity.id) {
                     <option [value]="entity.id">{{entity.label}}</option>
@@ -414,7 +414,7 @@ const SUB_MODULE_LABELS: Record<string, string> = {
           <h3 class="text-lg font-bold text-zinc-950">Assign Task: {{selectedTask()?.title}}</h3>
           <div>
             <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Select Assignee</label>
-            <select [(ngModel)]="reassignedUser" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+            <select [(ngModel)]="reassignedUser" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-blue-600">
               @for (user of state.users(); track user.name) {
                 <option [value]="user.name">{{user.name}} ({{user.role}})</option>
               }

@@ -1,7 +1,8 @@
-import { Injectable, signal, computed, inject } from '@angular/core';
+import { Injectable, signal, computed, inject, effect } from '@angular/core';
 import { Router } from '@angular/router';
 import { SEED_ORG, SEED_USERS, SEED_TEAMS, SEED_GROUPS, SEED_MESSAGES, SEED_MEETINGS } from '../data/seed-data';
 import { ToastService } from './toast.service';
+import { ApiService } from './api.service';
 
 export interface Organization {
   id: string;
@@ -847,18 +848,33 @@ export interface InboxMessage {
 export class CrmStateService {
   private toast = inject(ToastService);
   private router = inject(Router);
+  private api = inject(ApiService);
 
   // Auth
   isAuthenticated = signal<boolean>(this.loadAuthState());
   currentUserId = signal<string>('usr_rachid');
 
-  // Config signals
+  // Config signals - initialize with seed data, will be replaced by API data
   organization = signal<Organization>(SEED_ORG);
   users = signal<CrmUser[]>(SEED_USERS);
   teams = signal<CrmTeam[]>(SEED_TEAMS);
   groups = signal<CrmGroup[]>(SEED_GROUPS);
   groupMessages = signal<GroupMessage[]>(SEED_MESSAGES);
   groupMeetings = signal<GroupMeeting[]>(SEED_MEETINGS);
+
+  // Loading state
+  isLoading = signal<boolean>(false);
+
+  // Per-domain loading states for lazy loading
+  dealsLoaded = signal<boolean>(false);
+  partnersLoaded = signal<boolean>(false);
+  proposalsLoaded = signal<boolean>(false);
+  tasksLoaded = signal<boolean>(false);
+  ticketsLoaded = signal<boolean>(false);
+  invoicesLoaded = signal<boolean>(false);
+  purchaseOrdersLoaded = signal<boolean>(false);
+  campaignsLoaded = signal<boolean>(false);
+  automationRulesLoaded = signal<boolean>(false);
 
   // Shared tab state for section pages
   salesSubTab = signal<'deals' | 'proposals' | 'pos'>('deals');
@@ -936,6 +952,206 @@ export class CrmStateService {
 
   private patchAllUsersCompatibility(usersList: CrmUser[]): CrmUser[] {
     return usersList.map(u => this.patchUserCompatibility({ ...u }));
+  }
+
+  // Initialize eager data from API (app-wide dependencies)
+  private loadEagerDataFromApi(): void {
+    this.api.getUsers().subscribe({
+      next: (users) => {
+        if (users && users.length > 0) {
+          this.users.set(this.patchAllUsersCompatibility(users));
+        }
+      },
+      error: (err) => {
+        console.warn('Failed to load users from API, using seed data:', err);
+      }
+    });
+
+    this.api.getTeams().subscribe({
+      next: (teams) => {
+        if (teams && teams.length > 0) {
+          this.teams.set(teams);
+        }
+      },
+      error: (err) => {
+        console.warn('Failed to load teams from API, using seed data:', err);
+      }
+    });
+
+    this.api.getGroups().subscribe({
+      next: (groups) => {
+        if (groups && groups.length > 0) {
+          this.groups.set(groups);
+        }
+      },
+      error: (err) => {
+        console.warn('Failed to load groups from API, using seed data:', err);
+      }
+    });
+
+    this.api.getOrganization().subscribe({
+      next: (org) => {
+        if (org) {
+          this.organization.set(org);
+        }
+      },
+      error: (err) => {
+        console.warn('Failed to load organization from API, using seed data:', err);
+      }
+    });
+  }
+
+  // Lazy-load: Deals
+  loadDeals(): void {
+    if (this.dealsLoaded()) return;
+    this.api.getDeals().subscribe({
+      next: (deals) => {
+        if (deals && deals.length > 0) {
+          this.deals.set(deals);
+        }
+        this.dealsLoaded.set(true);
+      },
+      error: (err) => {
+        console.warn('Failed to load deals from API, using seed data:', err);
+        this.dealsLoaded.set(true);
+      }
+    });
+  }
+
+  // Lazy-load: Partners
+  loadPartners(): void {
+    if (this.partnersLoaded()) return;
+    this.api.getPartners().subscribe({
+      next: (partners) => {
+        if (partners && partners.length > 0) {
+          this.partners.set(partners);
+        }
+        this.partnersLoaded.set(true);
+      },
+      error: (err) => {
+        console.warn('Failed to load partners from API, using seed data:', err);
+        this.partnersLoaded.set(true);
+      }
+    });
+  }
+
+  // Lazy-load: Proposals
+  loadProposals(): void {
+    if (this.proposalsLoaded()) return;
+    this.api.getProposals().subscribe({
+      next: (proposals) => {
+        if (proposals && proposals.length > 0) {
+          this.proposals.set(proposals);
+        }
+        this.proposalsLoaded.set(true);
+      },
+      error: (err) => {
+        console.warn('Failed to load proposals from API, using seed data:', err);
+        this.proposalsLoaded.set(true);
+      }
+    });
+  }
+
+  // Lazy-load: Tasks
+  loadTasks(): void {
+    if (this.tasksLoaded()) return;
+    this.api.getTasks().subscribe({
+      next: (tasks) => {
+        if (tasks && tasks.length > 0) {
+          this.tasks.set(tasks);
+        }
+        this.tasksLoaded.set(true);
+      },
+      error: (err) => {
+        console.warn('Failed to load tasks from API, using seed data:', err);
+        this.tasksLoaded.set(true);
+      }
+    });
+  }
+
+  // Lazy-load: Tickets
+  loadTickets(): void {
+    if (this.ticketsLoaded()) return;
+    this.api.getTickets().subscribe({
+      next: (tickets) => {
+        if (tickets && tickets.length > 0) {
+          this.tickets.set(tickets);
+        }
+        this.ticketsLoaded.set(true);
+      },
+      error: (err) => {
+        console.warn('Failed to load tickets from API, using seed data:', err);
+        this.ticketsLoaded.set(true);
+      }
+    });
+  }
+
+  // Lazy-load: Invoices
+  loadInvoices(): void {
+    if (this.invoicesLoaded()) return;
+    this.api.getInvoices().subscribe({
+      next: (invoices) => {
+        if (invoices && invoices.length > 0) {
+          this.invoices.set(invoices);
+        }
+        this.invoicesLoaded.set(true);
+      },
+      error: (err) => {
+        console.warn('Failed to load invoices from API, using seed data:', err);
+        this.invoicesLoaded.set(true);
+      }
+    });
+  }
+
+  // Lazy-load: Purchase Orders
+  loadPurchaseOrders(): void {
+    if (this.purchaseOrdersLoaded()) return;
+    this.api.getPurchaseOrders().subscribe({
+      next: (pos) => {
+        if (pos && pos.length > 0) {
+          this.purchaseOrders.set(pos);
+        }
+        this.purchaseOrdersLoaded.set(true);
+      },
+      error: (err) => {
+        console.warn('Failed to load purchase orders from API, using seed data:', err);
+        this.purchaseOrdersLoaded.set(true);
+      }
+    });
+  }
+
+  // Lazy-load: Campaigns
+  loadCampaigns(): void {
+    if (this.campaignsLoaded()) return;
+    this.api.getCampaigns().subscribe({
+      next: (campaigns) => {
+        if (campaigns && campaigns.length > 0) {
+          this.campaigns.set(campaigns);
+        }
+        this.campaignsLoaded.set(true);
+      },
+      error: (err) => {
+        console.warn('Failed to load campaigns from API, using seed data:', err);
+        this.campaignsLoaded.set(true);
+      }
+    });
+  }
+
+  // Lazy-load: Automation Rules
+  loadAutomationRules(): void {
+    if (this.automationRulesLoaded()) return;
+    this.api.getAutomationRules().subscribe({
+      next: (rules) => {
+        if (rules && rules.length > 0) {
+          this.automationRules.set(rules);
+        }
+        this.automationRulesLoaded.set(true);
+      },
+      error: (err) => {
+        console.warn('Failed to load automation rules from API, using seed data:', err);
+        this.automationRulesLoaded.set(true);
+      }
+    });
   }
 
   // State mutations
@@ -4496,6 +4712,9 @@ export class CrmStateService {
     return newLog;
   }
 
-
+  constructor() {
+    // Load only eager data (organization, users, teams, groups) on init
+    this.loadEagerDataFromApi();
+  }
 
 }

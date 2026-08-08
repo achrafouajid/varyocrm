@@ -51,7 +51,7 @@ import { MatIconModule } from '@angular/material/icon';
                 [(ngModel)]="formDisplayName"
                 type="text"
                 placeholder="e.g. Amina Alaoui"
-                class="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-indigo-600 text-zinc-800"
+                class="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-blue-600 text-zinc-800"
               />
             </div>
 
@@ -63,7 +63,7 @@ import { MatIconModule } from '@angular/material/icon';
                 [disabled]="!!editingUser()"
                 type="email"
                 placeholder="e.g. a.alaoui@acg.ma"
-                class="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-indigo-600 text-zinc-800 disabled:bg-zinc-100 disabled:text-zinc-400 disabled:cursor-not-allowed"
+                class="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-blue-600 text-zinc-800 disabled:bg-zinc-100 disabled:text-zinc-400 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -74,7 +74,7 @@ import { MatIconModule } from '@angular/material/icon';
                 [(ngModel)]="formJobTitle"
                 type="text"
                 placeholder="e.g. Accountant Specialist"
-                class="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-indigo-600 text-zinc-800"
+                class="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-blue-600 text-zinc-800"
               />
             </div>
 
@@ -85,7 +85,7 @@ import { MatIconModule } from '@angular/material/icon';
                 [(ngModel)]="formPhone"
                 type="text"
                 placeholder="e.g. +212-661-234567"
-                class="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-indigo-600 text-zinc-800"
+                class="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-blue-600 text-zinc-800"
               />
             </div>
 
@@ -94,7 +94,7 @@ import { MatIconModule } from '@angular/material/icon';
               <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">System Role</label>
               <select
                 [(ngModel)]="formRoleId"
-                class="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-indigo-600 text-zinc-700 cursor-pointer font-semibold"
+                class="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-blue-600 text-zinc-700 cursor-pointer font-semibold"
               >
                 <option value="admin">Admin</option>
                 <option value="manager">Manager</option>
@@ -109,7 +109,7 @@ import { MatIconModule } from '@angular/material/icon';
               <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Team Assignment</label>
               <select
                 [(ngModel)]="formTeamId"
-                class="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-indigo-600 text-zinc-700 cursor-pointer font-semibold"
+                class="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-blue-600 text-zinc-700 cursor-pointer font-semibold"
               >
                 <option value="">Unassigned</option>
                 @for (team of state.teams(); track team.id) {
@@ -146,7 +146,7 @@ import { MatIconModule } from '@angular/material/icon';
               [(ngModel)]="searchTerm"
               type="text"
               placeholder="Search by name or email..."
-              class="w-full border border-zinc-200 rounded-xl pl-9 pr-3 py-2 text-xs focus:outline-indigo-600 text-zinc-800"
+              class="w-full border border-zinc-200 rounded-xl pl-9 pr-3 py-2 text-xs focus:outline-blue-600 text-zinc-800"
             />
             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-400">
               <mat-icon class="text-sm w-4 h-4 flex items-center justify-center">search</mat-icon>
@@ -156,7 +156,7 @@ import { MatIconModule } from '@angular/material/icon';
           <!-- Role Select -->
           <select
             [(ngModel)]="selectedRole"
-            class="border border-zinc-200 rounded-xl px-3 py-2 text-xs bg-white text-zinc-600 cursor-pointer font-semibold focus:outline-indigo-600"
+            class="border border-zinc-200 rounded-xl px-3 py-2 text-xs bg-white text-zinc-600 cursor-pointer font-semibold focus:outline-blue-600"
           >
             <option value="all">All Roles</option>
             <option value="admin">Admin</option>
@@ -169,7 +169,7 @@ import { MatIconModule } from '@angular/material/icon';
           <!-- Team Select -->
           <select
             [(ngModel)]="selectedTeam"
-            class="border border-zinc-200 rounded-xl px-3 py-2 text-xs bg-white text-zinc-600 cursor-pointer font-semibold focus:outline-indigo-600"
+            class="border border-zinc-200 rounded-xl px-3 py-2 text-xs bg-white text-zinc-600 cursor-pointer font-semibold focus:outline-blue-600"
           >
             <option value="all">All Teams</option>
             <option value="unassigned">Unassigned</option>
@@ -191,7 +191,7 @@ import { MatIconModule } from '@angular/material/icon';
       </div>
 
       <!-- Table / User List -->
-      <div class="bg-white border border-zinc-200/80 rounded-2xl overflow-hidden shadow-xs">
+      <div class="bg-white border border-zinc-200/80 rounded-2xl overflow-x-auto shadow-xs">
         <table class="min-w-full divide-y divide-slate-200">
           <thead class="bg-zinc-50">
             <tr>
@@ -236,7 +236,7 @@ import { MatIconModule } from '@angular/material/icon';
                         (change)="changeUserRole(user.id, $event)"
                         (blur)="cancelRoleEdit()"
                         (keydown.esc)="cancelRoleEdit()"
-                        class="border border-zinc-200 rounded-lg px-2 py-1 text-xs bg-white text-zinc-700 focus:outline-indigo-600 focus:ring-1 focus:ring-zinc-700"
+                        class="border border-zinc-200 rounded-lg px-2 py-1 text-xs bg-white text-zinc-700 focus:outline-blue-600 focus:ring-1 focus:ring-zinc-700"
                         autofocus
                       >
                         <option value="admin">Admin</option>

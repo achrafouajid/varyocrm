@@ -49,7 +49,7 @@ import { MatIconModule } from '@angular/material/icon';
                 [(ngModel)]="newTeamName"
                 type="text"
                 placeholder="e.g. Casablanca Sales"
-                class="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-indigo-600 text-zinc-800"
+                class="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-blue-600 text-zinc-800"
               />
             </div>
 
@@ -58,7 +58,7 @@ import { MatIconModule } from '@angular/material/icon';
               <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Department</label>
               <select
                 [(ngModel)]="newTeamDept"
-                class="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-indigo-600 text-zinc-700 font-semibold cursor-pointer"
+                class="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-blue-600 text-zinc-700 font-semibold cursor-pointer"
               >
                 <option value="Sales">Sales</option>
                 <option value="Operations">Operations</option>
@@ -73,7 +73,7 @@ import { MatIconModule } from '@angular/material/icon';
               <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Team Lead *</label>
               <select
                 [(ngModel)]="newTeamLeadId"
-                class="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-indigo-600 text-zinc-700 font-semibold cursor-pointer"
+                class="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-blue-600 text-zinc-700 font-semibold cursor-pointer"
               >
                 <option value="">-- Select a Manager --</option>
                 @for (mgr of getAvailableLeads(); track mgr.id) {
@@ -105,7 +105,7 @@ import { MatIconModule } from '@angular/material/icon';
                 [(ngModel)]="newTeamDesc"
                 rows="2"
                 placeholder="Brief summary of the team responsibilities..."
-                class="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-indigo-600 text-zinc-800"
+                class="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-blue-600 text-zinc-800"
               ></textarea>
             </div>
           </div>
@@ -234,7 +234,7 @@ import { MatIconModule } from '@angular/material/icon';
                     <div class="flex items-center gap-2">
                       <select
                         (change)="executeLeadTransfer(team.id, $event)"
-                        class="border border-zinc-200 rounded-lg px-2 py-1 text-xs bg-white text-zinc-700 focus:outline-indigo-600 focus:ring-1 focus:ring-zinc-700 font-semibold flex-1"
+                        class="border border-zinc-200 rounded-lg px-2 py-1 text-xs bg-white text-zinc-700 focus:outline-blue-600 focus:ring-1 focus:ring-zinc-700 font-semibold flex-1"
                       >
                         <option value="">-- Select member --</option>
                         @for (mid of team.memberUserIds; track mid) {
@@ -274,7 +274,7 @@ import { MatIconModule } from '@angular/material/icon';
                       (input)="searchUsersToAdd(team.id, searchBox.value)"
                       (focus)="searchUsersToAdd(team.id, searchBox.value)"
                       (blur)="clearSearchDelay()"
-                      class="w-full border border-zinc-200 rounded-xl px-3 py-1.5 text-xs bg-zinc-50 focus:bg-white focus:outline-indigo-600 text-zinc-800"
+                      class="w-full border border-zinc-200 rounded-xl px-3 py-1.5 text-xs bg-zinc-50 focus:bg-white focus:outline-blue-600 text-zinc-800"
                     />
 
                     <!-- Add matches dropdown -->

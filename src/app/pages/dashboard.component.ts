@@ -2,12 +2,12 @@ import { Component, inject, signal, computed } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { CrmStateService, Task, Ticket } from '../services/crm-state.service';
-import { RouterModule, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-calendar.component';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [MatIconModule, CommonModule, RouterModule, PartnerScheduleCalendarComponent],
+  imports: [MatIconModule, CommonModule, PartnerScheduleCalendarComponent],
   template: `
     <div class="space-y-3 mb-6">
 
@@ -600,153 +600,16 @@ import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-cal
 
     </div>
 
-      <!-- Quick Actions FAB -->
-      @if (quickActionsOpen()) {
-        <div class="fab-backdrop" (click)="quickActionsOpen.set(false)"></div>
-      }
-      <div class="quick-actions-fab">
-        <button
-          class="fab-btn"
-          (click)="quickActionsOpen.set(!quickActionsOpen())"
-        >
-          <mat-icon>{{ quickActionsOpen() ? 'close' : 'add' }}</mat-icon>
-        </button>
-
-        @if (quickActionsOpen()) {
-          <div class="fab-dropdown">
-            <a routerLink="/sales" class="fab-item hover:underline" (click)="quickActionsOpen.set(false)">
-              <div class="fab-item-icon fab-item-icon--indigo">
-                <mat-icon>add_business</mat-icon>
-              </div>
-              <span>New Proposal</span>
-            </a>
-            <a routerLink="/partners" class="fab-item hover:underline" (click)="quickActionsOpen.set(false)">
-              <div class="fab-item-icon fab-item-icon--emerald">
-                <mat-icon>person_add</mat-icon>
-              </div>
-              <span>Add Partner</span>
-            </a>
-            <a routerLink="/marketing" class="fab-item hover:underline" (click)="quickActionsOpen.set(false)">
-              <div class="fab-item-icon fab-item-icon--amber">
-                <mat-icon>campaign</mat-icon>
-              </div>
-              <span>New Campaign</span>
-            </a>
-            <a routerLink="/tickets" class="fab-item hover:underline" (click)="quickActionsOpen.set(false)">
-              <div class="fab-item-icon fab-item-icon--rose">
-                <mat-icon>support_agent</mat-icon>
-              </div>
-              <span>Create Ticket</span>
-            </a>
-          </div>
-        }
-      </div>
-
   `,
   styles: [`
-    .quick-actions-fab {
-      position: fixed;
-      bottom: 32px;
-      right: 24px;
-      z-index: 50;
-    }
-
-    .fab-btn {
-      width: 40px;
-      height: 40px;
-      border-radius: 12px;
-      background: #FFFFFF;
-      border: 1px solid #09090B;
-      color: #09090B;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
-
-    .fab-btn mat-icon {
-      font-size: 20px;
-      width: 20px;
-      height: 20px;
-      line-height: 20px;
-    }
-
-    .fab-backdrop {
-      position: fixed;
-      inset: 0;
-      z-index: 49;
-    }
-
-    .fab-dropdown {
-      position: absolute;
-      bottom: calc(100% + 12px);
-      right: 0;
-      background: #FFFFFF;
-      border: 1px solid #E4E4E7;
-      border-radius: 12px;
-      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.04);
-      padding: 6px;
-      min-width: 200px;
-      z-index: 50;
-    }
-
-    .fab-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 12px;
-      border-radius: 8px;
-      text-decoration: none;
-      color: #09090B;
-      font-size: 13px;
-      font-weight: 600;
-      transition: background 150ms ease;
-    }
-
-    .fab-item:hover {
-      background: #F4F4F5;
-    }
-
-    .fab-item-icon {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #F4F4F5;
-      flex-shrink: 0;
-    }
-
-    .fab-item-icon mat-icon {
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
-      line-height: 18px;
-      color: #09090B;
-    }
-
     mat-icon {
       color: #3B82F6;
-    }
-
-    .fab-btn mat-icon,
-    .fab-dropdown mat-icon {
-      color: inherit;
-    }
-
-    @media (max-width: 768px) {
-      .quick-actions-fab {
-        right: 16px;
-      }
     }
   `]
 })
 export class DashboardComponent {
   state = inject(CrmStateService);
   private router = inject(Router);
-  quickActionsOpen = signal(false);
 
   // Selection states
   selectedTaskIds = signal<Set<string>>(new Set());

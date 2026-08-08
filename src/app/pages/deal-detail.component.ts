@@ -486,24 +486,24 @@ import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
               <div class="grid grid-cols-2 gap-3">
                 <div>
                   <label class="block text-xs font-semibold text-zinc-500 mb-1">Date</label>
-                  <input [(ngModel)]="newActivityInput.calls.date" type="date" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
+                  <input [(ngModel)]="newActivityInput.calls.date" type="date" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-blue-600">
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-zinc-500 mb-1">Duration (min)</label>
-                  <input [(ngModel)]="newActivityInput.calls.duration" type="number" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
+                  <input [(ngModel)]="newActivityInput.calls.duration" type="number" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-blue-600">
                 </div>
               </div>
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 mb-1">Caller Name</label>
-                <input [(ngModel)]="newActivityInput.calls.callerName" type="text" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
+                <input [(ngModel)]="newActivityInput.calls.callerName" type="text" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-blue-600">
               </div>
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 mb-1">Summary</label>
-                <textarea [(ngModel)]="newActivityInput.calls.summary" rows="3" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-indigo-600"></textarea>
+                <textarea [(ngModel)]="newActivityInput.calls.summary" rows="3" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-blue-600"></textarea>
               </div>
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 mb-1">Outcome</label>
-                <select [(ngModel)]="newActivityInput.calls.outcome" class="w-full border border-zinc-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                <select [(ngModel)]="newActivityInput.calls.outcome" class="w-full border border-zinc-200 rounded-lg p-2 text-sm bg-white focus:outline-blue-600">
                   <option value="Interested">Interested</option>
                   <option value="Follow-up">Follow-up</option>
                   <option value="Not Interested">Not Interested</option>
@@ -517,11 +517,11 @@ import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
               <div class="grid grid-cols-2 gap-3">
                 <div>
                   <label class="block text-xs font-semibold text-zinc-500 mb-1">Date</label>
-                  <input [(ngModel)]="newActivityInput.emails.date" type="date" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
+                  <input [(ngModel)]="newActivityInput.emails.date" type="date" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-blue-600">
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-zinc-500 mb-1">Direction</label>
-                  <select [(ngModel)]="newActivityInput.emails.direction" class="w-full border border-zinc-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                  <select [(ngModel)]="newActivityInput.emails.direction" class="w-full border border-zinc-200 rounded-lg p-2 text-sm bg-white focus:outline-blue-600">
                     <option value="sent">Sent</option>
                     <option value="received">Received</option>
                   </select>
@@ -529,21 +529,21 @@ import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
               </div>
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 mb-1">Subject</label>
-                <input [(ngModel)]="newActivityInput.emails.subject" type="text" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
+                <input [(ngModel)]="newActivityInput.emails.subject" type="text" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-blue-600">
               </div>
               <div class="grid grid-cols-2 gap-3">
                 <div>
                   <label class="block text-xs font-semibold text-zinc-500 mb-1">From</label>
-                  <input [(ngModel)]="newActivityInput.emails.from" type="text" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
+                  <input [(ngModel)]="newActivityInput.emails.from" type="text" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-blue-600">
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-zinc-500 mb-1">To</label>
-                  <input [(ngModel)]="newActivityInput.emails.to" type="text" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
+                  <input [(ngModel)]="newActivityInput.emails.to" type="text" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-blue-600">
                 </div>
               </div>
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 mb-1">Body</label>
-                <textarea [(ngModel)]="newActivityInput.emails.body" rows="3" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-indigo-600"></textarea>
+                <textarea [(ngModel)]="newActivityInput.emails.body" rows="3" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-blue-600"></textarea>
               </div>
             </div>
           }
@@ -553,21 +553,21 @@ import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
               <div class="grid grid-cols-2 gap-3">
                 <div>
                   <label class="block text-xs font-semibold text-zinc-500 mb-1">Date</label>
-                  <input [(ngModel)]="newActivityInput.meetings.date" type="date" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
+                  <input [(ngModel)]="newActivityInput.meetings.date" type="date" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-blue-600">
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-zinc-500 mb-1">Time</label>
-                  <input [(ngModel)]="newActivityInput.meetings.time" type="text" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
+                  <input [(ngModel)]="newActivityInput.meetings.time" type="text" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-blue-600">
                 </div>
               </div>
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 mb-1">Title</label>
-                <input [(ngModel)]="newActivityInput.meetings.title" type="text" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
+                <input [(ngModel)]="newActivityInput.meetings.title" type="text" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-blue-600">
               </div>
               <div class="grid grid-cols-2 gap-3">
                 <div>
                   <label class="block text-xs font-semibold text-zinc-500 mb-1">Type</label>
-                  <select [(ngModel)]="newActivityInput.meetings.type" class="w-full border border-zinc-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                  <select [(ngModel)]="newActivityInput.meetings.type" class="w-full border border-zinc-200 rounded-lg p-2 text-sm bg-white focus:outline-blue-600">
                     <option value="teams">Teams</option>
                     <option value="demo">Demo</option>
                     <option value="physical">Physical</option>
@@ -575,16 +575,16 @@ import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-zinc-500 mb-1">Location</label>
-                  <input [(ngModel)]="newActivityInput.meetings.location" type="text" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
+                  <input [(ngModel)]="newActivityInput.meetings.location" type="text" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-blue-600">
                 </div>
               </div>
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 mb-1">Attendees (comma separated)</label>
-                <input [(ngModel)]="newActivityInput.meetings.attendees" type="text" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
+                <input [(ngModel)]="newActivityInput.meetings.attendees" type="text" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-blue-600">
               </div>
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 mb-1">Summary</label>
-                <textarea [(ngModel)]="newActivityInput.meetings.summary" rows="2" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-indigo-600"></textarea>
+                <textarea [(ngModel)]="newActivityInput.meetings.summary" rows="2" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-blue-600"></textarea>
               </div>
             </div>
           }
@@ -594,24 +594,24 @@ import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
               <div class="grid grid-cols-2 gap-3">
                 <div>
                   <label class="block text-xs font-semibold text-zinc-500 mb-1">Date</label>
-                  <input [(ngModel)]="newActivityInput.recordings.date" type="date" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
+                  <input [(ngModel)]="newActivityInput.recordings.date" type="date" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-blue-600">
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-zinc-500 mb-1">Duration</label>
-                  <input [(ngModel)]="newActivityInput.recordings.duration" type="text" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
+                  <input [(ngModel)]="newActivityInput.recordings.duration" type="text" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-blue-600">
                 </div>
               </div>
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 mb-1">Title</label>
-                <input [(ngModel)]="newActivityInput.recordings.title" type="text" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
+                <input [(ngModel)]="newActivityInput.recordings.title" type="text" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-blue-600">
               </div>
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 mb-1">Meeting Link</label>
-                <input [(ngModel)]="newActivityInput.recordings.meetingLink" type="text" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
+                <input [(ngModel)]="newActivityInput.recordings.meetingLink" type="text" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-blue-600">
               </div>
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 mb-1">Recording Link</label>
-                <input [(ngModel)]="newActivityInput.recordings.recordingLink" type="text" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
+                <input [(ngModel)]="newActivityInput.recordings.recordingLink" type="text" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-blue-600">
               </div>
             </div>
           }
@@ -621,16 +621,16 @@ import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
               <div class="grid grid-cols-2 gap-3">
                 <div>
                   <label class="block text-xs font-semibold text-zinc-500 mb-1">Date</label>
-                  <input [(ngModel)]="newActivityInput.notes.date" type="date" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
+                  <input [(ngModel)]="newActivityInput.notes.date" type="date" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-blue-600">
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-zinc-500 mb-1">Author</label>
-                  <input [(ngModel)]="newActivityInput.notes.author" type="text" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
+                  <input [(ngModel)]="newActivityInput.notes.author" type="text" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-blue-600">
                 </div>
               </div>
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 mb-1">Content</label>
-                <textarea [(ngModel)]="newActivityInput.notes.content" rows="4" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-indigo-600"></textarea>
+                <textarea [(ngModel)]="newActivityInput.notes.content" rows="4" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-blue-600"></textarea>
               </div>
             </div>
           }
@@ -639,15 +639,15 @@ import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
             <div class="space-y-3">
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 mb-1">Due Date</label>
-                <input [(ngModel)]="newActivityInput.followups.dueDate" type="date" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
+                <input [(ngModel)]="newActivityInput.followups.dueDate" type="date" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-blue-600">
               </div>
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 mb-1">Title</label>
-                <input [(ngModel)]="newActivityInput.followups.title" type="text" placeholder="e.g. Send quotation" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
+                <input [(ngModel)]="newActivityInput.followups.title" type="text" placeholder="e.g. Send quotation" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-blue-600">
               </div>
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 mb-1">Assigned To</label>
-                <input [(ngModel)]="newActivityInput.followups.assignedTo" type="text" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
+                <input [(ngModel)]="newActivityInput.followups.assignedTo" type="text" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-blue-600">
               </div>
             </div>
           }
@@ -677,13 +677,13 @@ import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
               </div>
               @if (showNewVendorForm()) {
                 <div class="grid grid-cols-2 gap-3">
-                  <input [(ngModel)]="newVendorData.name" type="text" placeholder="Vendor name" class="border border-zinc-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
-                  <input [(ngModel)]="newVendorData.email" type="email" placeholder="Email" class="border border-zinc-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
-                  <input [(ngModel)]="newVendorData.phone" type="text" placeholder="Phone" class="border border-zinc-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
-                  <input [(ngModel)]="newVendorData.city" type="text" placeholder="City" class="border border-zinc-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
+                  <input [(ngModel)]="newVendorData.name" type="text" placeholder="Vendor name" class="border border-zinc-200 rounded-lg p-2 text-sm focus:outline-blue-600">
+                  <input [(ngModel)]="newVendorData.email" type="email" placeholder="Email" class="border border-zinc-200 rounded-lg p-2 text-sm focus:outline-blue-600">
+                  <input [(ngModel)]="newVendorData.phone" type="text" placeholder="Phone" class="border border-zinc-200 rounded-lg p-2 text-sm focus:outline-blue-600">
+                  <input [(ngModel)]="newVendorData.city" type="text" placeholder="City" class="border border-zinc-200 rounded-lg p-2 text-sm focus:outline-blue-600">
                 </div>
               } @else {
-                <select [(ngModel)]="selectedVendorId" class="w-full border border-zinc-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                <select [(ngModel)]="selectedVendorId" class="w-full border border-zinc-200 rounded-lg p-2 text-sm bg-white focus:outline-blue-600">
                   @for (v of state.vendors(); track v.id) {
                     <option [value]="v.id">{{ v.name }}</option>
                   }
@@ -693,7 +693,7 @@ import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
 
             <div>
               <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Delivery Date</label>
-              <input [(ngModel)]="newPoDeliveryDate" type="date" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
+              <input [(ngModel)]="newPoDeliveryDate" type="date" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-blue-600">
             </div>
 
             <div class="space-y-2">
@@ -701,10 +701,10 @@ import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
               <div class="space-y-2">
                 @for (line of poLines(); track $index) {
                   <div class="grid grid-cols-12 gap-2 items-center">
-                    <input [(ngModel)]="line.item" placeholder="Item name" class="col-span-4 border border-zinc-200 rounded-lg p-1.5 text-xs focus:outline-indigo-600">
-                    <input [(ngModel)]="line.qty" type="number" class="col-span-2 border border-zinc-200 rounded-lg p-1.5 text-xs focus:outline-indigo-600 text-center" placeholder="Qty">
-                    <input [(ngModel)]="line.unitPrice" type="number" class="col-span-3 border border-zinc-200 rounded-lg p-1.5 text-xs focus:outline-indigo-600 font-sans text-right" placeholder="Unit price">
-                    <select [(ngModel)]="line.type" class="col-span-2 border border-zinc-200 rounded-lg p-1.5 text-xs bg-white focus:outline-indigo-600">
+                    <input [(ngModel)]="line.item" placeholder="Item name" class="col-span-4 border border-zinc-200 rounded-lg p-1.5 text-xs focus:outline-blue-600">
+                    <input [(ngModel)]="line.qty" type="number" class="col-span-2 border border-zinc-200 rounded-lg p-1.5 text-xs focus:outline-blue-600 text-center" placeholder="Qty">
+                    <input [(ngModel)]="line.unitPrice" type="number" class="col-span-3 border border-zinc-200 rounded-lg p-1.5 text-xs focus:outline-blue-600 font-sans text-right" placeholder="Unit price">
+                    <select [(ngModel)]="line.type" class="col-span-2 border border-zinc-200 rounded-lg p-1.5 text-xs bg-white focus:outline-blue-600">
                       <option value="software">Software</option>
                       <option value="hardware">Hardware</option>
                       <option value="service">Service</option>
@@ -748,15 +748,15 @@ import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
           <div class="space-y-3">
             <div>
               <label class="block text-xs font-semibold text-zinc-500 mb-1">Task Title</label>
-              <input [(ngModel)]="assignTaskData.title" type="text" placeholder="e.g. Review deal terms" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-indigo-600">
+              <input [(ngModel)]="assignTaskData.title" type="text" placeholder="e.g. Review deal terms" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-blue-600">
             </div>
             <div>
               <label class="block text-xs font-semibold text-zinc-500 mb-1">Description</label>
-              <textarea [(ngModel)]="assignTaskData.description" rows="2" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-indigo-600"></textarea>
+              <textarea [(ngModel)]="assignTaskData.description" rows="2" class="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-blue-600"></textarea>
             </div>
             <div>
               <label class="block text-xs font-semibold text-zinc-500 mb-1">Assigned Team</label>
-              <select [(ngModel)]="assignTaskData.assignedTeam" class="w-full border border-zinc-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+              <select [(ngModel)]="assignTaskData.assignedTeam" class="w-full border border-zinc-200 rounded-lg p-2 text-sm bg-white focus:outline-blue-600">
                 <option value="Sales">Sales</option>
                 <option value="Operations">Operations</option>
                 <option value="Finance">Finance</option>
@@ -765,7 +765,7 @@ import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
             </div>
             <div>
               <label class="block text-xs font-semibold text-zinc-500 mb-1">Assigned To</label>
-              <select [(ngModel)]="assignTaskData.assignedTo" class="w-full border border-zinc-200 rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+              <select [(ngModel)]="assignTaskData.assignedTo" class="w-full border border-zinc-200 rounded-lg p-2 text-sm bg-white focus:outline-blue-600">
                 <option value="">— Select —</option>
                 @for (u of state.users(); track u.id) {
                   <option [value]="u.name">{{ u.name }}</option>

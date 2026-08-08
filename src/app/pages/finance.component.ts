@@ -60,7 +60,7 @@ type InvoiceLine = {
 
         <!-- Invoices View -->
         @if (activeTab() !== 'Recovery') {
-          <div class="card rounded-2xl overflow-hidden">
+          <div class="card rounded-2xl overflow-x-auto">
             <table class="min-w-full divide-y divide-slate-200">
               <thead class="bg-white border border-zinc-200">
                 <tr>
@@ -197,7 +197,7 @@ type InvoiceLine = {
 
                   <div>
                     <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Message Preview</label>
-                    <textarea [(ngModel)]="reminderMessage" rows="5" class="w-full input-field rounded-lg p-2.5 text-xs text-zinc-700 focus:outline-indigo-600 leading-relaxed"></textarea>
+                    <textarea [(ngModel)]="reminderMessage" rows="5" class="w-full input-field rounded-lg p-2.5 text-xs text-zinc-700 focus:outline-blue-600 leading-relaxed"></textarea>
                   </div>
 
                   @if (successMessage()) {
@@ -336,7 +336,7 @@ type InvoiceLine = {
                   (ngModelChange)="onPartnerSelected($event)"
                   [disabled]="invoiceType() === 'Deal'"
                   [class]="invoiceType() === 'Deal' ? 'bg-zinc-50 text-zinc-400 cursor-not-allowed opacity-70' : 'bg-white focus:ring-2 focus:ring-zinc-300'"
-                  class="w-full input-field rounded-lg p-2.5 text-sm focus:outline-indigo-600 transition-colors">
+                  class="w-full input-field rounded-lg p-2.5 text-sm focus:outline-blue-600 transition-colors">
                   <option value="">— Select an existing Customer —</option>
                   @for (cust of invoiceEligibleCustomers(); track cust.id) {
                     <option [value]="cust.id">{{ cust.name }}</option>
@@ -373,7 +373,7 @@ type InvoiceLine = {
                 <input [(ngModel)]="newInvoiceData.vatNumber" type="text"
                   placeholder="e.g. MA-ICE-123456789"
                   [class]="autoFilledFields().has('vatNumber') ? 'bg-zinc-100 border-zinc-300 text-zinc-950' : 'bg-white'"
-                  class="w-full border rounded-lg p-2 text-sm font-sans focus:outline-indigo-600 transition-colors">
+                  class="w-full border rounded-lg p-2 text-sm font-sans focus:outline-blue-600 transition-colors">
               </div>
 
               <!-- Customer Account -->
@@ -389,7 +389,7 @@ type InvoiceLine = {
                   type="text"
                   placeholder="e.g. ERP-ATLAS-01"
                   [class]="invoiceType() === 'Deal' ? 'bg-zinc-50 text-zinc-400 cursor-not-allowed' : autoFilledFields().has('customerAccount') ? 'bg-zinc-100 border-zinc-300 text-zinc-950' : 'bg-white'"
-                  class="w-full input-field rounded-lg p-2 text-sm font-sans focus:outline-indigo-600 transition-colors">
+                  class="w-full input-field rounded-lg p-2 text-sm font-sans focus:outline-blue-600 transition-colors">
               </div>
 
               <!-- Customer Name -->
@@ -405,7 +405,7 @@ type InvoiceLine = {
                   type="text"
                   placeholder="Official corporate name"
                   [class]="invoiceType() === 'Deal' ? 'bg-zinc-50 text-zinc-400 cursor-not-allowed' : autoFilledFields().has('customerName') ? 'bg-zinc-100 border-zinc-300 text-zinc-950' : 'bg-white'"
-                  class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600 transition-colors">
+                  class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600 transition-colors">
               </div>
 
               <!-- Billing Address -->
@@ -421,7 +421,7 @@ type InvoiceLine = {
                   type="text"
                   placeholder="Registered billing / fiscal address"
                   [class]="invoiceType() === 'Deal' ? 'bg-zinc-50 text-zinc-400 cursor-not-allowed' : autoFilledFields().has('billingAddress') ? 'bg-zinc-100 border-zinc-300 text-zinc-950' : 'bg-white'"
-                  class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600 transition-colors">
+                  class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600 transition-colors">
               </div>
 
               <!-- Delivery Address -->
@@ -437,14 +437,14 @@ type InvoiceLine = {
                   type="text"
                   placeholder="Full delivery location"
                   [class]="invoiceType() === 'Deal' ? 'bg-zinc-50 text-zinc-400 cursor-not-allowed' : autoFilledFields().has('deliveryAddress') ? 'bg-zinc-100 border-zinc-300 text-zinc-950' : 'bg-white'"
-                  class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600 transition-colors">
+                  class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600 transition-colors">
               </div>
 
               <!-- Due Date -->
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Due Date</label>
                 <input [(ngModel)]="newInvoiceData.dueDate" type="date"
-                  class="w-full input-field rounded-lg p-2 text-sm font-sans focus:outline-indigo-600">
+                  class="w-full input-field rounded-lg p-2 text-sm font-sans focus:outline-blue-600">
               </div>
 
               <!-- Computed Total (read-only) -->
@@ -477,9 +477,9 @@ type InvoiceLine = {
 
               <!-- Lines Table -->
               @if (invoiceLines().length > 0) {
-                <div class="rounded-xl border border-zinc-200 overflow-hidden">
+                <div class="rounded-xl border border-zinc-200 overflow-x-auto">
                   <!-- Table header -->
-                  <div class="grid bg-white border border-zinc-200 border-b border-zinc-200 px-3 py-2"
+                  <div class="grid bg-white border border-zinc-200 border-b border-zinc-200 px-3 py-2 min-w-[520px]"
                        style="grid-template-columns: 1fr 1.4fr 60px 90px 90px 32px">
                     <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wide">Item</span>
                     <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wide">Description</span>
@@ -491,28 +491,28 @@ type InvoiceLine = {
 
                   <!-- Line rows -->
                   @for (line of invoiceLines(); track $index; let i = $index) {
-                    <div class="grid items-center gap-1.5 px-3 py-2 border-b border-white/30 last:border-0 hover:bg-zinc-50 transition-colors"
+                    <div class="grid items-center gap-1.5 px-3 py-2 border-b border-white/30 last:border-0 hover:bg-zinc-50 transition-colors min-w-[520px]"
                          style="grid-template-columns: 1fr 1.4fr 60px 90px 90px 32px">
                       <!-- Item -->
                       <input [(ngModel)]="invoiceLines()[i].item"
                         (ngModelChange)="patchLine(i, 'item', $event)"
                         placeholder="Product / service"
-                        class="w-full input-field rounded-lg px-2 py-1 text-xs focus:outline-indigo-500 focus:ring-1 focus:ring-zinc-300">
+                        class="w-full input-field rounded-lg px-2 py-1 text-xs focus:outline-blue-500 focus:ring-1 focus:ring-zinc-300">
                       <!-- Description -->
                       <input [(ngModel)]="invoiceLines()[i].description"
                         (ngModelChange)="patchLine(i, 'description', $event)"
                         placeholder="Optional detail"
-                        class="w-full input-field rounded-lg px-2 py-1 text-xs focus:outline-indigo-500 focus:ring-1 focus:ring-zinc-300">
+                        class="w-full input-field rounded-lg px-2 py-1 text-xs focus:outline-blue-500 focus:ring-1 focus:ring-zinc-300">
                       <!-- Qty -->
                       <input [(ngModel)]="invoiceLines()[i].qty"
                         (ngModelChange)="patchLine(i, 'qty', +$event)"
                         type="number" min="1"
-                        class="w-full input-field rounded-lg px-2 py-1 text-xs font-sans text-center focus:outline-indigo-500">
+                        class="w-full input-field rounded-lg px-2 py-1 text-xs font-sans text-center focus:outline-blue-500">
                       <!-- Unit Price -->
                       <input [(ngModel)]="invoiceLines()[i].unitPrice"
                         (ngModelChange)="patchLine(i, 'unitPrice', +$event)"
                         type="number" min="0"
-                        class="w-full input-field rounded-lg px-2 py-1 text-xs font-sans text-right focus:outline-indigo-500">
+                        class="w-full input-field rounded-lg px-2 py-1 text-xs font-sans text-right focus:outline-blue-500">
                       <!-- Row Total (read-only) -->
                       <span class="text-xs font-sans font-semibold text-zinc-700 text-right pr-1">
                         {{ formatCurrency(line.qty * line.unitPrice) }}
@@ -526,7 +526,7 @@ type InvoiceLine = {
                   }
 
                   <!-- Running total footer -->
-                  <div class="grid px-3 py-2 bg-white border border-zinc-200 border-t border-zinc-200"
+                  <div class="grid px-3 py-2 bg-white border border-zinc-200 border-t border-zinc-200 min-w-[520px]"
                        style="grid-template-columns: 1fr 1.4fr 60px 90px 90px 32px">
                     <span class="col-span-4 text-xs font-bold text-zinc-500 text-right pr-2">Invoice Total:</span>
                     <span class="text-xs font-bold font-sans text-zinc-900 text-right pr-1">{{ formatCurrency(computedTotal()) }}</span>

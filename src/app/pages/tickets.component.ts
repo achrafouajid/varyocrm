@@ -1,6 +1,6 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { CrmStateService, Ticket } from '../services/crm-state.service';
+import { CrmStateService, Ticket, TicketStatus } from '../services/crm-state.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
@@ -18,21 +18,41 @@ import { RouterModule } from '@angular/router';
         </button>
       </div>
 
-      @if (activePriorityFilter()) {
+      <!-- Filters -->
+      <div class="flex flex-wrap items-center gap-3">
         <div class="flex items-center gap-2">
-          <div class="bg-white border border-zinc-200 rounded-xl px-4 py-2 flex items-center gap-2 text-sm">
-            <mat-icon class="text-[18px] w-4.5 h-4.5 text-zinc-700">filter_alt</mat-icon>
-            <span class="font-semibold text-zinc-700">Filtered by priority:</span>
-            <span [class]="activePriorityFilter() === 'High' ? 'text-red-600' : activePriorityFilter() === 'Medium' ? 'text-amber-600' : 'text-emerald-600'" class="px-2 py-0.5 rounded text-xs font-medium">{{activePriorityFilter()}}</span>
-            <button (click)="clearFilter()" class="text-zinc-400 hover:text-zinc-600 ml-1 transition-colors">
-              <mat-icon class="text-[16px] w-4 h-4">close</mat-icon>
-            </button>
-          </div>
-          <span class="text-xs text-zinc-400 font-medium">{{ filteredTickets().length }} ticket{{ filteredTickets().length !== 1 ? 's' : '' }}</span>
+          <mat-icon class="text-[18px] w-4.5 h-4.5 text-zinc-500">filter_alt</mat-icon>
+          <span class="text-xs font-semibold text-zinc-500 uppercase tracking-wide">Filters</span>
         </div>
-      }
+        <select [ngModel]="priorityFilter()" (ngModelChange)="priorityFilter.set($event)" class="input-field rounded-lg p-2 text-sm focus:outline-blue-600 cursor-pointer w-40">
+          <option [ngValue]="null">All Priorities</option>
+          <option value="High">High</option>
+          <option value="Medium">Medium</option>
+          <option value="Low">Low</option>
+        </select>
+        <select [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)" class="input-field rounded-lg p-2 text-sm focus:outline-blue-600 cursor-pointer w-44">
+          <option [ngValue]="null">All Statuses</option>
+          <option value="Open">Open</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Resolved">Resolved</option>
+          <option value="Closed">Closed</option>
+        </select>
+        <select [ngModel]="typeFilter()" (ngModelChange)="typeFilter.set($event)" class="input-field rounded-lg p-2 text-sm focus:outline-blue-600 cursor-pointer w-44">
+          <option [ngValue]="null">All Types</option>
+          @for (t of state.ticketTypes(); track t) {
+            <option [value]="t">{{ t }}</option>
+          }
+        </select>
+        @if (hasActiveFilters()) {
+          <button (click)="clearFilters()" class="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-zinc-600 border border-zinc-200 rounded-lg hover:bg-zinc-50 transition-colors">
+            <mat-icon class="text-[14px] w-3.5 h-3.5">close</mat-icon>
+            Clear Filters
+          </button>
+        }
+        <span class="text-xs text-zinc-400 font-medium ml-auto">{{ filteredTickets().length }} ticket{{ filteredTickets().length !== 1 ? 's' : '' }}</span>
+      </div>
 
-      <div class="card rounded-2xl overflow-hidden">
+      <div class="card rounded-2xl overflow-x-auto">
         <table class="min-w-full divide-y divide-slate-200">
           <thead class="bg-white border border-zinc-200">
             <tr>
@@ -52,7 +72,7 @@ import { RouterModule } from '@angular/router';
                 <td (click)="openEditTicketModal(ticket)" class="px-6 py-4 whitespace-nowrap cursor-pointer">
                   <div class="flex items-center">
                     <mat-icon [class]="getPriorityColor(ticket.priority)" class="text-[18px] w-5 h-5">flag</mat-icon>
-                    <span class="ml-1.5 text-xs font-medium text-zinc-500">{{ ticket.priority }}</span>
+                    <span [class]="getPriorityColor(ticket.priority)" class="ml-1.5 text-xs font-semibold">{{ ticket.priority }}</span>
                   </div>
                 </td>
                 <td (click)="openEditTicketModal(ticket)" class="px-6 py-4 cursor-pointer">
@@ -89,7 +109,7 @@ import { RouterModule } from '@angular/router';
                   <app-created-by-badge [createdBy]="ticket.createdBy" [createdAt]="ticket.createdAt" />
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
-                  <button (click)="deleteTicket(ticket.id)" class="text-zinc-700 hover:text-zinc-950 hover:bg-zinc-100 p-1.5 rounded-lg transition-colors" title="Delete Ticket">
+                  <button (click)="openDeleteModal(ticket)" class="text-zinc-700 hover:text-red-600 hover:bg-red-50 p-1.5 rounded-lg transition-colors" title="Delete Ticket">
                     <mat-icon class="text-[18px] w-4.5 h-4.5">delete</mat-icon>
                   </button>
                 </td>
@@ -127,14 +147,14 @@ import { RouterModule } from '@angular/router';
                 [(ngModel)]="newTicket.title"
                 type="text"
                 placeholder="e.g. Login issue on client portal"
-                class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600"
+                class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600"
               >
             </div>
 
             <div class="grid grid-cols-2 gap-3">
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Ticket Type</label>
-                <select [(ngModel)]="newTicket.type" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600">
+                <select [(ngModel)]="newTicket.type" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600">
                   @for (t of state.ticketTypes(); track t) {
                     <option [value]="t">{{ t }}</option>
                   }
@@ -142,7 +162,7 @@ import { RouterModule } from '@angular/router';
               </div>
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Related Partner</label>
-                <select [(ngModel)]="newTicket.partnerId" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600">
+                <select [(ngModel)]="newTicket.partnerId" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600">
                   <option value="">-- Select Partner --</option>
                   @for (p of state.partners(); track p.id) {
                     <option [value]="p.id">{{p.name}} ({{p.type}})</option>
@@ -153,7 +173,7 @@ import { RouterModule } from '@angular/router';
 
             <div>
               <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Assigned To</label>
-              <select [(ngModel)]="newTicket.assignedTo" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600">
+              <select [(ngModel)]="newTicket.assignedTo" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600">
                 <option value="">-- Select Assignee --</option>
                 @for (user of state.users(); track user.name) {
                   <option [value]="user.name">{{user.name}} ({{user.role}})</option>
@@ -164,7 +184,7 @@ import { RouterModule } from '@angular/router';
             <div class="grid grid-cols-2 gap-3">
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Priority</label>
-                <select [(ngModel)]="newTicket.priority" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600">
+                <select [(ngModel)]="newTicket.priority" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600">
                   <option value="Low">Low</option>
                   <option value="Medium">Medium</option>
                   <option value="High">High</option>
@@ -172,7 +192,7 @@ import { RouterModule } from '@angular/router';
               </div>
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Status</label>
-                <select [(ngModel)]="newTicket.status" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600">
+                <select [(ngModel)]="newTicket.status" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600">
                   <option value="Open">Open</option>
                   <option value="In Progress">In Progress</option>
                   <option value="Resolved">Resolved</option>
@@ -189,7 +209,7 @@ import { RouterModule } from '@angular/router';
                   [(ngModel)]="newTicket.resolution"
                   rows="3"
                   placeholder="Describe how this issue was resolved..."
-                  class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600"
+                  class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600"
                 ></textarea>
               </div>
             }
@@ -206,6 +226,38 @@ import { RouterModule } from '@angular/router';
         </div>
       </div>
     }
+
+    <!-- Delete Confirmation Modal -->
+    @if (deleteModalOpen() && ticketToDelete()) {
+      <div class="fixed inset-0 z-50 bg-zinc-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="bg-white shadow-xl rounded-2xl max-w-sm w-full p-6 space-y-4 animate-in zoom-in-95 duration-200">
+          <div class="flex justify-between items-center">
+            <h3 class="text-lg font-bold text-zinc-950">Delete Ticket</h3>
+            <button (click)="cancelDelete()" class="text-zinc-400 hover:text-zinc-600 transition-colors">
+              <mat-icon class="w-5 h-5 text-[20px]! leading-none!">close</mat-icon>
+            </button>
+          </div>
+          <p class="text-sm text-zinc-600 leading-relaxed">
+            Are you sure you want to delete this ticket?
+          </p>
+          <div class="bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3">
+            <div class="text-sm font-semibold text-zinc-900">{{ ticketToDelete()?.title }}</div>
+            @if (ticketToDelete()?.id) {
+              <div class="text-[11px] text-zinc-400 font-mono mt-0.5">#{{ ticketToDelete()?.id }}</div>
+            }
+          </div>
+          <div class="flex justify-end gap-2 pt-2 border-t border-white/30">
+            <button (click)="cancelDelete()" class="px-4 py-2 border border-zinc-200 text-zinc-600 text-sm font-semibold rounded-lg hover:bg-zinc-50">
+              Cancel
+            </button>
+            <button (click)="deleteConfirm()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-lg transition-colors flex items-center gap-1.5">
+              <mat-icon class="w-4 h-4 text-[16px]! leading-none!">delete</mat-icon>
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    }
   `
 })
 export class TicketsComponent {
@@ -213,24 +265,58 @@ export class TicketsComponent {
   modalOpen = signal(false);
   isEditing = signal(false);
   editingTicketId = signal<string | null>(null);
-  activePriorityFilter = signal<'High' | 'Medium' | 'Low' | null>(null);
+  priorityFilter = signal<'High' | 'Medium' | 'Low' | null>(null);
+  statusFilter = signal<TicketStatus | null>(null);
+  typeFilter = signal<string | null>(null);
 
   filteredTickets = computed(() => {
-    const filter = this.activePriorityFilter();
-    if (!filter) return this.state.tickets();
-    return this.state.tickets().filter(t => t.priority === filter);
+    const priority = this.priorityFilter();
+    const status = this.statusFilter();
+    const type = this.typeFilter();
+    return this.state.tickets().filter(t =>
+      (!priority || t.priority === priority) &&
+      (!status || t.status === status) &&
+      (!type || t.type === type)
+    );
   });
 
-  clearFilter() {
-    this.activePriorityFilter.set(null);
+  hasActiveFilters = computed(() => !!this.priorityFilter() || !!this.statusFilter() || !!this.typeFilter());
+
+  clearFilters() {
+    this.priorityFilter.set(null);
+    this.statusFilter.set(null);
+    this.typeFilter.set(null);
   }
 
   constructor() {
     const filter = this.state.ticketFilter();
     if (filter?.priority && ['High', 'Medium', 'Low'].includes(filter.priority)) {
-      this.activePriorityFilter.set(filter.priority as 'High' | 'Medium' | 'Low');
+      this.priorityFilter.set(filter.priority as 'High' | 'Medium' | 'Low');
       this.state.ticketFilter.set(null);
     }
+  }
+
+  // Delete confirmation
+  deleteModalOpen = signal(false);
+  ticketToDelete = signal<Ticket | null>(null);
+
+  openDeleteModal(ticket: Ticket) {
+    this.ticketToDelete.set(ticket);
+    this.deleteModalOpen.set(true);
+  }
+
+  cancelDelete() {
+    this.deleteModalOpen.set(false);
+    this.ticketToDelete.set(null);
+  }
+
+  deleteConfirm() {
+    const ticket = this.ticketToDelete();
+    if (ticket) {
+      this.state.deleteTicket(ticket.id);
+    }
+    this.deleteModalOpen.set(false);
+    this.ticketToDelete.set(null);
   }
 
   newTicket = {
@@ -304,22 +390,16 @@ export class TicketsComponent {
     this.modalOpen.set(false);
   }
 
-  deleteTicket(id: string) {
-    if (confirm('Are you sure you want to delete this ticket?')) {
-      this.state.deleteTicket(id);
-    }
-  }
-
   getPartnerName(id: string) {
     return this.state.partners().find(p => p.id === id)?.name || 'Unknown';
   }
 
   getPriorityColor(priority: string) {
     switch(priority) {
-      case 'High': return 'text-red-600 border border-red-200';
-      case 'Medium': return 'text-amber-600 border border-amber-200';
-      case 'Low': return 'text-emerald-600 border border-emerald-200';
-      default: return 'text-zinc-400 border border-zinc-200';
+      case 'High': return 'text-red-500';
+      case 'Medium': return 'text-green-500';
+      case 'Low': return 'text-blue-400';
+      default: return 'text-zinc-400';
     }
   }
 

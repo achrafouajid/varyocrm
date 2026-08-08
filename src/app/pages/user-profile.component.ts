@@ -32,7 +32,7 @@ import { MatIconModule } from '@angular/material/icon';
                   @if (isEditingName()) {
                     <input
                       [(ngModel)]="editName"
-                      class="border border-zinc-200 rounded-xl px-2.5 py-1 text-sm font-bold text-zinc-800 focus:outline-indigo-600"
+                      class="border border-zinc-200 rounded-xl px-2.5 py-1 text-sm font-bold text-zinc-800 focus:outline-blue-600"
                     />
                   } @else {
                     <h2 class="text-lg font-bold text-zinc-900">{{ u.displayName }}</h2>
@@ -53,7 +53,7 @@ import { MatIconModule } from '@angular/material/icon';
                   @if (isEditingJobTitle()) {
                     <input
                       [(ngModel)]="editJobTitle"
-                      class="border border-zinc-200 rounded-xl px-2.5 py-0.5 text-xs text-zinc-700 focus:outline-indigo-600"
+                      class="border border-zinc-200 rounded-xl px-2.5 py-0.5 text-xs text-zinc-700 focus:outline-blue-600"
                     />
                   } @else {
                     <span class="text-xs text-zinc-500 font-semibold">{{ u.jobTitle || 'No job title' }}</span>
@@ -106,7 +106,7 @@ import { MatIconModule } from '@angular/material/icon';
               @if (isEditingPhone()) {
                 <input
                   [(ngModel)]="editPhone"
-                  class="border border-zinc-200 rounded-xl px-2.5 py-0.5 text-xs text-zinc-700 focus:outline-indigo-600 w-full max-w-xs"
+                  class="border border-zinc-200 rounded-xl px-2.5 py-0.5 text-xs text-zinc-700 focus:outline-blue-600 w-full max-w-xs"
                 />
               } @else {
                 <span class="text-sm font-semibold text-zinc-800 font-sans">{{ u.phone || '—' }}</span>
@@ -145,7 +145,7 @@ import { MatIconModule } from '@angular/material/icon';
                   <select
                     [value]="u.roleId"
                     (change)="updateUserRole(u.id, $event)"
-                    class="border border-zinc-200 rounded-xl px-3 py-2 text-xs bg-white text-zinc-700 focus:outline-indigo-600 focus:ring-zinc-700 font-semibold cursor-pointer w-full max-w-xs"
+                    class="border border-zinc-200 rounded-xl px-3 py-2 text-xs bg-white text-zinc-700 focus:outline-blue-600 focus:ring-zinc-700 font-semibold cursor-pointer w-full max-w-xs"
                   >
                     <option value="admin">Admin</option>
                     <option value="manager">Manager</option>
@@ -239,7 +239,7 @@ import { MatIconModule } from '@angular/material/icon';
             <select
               [value]="u.preferences.language"
               (change)="changeLanguage(u, $event)"
-              class="border border-zinc-200 rounded-xl px-3 py-2 text-xs bg-white text-zinc-700 font-semibold cursor-pointer w-full max-w-xs focus:outline-indigo-600 focus:ring-zinc-700"
+              class="border border-zinc-200 rounded-xl px-3 py-2 text-xs bg-white text-zinc-700 font-semibold cursor-pointer w-full max-w-xs focus:outline-blue-600 focus:ring-zinc-700"
             >
               <option value="en">English (en)</option>
               <option value="fr">Français (fr)</option>
@@ -265,7 +265,7 @@ import { MatIconModule } from '@angular/material/icon';
               <a
                 [routerLink]="['/groups']"
                 [queryParams]="{ groupId: grp.id }"
-                class="bg-zinc-50 border border-zinc-200/80 hover:bg-zinc-100 hover:text-zinc-950 hover:border-indigo-150 px-3 py-1 rounded-xl text-xs font-semibold text-zinc-650 transition-colors shadow-2xs block"
+                class="bg-zinc-50 border border-zinc-200/80 hover:bg-zinc-100 hover:text-zinc-950 hover:border-blue-300 px-3 py-1 rounded-xl text-xs font-semibold text-zinc-650 transition-colors shadow-2xs block"
               >
                 # {{ grp.name }}
               </a>

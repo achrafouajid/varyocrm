@@ -15,7 +15,7 @@ import { CrmStateService, Customer360View } from '../services/crm-state.service'
         <!-- Profile Card -->
         <div class="card rounded-[32px] p-10 flex flex-col items-center text-center hover:shadow-lg transition-all relative overflow-hidden">
           <div class="absolute inset-0 bg-gradient-to-b from-white/60 to-transparent pointer-events-none"></div>
-          <div class="w-32 h-32 rounded-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 text-white flex items-center justify-center font-extrabold text-5xl uppercase shadow-xl mb-6 relative z-10 border-4 border-white/50">
+          <div class="w-32 h-32 rounded-full bg-gradient-to-br from-blue-500 via-blue-400 to-sky-500 text-white flex items-center justify-center font-extrabold text-5xl uppercase shadow-xl mb-6 relative z-10 border-4 border-white/50">
             {{ initials() }}
           </div>
           <h2 class="text-2xl font-extrabold text-zinc-900 font-sans relative z-10">{{ view().partner.name }}</h2>

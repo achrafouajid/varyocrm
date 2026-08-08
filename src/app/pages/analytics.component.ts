@@ -256,7 +256,7 @@ declare var Chart: any;
               <h3 class="text-base font-semibold text-zinc-900 font-sans">Lost Opportunities</h3>
               <p class="text-xs text-zinc-500 mt-0.5 font-sans">Pipelines marked as Closed Lost</p>
             </div>
-            <div class="bg-white border border-zinc-200 rounded-xl overflow-hidden">
+            <div class="bg-white border border-zinc-200 rounded-xl overflow-x-auto">
               <table class="min-w-full divide-y divide-slate-200">
                 <thead class="bg-white border border-zinc-200">
                   <tr>
@@ -499,7 +499,7 @@ export class AnalyticsComponent implements AfterViewInit {
     const reps = Array.from(new Set(forecastData.map(d => d.salesperson)));
 
     const colors = [
-      'rgba(79, 70, 229, 1)',
+      'rgba(59, 130, 246, 1)',
       'rgba(147, 51, 234, 1)',
       'rgba(236, 72, 153, 1)',
       'rgba(16, 185, 129, 1)'
@@ -564,8 +564,8 @@ export class AnalyticsComponent implements AfterViewInit {
         datasets: [{
           label: 'Won/Confirmed Revenue',
           data: regionData.map(r => r.total),
-          backgroundColor: 'rgba(79, 70, 229, 0.85)',
-          borderColor: 'rgba(79, 70, 229, 1)',
+          backgroundColor: 'rgba(59, 130, 246, 0.85)',
+          borderColor: 'rgba(59, 130, 246, 1)',
           borderWidth: 1.5,
           borderRadius: 6
         }]

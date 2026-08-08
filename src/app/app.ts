@@ -290,6 +290,10 @@ const SEARCH_ITEMS: SearchItem[] = [
       font-weight: 600;
     }
 
+    .sidebar-link.active mat-icon {
+      color: #3B82F6;
+    }
+
     .sidebar-link mat-icon {
       font-size: 20px;
       width: 20px;
@@ -340,6 +344,10 @@ const SEARCH_ITEMS: SearchItem[] = [
       background: var(--color-accent-light);
       color: var(--color-accent);
       font-weight: 600;
+    }
+
+    .sidebar-bottom-link.active mat-icon {
+      color: #3B82F6;
     }
 
     .sidebar-user {
@@ -511,7 +519,7 @@ const SEARCH_ITEMS: SearchItem[] = [
     .topbar-search input:focus {
       background: var(--color-surface);
       border-color: var(--color-accent);
-      box-shadow: 0 0 0 3px rgba(9, 9, 11, 0.08); /* zinc-950 with opacity */
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
     }
 
     .topbar-search mat-icon {
@@ -584,7 +592,7 @@ const SEARCH_ITEMS: SearchItem[] = [
       right: 4px;
       width: 16px;
       height: 16px;
-      background: #DC2626;
+      background: #3B82F6;
       border: 2px solid #FFFFFF;
       border-radius: 9999px;
       display: flex;
@@ -734,6 +742,106 @@ const SEARCH_ITEMS: SearchItem[] = [
         inset: 0;
         background: rgba(0, 0, 0, 0.3);
         z-index: 45;
+      }
+    }
+
+    /* ── Quick Actions FAB ── */
+    .quick-actions-fab {
+      position: fixed;
+      bottom: 32px;
+      right: 24px;
+      z-index: 50;
+    }
+
+    .fab-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: #FFFFFF;
+      border: 1px solid var(--color-accent);
+      color: var(--color-accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .fab-btn:hover {
+      background: var(--color-accent);
+      color: #FFFFFF;
+    }
+
+    .fab-btn mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+      line-height: 20px;
+    }
+
+    .fab-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 49;
+    }
+
+    .fab-dropdown {
+      position: absolute;
+      bottom: calc(100% + 12px);
+      right: 0;
+      background: #FFFFFF;
+      border: 1px solid #E4E4E7;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.04);
+      padding: 6px;
+      min-width: 200px;
+      z-index: 50;
+    }
+
+    .fab-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      text-decoration: none;
+      color: #09090B;
+      font-size: 13px;
+      font-weight: 600;
+      transition: background 150ms ease;
+    }
+
+    .fab-item:hover {
+      background: #F4F4F5;
+    }
+
+    .fab-item-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--color-accent-light);
+      flex-shrink: 0;
+    }
+
+    .fab-item-icon mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      line-height: 18px;
+      color: var(--color-accent);
+    }
+
+    .fab-btn mat-icon,
+    .fab-dropdown mat-icon {
+      color: inherit;
+    }
+
+    @media (max-width: 768px) {
+      .quick-actions-fab {
+        right: 16px;
       }
     }
   `],
@@ -901,13 +1009,15 @@ const SEARCH_ITEMS: SearchItem[] = [
 
             <!-- Right Actions -->
             <div class="topbar-actions">
-              <button
-                class="topbar-icon-btn"
-                (click)="state.isCustomizing.set(!state.isCustomizing())"
-                [title]="state.isCustomizing() ? 'Done Customizing' : 'Customize KPIs'"
-              >
-                <mat-icon>{{ state.isCustomizing() ? 'check' : 'edit_square' }}</mat-icon>
-              </button>
+              @if (activeRoute() === '/') {
+                <button
+                  class="topbar-icon-btn"
+                  (click)="state.isCustomizing.set(!state.isCustomizing())"
+                  [title]="state.isCustomizing() ? 'Done Customizing' : 'Customize KPIs'"
+                >
+                  <mat-icon>{{ state.isCustomizing() ? 'check' : 'edit_square' }}</mat-icon>
+                </button>
+              }
               <button
                 class="topbar-icon-btn"
                 (click)="openInbox()"
@@ -953,6 +1063,45 @@ const SEARCH_ITEMS: SearchItem[] = [
           </main>
         </div>
 
+      </div>
+
+      <!-- Quick Actions FAB -->
+      @if (quickActionsOpen()) {
+        <div class="fab-backdrop" (click)="quickActionsOpen.set(false)"></div>
+      }
+      <div class="quick-actions-fab">
+        <button class="fab-btn" (click)="quickActionsOpen.set(!quickActionsOpen())">
+          <mat-icon>{{ quickActionsOpen() ? 'close' : 'add' }}</mat-icon>
+        </button>
+
+        @if (quickActionsOpen()) {
+          <div class="fab-dropdown">
+            <a routerLink="/sales" class="fab-item hover:underline" (click)="closeQuickActions()">
+              <div class="fab-item-icon fab-item-icon--blue">
+                <mat-icon>add_business</mat-icon>
+              </div>
+              <span>New Proposal</span>
+            </a>
+            <a routerLink="/partners" class="fab-item hover:underline" (click)="closeQuickActions()">
+              <div class="fab-item-icon fab-item-icon--emerald">
+                <mat-icon>person_add</mat-icon>
+              </div>
+              <span>Add Partner</span>
+            </a>
+            <a routerLink="/marketing" class="fab-item hover:underline" (click)="closeQuickActions()">
+              <div class="fab-item-icon fab-item-icon--amber">
+                <mat-icon>campaign</mat-icon>
+              </div>
+              <span>New Campaign</span>
+            </a>
+            <a routerLink="/tickets" class="fab-item hover:underline" (click)="closeQuickActions()">
+              <div class="fab-item-icon fab-item-icon--rose">
+                <mat-icon>support_agent</mat-icon>
+              </div>
+              <span>Create Ticket</span>
+            </a>
+          </div>
+        }
       </div>
 
       <app-support-modal></app-support-modal>
@@ -1044,6 +1193,11 @@ export class App implements OnInit, OnDestroy {
 
   drawerOpen = signal(false);
   drawerType = signal<'notifications' | 'inbox'>('notifications');
+  quickActionsOpen = signal(false);
+
+  closeQuickActions() {
+    this.quickActionsOpen.set(false);
+  }
 
   openNotifications() {
     this.drawerType.set('notifications');

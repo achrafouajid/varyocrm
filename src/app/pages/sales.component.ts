@@ -60,7 +60,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
 
       <!-- Deals View -->
       @if (activeTab() === 'deals') {
-        <div class="card rounded-2xl overflow-hidden">
+        <div class="card rounded-2xl overflow-x-auto">
           <table class="min-w-full divide-y divide-slate-200">
             <thead class="bg-zinc-50">
               <tr>
@@ -76,7 +76,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
             </thead>
             <tbody class="bg-white divide-y divide-slate-100">
               @for (deal of state.deals(); track deal.id) {
-                <tr [routerLink]="['/sales/deals', deal.id]" class="hover:bg-zinc-50/80 cursor-pointer transition-colors">
+                <tr (click)="openDealDrawer(deal)" class="hover:bg-zinc-50/80 cursor-pointer transition-colors">
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm font-semibold text-zinc-900">{{deal.title}}</div>
                     @if (deal.dealNumber) {
@@ -227,7 +227,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                           <span class="truncate flex-1">{{ prop.confirmationAttachmentName }}</span>
                           @if (prop.confirmationAttachmentData) {
                             <a [href]="prop.confirmationAttachmentData" [download]="prop.confirmationAttachmentName"
-                               class="text-indigo-650 hover:underline font-sans font-semibold ml-1 shrink-0">Download</a>
+                               class="text-blue-700 hover:underline font-sans font-semibold ml-1 shrink-0">Download</a>
                           }
                         </div>
                       }
@@ -278,7 +278,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
 
       <!-- Purchase Orders View -->
       @if (activeTab() === 'pos') {
-        <div class="card rounded-2xl overflow-hidden">
+        <div class="card rounded-2xl overflow-x-auto">
           <table class="min-w-full divide-y divide-slate-200">
             <thead class="bg-zinc-50">
               <tr>
@@ -294,7 +294,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
             </thead>
             <tbody class="bg-white divide-y divide-slate-200">
               @for (po of state.purchaseOrders(); track po.id) {
-                <tr class="hover:bg-zinc-50 transition-colors">
+                <tr (click)="openPODrawer(po)" class="hover:bg-zinc-50 cursor-pointer transition-colors">
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm font-semibold text-zinc-900 font-sans">#{{po.id}}</div>
                     @if (po.sentVia) {
@@ -323,15 +323,15 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                     <app-created-by-badge [createdBy]="po.createdBy" [createdAt]="po.createdAt" />
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-right text-xs font-semibold space-x-1.5">
-                    <button (click)="openPODrawer(po)" class="bg-white border border-zinc-200 text-zinc-900 px-2 py-1 rounded-lg hover:bg-zinc-100" title="View Details">
+                    <button (click)="$event.stopPropagation(); openPODrawer(po)" class="bg-white border border-zinc-200 text-zinc-900 px-2 py-1 rounded-lg hover:bg-zinc-100" title="View Details">
                       <mat-icon class="text-[14px] w-3.5 h-3.5 flex items-center justify-center">visibility</mat-icon>
                     </button>
-                    <button (click)="openAssignTaskModal('po', po.id, 'PO #' + po.id)" class="bg-white border border-zinc-200 text-zinc-900 px-2 py-1 rounded-lg hover:bg-zinc-100 flex items-center gap-1 ml-auto" title="Assign Task">
+                    <button (click)="$event.stopPropagation(); openAssignTaskModal('po', po.id, 'PO #' + po.id)" class="bg-white border border-zinc-200 text-zinc-900 px-2 py-1 rounded-lg hover:bg-zinc-100 flex items-center gap-1 ml-auto" title="Assign Task">
                       <mat-icon class="text-[14px] w-3.5 h-3.5">assignment</mat-icon> Assign
                     </button>
                     @if (po.status === 'Sent') {
-                      <button (click)="openSetDeliveryDatePOModal(po)" class="bg-white border border-zinc-200 text-zinc-700 px-2 py-1 rounded-lg hover:bg-zinc-50">Set Del. Date</button>
-                      <button (click)="state.updatePurchaseOrderStatus(po.id, 'Delivered')" class="bg-zinc-900 text-white px-2 py-1 rounded-lg hover:bg-zinc-950 shadow-lg shadow-zinc-300">Receive Goods</button>
+                      <button (click)="$event.stopPropagation(); openSetDeliveryDatePOModal(po)" class="bg-white border border-zinc-200 text-zinc-700 px-2 py-1 rounded-lg hover:bg-zinc-50">Set Del. Date</button>
+                      <button (click)="$event.stopPropagation(); state.updatePurchaseOrderStatus(po.id, 'Delivered')" class="bg-zinc-900 text-white px-2 py-1 rounded-lg hover:bg-zinc-950 shadow-lg shadow-zinc-300">Receive Goods</button>
                     }
                   </td>
                 </tr>
@@ -395,7 +395,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
           @if (proposalOrgContacts().length > 0) {
             <div>
               <label class="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1.5">Add other contacts from this organization:</label>
-              <select (change)="addContactToRecipients($event)" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+              <select (change)="addContactToRecipients($event)" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-blue-600">
                 <option value="">— Select a contact —</option>
                 @for (contact of proposalOrgContacts(); track contact.id) {
                   <option [value]="contact.id">{{ contact.fullName }} · {{ contact.jobTitle }}</option>
@@ -422,7 +422,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                     <mat-icon class="text-[14px] w-3.5 h-3.5 text-zinc-500 shrink-0">email</mat-icon>
                     <input [value]="recipient.email || ''" (input)="updateRecipientEmail($index, $event)"
                       type="email" placeholder="Email address"
-                      class="flex-1 input-field rounded-lg p-1.5 text-xs focus:outline-indigo-600 bg-white">
+                      class="flex-1 input-field rounded-lg p-1.5 text-xs focus:outline-blue-600 bg-white">
                   </div>
                 }
                 @if (isChannelSelected('whatsapp')) {
@@ -430,7 +430,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                     <mat-icon class="text-[14px] w-3.5 h-3.5 text-zinc-700 shrink-0">chat</mat-icon>
                     <input [value]="recipient.phone || ''" (input)="updateRecipientPhone($index, $event)"
                       type="tel" placeholder="Phone / WhatsApp number"
-                      class="flex-1 input-field rounded-lg p-1.5 text-xs focus:outline-indigo-600 bg-white">
+                      class="flex-1 input-field rounded-lg p-1.5 text-xs focus:outline-blue-600 bg-white">
                   </div>
                 }
               </div>
@@ -468,7 +468,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
             <div class="space-y-3">
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Select Prospect / Client</label>
-                <select [(ngModel)]="newProposal.partnerId" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                <select [(ngModel)]="newProposal.partnerId" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-blue-600">
                   @for (partner of salesEligiblePartners(); track partner.id) {
                     <option [value]="partner.id">{{ partner.name }} ({{ partner.type }})</option>
                   }
@@ -477,12 +477,12 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
 
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Proposal Title</label>
-                <input [(ngModel)]="newProposal.title" type="text" placeholder="e.g. Standard Enterprise Cloud Infrastructure" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600">
+                <input [(ngModel)]="newProposal.title" type="text" placeholder="e.g. Standard Enterprise Cloud Infrastructure" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600">
               </div>
 
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Select Template</label>
-                <select [(ngModel)]="selectedTemplateId" (change)="applyTemplate()" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                <select [(ngModel)]="selectedTemplateId" (change)="applyTemplate()" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-blue-600">
                   <option value="">-- Manual/No Template --</option>
                   @for (temp of state.proposalTemplates(); track temp.id) {
                     <option [value]="temp.id">{{temp.name}}</option>
@@ -498,7 +498,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                   <div>
                     <label class="block text-xs font-semibold text-zinc-500 mb-1">Opportunity Value</label>
                     <div class="relative rounded-lg shadow-xs">
-                      <input [(ngModel)]="newProposal.opportunityValue" type="number" placeholder="0" class="w-full input-field rounded-lg p-2 pr-12 text-sm focus:outline-indigo-600 font-sans">
+                      <input [(ngModel)]="newProposal.opportunityValue" type="number" placeholder="0" class="w-full input-field rounded-lg p-2 pr-12 text-sm focus:outline-blue-600 font-sans">
                       <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                         <span class="text-zinc-400 text-xs font-semibold">MAD</span>
                       </div>
@@ -508,7 +508,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                   <div>
                     <label class="block text-xs font-semibold text-zinc-500 mb-1">Probability of Closing</label>
                     <div class="relative rounded-lg shadow-xs">
-                      <input [(ngModel)]="newProposal.closingProbability" type="number" min="0" max="100" placeholder="50" class="w-full input-field rounded-lg p-2 pr-8 text-sm focus:outline-indigo-600 font-sans">
+                      <input [(ngModel)]="newProposal.closingProbability" type="number" min="0" max="100" placeholder="50" class="w-full input-field rounded-lg p-2 pr-8 text-sm focus:outline-blue-600 font-sans">
                       <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                         <span class="text-zinc-400 text-xs font-semibold">%</span>
                       </div>
@@ -519,12 +519,12 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                 <div class="grid grid-cols-2 gap-3">
                   <div>
                     <label class="block text-xs font-semibold text-zinc-500 mb-1">Expected Closing Date</label>
-                    <input [(ngModel)]="newProposal.expectedClosingDate" type="date" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600 font-sans">
+                    <input [(ngModel)]="newProposal.expectedClosingDate" type="date" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600 font-sans">
                   </div>
                   
                   <div>
                     <label class="block text-xs font-semibold text-zinc-500 mb-1">Sales Stage</label>
-                    <select [(ngModel)]="newProposal.stage" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                    <select [(ngModel)]="newProposal.stage" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-blue-600">
                       <option value="New Lead">New Lead</option>
                       <option value="Qualified">Qualified</option>
                       <option value="Meeting Scheduled">Meeting Scheduled</option>
@@ -537,7 +537,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
 
                 <div>
                   <label class="block text-xs font-semibold text-zinc-500 mb-1">Competitors (comma separated)</label>
-                  <input [(ngModel)]="newProposal.competitors" type="text" placeholder="e.g. AWS, Azure, Local Telecom" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600">
+                  <input [(ngModel)]="newProposal.competitors" type="text" placeholder="e.g. AWS, Azure, Local Telecom" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600">
                 </div>
               </div>
 
@@ -546,10 +546,10 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                 <span class="text-xs font-bold text-zinc-400 uppercase tracking-wider block">Line Items</span>
                 @for (line of newProposal.lines; track $index) {
                   <div class="grid grid-cols-12 gap-2 items-center">
-                    <input class="col-span-4 input-field rounded-lg p-1.5 text-xs focus:outline-indigo-600" [(ngModel)]="line.product" placeholder="Product">
-                    <input class="col-span-4 input-field rounded-lg p-1.5 text-xs focus:outline-indigo-600" [(ngModel)]="line.description" placeholder="Description">
-                    <input class="col-span-1 input-field rounded-lg p-1.5 text-xs focus:outline-indigo-600 text-center" type="number" [(ngModel)]="line.qty" (change)="recalcLine(line)">
-                    <input class="col-span-2 input-field rounded-lg p-1.5 text-xs focus:outline-indigo-600 font-sans text-right" type="number" [(ngModel)]="line.unitPrice" (change)="recalcLine(line)">
+                    <input class="col-span-4 input-field rounded-lg p-1.5 text-xs focus:outline-blue-600" [(ngModel)]="line.product" placeholder="Product">
+                    <input class="col-span-4 input-field rounded-lg p-1.5 text-xs focus:outline-blue-600" [(ngModel)]="line.description" placeholder="Description">
+                    <input class="col-span-1 input-field rounded-lg p-1.5 text-xs focus:outline-blue-600 text-center" type="number" [(ngModel)]="line.qty" (change)="recalcLine(line)">
+                    <input class="col-span-2 input-field rounded-lg p-1.5 text-xs focus:outline-blue-600 font-sans text-right" type="number" [(ngModel)]="line.unitPrice" (change)="recalcLine(line)">
                     <button type="button" (click)="removeLine($index)" title="Remove line" class="col-span-1 text-zinc-700 hover:bg-zinc-100 p-1 rounded"><mat-icon class="text-[16px] w-4 h-4 leading-none">delete</mat-icon></button>
                   </div>
                 }
@@ -599,7 +599,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                   <div class="grid grid-cols-2 gap-3">
                     <div>
                       <label class="block text-xs font-semibold text-zinc-500 mb-1">Select Client (Must be Customer)</label>
-                      <select [(ngModel)]="newDeal.partnerId" (change)="onPartnerChange()" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                      <select [(ngModel)]="newDeal.partnerId" (change)="onPartnerChange()" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-blue-600">
                         @for (c of state.customers(); track c.id) {
                           <option [value]="c.id">{{c.name}}</option>
                         }
@@ -607,7 +607,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                     </div>
                     <div>
                       <label class="block text-xs font-semibold text-zinc-500 mb-1">Linked Proposal</label>
-                      <select [(ngModel)]="newDeal.proposalId" (change)="onProposalChange()" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                      <select [(ngModel)]="newDeal.proposalId" (change)="onProposalChange()" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-blue-600">
                         <option value="">None</option>
                         @for (p of state.proposals(); track p.id) {
                           <option [value]="p.id">#{{p.id}} - {{p.title}}</option>
@@ -619,11 +619,11 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                   <div class="grid grid-cols-2 gap-3">
                     <div>
                       <label class="block text-xs font-semibold text-zinc-500 mb-1">Deal Title</label>
-                      <input [(ngModel)]="newDeal.title" type="text" placeholder="e.g. Atlas Cloud Migration Project" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600">
+                      <input [(ngModel)]="newDeal.title" type="text" placeholder="e.g. Atlas Cloud Migration Project" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600">
                     </div>
                     <div>
                       <label class="block text-xs font-semibold text-zinc-500 mb-1">Order Status</label>
-                      <select [(ngModel)]="newDeal.orderStatus" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                      <select [(ngModel)]="newDeal.orderStatus" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-blue-600">
                         <option value="Draft">Draft</option>
                         <option value="Confirmed">Confirmed</option>
                         <option value="Processing">Processing</option>
@@ -635,22 +635,22 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                   <div class="grid grid-cols-4 gap-3">
                     <div class="col-span-2">
                       <label class="block text-xs font-semibold text-zinc-500 mb-1">Order Number</label>
-                      <input [(ngModel)]="newDeal.orderNumber" type="text" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600 font-sans">
+                      <input [(ngModel)]="newDeal.orderNumber" type="text" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600 font-sans">
                     </div>
                     <div class="col-span-2">
                       <label class="block text-xs font-semibold text-zinc-500 mb-1">Deal Number</label>
-                      <input [(ngModel)]="newDeal.dealNumber" type="text" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600 font-sans">
+                      <input [(ngModel)]="newDeal.dealNumber" type="text" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600 font-sans">
                     </div>
                   </div>
 
                   <div class="grid grid-cols-2 gap-3">
                     <div>
                       <label class="block text-xs font-semibold text-zinc-500 mb-1">Order Date</label>
-                      <input [(ngModel)]="newDeal.orderDate" type="date" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600 font-sans">
+                      <input [(ngModel)]="newDeal.orderDate" type="date" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600 font-sans">
                     </div>
                     <div>
                       <label class="block text-xs font-semibold text-zinc-500 mb-1">Requested Delivery Date</label>
-                      <input [(ngModel)]="newDeal.requestedDeliveryDate" type="date" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600 font-sans">
+                      <input [(ngModel)]="newDeal.requestedDeliveryDate" type="date" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600 font-sans">
                     </div>
                   </div>
                 </div>
@@ -663,31 +663,31 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                   <div class="grid grid-cols-3 gap-3">
                     <div class="col-span-1">
                       <label class="block text-xs font-semibold text-zinc-500 mb-1">Customer Account</label>
-                      <input [(ngModel)]="newDeal.customerAccount" type="text" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600 font-sans">
+                      <input [(ngModel)]="newDeal.customerAccount" type="text" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600 font-sans">
                     </div>
                     <div class="col-span-2">
                       <label class="block text-xs font-semibold text-zinc-500 mb-1">Contact Person</label>
-                      <input [(ngModel)]="newDeal.contactPerson" type="text" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600">
+                      <input [(ngModel)]="newDeal.contactPerson" type="text" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600">
                     </div>
                   </div>
                   <div class="grid grid-cols-2 gap-3">
                     <div>
                       <label class="block text-xs font-semibold text-zinc-500 mb-1">Contact Email</label>
-                      <input [(ngModel)]="newDeal.contactEmail" type="email" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600 font-sans">
+                      <input [(ngModel)]="newDeal.contactEmail" type="email" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600 font-sans">
                     </div>
                     <div>
                       <label class="block text-xs font-semibold text-zinc-500 mb-1">Contact Phone Number</label>
-                      <input [(ngModel)]="newDeal.contactPhone" type="text" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600 font-sans">
+                      <input [(ngModel)]="newDeal.contactPhone" type="text" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600 font-sans">
                     </div>
                   </div>
                   <div class="grid grid-cols-2 gap-3">
                     <div>
                       <label class="block text-xs font-semibold text-zinc-500 mb-1">Billing Address</label>
-                      <textarea [(ngModel)]="newDeal.billingAddress" rows="2" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600"></textarea>
+                      <textarea [(ngModel)]="newDeal.billingAddress" rows="2" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600"></textarea>
                     </div>
                     <div>
                       <label class="block text-xs font-semibold text-zinc-500 mb-1">Delivery Address</label>
-                      <textarea [(ngModel)]="newDeal.deliveryAddress" rows="2" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600"></textarea>
+                      <textarea [(ngModel)]="newDeal.deliveryAddress" rows="2" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600"></textarea>
                     </div>
                   </div>
                 </div>
@@ -700,7 +700,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                   <div class="grid grid-cols-2 gap-3">
                     <div>
                       <label class="block text-xs font-semibold text-zinc-500 mb-1">Sales Person</label>
-                      <select [(ngModel)]="newDeal.salesPerson" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                      <select [(ngModel)]="newDeal.salesPerson" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-blue-600">
                         @for (u of state.users(); track u.name) {
                           @if (u.team === 'Sales') {
                             <option [value]="u.name">{{u.name}}</option>
@@ -710,7 +710,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                     </div>
                     <div>
                       <label class="block text-xs font-semibold text-zinc-500 mb-1">Sales Organization / Region</label>
-                      <input [(ngModel)]="newDeal.salesRegion" type="text" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600">
+                      <input [(ngModel)]="newDeal.salesRegion" type="text" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600">
                     </div>
                   </div>
                 </div>
@@ -723,7 +723,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                   <div class="grid grid-cols-4 gap-3">
                     <div>
                       <label class="block text-xs font-semibold text-zinc-500 mb-1">Currency</label>
-                      <select [(ngModel)]="newDeal.currency" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                      <select [(ngModel)]="newDeal.currency" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-blue-600">
                         <option value="MAD">MAD</option>
                         <option value="USD">USD</option>
                         <option value="EUR">EUR</option>
@@ -731,15 +731,15 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                     </div>
                     <div>
                       <label class="block text-xs font-semibold text-zinc-500 mb-1">Amount (Raw)</label>
-                      <input [(ngModel)]="newDeal.amount" type="number" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600 font-sans">
+                      <input [(ngModel)]="newDeal.amount" type="number" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600 font-sans">
                     </div>
                     <div>
                       <label class="block text-xs font-semibold text-zinc-500 mb-1">Discount (%)</label>
-                      <input [(ngModel)]="newDeal.discount" type="number" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600 font-sans">
+                      <input [(ngModel)]="newDeal.discount" type="number" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600 font-sans">
                     </div>
                     <div>
                       <label class="block text-xs font-semibold text-zinc-500 mb-1">Payment Terms</label>
-                      <input [(ngModel)]="newDeal.paymentTerms" type="text" placeholder="e.g. 30 Days Net" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600">
+                      <input [(ngModel)]="newDeal.paymentTerms" type="text" placeholder="e.g. 30 Days Net" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600">
                     </div>
                   </div>
                 </div>
@@ -755,31 +755,31 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                   <div class="grid grid-cols-2 gap-3">
                     <div>
                       <label class="block text-xs font-semibold text-zinc-500 mb-1">Vendor Account</label>
-                      <input [(ngModel)]="newDeal.vendorAccount" type="text" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600 font-sans">
+                      <input [(ngModel)]="newDeal.vendorAccount" type="text" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600 font-sans">
                     </div>
                     <div>
                       <label class="block text-xs font-semibold text-zinc-500 mb-1">Purchase Order Reference</label>
-                      <input [(ngModel)]="newDeal.purchaseOrderRef" type="text" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600 font-sans">
+                      <input [(ngModel)]="newDeal.purchaseOrderRef" type="text" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600 font-sans">
                     </div>
                   </div>
                   <div class="grid grid-cols-2 gap-3">
                     <div>
                       <label class="block text-xs font-semibold text-zinc-500 mb-1">Warehouse Address</label>
-                      <input [(ngModel)]="newDeal.warehouseAddress" type="text" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600">
+                      <input [(ngModel)]="newDeal.warehouseAddress" type="text" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600">
                     </div>
                     <div>
                       <label class="block text-xs font-semibold text-zinc-500 mb-1">Transportation Service</label>
-                      <input [(ngModel)]="newDeal.transportationService" type="text" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600">
+                      <input [(ngModel)]="newDeal.transportationService" type="text" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600">
                     </div>
                   </div>
                   <div class="grid grid-cols-2 gap-3">
                     <div>
                       <label class="block text-xs font-semibold text-zinc-500 mb-1">Expected Delivery Date (Vendor)</label>
-                      <input [(ngModel)]="newDeal.expectedDeliveryDateVendor" type="date" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600 font-sans">
+                      <input [(ngModel)]="newDeal.expectedDeliveryDateVendor" type="date" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600 font-sans">
                     </div>
                     <div>
                       <label class="block text-xs font-semibold text-zinc-500 mb-1">Delivery Date (Customer)</label>
-                      <input [(ngModel)]="newDeal.deliveryDate" type="date" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600 font-sans">
+                      <input [(ngModel)]="newDeal.deliveryDate" type="date" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600 font-sans">
                     </div>
                   </div>
                 </div>
@@ -791,11 +791,11 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                   </h4>
                   <div>
                     <label class="block text-xs font-semibold text-zinc-500 mb-1">Email Exchange logs & Confirmations</label>
-                    <textarea [(ngModel)]="newDeal.emailExchange" rows="3" placeholder="Paste copy of signed email confirmations..." class="w-full input-field rounded-lg p-2 text-[11px] font-sans focus:outline-indigo-600"></textarea>
+                    <textarea [(ngModel)]="newDeal.emailExchange" rows="3" placeholder="Paste copy of signed email confirmations..." class="w-full input-field rounded-lg p-2 text-[11px] font-sans focus:outline-blue-600"></textarea>
                   </div>
                   <div>
                     <label class="block text-xs font-semibold text-zinc-500 mb-1">Customer Comments</label>
-                    <textarea [(ngModel)]="newDeal.comments" rows="2" placeholder="Comments..." class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600"></textarea>
+                    <textarea [(ngModel)]="newDeal.comments" rows="2" placeholder="Comments..." class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600"></textarea>
                   </div>
                 </div>
               </div>
@@ -827,16 +827,16 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                     <tr class="hover:bg-zinc-50/50">
                       <td class="px-4 py-2 text-sm text-zinc-400 font-sans text-center">{{$index + 1}}</td>
                       <td class="px-4 py-2">
-                        <input class="w-full input-field rounded-lg p-1.5 text-sm focus:outline-indigo-600" [(ngModel)]="line.description" placeholder="Item description">
+                        <input class="w-full input-field rounded-lg p-1.5 text-sm focus:outline-blue-600" [(ngModel)]="line.description" placeholder="Item description">
                       </td>
                       <td class="px-4 py-2">
-                        <input class="w-full input-field rounded-lg p-1.5 text-sm focus:outline-indigo-600 text-right font-sans" type="number" [(ngModel)]="line.qty" (change)="recalcDealLine(line)">
+                        <input class="w-full input-field rounded-lg p-1.5 text-sm focus:outline-blue-600 text-right font-sans" type="number" [(ngModel)]="line.qty" (change)="recalcDealLine(line)">
                       </td>
                       <td class="px-4 py-2">
-                        <input class="w-full input-field rounded-lg p-1.5 text-sm focus:outline-indigo-600 text-right font-sans" type="number" [(ngModel)]="line.unitPrice" (change)="recalcDealLine(line)">
+                        <input class="w-full input-field rounded-lg p-1.5 text-sm focus:outline-blue-600 text-right font-sans" type="number" [(ngModel)]="line.unitPrice" (change)="recalcDealLine(line)">
                       </td>
                       <td class="px-4 py-2">
-                        <select class="w-full input-field rounded-lg p-1.5 text-sm bg-white focus:outline-indigo-600" [(ngModel)]="line.vendor">
+                        <select class="w-full input-field rounded-lg p-1.5 text-sm bg-white focus:outline-blue-600" [(ngModel)]="line.vendor">
                           <option value="">-- Select Vendor --</option>
                           @for (v of state.vendors(); track v.id) {
                             <option [value]="v.name">{{v.name}}</option>
@@ -896,17 +896,17 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
               
               @if (showNewVendorForm()) {
                 <div class="bg-zinc-50 border border-zinc-200 rounded-xl p-3 space-y-2.5 animate-in slide-in-from-top-2 duration-200">
-                  <input [(ngModel)]="newVendorData.name" placeholder="Vendor Company Name" class="w-full input-field rounded-lg p-1.5 text-xs bg-white focus:outline-indigo-600">
-                  <input [(ngModel)]="newVendorData.email" placeholder="Vendor Email" class="w-full input-field rounded-lg p-1.5 text-xs bg-white focus:outline-indigo-600 font-sans">
-                  <input [(ngModel)]="newVendorData.phone" placeholder="Vendor Phone" class="w-full input-field rounded-lg p-1.5 text-xs bg-white focus:outline-indigo-600 font-sans">
-                  <select [(ngModel)]="newVendorData.city" class="w-full input-field rounded-lg p-1.5 text-xs bg-white focus:outline-indigo-600">
+                  <input [(ngModel)]="newVendorData.name" placeholder="Vendor Company Name" class="w-full input-field rounded-lg p-1.5 text-xs bg-white focus:outline-blue-600">
+                  <input [(ngModel)]="newVendorData.email" placeholder="Vendor Email" class="w-full input-field rounded-lg p-1.5 text-xs bg-white focus:outline-blue-600 font-sans">
+                  <input [(ngModel)]="newVendorData.phone" placeholder="Vendor Phone" class="w-full input-field rounded-lg p-1.5 text-xs bg-white focus:outline-blue-600 font-sans">
+                  <select [(ngModel)]="newVendorData.city" class="w-full input-field rounded-lg p-1.5 text-xs bg-white focus:outline-blue-600">
                     <option value="Casablanca">Casablanca</option>
                     <option value="Rabat">Rabat</option>
                     <option value="Marrakech">Marrakech</option>
                   </select>
                 </div>
               } @else {
-                <select [ngModel]="selectedVendorId()" (ngModelChange)="selectedVendorId.set($event)" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                <select [ngModel]="selectedVendorId()" (ngModelChange)="selectedVendorId.set($event)" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-blue-600">
                   @for (vendor of state.vendors(); track vendor.id) {
                     <option [value]="vendor.id">{{vendor.name}}</option>
                   }
@@ -936,13 +936,13 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                       <!-- Item Name -->
                       <div class="md:col-span-4">
                         <label class="block text-[10px] font-semibold text-zinc-400 mb-1">Item Name</label>
-                        <input [(ngModel)]="line.item" type="text" placeholder="e.g. Dell PowerEdge Server" class="w-full input-field rounded-lg p-1.5 text-xs bg-white focus:outline-indigo-600">
+                        <input [(ngModel)]="line.item" type="text" placeholder="e.g. Dell PowerEdge Server" class="w-full input-field rounded-lg p-1.5 text-xs bg-white focus:outline-blue-600">
                       </div>
 
                       <!-- Description -->
                       <div class="md:col-span-8">
                         <label class="block text-[10px] font-semibold text-zinc-400 mb-1">Description (Optional)</label>
-                        <input [(ngModel)]="line.description" type="text" placeholder="e.g. Core i7, 32GB RAM" class="w-full input-field rounded-lg p-1.5 text-xs bg-white focus:outline-indigo-600">
+                        <input [(ngModel)]="line.description" type="text" placeholder="e.g. Core i7, 32GB RAM" class="w-full input-field rounded-lg p-1.5 text-xs bg-white focus:outline-blue-600">
                       </div>
                     </div>
 
@@ -950,19 +950,19 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                       <!-- Quantity -->
                       <div class="md:col-span-3">
                         <label class="block text-[10px] font-semibold text-zinc-400 mb-1">Quantity</label>
-                        <input [(ngModel)]="line.qty" type="number" min="1" class="w-full input-field rounded-lg p-1.5 text-xs bg-white text-center font-semibold focus:outline-indigo-600 font-sans">
+                        <input [(ngModel)]="line.qty" type="number" min="1" class="w-full input-field rounded-lg p-1.5 text-xs bg-white text-center font-semibold focus:outline-blue-600 font-sans">
                       </div>
 
                       <!-- Unit Price -->
                       <div class="md:col-span-5">
                         <label class="block text-[10px] font-semibold text-zinc-400 mb-1">Unit Price (MAD)</label>
-                        <input [(ngModel)]="line.unitPrice" type="number" class="w-full input-field rounded-lg p-1.5 text-xs bg-white font-sans text-right focus:outline-indigo-600">
+                        <input [(ngModel)]="line.unitPrice" type="number" class="w-full input-field rounded-lg p-1.5 text-xs bg-white font-sans text-right focus:outline-blue-600">
                       </div>
 
                       <!-- Item Type -->
                       <div class="md:col-span-4">
                         <label class="block text-[10px] font-semibold text-zinc-400 mb-1">Item Type</label>
-                        <select [(ngModel)]="line.type" class="w-full input-field rounded-lg p-1.5 text-xs bg-white focus:outline-indigo-600">
+                        <select [(ngModel)]="line.type" class="w-full input-field rounded-lg p-1.5 text-xs bg-white focus:outline-blue-600">
                           <option value="software">Software</option>
                           <option value="hardware">Hardware</option>
                           <option value="service">Service</option>
@@ -981,7 +981,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
 
             <div>
               <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Expected Vendor Delivery Date</label>
-              <input [(ngModel)]="newPoDeliveryDate" type="date" class="w-full input-field rounded-lg p-2 text-sm font-sans focus:outline-indigo-600">
+              <input [(ngModel)]="newPoDeliveryDate" type="date" class="w-full input-field rounded-lg p-2 text-sm font-sans focus:outline-blue-600">
             </div>
           </div>
 
@@ -1006,7 +1006,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
           <h3 class="text-lg font-bold text-zinc-950">Log Vendor Expected Delivery Date</h3>
           <div>
             <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Expected Delivery Date</label>
-            <input [(ngModel)]="loggedDeliveryDate" type="date" class="w-full input-field rounded-lg p-2 text-sm font-sans focus:outline-indigo-600">
+            <input [(ngModel)]="loggedDeliveryDate" type="date" class="w-full input-field rounded-lg p-2 text-sm font-sans focus:outline-blue-600">
           </div>
           <div class="flex justify-end gap-2 pt-2">
             <button (click)="setDeliveryDateModalOpen.set(false)" class="px-4 py-2 border border-zinc-200 text-zinc-600 text-sm font-semibold rounded-lg hover:bg-zinc-50">Cancel</button>
@@ -1027,21 +1027,21 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
             <div class="space-y-3">
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Date</label>
-                <input [(ngModel)]="newActivityInput.calls.date" type="date" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600 font-sans">
+                <input [(ngModel)]="newActivityInput.calls.date" type="date" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600 font-sans">
               </div>
               <div class="grid grid-cols-2 gap-3">
                 <div>
                   <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Duration (mins)</label>
-                  <input [(ngModel)]="newActivityInput.calls.duration" type="number" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600 font-sans">
+                  <input [(ngModel)]="newActivityInput.calls.duration" type="number" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600 font-sans">
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Caller Name</label>
-                  <input [(ngModel)]="newActivityInput.calls.callerName" type="text" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600">
+                  <input [(ngModel)]="newActivityInput.calls.callerName" type="text" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600">
                 </div>
               </div>
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Outcome</label>
-                <select [(ngModel)]="newActivityInput.calls.outcome" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                <select [(ngModel)]="newActivityInput.calls.outcome" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-blue-600">
                   <option value="Interested">Interested</option>
                   <option value="Follow-up">Follow-up</option>
                   <option value="No Answer">No Answer</option>
@@ -1050,7 +1050,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
               </div>
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Summary / Log</label>
-                <textarea [(ngModel)]="newActivityInput.calls.summary" rows="3" placeholder="Describe the discussion..." class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600"></textarea>
+                <textarea [(ngModel)]="newActivityInput.calls.summary" rows="3" placeholder="Describe the discussion..." class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600"></textarea>
               </div>
             </div>
           }
@@ -1061,11 +1061,11 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
               <div class="grid grid-cols-2 gap-3">
                 <div>
                   <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Date</label>
-                  <input [(ngModel)]="newActivityInput.emails.date" type="date" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600 font-sans">
+                  <input [(ngModel)]="newActivityInput.emails.date" type="date" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600 font-sans">
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Direction</label>
-                  <select [(ngModel)]="newActivityInput.emails.direction" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                  <select [(ngModel)]="newActivityInput.emails.direction" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-blue-600">
                     <option value="sent">Sent to Client</option>
                     <option value="received">Received from Client</option>
                   </select>
@@ -1074,20 +1074,20 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
               <div class="grid grid-cols-2 gap-3">
                 <div>
                   <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">From</label>
-                  <input [(ngModel)]="newActivityInput.emails.from" type="email" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600 font-sans">
+                  <input [(ngModel)]="newActivityInput.emails.from" type="email" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600 font-sans">
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">To</label>
-                  <input [(ngModel)]="newActivityInput.emails.to" type="email" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600 font-sans">
+                  <input [(ngModel)]="newActivityInput.emails.to" type="email" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600 font-sans">
                 </div>
               </div>
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Subject</label>
-                <input [(ngModel)]="newActivityInput.emails.subject" type="text" placeholder="Subject..." class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600 font-semibold font-sans">
+                <input [(ngModel)]="newActivityInput.emails.subject" type="text" placeholder="Subject..." class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600 font-semibold font-sans">
               </div>
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Email Body</label>
-                <textarea [(ngModel)]="newActivityInput.emails.body" rows="4" placeholder="Body copy..." class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600 font-sans text-xs"></textarea>
+                <textarea [(ngModel)]="newActivityInput.emails.body" rows="4" placeholder="Body copy..." class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600 font-sans text-xs"></textarea>
               </div>
             </div>
           }
@@ -1097,22 +1097,22 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
             <div class="space-y-3 overflow-y-auto max-h-[50vh]">
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Meeting Title</label>
-                <input [(ngModel)]="newActivityInput.meetings.title" type="text" placeholder="e.g. Technical Kickoff" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600 font-semibold">
+                <input [(ngModel)]="newActivityInput.meetings.title" type="text" placeholder="e.g. Technical Kickoff" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600 font-semibold">
               </div>
               <div class="grid grid-cols-3 gap-2">
                 <div class="col-span-2">
                   <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Date</label>
-                  <input [(ngModel)]="newActivityInput.meetings.date" type="date" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600 font-sans">
+                  <input [(ngModel)]="newActivityInput.meetings.date" type="date" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600 font-sans">
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Time</label>
-                  <input [(ngModel)]="newActivityInput.meetings.time" type="text" placeholder="10:00" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600 font-sans">
+                  <input [(ngModel)]="newActivityInput.meetings.time" type="text" placeholder="10:00" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600 font-sans">
                 </div>
               </div>
               <div class="grid grid-cols-2 gap-3">
                 <div>
                   <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Type</label>
-                  <select [(ngModel)]="newActivityInput.meetings.type" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                  <select [(ngModel)]="newActivityInput.meetings.type" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-blue-600">
                     <option value="teams">Teams Meeting</option>
                     <option value="demo">Product Demo</option>
                     <option value="in-person">In-person Meeting</option>
@@ -1120,16 +1120,16 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Location</label>
-                  <input [(ngModel)]="newActivityInput.meetings.location" type="text" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600">
+                  <input [(ngModel)]="newActivityInput.meetings.location" type="text" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600">
                 </div>
               </div>
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Attendees (Comma Separated)</label>
-                <input [(ngModel)]="newActivityInput.meetings.attendees" type="text" placeholder="Youssef, Karim Atlas" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600 font-medium">
+                <input [(ngModel)]="newActivityInput.meetings.attendees" type="text" placeholder="Youssef, Karim Atlas" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600 font-medium">
               </div>
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Minutes / Summary</label>
-                <textarea [(ngModel)]="newActivityInput.meetings.summary" rows="3" placeholder="Key outcomes..." class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600"></textarea>
+                <textarea [(ngModel)]="newActivityInput.meetings.summary" rows="3" placeholder="Key outcomes..." class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600"></textarea>
               </div>
             </div>
           }
@@ -1139,23 +1139,23 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
             <div class="space-y-3">
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Date</label>
-                <input [(ngModel)]="newActivityInput.recordings.date" type="date" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600 font-sans">
+                <input [(ngModel)]="newActivityInput.recordings.date" type="date" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600 font-sans">
               </div>
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Title</label>
-                <input [(ngModel)]="newActivityInput.recordings.title" type="text" placeholder="e.g. Scoping Call Recording" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600 font-semibold font-sans">
+                <input [(ngModel)]="newActivityInput.recordings.title" type="text" placeholder="e.g. Scoping Call Recording" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600 font-semibold font-sans">
               </div>
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Duration (e.g. '45 mins')</label>
-                <input [(ngModel)]="newActivityInput.recordings.duration" type="text" placeholder="45 mins" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600">
+                <input [(ngModel)]="newActivityInput.recordings.duration" type="text" placeholder="45 mins" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600">
               </div>
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Teams Meeting Link</label>
-                <input [(ngModel)]="newActivityInput.recordings.meetingLink" type="text" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600 font-sans text-xs">
+                <input [(ngModel)]="newActivityInput.recordings.meetingLink" type="text" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600 font-sans text-xs">
               </div>
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Recording Share Link</label>
-                <input [(ngModel)]="newActivityInput.recordings.recordingLink" type="text" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600 font-sans text-xs">
+                <input [(ngModel)]="newActivityInput.recordings.recordingLink" type="text" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600 font-sans text-xs">
               </div>
             </div>
           }
@@ -1166,16 +1166,16 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
               <div class="grid grid-cols-2 gap-3">
                 <div>
                   <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Date</label>
-                  <input [(ngModel)]="newActivityInput.notes.date" type="date" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600 font-sans">
+                  <input [(ngModel)]="newActivityInput.notes.date" type="date" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600 font-sans">
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Author</label>
-                  <input [(ngModel)]="newActivityInput.notes.author" type="text" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600">
+                  <input [(ngModel)]="newActivityInput.notes.author" type="text" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600">
                 </div>
               </div>
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Note Content</label>
-                <textarea [(ngModel)]="newActivityInput.notes.content" rows="4" placeholder="Write internal notes..." class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600"></textarea>
+                <textarea [(ngModel)]="newActivityInput.notes.content" rows="4" placeholder="Write internal notes..." class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600"></textarea>
               </div>
             </div>
           }
@@ -1185,15 +1185,15 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
             <div class="space-y-3">
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Due Date</label>
-                <input [(ngModel)]="newActivityInput.followups.dueDate" type="date" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600 font-sans">
+                <input [(ngModel)]="newActivityInput.followups.dueDate" type="date" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600 font-sans">
               </div>
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Reminder Title</label>
-                <input [(ngModel)]="newActivityInput.followups.title" type="text" placeholder="e.g. Call client for feedback" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600 font-semibold font-sans">
+                <input [(ngModel)]="newActivityInput.followups.title" type="text" placeholder="e.g. Call client for feedback" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600 font-semibold font-sans">
               </div>
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Assigned Owner</label>
-                <select [(ngModel)]="newActivityInput.followups.assignedTo" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+                <select [(ngModel)]="newActivityInput.followups.assignedTo" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-blue-600">
                   @for (user of state.users(); track user.name) {
                     <option [value]="user.name">{{ user.name }} ({{ user.team }})</option>
                   }
@@ -1228,8 +1228,8 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
               <div class="grid grid-cols-3 gap-2">
                 <button type="button" (click)="confirmMethod.set('Email')"
                   [class]="confirmMethod() === 'Email' 
-                    ? 'flex flex-col items-center justify-center py-2 px-3 border-2 border-zinc-700 bg-indigo-55/40 text-zinc-950 rounded-xl gap-1 font-semibold transition-all text-xs' 
-                    : 'flex flex-col items-center justify-center py-2 px-3 border border-zinc-200 rounded-xl hover:border-zinc-400 hover:bg-zinc-50 hover:text-indigo-650 transition-all gap-1 text-zinc-500 text-xs'">
+                    ? 'flex flex-col items-center justify-center py-2 px-3 border-2 border-zinc-700 bg-blue-50/40 text-zinc-950 rounded-xl gap-1 font-semibold transition-all text-xs' 
+                    : 'flex flex-col items-center justify-center py-2 px-3 border border-zinc-200 rounded-xl hover:border-zinc-400 hover:bg-zinc-50 hover:text-blue-700 transition-all gap-1 text-zinc-500 text-xs'">
                   <mat-icon class="text-xl w-5 h-5 flex items-center justify-center">email</mat-icon>
                   <span>Email</span>
                 </button>
@@ -1280,7 +1280,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                   <label class="block text-xs font-semibold text-zinc-650 uppercase">Note</label>
                   <textarea [(ngModel)]="confirmNote" name="confirmNote" rows="3"
                     placeholder="Add a note about this confirmation..."
-                    class="w-full border border-zinc-200 rounded-xl p-3 text-xs focus:outline-indigo-650 bg-white placeholder-slate-400 shadow-sm"></textarea>
+                    class="w-full border border-zinc-200 rounded-xl p-3 text-xs focus:outline-blue-700 bg-white placeholder-slate-400 shadow-sm"></textarea>
                 </div>
               </div>
             } @else {
@@ -1290,7 +1290,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                 </label>
                 <textarea [(ngModel)]="confirmNote" name="confirmNote" rows="4" 
                   placeholder="Summary of conversation, agreed pricing details, customer approval details..."
-                  class="w-full border border-zinc-200 rounded-xl p-3 text-xs focus:outline-indigo-650 bg-white placeholder-slate-400 shadow-sm"></textarea>
+                  class="w-full border border-zinc-200 rounded-xl p-3 text-xs focus:outline-blue-700 bg-white placeholder-slate-400 shadow-sm"></textarea>
               </div>
             }
 
@@ -1322,22 +1322,22 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
           <form (ngSubmit)="submitConvertProposal()" class="space-y-4 font-sans">
             <div>
               <label class="block text-xs font-semibold text-zinc-600 uppercase mb-1">Company / Contact Name</label>
-              <input [(ngModel)]="newPartner.name" name="name" type="text" placeholder="e.g. Casablanca Technologies" required class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600">
+              <input [(ngModel)]="newPartner.name" name="name" type="text" placeholder="e.g. Casablanca Technologies" required class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600">
             </div>
 
             <div>
               <label class="block text-xs font-semibold text-zinc-600 uppercase mb-1">Email</label>
-              <input [(ngModel)]="newPartner.email" name="email" type="email" placeholder="e.g. contact@domain.ma" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600">
+              <input [(ngModel)]="newPartner.email" name="email" type="email" placeholder="e.g. contact@domain.ma" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600">
             </div>
 
             <div>
               <label class="block text-xs font-semibold text-zinc-600 uppercase mb-1">Phone</label>
-              <input [(ngModel)]="newPartner.phone" name="phone" type="text" placeholder="e.g. +212-522-XXXXXX" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600">
+              <input [(ngModel)]="newPartner.phone" name="phone" type="text" placeholder="e.g. +212-522-XXXXXX" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600">
             </div>
 
             <div>
               <label class="block text-xs font-semibold text-zinc-600 uppercase mb-1">City</label>
-              <select [(ngModel)]="newPartner.city" name="city" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600 bg-white">
+              <select [(ngModel)]="newPartner.city" name="city" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600 bg-white">
                 <option value="Casablanca">Casablanca</option>
                 <option value="Rabat">Rabat</option>
                 <option value="Marrakech">Marrakech</option>
@@ -1348,20 +1348,20 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
 
             <div>
               <label class="block text-xs font-semibold text-zinc-600 uppercase mb-1">ICE (15 digits) *</label>
-              <input [(ngModel)]="newPartner.ICE" name="ICE" type="text" maxlength="15" placeholder="e.g. 123456789012345" required class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600 font-sans">
+              <input [(ngModel)]="newPartner.ICE" name="ICE" type="text" maxlength="15" placeholder="e.g. 123456789012345" required class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600 font-sans">
             </div>
             <div>
               <label class="block text-xs font-semibold text-zinc-600 uppercase mb-1">Identifiant Fiscal (IF) *</label>
-              <input [(ngModel)]="newPartner.IF" name="IF" type="text" placeholder="e.g. 123456" required class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600 font-sans">
+              <input [(ngModel)]="newPartner.IF" name="IF" type="text" placeholder="e.g. 123456" required class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600 font-sans">
             </div>
             <div>
               <label class="block text-xs font-semibold text-zinc-600 uppercase mb-1">Registre de Commerce (RC) *</label>
-              <input [(ngModel)]="newPartner.RC" name="RC" type="text" placeholder="e.g. 123456" required class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600 font-sans">
+              <input [(ngModel)]="newPartner.RC" name="RC" type="text" placeholder="e.g. 123456" required class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600 font-sans">
             </div>
 
             <div>
               <label class="block text-xs font-semibold text-zinc-600 uppercase mb-1">Comments / Notes</label>
-              <textarea [(ngModel)]="newPartner.comments" name="comments" rows="3" placeholder="Additional details..." class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600"></textarea>
+              <textarea [(ngModel)]="newPartner.comments" name="comments" rows="3" placeholder="Additional details..." class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600"></textarea>
             </div>
 
             <div class="flex justify-end gap-2 pt-4 border-t border-zinc-100">
@@ -1392,17 +1392,17 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
           <div class="space-y-4">
             <div>
               <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Task Title</label>
-              <input [(ngModel)]="assignTaskData.title" type="text" placeholder="e.g. Follow up with client" class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600">
+              <input [(ngModel)]="assignTaskData.title" type="text" placeholder="e.g. Follow up with client" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600">
             </div>
 
             <div>
               <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Description (optional)</label>
-              <textarea [(ngModel)]="assignTaskData.description" rows="3" placeholder="Describe the task..." class="w-full input-field rounded-lg p-2 text-sm focus:outline-indigo-600"></textarea>
+              <textarea [(ngModel)]="assignTaskData.description" rows="3" placeholder="Describe the task..." class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600"></textarea>
             </div>
 
             <div>
               <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Assigned Team</label>
-              <select [(ngModel)]="assignTaskData.assignedTeam" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+              <select [(ngModel)]="assignTaskData.assignedTeam" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-blue-600">
                 <option value="Sales">Sales</option>
                 <option value="Operations">Operations</option>
                 <option value="Finance">Finance</option>
@@ -1412,7 +1412,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
 
             <div>
               <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Assigned Person</label>
-              <select [(ngModel)]="assignTaskData.assignedTo" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-indigo-600">
+              <select [(ngModel)]="assignTaskData.assignedTo" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-blue-600">
                 <option value="">-- Select --</option>
                 @for (user of state.users(); track user.name) {
                   <option [value]="user.name">{{ user.name }} ({{ user.team }})</option>
@@ -1437,7 +1437,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
     <!-- Slide-Over Drawer for Proposal Details -->
     @if (selectedProposal(); as prop) {
       <div class="fixed inset-0 z-50 overflow-hidden" aria-labelledby="proposal-drawer-title" role="dialog" aria-modal="true">
-        <div (click)="closeProposalDrawer()" class="absolute inset-0 overflow-hidden bg-zinc-900/40 backdrop-blur-sm transition-opacity"></div>
+        <div (click)="closeProposalDrawer()" class="absolute inset-0 overflow-hidden bg-transparent"></div>
         <div class="absolute inset-y-0 right-0 max-w-full flex pl-10">
           <div class="w-screen max-w-2xl bg-white shadow-2xl flex flex-col h-full animate-in slide-in-from-right-12 duration-300">
             <div class="px-6 py-5 bg-zinc-50 border-b border-zinc-200 flex justify-between items-center shrink-0">
@@ -1535,7 +1535,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                         <span class="truncate flex-1">{{ prop.confirmationAttachmentName }}</span>
                         @if (prop.confirmationAttachmentData) {
                           <a [href]="prop.confirmationAttachmentData" [download]="prop.confirmationAttachmentName"
-                             class="text-indigo-650 hover:underline font-sans font-semibold ml-1 shrink-0">Download</a>
+                             class="text-blue-700 hover:underline font-sans font-semibold ml-1 shrink-0">Download</a>
                         }
                       </div>
                     }
@@ -1583,7 +1583,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
     <!-- Slide-Over Drawer for PO Details -->
     @if (selectedPO(); as po) {
       <div class="fixed inset-0 z-50 overflow-hidden" aria-labelledby="po-drawer-title" role="dialog" aria-modal="true">
-        <div (click)="closePODrawer()" class="absolute inset-0 overflow-hidden bg-zinc-900/40 backdrop-blur-sm transition-opacity"></div>
+        <div (click)="closePODrawer()" class="absolute inset-0 overflow-hidden bg-transparent"></div>
         <div class="absolute inset-y-0 right-0 max-w-full flex pl-10">
           <div class="w-screen max-w-2xl bg-white shadow-2xl flex flex-col h-full animate-in slide-in-from-right-12 duration-300">
             <div class="px-6 py-5 bg-zinc-50 border-b border-zinc-200 flex justify-between items-center shrink-0">
@@ -1624,7 +1624,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
 
               <div>
                 <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block mb-2">Order Lines</span>
-                <div class="border border-zinc-200 rounded-xl overflow-hidden">
+                <div class="border border-zinc-200 rounded-xl overflow-x-auto">
                   <table class="min-w-full divide-y divide-slate-200">
                     <thead class="bg-zinc-50">
                       <tr>
@@ -1675,7 +1675,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
     @if (selectedDeal(); as deal) {
       <div class="fixed inset-0 z-50 overflow-hidden" aria-labelledby="deal-drawer-title" role="dialog" aria-modal="true">
         <!-- Backdrop -->
-        <div (click)="closeDealDrawer()" class="absolute inset-0 overflow-hidden bg-zinc-900/40 backdrop-blur-sm transition-opacity"></div>
+        <div (click)="closeDealDrawer()" class="absolute inset-0 overflow-hidden bg-transparent"></div>
         
         <div class="absolute inset-y-0 right-0 max-w-full flex pl-10">
           <div class="w-screen max-w-3xl bg-white shadow-2xl flex flex-col h-full animate-in slide-in-from-right-12 duration-300">

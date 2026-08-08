@@ -57,7 +57,7 @@ import { MatIconModule } from '@angular/material/icon';
               <input
                 [(ngModel)]="editName"
                 placeholder="Organization Name"
-                class="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm focus:outline-indigo-600 font-semibold text-zinc-800"
+                class="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm focus:outline-blue-600 font-semibold text-zinc-800"
               />
             } @else {
               <h2 class="text-lg font-bold text-zinc-900 truncate">{{ state.organization().name }}</h2>
@@ -72,7 +72,7 @@ import { MatIconModule } from '@angular/material/icon';
             @if (isEditing()) {
               <select
                 [(ngModel)]="editIndustry"
-                class="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-indigo-600 font-semibold text-zinc-700 cursor-pointer"
+                class="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-blue-600 font-semibold text-zinc-700 cursor-pointer"
               >
                 <option value="Technology">Technology</option>
                 <option value="Finance">Finance</option>
@@ -92,7 +92,7 @@ import { MatIconModule } from '@angular/material/icon';
               <input
                 [(ngModel)]="editTimezone"
                 placeholder="e.g. Africa/Casablanca"
-                class="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm focus:outline-indigo-600 text-zinc-700"
+                class="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm focus:outline-blue-600 text-zinc-700"
               />
             } @else {
               <div class="text-sm font-semibold text-zinc-800 font-sans">{{ state.organization().timezone }}</div>
@@ -104,7 +104,7 @@ import { MatIconModule } from '@angular/material/icon';
             @if (isEditing()) {
               <select
                 [(ngModel)]="editFiscalStart"
-                class="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-indigo-600 font-semibold text-zinc-700 cursor-pointer"
+                class="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-blue-600 font-semibold text-zinc-700 cursor-pointer"
               >
                 @for (m of months; track m.value) {
                   <option [value]="m.value">{{ m.name }}</option>

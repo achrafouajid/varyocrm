@@ -9,7 +9,7 @@ import { CrmStateService, Notification, InboxMessage } from '../services/crm-sta
   template: `
     @if (open()) {
       <div class="fixed inset-0 z-50 overflow-hidden" aria-labelledby="drawer-title" role="dialog" aria-modal="true">
-        <div (click)="closeDrawer()" class="absolute inset-0 bg-zinc-900/40 backdrop-blur-sm transition-opacity"></div>
+        <div (click)="closeDrawer()" class="absolute inset-0 bg-transparent"></div>
 
         <div class="absolute inset-y-0 right-0 max-w-full flex pl-10">
           <div class="w-screen max-w-lg bg-white shadow-2xl flex flex-col h-full animate-in slide-in-from-right-12 duration-300 relative">
@@ -111,7 +111,7 @@ import { CrmStateService, Notification, InboxMessage } from '../services/crm-sta
                     [class]="msg.read ? '' : 'bg-zinc-100/40'"
                   >
                     <!-- Avatar -->
-                    <div class="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5">
+                    <div class="w-9 h-9 rounded-full bg-gradient-to-br from-blue-400 to-sky-500 flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5">
                       {{ getInitials(msg.sender) }}
                     </div>
                     <div class="min-w-0 flex-1">

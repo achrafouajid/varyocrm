@@ -197,7 +197,7 @@ import { CrmStateService, Lead, LeadActivity, LeadAttachment } from '../services
       <div class="fixed inset-0 z-50 overflow-hidden" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
         <div class="absolute inset-0 overflow-hidden">
           <!-- Backdrop -->
-          <div (click)="closeDetails()" class="absolute inset-0 bg-zinc-900/40 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"></div>
+          <div (click)="closeDetails()" class="absolute inset-0 bg-transparent"></div>
 
           <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
             <div class="pointer-events-auto w-screen max-w-2xl transform bg-white shadow-2xl border-l border-zinc-200 flex flex-col h-full animate-in slide-in-from-right duration-300">
@@ -426,7 +426,7 @@ import { CrmStateService, Lead, LeadActivity, LeadAttachment } from '../services
                       <div class="grid grid-cols-2 gap-3">
                         <div>
                           <label class="block text-[10px] uppercase font-semibold text-zinc-400 mb-1">Type</label>
-                          <select [(ngModel)]="newActivity.type" class="w-full border border-zinc-200 rounded-lg p-2 text-xs bg-white focus:outline-indigo-600">
+                          <select [(ngModel)]="newActivity.type" class="w-full border border-zinc-200 rounded-lg p-2 text-xs bg-white focus:outline-blue-600">
                             <option value="Call">Call</option>
                             <option value="Email">Email</option>
                             <option value="Meeting">Meeting</option>
@@ -436,16 +436,16 @@ import { CrmStateService, Lead, LeadActivity, LeadAttachment } from '../services
                         </div>
                         <div>
                           <label class="block text-[10px] uppercase font-semibold text-zinc-400 mb-1">Date</label>
-                          <input [(ngModel)]="newActivity.date" type="date" class="w-full border border-zinc-200 rounded-lg p-1.5 text-xs focus:outline-indigo-600">
+                          <input [(ngModel)]="newActivity.date" type="date" class="w-full border border-zinc-200 rounded-lg p-1.5 text-xs focus:outline-blue-600">
                         </div>
                       </div>
                       <div>
                         <label class="block text-[10px] uppercase font-semibold text-zinc-400 mb-1">Summary</label>
-                        <input [(ngModel)]="newActivity.summary" type="text" placeholder="e.g. Discussed pricing options" class="w-full border border-zinc-200 rounded-lg p-2 text-xs focus:outline-indigo-600">
+                        <input [(ngModel)]="newActivity.summary" type="text" placeholder="e.g. Discussed pricing options" class="w-full border border-zinc-200 rounded-lg p-2 text-xs focus:outline-blue-600">
                       </div>
                       <div>
                         <label class="block text-[10px] uppercase font-semibold text-zinc-400 mb-1">Details (Optional)</label>
-                        <textarea [(ngModel)]="newActivity.detail" rows="2" placeholder="More detailed recap..." class="w-full border border-zinc-200 rounded-lg p-2 text-xs focus:outline-indigo-600"></textarea>
+                        <textarea [(ngModel)]="newActivity.detail" rows="2" placeholder="More detailed recap..." class="w-full border border-zinc-200 rounded-lg p-2 text-xs focus:outline-blue-600"></textarea>
                       </div>
                       <div class="flex justify-end pt-2">
                         <button (click)="submitActivity(lead.id)" class="bg-zinc-800 hover:bg-zinc-900 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-xs">
@@ -493,7 +493,7 @@ import { CrmStateService, Lead, LeadActivity, LeadAttachment } from '../services
                     <div class="bg-white rounded-xl border border-zinc-200 p-4 space-y-3">
                       <h3 class="text-xs font-bold text-zinc-700 uppercase">Upload Document (Mock)</h3>
                       <div class="flex gap-3">
-                        <input [(ngModel)]="newAttachmentName" type="text" placeholder="e.g. Business_Card.png" class="flex-1 border border-zinc-200 rounded-lg p-2 text-xs focus:outline-indigo-600">
+                        <input [(ngModel)]="newAttachmentName" type="text" placeholder="e.g. Business_Card.png" class="flex-1 border border-zinc-200 rounded-lg p-2 text-xs focus:outline-blue-600">
                         <button (click)="submitAttachment(lead.id)" class="bg-zinc-900 hover:bg-zinc-950 text-white px-3 py-2 rounded-lg text-xs font-semibold shadow-xs">
                           Upload File
                         </button>
@@ -573,19 +573,19 @@ import { CrmStateService, Lead, LeadActivity, LeadAttachment } from '../services
               <div class="grid grid-cols-2 gap-3">
                 <div>
                   <label class="block font-semibold text-zinc-500 mb-1">Lead Name*</label>
-                  <input [(ngModel)]="newLead.name" type="text" placeholder="e.g. John Doe" class="w-full border border-zinc-200 rounded-lg p-2 focus:outline-indigo-600">
+                  <input [(ngModel)]="newLead.name" type="text" placeholder="e.g. John Doe" class="w-full border border-zinc-200 rounded-lg p-2 focus:outline-blue-600">
                 </div>
                 <div>
                   <label class="block font-semibold text-zinc-500 mb-1">Company Name*</label>
-                  <input [(ngModel)]="newLead.companyName" type="text" placeholder="e.g. Acmo Group" class="w-full border border-zinc-200 rounded-lg p-2 focus:outline-indigo-600">
+                  <input [(ngModel)]="newLead.companyName" type="text" placeholder="e.g. Acmo Group" class="w-full border border-zinc-200 rounded-lg p-2 focus:outline-blue-600">
                 </div>
                 <div>
                   <label class="block font-semibold text-zinc-500 mb-1">Email</label>
-                  <input [(ngModel)]="newLead.email" type="email" placeholder="e.g. email@acmo.com" class="w-full border border-zinc-200 rounded-lg p-2 focus:outline-indigo-600">
+                  <input [(ngModel)]="newLead.email" type="email" placeholder="e.g. email@acmo.com" class="w-full border border-zinc-200 rounded-lg p-2 focus:outline-blue-600">
                 </div>
                 <div>
                   <label class="block font-semibold text-zinc-500 mb-1">Phone</label>
-                  <input [(ngModel)]="newLead.phone" type="text" placeholder="e.g. +212-6..." class="w-full border border-zinc-200 rounded-lg p-2 focus:outline-indigo-600">
+                  <input [(ngModel)]="newLead.phone" type="text" placeholder="e.g. +212-6..." class="w-full border border-zinc-200 rounded-lg p-2 focus:outline-blue-600">
                 </div>
               </div>
             </div>
@@ -596,19 +596,19 @@ import { CrmStateService, Lead, LeadActivity, LeadAttachment } from '../services
               <div class="grid grid-cols-2 gap-3">
                 <div>
                   <label class="block font-semibold text-zinc-500 mb-1">Industry</label>
-                  <input [(ngModel)]="newLead.industry" type="text" placeholder="e.g. Healthcare" class="w-full border border-zinc-200 rounded-lg p-2 focus:outline-indigo-600">
+                  <input [(ngModel)]="newLead.industry" type="text" placeholder="e.g. Healthcare" class="w-full border border-zinc-200 rounded-lg p-2 focus:outline-blue-600">
                 </div>
                 <div>
                   <label class="block font-semibold text-zinc-500 mb-1">Company Size</label>
-                  <input [(ngModel)]="newLead.companySize" type="text" placeholder="e.g. 200 employees" class="w-full border border-zinc-200 rounded-lg p-2 focus:outline-indigo-600">
+                  <input [(ngModel)]="newLead.companySize" type="text" placeholder="e.g. 200 employees" class="w-full border border-zinc-200 rounded-lg p-2 focus:outline-blue-600">
                 </div>
                 <div>
                   <label class="block font-semibold text-zinc-500 mb-1">City</label>
-                  <input [(ngModel)]="newLead.city" type="text" placeholder="Casablanca" class="w-full border border-zinc-200 rounded-lg p-2 focus:outline-indigo-600">
+                  <input [(ngModel)]="newLead.city" type="text" placeholder="Casablanca" class="w-full border border-zinc-200 rounded-lg p-2 focus:outline-blue-600">
                 </div>
                 <div>
                   <label class="block font-semibold text-zinc-500 mb-1">Country</label>
-                  <input [(ngModel)]="newLead.country" type="text" placeholder="Morocco" class="w-full border border-zinc-200 rounded-lg p-2 focus:outline-indigo-600">
+                  <input [(ngModel)]="newLead.country" type="text" placeholder="Morocco" class="w-full border border-zinc-200 rounded-lg p-2 focus:outline-blue-600">
                 </div>
               </div>
             </div>
@@ -619,7 +619,7 @@ import { CrmStateService, Lead, LeadActivity, LeadAttachment } from '../services
               <div class="grid grid-cols-3 gap-3">
                 <div>
                   <label class="block font-semibold text-zinc-500 mb-1">Status</label>
-                  <select [(ngModel)]="newLead.status" class="w-full border border-zinc-200 rounded-lg p-2 bg-white focus:outline-indigo-600">
+                  <select [(ngModel)]="newLead.status" class="w-full border border-zinc-200 rounded-lg p-2 bg-white focus:outline-blue-600">
                     <option value="New">New</option>
                     <option value="Contacted">Contacted</option>
                     <option value="Attempted Contact">Attempted Contact</option>
@@ -633,7 +633,7 @@ import { CrmStateService, Lead, LeadActivity, LeadAttachment } from '../services
                 </div>
                 <div>
                   <label class="block font-semibold text-zinc-500 mb-1">Priority</label>
-                  <select [(ngModel)]="newLead.priority" class="w-full border border-zinc-200 rounded-lg p-2 bg-white focus:outline-indigo-600">
+                  <select [(ngModel)]="newLead.priority" class="w-full border border-zinc-200 rounded-lg p-2 bg-white focus:outline-blue-600">
                     <option value="Low">Low</option>
                     <option value="Medium">Medium</option>
                     <option value="High">High</option>
@@ -641,7 +641,7 @@ import { CrmStateService, Lead, LeadActivity, LeadAttachment } from '../services
                 </div>
                 <div>
                   <label class="block font-semibold text-zinc-500 mb-1">Temperature</label>
-                  <select [(ngModel)]="newLead.temperature" class="w-full border border-zinc-200 rounded-lg p-2 bg-white focus:outline-indigo-600">
+                  <select [(ngModel)]="newLead.temperature" class="w-full border border-zinc-200 rounded-lg p-2 bg-white focus:outline-blue-600">
                     <option value="Cold">Cold</option>
                     <option value="Warm">Warm</option>
                     <option value="Hot">Hot</option>
@@ -651,7 +651,7 @@ import { CrmStateService, Lead, LeadActivity, LeadAttachment } from '../services
               <div class="grid grid-cols-2 gap-3">
                 <div>
                   <label class="block font-semibold text-zinc-500 mb-1">Origin</label>
-                  <select [(ngModel)]="newLead.origin" class="w-full border border-zinc-200 rounded-lg p-2 bg-white focus:outline-indigo-600">
+                  <select [(ngModel)]="newLead.origin" class="w-full border border-zinc-200 rounded-lg p-2 bg-white focus:outline-blue-600">
                     <option value="Landing Page">Landing Page</option>
                     <option value="Marketing Campaign">Marketing Campaign</option>
                     <option value="Email">Email</option>
@@ -662,11 +662,11 @@ import { CrmStateService, Lead, LeadActivity, LeadAttachment } from '../services
                 </div>
                 <div>
                   <label class="block font-semibold text-zinc-500 mb-1">Product Interest</label>
-                  <input [(ngModel)]="newLead.interestedProduct" type="text" placeholder="e.g. Cloud Hosting" class="w-full border border-zinc-200 rounded-lg p-2 focus:outline-indigo-600">
+                  <input [(ngModel)]="newLead.interestedProduct" type="text" placeholder="e.g. Cloud Hosting" class="w-full border border-zinc-200 rounded-lg p-2 focus:outline-blue-600">
                 </div>
                 <div>
                   <label class="block font-semibold text-zinc-500 mb-1">Assigned Salesperson</label>
-                  <select [(ngModel)]="newLead.assignedSalesperson" class="w-full border border-zinc-200 rounded-lg p-2 bg-white focus:outline-indigo-600">
+                  <select [(ngModel)]="newLead.assignedSalesperson" class="w-full border border-zinc-200 rounded-lg p-2 bg-white focus:outline-blue-600">
                     <option value="">-- Unassigned --</option>
                     @for (user of state.users(); track user.name) {
                       <option [value]="user.name">{{ user.name }} ({{ user.role }})</option>
@@ -679,7 +679,7 @@ import { CrmStateService, Lead, LeadActivity, LeadAttachment } from '../services
             <!-- Notes -->
             <div>
               <label class="block font-semibold text-zinc-500 mb-1">Notes</label>
-              <textarea [(ngModel)]="newLead.notes" rows="3" placeholder="Evaluate legacy systems, downtime concerns, etc." class="w-full border border-zinc-200 rounded-lg p-2 focus:outline-indigo-600"></textarea>
+              <textarea [(ngModel)]="newLead.notes" rows="3" placeholder="Evaluate legacy systems, downtime concerns, etc." class="w-full border border-zinc-200 rounded-lg p-2 focus:outline-blue-600"></textarea>
             </div>
           </div>
 

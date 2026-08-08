@@ -121,7 +121,7 @@ import { UserAvatarComponent } from '../shared/user-avatar.component';
                       [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event); currentPage.set(1)"
                       type="text"
                       placeholder="Search name, company..."
-                      class="w-full input-field rounded-xl pl-10 pr-4 py-2 text-sm outline-none placeholder:text-zinc-400"
+                      class="w-full input-field rounded-xl pl-10! pr-4! py-2! text-sm outline-none placeholder:text-zinc-400"
                     >
                   </div>
                   <select [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event); currentPage.set(1)" class="input-field rounded-xl px-3 py-2 text-sm outline-none bg-transparent">
@@ -166,7 +166,7 @@ import { UserAvatarComponent } from '../shared/user-avatar.component';
                   </thead>
                   <tbody>
                     @for (lead of paginatedLeads(); track lead.id) {
-                      <tr (click)="openLeadDetail(lead)" class="border-b border-white/10 hover:bg-white/30 transition-colors cursor-pointer group">
+                      <tr (click)="selectLead(lead)" class="border-b border-white/10 hover:bg-white/30 transition-colors cursor-pointer group">
                         <td class="px-3 py-2.5 whitespace-nowrap">
                           <div class="flex items-center gap-2">
                             <div class="h-8 w-8 bg-zinc-100 text-zinc-950 font-bold rounded-lg text-[11px] flex items-center justify-center shrink-0">
@@ -242,8 +242,8 @@ import { UserAvatarComponent } from '../shared/user-avatar.component';
                           }
                         </td>
                         <td class="px-3 py-2.5 whitespace-nowrap text-center">
-                          <button (click)="$event.stopPropagation(); selectLead(lead)" class="w-7 h-7 rounded-lg btn-secondary flex items-center justify-center text-zinc-400 hover:text-zinc-900 transition-all mx-auto" title="Quick view">
-                            <mat-icon class="text-[16px]! w-4 h-4">visibility</mat-icon>
+                          <button (click)="$event.stopPropagation(); selectLead(lead)" class="w-8 h-8 shrink-0 rounded-lg bg-white flex items-center justify-center text-[#378ADD] hover:text-[#2E5AAC] hover:bg-zinc-50 transition-all mx-auto" title="View">
+                            <mat-icon class="text-[18px] w-[18px] h-[18px] flex items-center justify-center">visibility</mat-icon>
                           </button>
                         </td>
                       </tr>
@@ -296,7 +296,7 @@ import { UserAvatarComponent } from '../shared/user-avatar.component';
           @if (selectedLead(); as lead) {
             <div class="fixed inset-0 z-50 overflow-hidden" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
               <div class="absolute inset-0 overflow-hidden">
-                <div (click)="closeDetails()" class="absolute inset-0 bg-zinc-900/30 backdrop-blur-sm transition-opacity"></div>
+                <div (click)="closeDetails()" class="absolute inset-0 bg-transparent"></div>
                 <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
                   <div class="pointer-events-auto w-screen max-w-2xl transform bg-white shadow-xl flex flex-col h-full">
                     
@@ -326,8 +326,12 @@ import { UserAvatarComponent } from '../shared/user-avatar.component';
                             <option value="Disqualified">Disqualified</option>
                           </select>
                         </div>
-                        <button (click)="closeDetails()" class="w-8 h-8 rounded-lg btn-secondary flex items-center justify-center text-zinc-400 hover:text-zinc-600 transition-colors">
-                          <mat-icon class="w-5 h-5 text-[20px]! leading-none!">close</mat-icon>
+                        <button (click)="openLeadDetail(lead)" class="px-2.5 py-1.5 rounded-lg btn-secondary text-xs font-semibold text-zinc-700 hover:text-zinc-900 transition-colors flex items-center gap-1">
+                          <mat-icon class="text-[14px]! w-3.5 h-3.5">open_in_new</mat-icon>
+                          Open page
+                        </button>
+                        <button (click)="closeDetails()" title="Close" class="w-8 h-8 shrink-0 rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 transition-colors">
+                          <mat-icon class="text-[20px] w-[20px] h-[20px] flex items-center justify-center">close</mat-icon>
                         </button>
                       </div>
                     </div>
@@ -681,7 +685,7 @@ import { UserAvatarComponent } from '../shared/user-avatar.component';
                     </button>
                   }
                   @if(partner.type === 'Customer') {
-                    <button (click)="openCustomerCard(partner.id)" class="w-full btn-secondary rounded-xl px-3 py-2 text-sm font-semibold text-zinc-900 transition-all flex items-center justify-center">
+                    <button (click)="openCustomerCard(partner.id)" class="w-full rounded-xl px-3 py-2 text-sm font-semibold transition-all flex items-center justify-center bg-[#378ADD]/10 text-[#378ADD] hover:bg-[#378ADD]/20 border border-[#378ADD]/30">
                       <mat-icon class="mr-2 text-[16px] w-4 h-4">visibility</mat-icon>
                       View Customer Card
                     </button>
