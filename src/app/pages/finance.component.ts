@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
 import { DataStatusBannerComponent } from '../shared/data-status-banner.component';
+import { PaginatorComponent } from '../shared/paginator.component';
 
 // ── Local type alias for invoice line items ────────────────────────────────
 type InvoiceLine = {
@@ -17,13 +18,13 @@ type InvoiceLine = {
 
 @Component({
   selector: 'app-finance',
-  imports: [MatIconModule, CommonModule, FormsModule, CreatedByBadgeComponent, DataStatusBannerComponent],
+  imports: [MatIconModule, CommonModule, FormsModule, CreatedByBadgeComponent, DataStatusBannerComponent, PaginatorComponent],
   template: `
     <div class="space-y-8">
       <app-data-status-banner [loading]="state.invoicesLoading()" [error]="state.invoicesError()" />
       <div class="flex gap-5 sm:gap-6 border-b border-zinc-200">
         <button
-          (click)="activeTab.set('Customer'); state.breadcrumbLabel.set('Customer Invoices')"
+          (click)="activeTab.set('Customer'); state.breadcrumbLabel.set('Customer Invoices'); invoicesPage.set(1)"
           [class]="activeTab() === 'Customer' ? 'border-zinc-900 text-zinc-900' : 'border-transparent text-zinc-400 hover:text-zinc-600'"
           class="px-1 py-3 -mb-px border-b-2 text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap"
         >
@@ -32,7 +33,7 @@ type InvoiceLine = {
           <span class="text-xs">{{ state.customerInvoices().length }}</span>
         </button>
         <button
-          (click)="activeTab.set('Vendor'); state.breadcrumbLabel.set('Vendor Invoices')"
+          (click)="activeTab.set('Vendor'); state.breadcrumbLabel.set('Vendor Invoices'); invoicesPage.set(1)"
           [class]="activeTab() === 'Vendor' ? 'border-zinc-900 text-zinc-900' : 'border-transparent text-zinc-400 hover:text-zinc-600'"
           class="px-1 py-3 -mb-px border-b-2 text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap"
         >
@@ -76,7 +77,7 @@ type InvoiceLine = {
                 </tr>
               </thead>
               <tbody class="bg-white divide-y divide-slate-200">
-                @for (invoice of filteredInvoices(); track invoice.id) {
+                @for (invoice of paginatedInvoices(); track invoice.id) {
                   <tr class="hover:bg-zinc-50 transition-colors">
                     <td class="px-6 py-4 whitespace-nowrap font-sans text-sm font-semibold text-zinc-900">
                       #{{invoice.id}}
@@ -115,6 +116,14 @@ type InvoiceLine = {
                 }
               </tbody>
             </table>
+            @if (filteredInvoices().length > 0) {
+              <app-paginator
+                [currentPage]="invoicesPage()"
+                [totalPages]="invoicesTotalPages()"
+                [pageSize]="invoicesPageSize()"
+                (pageChange)="invoicesPage.set($event)"
+                (pageSizeChange)="invoicesPageSize.set($event)" />
+            }
           </div>
         }
 
@@ -907,6 +916,14 @@ export class FinanceComponent {
     this.activeTab() === 'Customer'
       ? this.state.customerInvoices()
       : this.state.vendorInvoices();
+
+  invoicesPage = signal(1);
+  invoicesPageSize = signal(10);
+  invoicesTotalPages = computed(() => Math.max(1, Math.ceil(this.filteredInvoices().length / this.invoicesPageSize())));
+  paginatedInvoices = computed(() => {
+    const start = (this.invoicesPage() - 1) * this.invoicesPageSize();
+    return this.filteredInvoices().slice(start, start + this.invoicesPageSize());
+  });
 
   getPartnerName(id: string) {
     return this.state.partners().find(p => p.id === id)?.name ?? 'Unknown';

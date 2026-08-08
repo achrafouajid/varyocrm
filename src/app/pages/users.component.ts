@@ -6,11 +6,12 @@ import { CrmStateService, CrmUser, RoleId } from '../services/crm-state.service'
 import { UserAvatarComponent } from '../shared/user-avatar.component';
 import { RoleBadgeComponent } from '../shared/role-badge.component';
 import { MatIconModule } from '@angular/material/icon';
+import { PaginatorComponent } from '../shared/paginator.component';
 
 @Component({
   selector: 'app-users',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, UserAvatarComponent, RoleBadgeComponent, MatIconModule],
+  imports: [CommonModule, FormsModule, RouterLink, UserAvatarComponent, RoleBadgeComponent, MatIconModule, PaginatorComponent],
   styles: [`
     .panel {
       max-height: 0;
@@ -204,7 +205,7 @@ import { MatIconModule } from '@angular/material/icon';
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 bg-white">
-            @for (user of filteredUsers(); track user.id) {
+            @for (user of paginatedUsers(); track user.id) {
               <!-- Standard row -->
               <tr class="hover:bg-zinc-50/40 transition-colors">
                 <!-- Avatar + Name -->
@@ -361,6 +362,14 @@ import { MatIconModule } from '@angular/material/icon';
             }
           </tbody>
         </table>
+        @if (filteredUsers().length > 0) {
+          <app-paginator
+            [currentPage]="usersPage()"
+            [totalPages]="usersTotalPages()"
+            [pageSize]="usersPageSize()"
+            (pageChange)="usersPage.set($event)"
+            (pageSizeChange)="usersPageSize.set($event)" />
+        }
       </div>
     </div>
   `
@@ -448,6 +457,14 @@ export class UsersComponent {
     }
 
     return list;
+  });
+
+  usersPage = signal(1);
+  usersPageSize = signal(10);
+  usersTotalPages = computed(() => Math.max(1, Math.ceil(this.filteredUsers().length / this.usersPageSize())));
+  paginatedUsers = computed(() => {
+    const start = (this.usersPage() - 1) * this.usersPageSize();
+    return this.filteredUsers().slice(start, start + this.usersPageSize());
   });
 
   // Actions

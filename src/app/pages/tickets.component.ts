@@ -6,10 +6,11 @@ import { FormsModule } from '@angular/forms';
 import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
 import { RouterModule } from '@angular/router';
 import { DataStatusBannerComponent } from '../shared/data-status-banner.component';
+import { PaginatorComponent } from '../shared/paginator.component';
 
 @Component({
   selector: 'app-tickets',
-  imports: [MatIconModule, CommonModule, FormsModule, CreatedByBadgeComponent, RouterModule, DataStatusBannerComponent],
+  imports: [MatIconModule, CommonModule, FormsModule, CreatedByBadgeComponent, RouterModule, DataStatusBannerComponent, PaginatorComponent],
   template: `
     <div class="space-y-8">
       <app-data-status-banner [loading]="state.ticketsLoading()" [error]="state.ticketsError()" />
@@ -69,7 +70,7 @@ import { DataStatusBannerComponent } from '../shared/data-status-banner.componen
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-slate-200">
-            @for (ticket of filteredTickets(); track ticket.id) {
+            @for (ticket of paginatedTickets(); track ticket.id) {
               <tr class="hover:bg-zinc-50 transition-colors">
                 <td (click)="openEditTicketModal(ticket)" class="px-6 py-4 whitespace-nowrap cursor-pointer">
                   <div class="flex items-center">
@@ -126,6 +127,14 @@ import { DataStatusBannerComponent } from '../shared/data-status-banner.componen
             }
           </tbody>
         </table>
+        @if (filteredTickets().length > 0) {
+          <app-paginator
+            [currentPage]="ticketsPage()"
+            [totalPages]="ticketsTotalPages()"
+            [pageSize]="ticketsPageSize()"
+            (pageChange)="ticketsPage.set($event)"
+            (pageSizeChange)="ticketsPageSize.set($event)" />
+        }
       </div>
     </div>
 
@@ -283,6 +292,14 @@ export class TicketsComponent {
   });
 
   hasActiveFilters = computed(() => !!this.priorityFilter() || !!this.statusFilter() || !!this.typeFilter());
+
+  ticketsPage = signal(1);
+  ticketsPageSize = signal(10);
+  ticketsTotalPages = computed(() => Math.max(1, Math.ceil(this.filteredTickets().length / this.ticketsPageSize())));
+  paginatedTickets = computed(() => {
+    const start = (this.ticketsPage() - 1) * this.ticketsPageSize();
+    return this.filteredTickets().slice(start, start + this.ticketsPageSize());
+  });
 
   clearFilters() {
     this.priorityFilter.set(null);

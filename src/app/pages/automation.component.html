@@ -121,7 +121,7 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
-              @for (rule of state.automationRules(); track rule.id) {
+              @for (rule of paginatedRules(); track rule.id) {
                 <tr class="hover:bg-zinc-50/50 transition-colors">
                   <td class="px-6 py-4 min-w-[280px]">
                     <div class="flex items-start gap-4">
@@ -179,6 +179,14 @@
               }
             </tbody>
           </table>
+          @if (state.automationRules().length > 0) {
+            <app-paginator
+              [currentPage]="rulesPage()"
+              [totalPages]="rulesTotalPages()"
+              [pageSize]="rulesPageSize()"
+              (pageChange)="rulesPage.set($event)"
+              (pageSizeChange)="rulesPageSize.set($event)" />
+          }
         </div>
       }
     </div>

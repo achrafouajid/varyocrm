@@ -7,6 +7,7 @@ import { DragDropModule, CdkDragDrop, transferArrayItem } from '@angular/cdk/dra
 import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
 import { RouterModule } from '@angular/router';
 import { DataStatusBannerComponent } from '../shared/data-status-banner.component';
+import { PaginatorComponent } from '../shared/paginator.component';
 
 const MODULE_SUB_MODULES: Record<string, string[]> = {
   Sales: ['Deal', 'Proposal', 'PurchaseOrder'],
@@ -33,7 +34,7 @@ const SUB_MODULE_LABELS: Record<string, string> = {
 
 @Component({
   selector: 'app-tasks',
-  imports: [MatIconModule, CommonModule, FormsModule, DragDropModule, CreatedByBadgeComponent, RouterModule, DataStatusBannerComponent],
+  imports: [MatIconModule, CommonModule, FormsModule, DragDropModule, CreatedByBadgeComponent, RouterModule, DataStatusBannerComponent, PaginatorComponent],
   styles: [`
     .kanban-column.cdk-drop-list-dragging .kanban-card:not(.cdk-drag-placeholder) {
       transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
@@ -105,7 +106,7 @@ const SUB_MODULE_LABELS: Record<string, string> = {
       <!-- List View -->
       @if (activeView() === 'list') {
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          @for (task of filteredTasks(); track task.id) {
+          @for (task of paginatedTasks(); track task.id) {
             <div class="card rounded-xl p-5 flex flex-col justify-between hover:shadow-md transition-all">
               <div>
                 <div class="flex justify-between items-start mb-3">
@@ -176,6 +177,14 @@ const SUB_MODULE_LABELS: Record<string, string> = {
             </div>
           }
         </div>
+        @if (filteredTasks().length > 0) {
+          <app-paginator
+            [currentPage]="tasksPage()"
+            [totalPages]="tasksTotalPages()"
+            [pageSize]="tasksPageSize()"
+            (pageChange)="tasksPage.set($event)"
+            (pageSizeChange)="tasksPageSize.set($event)" />
+        }
       }
 
       <!-- Kanban View -->
@@ -452,6 +461,14 @@ export class TasksComponent {
   pendingTasks = computed(() => this.filteredTasks().filter(t => t.status === 'Pending'));
   inProgressTasks = computed(() => this.filteredTasks().filter(t => t.status === 'In Progress'));
   completedTasks = computed(() => this.filteredTasks().filter(t => t.status === 'Completed'));
+
+  tasksPage = signal(1);
+  tasksPageSize = signal(9);
+  tasksTotalPages = computed(() => Math.max(1, Math.ceil(this.filteredTasks().length / this.tasksPageSize())));
+  paginatedTasks = computed(() => {
+    const start = (this.tasksPage() - 1) * this.tasksPageSize();
+    return this.filteredTasks().slice(start, start + this.tasksPageSize());
+  });
 
   clearFilter() {
     this.activePriorityFilter.set(null);

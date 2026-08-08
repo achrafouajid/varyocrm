@@ -1,19 +1,20 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { CrmStateService } from '../services/crm-state.service';
 import { CommonModule } from '@angular/common';
 import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
 import { DataStatusBannerComponent } from '../shared/data-status-banner.component';
+import { PaginatorComponent } from '../shared/paginator.component';
 
 @Component({
   selector: 'app-marketing',
-  imports: [MatIconModule, CommonModule, CreatedByBadgeComponent, DataStatusBannerComponent],
+  imports: [MatIconModule, CommonModule, CreatedByBadgeComponent, DataStatusBannerComponent, PaginatorComponent],
   template: `
     <div class="space-y-8">
       <app-data-status-banner [loading]="state.campaignsLoading()" [error]="state.campaignsError()" />
       <div class="flex gap-5 sm:gap-6 border-b border-zinc-200">
         <button
-          (click)="activeTab.set('Email'); state.breadcrumbLabel.set('Email')"
+          (click)="activeTab.set('Email'); state.breadcrumbLabel.set('Email'); campaignsPage.set(1)"
           [class]="activeTab() === 'Email' ? 'border-zinc-900 text-zinc-900' : 'border-transparent text-zinc-400 hover:text-zinc-600'"
           class="px-1 py-3 -mb-px border-b-2 text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap"
         >
@@ -22,7 +23,7 @@ import { DataStatusBannerComponent } from '../shared/data-status-banner.componen
           <span class="text-xs">{{ filteredByType('Email').length }}</span>
         </button>
         <button
-          (click)="activeTab.set('WhatsApp'); state.breadcrumbLabel.set('WhatsApp')"
+          (click)="activeTab.set('WhatsApp'); state.breadcrumbLabel.set('WhatsApp'); campaignsPage.set(1)"
           [class]="activeTab() === 'WhatsApp' ? 'border-zinc-900 text-zinc-900' : 'border-transparent text-zinc-400 hover:text-zinc-600'"
           class="px-1 py-3 -mb-px border-b-2 text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap"
         >
@@ -31,7 +32,7 @@ import { DataStatusBannerComponent } from '../shared/data-status-banner.componen
           <span class="text-xs">{{ filteredByType('WhatsApp').length }}</span>
         </button>
         <button
-          (click)="activeTab.set('SMS'); state.breadcrumbLabel.set('SMS')"
+          (click)="activeTab.set('SMS'); state.breadcrumbLabel.set('SMS'); campaignsPage.set(1)"
           [class]="activeTab() === 'SMS' ? 'border-zinc-900 text-zinc-900' : 'border-transparent text-zinc-400 hover:text-zinc-600'"
           class="px-1 py-3 -mb-px border-b-2 text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap"
         >
@@ -75,7 +76,7 @@ import { DataStatusBannerComponent } from '../shared/data-status-banner.componen
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-slate-200">
-            @for (campaign of filteredCampaigns(); track campaign.id) {
+            @for (campaign of paginatedCampaigns(); track campaign.id) {
               <tr class="hover:bg-zinc-50 transition-colors">
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="text-sm font-medium text-zinc-900">{{campaign.title}}</div>
@@ -102,11 +103,27 @@ import { DataStatusBannerComponent } from '../shared/data-status-banner.componen
             }
           </tbody>
         </table>
+        @if (filteredCampaigns().length > 0) {
+          <app-paginator
+            [currentPage]="campaignsPage()"
+            [totalPages]="campaignsTotalPages()"
+            [pageSize]="campaignsPageSize()"
+            (pageChange)="campaignsPage.set($event)"
+            (pageSizeChange)="campaignsPageSize.set($event)" />
+        }
       </div>
     `})
 export class MarketingComponent {
   state = inject(CrmStateService);
   activeTab = signal<'Email' | 'WhatsApp' | 'SMS'>('Email');
+
+  campaignsPage = signal(1);
+  campaignsPageSize = signal(10);
+  campaignsTotalPages = computed(() => Math.max(1, Math.ceil(this.filteredCampaigns().length / this.campaignsPageSize())));
+  paginatedCampaigns = computed(() => {
+    const start = (this.campaignsPage() - 1) * this.campaignsPageSize();
+    return this.filteredCampaigns().slice(start, start + this.campaignsPageSize());
+  });
 
   constructor() {
     this.state.loadCampaigns();

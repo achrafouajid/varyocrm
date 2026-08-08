@@ -7,10 +7,11 @@ import { FormsModule } from '@angular/forms';
 import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
 import { UserAvatarComponent } from '../shared/user-avatar.component';
 import { DataStatusBannerComponent } from '../shared/data-status-banner.component';
+import { PaginatorComponent } from '../shared/paginator.component';
 
 @Component({
   selector: 'app-partners',
-  imports: [MatIconModule, CommonModule, FormsModule, CreatedByBadgeComponent, UserAvatarComponent, DataStatusBannerComponent],
+  imports: [MatIconModule, CommonModule, FormsModule, CreatedByBadgeComponent, UserAvatarComponent, DataStatusBannerComponent, PaginatorComponent],
   template: `
     <div class="space-y-8">
       <app-data-status-banner [loading]="state.partnersLoading()" [error]="state.partnersError()" />
@@ -25,7 +26,7 @@ import { DataStatusBannerComponent } from '../shared/data-status-banner.componen
           <span class="text-xs">{{ state.leadsData().length }}</span>
         </button>
         <button
-          (click)="activeTab.set('Customer'); state.breadcrumbLabel.set('Customers')"
+          (click)="activeTab.set('Customer'); state.breadcrumbLabel.set('Customers'); partnersPage.set(1)"
           [class]="activeTab() === 'Customer' ? 'border-zinc-900 text-zinc-900' : 'border-transparent text-zinc-400 hover:text-zinc-600'"
           class="px-1 py-3 -mb-px border-b-2 text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap"
         >
@@ -34,7 +35,7 @@ import { DataStatusBannerComponent } from '../shared/data-status-banner.componen
           <span class="text-xs">{{ state.customers().length }}</span>
         </button>
         <button
-          (click)="activeTab.set('Prospect'); state.breadcrumbLabel.set('Prospects')"
+          (click)="activeTab.set('Prospect'); state.breadcrumbLabel.set('Prospects'); partnersPage.set(1)"
           [class]="activeTab() === 'Prospect' ? 'border-zinc-900 text-zinc-900' : 'border-transparent text-zinc-400 hover:text-zinc-600'"
           class="px-1 py-3 -mb-px border-b-2 text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap"
         >
@@ -43,7 +44,7 @@ import { DataStatusBannerComponent } from '../shared/data-status-banner.componen
           <span class="text-xs">{{ state.prospects().length }}</span>
         </button>
         <button
-          (click)="activeTab.set('Vendor'); state.breadcrumbLabel.set('Vendors')"
+          (click)="activeTab.set('Vendor'); state.breadcrumbLabel.set('Vendors'); partnersPage.set(1)"
           [class]="activeTab() === 'Vendor' ? 'border-zinc-900 text-zinc-900' : 'border-transparent text-zinc-400 hover:text-zinc-600'"
           class="px-1 py-3 -mb-px border-b-2 text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap"
         >
@@ -597,7 +598,7 @@ import { DataStatusBannerComponent } from '../shared/data-status-banner.componen
         } @else {
           <!-- Card grid for non-Lead tabs -->
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            @for (partner of filteredPartners(); track partner.id) {
+            @for (partner of paginatedPartners(); track partner.id) {
               <div class="card rounded-2xl p-6 flex flex-col justify-between">
                 <div>
                   <div class="flex items-start justify-between mb-4">
@@ -703,6 +704,15 @@ import { DataStatusBannerComponent } from '../shared/data-status-banner.componen
               </div>
             }
           </div>
+
+          @if (filteredPartners().length > 0) {
+            <app-paginator
+              [currentPage]="partnersPage()"
+              [totalPages]="partnersTotalPages()"
+              [pageSize]="partnersPageSize()"
+              (pageChange)="partnersPage.set($event)"
+              (pageSizeChange)="partnersPageSize.set($event)" />
+          }
 
           <!-- Create Partner Modal -->
           @if (showCreateModal()) {
@@ -990,6 +1000,14 @@ export class PartnersComponent {
     }
     return this.state.partners().filter(p => p.type === this.activeTab());
   };
+
+  partnersPage = signal(1);
+  partnersPageSize = signal(20);
+  partnersTotalPages = computed(() => Math.max(1, Math.ceil(this.filteredPartners().length / this.partnersPageSize())));
+  paginatedPartners = computed(() => {
+    const start = (this.partnersPage() - 1) * this.partnersPageSize();
+    return this.filteredPartners().slice(start, start + this.partnersPageSize());
+  });
 
   getPartnerInvoices(partnerId: string) {
     return this.state.invoices().filter(i => i.partnerId === partnerId);

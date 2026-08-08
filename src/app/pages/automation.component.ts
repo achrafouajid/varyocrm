@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { CrmStateService, AutomationRule, AutomationRuleGroup, AutomationAction, AutomationExecutionLog, TRIGGER_FIELD_MAP, FieldDescriptor, ConditionOperator, AutomationTrigger, AutomationActionType } from '../services/crm-state.service';
 import { DataStatusBannerComponent } from '../shared/data-status-banner.component';
+import { PaginatorComponent } from '../shared/paginator.component';
 
 const RULE_TEMPLATES: any[] = [
   {
@@ -125,7 +126,7 @@ const RULE_TEMPLATES: any[] = [
 @Component({
   selector: 'app-automation',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatIconModule, DataStatusBannerComponent],
+  imports: [CommonModule, FormsModule, MatIconModule, DataStatusBannerComponent, PaginatorComponent],
   templateUrl: './automation.component.html',
   styleUrls: ['./automation.component.css']
 })
@@ -133,6 +134,14 @@ export class AutomationComponent {
   state = inject(CrmStateService);
 
   activeTab = signal<'rules' | 'templates' | 'logs'>('rules');
+
+  rulesPage = signal(1);
+  rulesPageSize = signal(10);
+  rulesTotalPages = computed(() => Math.max(1, Math.ceil(this.state.automationRules().length / this.rulesPageSize())));
+  paginatedRules = computed(() => {
+    const start = (this.rulesPage() - 1) * this.rulesPageSize();
+    return this.state.automationRules().slice(start, start + this.rulesPageSize());
+  });
 
   // Rule Builder Form State
   isBuilderOpen = signal<boolean>(false);

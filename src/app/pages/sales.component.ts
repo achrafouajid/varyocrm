@@ -6,12 +6,13 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
 import { DataStatusBannerComponent } from '../shared/data-status-banner.component';
+import { PaginatorComponent } from '../shared/paginator.component';
 
 export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Proposal Sent' | 'Negotiation' | 'Won / Lost';
 
 @Component({
   selector: 'app-sales',
-  imports: [MatIconModule, CommonModule, FormsModule, RouterLink, CreatedByBadgeComponent, DataStatusBannerComponent],
+  imports: [MatIconModule, CommonModule, FormsModule, RouterLink, CreatedByBadgeComponent, DataStatusBannerComponent, PaginatorComponent],
   template: `
     <div class="space-y-8">
       <app-data-status-banner [loading]="activeTabLoading()" [error]="activeTabError()" />
@@ -77,7 +78,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-slate-100">
-              @for (deal of state.deals(); track deal.id) {
+              @for (deal of paginatedDeals(); track deal.id) {
                 <tr (click)="openDealDrawer(deal)" class="hover:bg-zinc-50/80 cursor-pointer transition-colors">
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm font-semibold text-zinc-900">{{deal.title}}</div>
@@ -123,13 +124,21 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
               }
             </tbody>
           </table>
+          @if (state.deals().length > 0) {
+            <app-paginator
+              [currentPage]="dealsPage()"
+              [totalPages]="dealsTotalPages()"
+              [pageSize]="dealsPageSize()"
+              (pageChange)="dealsPage.set($event)"
+              (pageSizeChange)="dealsPageSize.set($event)" />
+          }
         </div>
       }
 
       <!-- Proposals View -->
       @if (activeTab() === 'proposals') {
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          @for (prop of state.proposals(); track prop.id) {
+          @for (prop of paginatedProposals(); track prop.id) {
             <div class="card rounded-2xl p-5 flex flex-col justify-between hover:shadow-md transition-all">
               <div class="space-y-3">
                 <div class="flex justify-between items-start">
@@ -276,6 +285,14 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
             <div class="col-span-2 card rounded-2xl p-8 text-center text-zinc-500">No proposals found.</div>
           }
         </div>
+        @if (state.proposals().length > 0) {
+          <app-paginator
+            [currentPage]="proposalsPage()"
+            [totalPages]="proposalsTotalPages()"
+            [pageSize]="proposalsPageSize()"
+            (pageChange)="proposalsPage.set($event)"
+            (pageSizeChange)="proposalsPageSize.set($event)" />
+        }
       }
 
       <!-- Purchase Orders View -->
@@ -295,7 +312,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-slate-200">
-              @for (po of state.purchaseOrders(); track po.id) {
+              @for (po of paginatedPOs(); track po.id) {
                 <tr (click)="openPODrawer(po)" class="hover:bg-zinc-50 cursor-pointer transition-colors">
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm font-semibold text-zinc-900 font-sans">#{{po.id}}</div>
@@ -344,6 +361,14 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
               }
             </tbody>
           </table>
+          @if (state.purchaseOrders().length > 0) {
+            <app-paginator
+              [currentPage]="posPage()"
+              [totalPages]="posTotalPages()"
+              [pageSize]="posPageSize()"
+              (pageChange)="posPage.set($event)"
+              (pageSizeChange)="posPageSize.set($event)" />
+          }
         </div>
       }
     </div>
@@ -2184,6 +2209,30 @@ export class SalesComponent {
   state = inject(CrmStateService);
   private router = inject(Router);
   activeTab = signal<'deals' | 'proposals' | 'pos'>('deals');
+
+  dealsPage = signal(1);
+  dealsPageSize = signal(20);
+  dealsTotalPages = computed(() => Math.max(1, Math.ceil(this.state.deals().length / this.dealsPageSize())));
+  paginatedDeals = computed(() => {
+    const start = (this.dealsPage() - 1) * this.dealsPageSize();
+    return this.state.deals().slice(start, start + this.dealsPageSize());
+  });
+
+  proposalsPage = signal(1);
+  proposalsPageSize = signal(10);
+  proposalsTotalPages = computed(() => Math.max(1, Math.ceil(this.state.proposals().length / this.proposalsPageSize())));
+  paginatedProposals = computed(() => {
+    const start = (this.proposalsPage() - 1) * this.proposalsPageSize();
+    return this.state.proposals().slice(start, start + this.proposalsPageSize());
+  });
+
+  posPage = signal(1);
+  posPageSize = signal(20);
+  posTotalPages = computed(() => Math.max(1, Math.ceil(this.state.purchaseOrders().length / this.posPageSize())));
+  paginatedPOs = computed(() => {
+    const start = (this.posPage() - 1) * this.posPageSize();
+    return this.state.purchaseOrders().slice(start, start + this.posPageSize());
+  });
 
   activeTabLoading = computed(() => {
     const tab = this.activeTab();
