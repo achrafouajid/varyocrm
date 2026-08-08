@@ -997,12 +997,52 @@ export class CrmStateService {
     };
   }
 
+  private static readonly DEPARTMENT_TO_BACKEND: Record<CrmTeam['department'], string> = {
+    Sales: 'SALES', Operations: 'OPERATIONS', Finance: 'FINANCE', Support: 'SUPPORT', Custom: 'CUSTOM'
+  };
+  private static readonly BACKEND_TO_DEPARTMENT: Record<string, CrmTeam['department']> = {
+    SALES: 'Sales', OPERATIONS: 'Operations', FINANCE: 'Finance', SUPPORT: 'Support', CUSTOM: 'Custom'
+  };
+
+  // Team membership isn't stored on the backend Team entity -- it's derived from each AppUser.teamId
+  private teamFromDto(dto: any): CrmTeam {
+    return {
+      id: dto.id,
+      name: dto.name,
+      department: CrmStateService.BACKEND_TO_DEPARTMENT[dto.department] || 'Custom',
+      description: dto.description,
+      leadUserId: dto.leadUserId ?? dto.lead_user_id ?? '',
+      memberUserIds: this.users().filter(u => u.teamId === dto.id).map(u => u.id),
+      color: dto.color || '#7F77DD',
+      createdAt: dto.createdAt ? new Date(dto.createdAt) : new Date()
+    };
+  }
+
+  private teamToApiPayload(team: { name: string; department: CrmTeam['department']; description?: string; leadUserId: string; color: string }) {
+    return {
+      name: team.name,
+      department: CrmStateService.DEPARTMENT_TO_BACKEND[team.department],
+      description: team.description,
+      lead_user_id: team.leadUserId || null,
+      color: team.color
+    };
+  }
+
+  // Recomputes every team's memberUserIds from the current users signal (source of truth is AppUser.teamId)
+  private rehydrateTeamMembership(): void {
+    this.teams.update(list => list.map(t => ({
+      ...t,
+      memberUserIds: this.users().filter(u => u.teamId === t.id).map(u => u.id)
+    })));
+  }
+
   // Initialize eager data from API (app-wide dependencies)
   private loadEagerDataFromApi(): void {
     this.api.getUsers().subscribe({
       next: (users) => {
         if (users && users.length > 0) {
           this.users.set(users.map(u => this.userFromDto(u)));
+          this.rehydrateTeamMembership();
         }
       },
       error: (err) => {
@@ -1013,7 +1053,7 @@ export class CrmStateService {
     this.api.getTeams().subscribe({
       next: (teams) => {
         if (teams && teams.length > 0) {
-          this.teams.set(teams);
+          this.teams.set(teams.map(t => this.teamFromDto(t)));
         }
       },
       error: (err) => {
@@ -1229,6 +1269,7 @@ export class CrmStateService {
       next: (dto) => {
         const updated = this.userFromDto(dto);
         this.users.update(list => list.map(u => u.id === id ? updated : u));
+        this.rehydrateTeamMembership();
         this.toast.show(`User <strong>${updated.displayName}</strong> updated`, { type: 'info' });
       },
       error: () => this.toast.show('Failed to update user', { type: 'error' })
@@ -1254,80 +1295,63 @@ export class CrmStateService {
     });
   }
 
-  addTeam(draft: Omit<CrmTeam, 'id' | 'createdAt'>): CrmTeam {
-    const id = 'team_' + Math.random().toString(36).substring(2, 9);
-    const newTeam: CrmTeam = {
-      ...draft,
-      id,
-      createdAt: new Date()
-    };
-    this.teams.update(list => [...list, newTeam]);
-
-    // Update lead's teamId and role to manager
-    this.updateUser(draft.leadUserId, { teamId: id, roleId: 'manager' });
-
-    // Update members
-    draft.memberUserIds.forEach(mid => {
-      this.updateUser(mid, { teamId: id });
+  addTeam(draft: Omit<CrmTeam, 'id' | 'createdAt'>): void {
+    this.api.createTeam(this.teamToApiPayload(draft)).subscribe({
+      next: (dto) => {
+        const created = this.teamFromDto(dto);
+        this.teams.update(list => [...list, created]);
+        this.updateUser(draft.leadUserId, { teamId: created.id, roleId: 'manager' });
+        draft.memberUserIds.filter(mid => mid !== draft.leadUserId).forEach(mid => {
+          this.updateUser(mid, { teamId: created.id });
+        });
+        this.toast.show(`Team <strong>${created.name}</strong> created`, { type: 'info' });
+      },
+      error: () => this.toast.show('Failed to create team', { type: 'error' })
     });
-    this.toast.show(`Team <strong>${newTeam.name}</strong> created`, {
-      undo: () => {
-        this.teams.update(list => list.filter(t => t.id !== newTeam.id));
-      }
-    });
-    return newTeam;
   }
 
   updateTeam(id: string, patch: Partial<CrmTeam>): void {
-    const prev = this.teams().find(t => t.id === id);
-    this.teams.update(list => list.map(t => {
-      if (t.id === id) {
-        return { ...t, ...patch };
-      }
-      return t;
-    }));
-    if (patch.leadUserId) {
-      this.addTeamMember(id, patch.leadUserId);
-      this.updateUser(patch.leadUserId, { roleId: 'manager' });
-    }
-    this.toast.show(`Team <strong>${prev?.name || id}</strong> updated`, { type: 'info' });
+    const current = this.teams().find(t => t.id === id);
+    if (!current) return;
+    const merged = { ...current, ...patch };
+    this.api.updateTeam(id, this.teamToApiPayload(merged)).subscribe({
+      next: (dto) => {
+        const updated = this.teamFromDto(dto);
+        this.teams.update(list => list.map(t => t.id === id ? updated : t));
+        if (patch.leadUserId) {
+          this.addTeamMember(id, patch.leadUserId);
+          this.updateUser(patch.leadUserId, { roleId: 'manager' });
+        }
+        this.toast.show(`Team <strong>${updated.name}</strong> updated`, { type: 'info' });
+      },
+      error: () => this.toast.show('Failed to update team', { type: 'error' })
+    });
+  }
+
+  deleteTeam(id: string): void {
+    const team = this.teams().find(t => t.id === id);
+    this.api.deleteTeam(id).subscribe({
+      next: () => {
+        this.teams.update(list => list.filter(t => t.id !== id));
+        this.toast.show(`Team <strong>${team?.name || id}</strong> deleted`, { type: 'info' });
+      },
+      error: () => this.toast.show('Failed to delete team', { type: 'error' })
+    });
   }
 
   addTeamMember(teamId: string, userId: string): void {
     const team = this.teams().find(t => t.id === teamId);
     const user = this.users().find(u => u.id === userId);
-    this.teams.update(list => list.map(t => {
-      if (t.id === teamId) {
-        if (!t.memberUserIds.includes(userId)) {
-          return { ...t, memberUserIds: [...t.memberUserIds, userId] };
-        }
-      }
-      return t;
-    }));
     this.updateUser(userId, { teamId });
-    this.toast.show(`<strong>${user?.displayName || userId}</strong> added to ${team?.name || teamId}`, {
-      undo: () => {
-        this.removeTeamMember(teamId, userId);
-      }
-    });
+    this.toast.show(`<strong>${user?.displayName || userId}</strong> added to ${team?.name || teamId}`, { type: 'info' });
   }
 
   removeTeamMember(teamId: string, userId: string): void {
     this.assertNotTeamLead(teamId, userId);
     const team = this.teams().find(t => t.id === teamId);
     const user = this.users().find(u => u.id === userId);
-    this.teams.update(list => list.map(t => {
-      if (t.id === teamId) {
-        return { ...t, memberUserIds: t.memberUserIds.filter(id => id !== userId) };
-      }
-      return t;
-    }));
     this.updateUser(userId, { teamId: null });
-    this.toast.show(`<strong>${user?.displayName || userId}</strong> removed from ${team?.name || teamId}`, {
-      undo: () => {
-        this.addTeamMember(teamId, userId);
-      }
-    });
+    this.toast.show(`<strong>${user?.displayName || userId}</strong> removed from ${team?.name || teamId}`, { type: 'info' });
   }
 
   updateUserRole(userId: string, roleId: RoleId): void {
