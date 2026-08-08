@@ -43,8 +43,8 @@ export class ApiService {
     return this.http.patch(`${this.apiUrl}/users/${id}`, user);
   }
 
-  deleteUser(id: string): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/users/${id}`);
+  deactivateUser(id: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/users/${id}/deactivate`, {});
   }
 
   // Teams

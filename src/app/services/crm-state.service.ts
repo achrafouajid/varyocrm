@@ -950,8 +950,51 @@ export class CrmStateService {
     return user;
   }
 
-  private patchAllUsersCompatibility(usersList: CrmUser[]): CrmUser[] {
-    return usersList.map(u => this.patchUserCompatibility({ ...u }));
+  private static readonly ROLE_ID_TO_BACKEND: Record<RoleId, string> = {
+    admin: 'ADMIN', manager: 'MANAGER', salesperson: 'SALESPERSON', support: 'SUPPORT', viewer: 'VIEWER'
+  };
+  private static readonly BACKEND_TO_ROLE_ID: Record<string, RoleId> = {
+    ADMIN: 'admin', MANAGER: 'manager', SALESPERSON: 'salesperson', SUPPORT: 'support', VIEWER: 'viewer'
+  };
+
+  // Maps the backend's UserResponseDto (mixed snake_case/camelCase JSON) into a CrmUser
+  private userFromDto(dto: any): CrmUser {
+    const displayName = dto.display_name ?? dto.displayName ?? '';
+    const user: CrmUser = {
+      id: dto.id,
+      displayName,
+      name: displayName,
+      email: dto.email,
+      initials: dto.initials || this.deriveInitials(displayName || 'U U'),
+      avatarColor: dto.avatar_color ?? dto.avatarColor ?? this.getAvatarColor(dto.id),
+      roleId: CrmStateService.BACKEND_TO_ROLE_ID[dto.role] || 'viewer',
+      role: '',
+      teamId: dto.team_id ?? dto.teamId ?? null,
+      team: null,
+      isActive: dto.is_active ?? dto.isActive ?? true,
+      phone: dto.phone,
+      jobTitle: dto.job_title ?? dto.jobTitle,
+      preferences: {
+        language: (dto.language as CrmUser['preferences']['language']) || 'en',
+        notifyOnLeadAssign: true,
+        notifyOnDealUpdate: true,
+        notifyOnMention: true
+      },
+      createdAt: dto.created_at ? new Date(dto.created_at) : new Date(),
+      lastActiveAt: (dto.last_active_at ?? dto.lastActiveAt) ? new Date(dto.last_active_at ?? dto.lastActiveAt) : new Date()
+    };
+    return this.patchUserCompatibility(user);
+  }
+
+  private userToApiPayload(user: { displayName: string; roleId: RoleId; teamId: string | null; phone?: string; jobTitle?: string; preferences?: { language: string } }) {
+    return {
+      display_name: user.displayName,
+      role: CrmStateService.ROLE_ID_TO_BACKEND[user.roleId],
+      team_id: user.teamId || null,
+      phone: user.phone,
+      job_title: user.jobTitle,
+      language: user.preferences?.language || 'en'
+    };
   }
 
   // Initialize eager data from API (app-wide dependencies)
@@ -959,7 +1002,7 @@ export class CrmStateService {
     this.api.getUsers().subscribe({
       next: (users) => {
         if (users && users.length > 0) {
-          this.users.set(this.patchAllUsersCompatibility(users));
+          this.users.set(users.map(u => this.userFromDto(u)));
         }
       },
       error: (err) => {
@@ -1162,68 +1205,52 @@ export class CrmStateService {
     }
   }
 
-  addUser(draft: Omit<CrmUser, 'id' | 'initials' | 'createdAt' | 'lastActiveAt' | 'avatarColor' | 'name' | 'role' | 'team'>): CrmUser {
-    const id = 'usr_' + Math.random().toString(36).substring(2, 9);
-    const newUser: CrmUser = {
-      ...draft,
-      id,
-      initials: this.deriveInitials(draft.displayName),
-      avatarColor: this.getAvatarColor(id),
-      createdAt: new Date(),
-      lastActiveAt: new Date(),
-      name: draft.displayName,
-      role: '',
-      team: null
-    };
-    const patched = this.patchUserCompatibility(newUser);
-    this.users.update(list => [...list, patched]);
-
-    if (draft.teamId) {
-      this.addTeamMember(draft.teamId, id);
-    }
-    this.toast.show(`User <strong>${patched.displayName}</strong> created`, {
-      undo: () => {
-        this.users.update(list => list.filter(u => u.id !== patched.id));
-      }
+  addUser(draft: Omit<CrmUser, 'id' | 'initials' | 'createdAt' | 'lastActiveAt' | 'avatarColor' | 'name' | 'role' | 'team'>): void {
+    const tempPassword = 'Temp-' + Math.random().toString(36).slice(2, 10) + 'A1!';
+    const payload = { ...this.userToApiPayload(draft), email: draft.email, password: tempPassword };
+    this.api.createUser(payload).subscribe({
+      next: (dto) => {
+        const created = this.userFromDto(dto);
+        this.users.update(list => [...list, created]);
+        if (draft.teamId) {
+          this.addTeamMember(draft.teamId, created.id);
+        }
+        this.toast.show(`User <strong>${created.displayName}</strong> created`, { type: 'info' });
+      },
+      error: () => this.toast.show('Failed to create user', { type: 'error' })
     });
-    return patched;
   }
 
   updateUser(id: string, patch: Partial<CrmUser>): void {
-    this.users.update(list => list.map(u => {
-      if (u.id === id) {
-        const merged = { ...u, ...patch };
-        if (patch.displayName) {
-          merged.initials = this.deriveInitials(patch.displayName);
-        }
-        return this.patchUserCompatibility(merged);
-      }
-      return u;
-    }));
-    const user = this.users().find(u => u.id === id);
-    this.toast.show(`User <strong>${user?.displayName || id}</strong> updated`, { type: 'info' });
+    const current = this.users().find(u => u.id === id);
+    if (!current) return;
+    const merged = { ...current, ...patch };
+    this.api.updateUser(id, this.userToApiPayload(merged)).subscribe({
+      next: (dto) => {
+        const updated = this.userFromDto(dto);
+        this.users.update(list => list.map(u => u.id === id ? updated : u));
+        this.toast.show(`User <strong>${updated.displayName}</strong> updated`, { type: 'info' });
+      },
+      error: () => this.toast.show('Failed to update user', { type: 'error' })
+    });
   }
 
   deactivateUser(id: string): void {
     this.assertNotLastAdmin(id);
     const user = this.users().find(u => u.id === id);
-    this.users.update(list => list.map(u => {
-      if (u.id === id) {
-        return { ...u, isActive: false };
-      }
-      return u;
-    }));
-    // Remove from team lists
-    this.teams.update(teamsList => teamsList.map(t => {
-      if (t.memberUserIds.includes(id)) {
-        return { ...t, memberUserIds: t.memberUserIds.filter(mid => mid !== id) };
-      }
-      return t;
-    }));
-    this.toast.show(`User <strong>${user?.displayName || id}</strong> deactivated`, {
-      undo: () => {
-        this.users.update(list => list.map(u => u.id === id ? { ...u, isActive: true } : u));
-      }
+    this.api.deactivateUser(id).subscribe({
+      next: () => {
+        this.users.update(list => list.map(u => u.id === id ? { ...u, isActive: false } : u));
+        // Remove from team lists
+        this.teams.update(teamsList => teamsList.map(t => {
+          if (t.memberUserIds.includes(id)) {
+            return { ...t, memberUserIds: t.memberUserIds.filter(mid => mid !== id) };
+          }
+          return t;
+        }));
+        this.toast.show(`User <strong>${user?.displayName || id}</strong> deactivated`, { type: 'info' });
+      },
+      error: (err: any) => this.toast.show(err?.error?.detail || 'Failed to deactivate user', { type: 'error' })
     });
   }
 
