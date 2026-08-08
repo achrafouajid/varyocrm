@@ -876,6 +876,26 @@ export class CrmStateService {
   campaignsLoaded = signal<boolean>(false);
   automationRulesLoaded = signal<boolean>(false);
 
+  // Per-domain in-flight/error state, for page-level loading spinners and error banners
+  dealsLoading = signal<boolean>(false);
+  dealsError = signal<string | null>(null);
+  partnersLoading = signal<boolean>(false);
+  partnersError = signal<string | null>(null);
+  proposalsLoading = signal<boolean>(false);
+  proposalsError = signal<string | null>(null);
+  tasksLoading = signal<boolean>(false);
+  tasksError = signal<string | null>(null);
+  ticketsLoading = signal<boolean>(false);
+  ticketsError = signal<string | null>(null);
+  invoicesLoading = signal<boolean>(false);
+  invoicesError = signal<string | null>(null);
+  purchaseOrdersLoading = signal<boolean>(false);
+  purchaseOrdersError = signal<string | null>(null);
+  campaignsLoading = signal<boolean>(false);
+  campaignsError = signal<string | null>(null);
+  automationRulesLoading = signal<boolean>(false);
+  automationRulesError = signal<string | null>(null);
+
   // Shared tab state for section pages
   salesSubTab = signal<'deals' | 'proposals' | 'pos'>('deals');
   breadcrumbLabel = signal<string | null>(null);
@@ -1087,16 +1107,21 @@ export class CrmStateService {
   // Lazy-load: Deals
   loadDeals(): void {
     if (this.dealsLoaded()) return;
+    this.dealsLoading.set(true);
+    this.dealsError.set(null);
     this.api.getDeals().subscribe({
       next: (deals) => {
         if (deals && deals.length > 0) {
           this.deals.set(deals);
         }
         this.dealsLoaded.set(true);
+        this.dealsLoading.set(false);
       },
       error: (err) => {
         console.warn('Failed to load deals from API, using seed data:', err);
         this.dealsLoaded.set(true);
+        this.dealsLoading.set(false);
+        this.dealsError.set('Failed to load deals from the server. Showing local data.');
       }
     });
   }
@@ -1104,16 +1129,21 @@ export class CrmStateService {
   // Lazy-load: Partners
   loadPartners(): void {
     if (this.partnersLoaded()) return;
+    this.partnersLoading.set(true);
+    this.partnersError.set(null);
     this.api.getPartners().subscribe({
       next: (partners) => {
         if (partners && partners.length > 0) {
           this.partners.set(partners);
         }
         this.partnersLoaded.set(true);
+        this.partnersLoading.set(false);
       },
       error: (err) => {
         console.warn('Failed to load partners from API, using seed data:', err);
         this.partnersLoaded.set(true);
+        this.partnersLoading.set(false);
+        this.partnersError.set('Failed to load partners from the server. Showing local data.');
       }
     });
   }
@@ -1121,16 +1151,21 @@ export class CrmStateService {
   // Lazy-load: Proposals
   loadProposals(): void {
     if (this.proposalsLoaded()) return;
+    this.proposalsLoading.set(true);
+    this.proposalsError.set(null);
     this.api.getProposals().subscribe({
       next: (proposals) => {
         if (proposals && proposals.length > 0) {
           this.proposals.set(proposals);
         }
         this.proposalsLoaded.set(true);
+        this.proposalsLoading.set(false);
       },
       error: (err) => {
         console.warn('Failed to load proposals from API, using seed data:', err);
         this.proposalsLoaded.set(true);
+        this.proposalsLoading.set(false);
+        this.proposalsError.set('Failed to load proposals from the server. Showing local data.');
       }
     });
   }
@@ -1138,16 +1173,21 @@ export class CrmStateService {
   // Lazy-load: Tasks
   loadTasks(): void {
     if (this.tasksLoaded()) return;
+    this.tasksLoading.set(true);
+    this.tasksError.set(null);
     this.api.getTasks().subscribe({
       next: (tasks) => {
         if (tasks && tasks.length > 0) {
           this.tasks.set(tasks);
         }
         this.tasksLoaded.set(true);
+        this.tasksLoading.set(false);
       },
       error: (err) => {
         console.warn('Failed to load tasks from API, using seed data:', err);
         this.tasksLoaded.set(true);
+        this.tasksLoading.set(false);
+        this.tasksError.set('Failed to load tasks from the server. Showing local data.');
       }
     });
   }
@@ -1155,16 +1195,21 @@ export class CrmStateService {
   // Lazy-load: Tickets
   loadTickets(): void {
     if (this.ticketsLoaded()) return;
+    this.ticketsLoading.set(true);
+    this.ticketsError.set(null);
     this.api.getTickets().subscribe({
       next: (tickets) => {
         if (tickets && tickets.length > 0) {
           this.tickets.set(tickets);
         }
         this.ticketsLoaded.set(true);
+        this.ticketsLoading.set(false);
       },
       error: (err) => {
         console.warn('Failed to load tickets from API, using seed data:', err);
         this.ticketsLoaded.set(true);
+        this.ticketsLoading.set(false);
+        this.ticketsError.set('Failed to load tickets from the server. Showing local data.');
       }
     });
   }
@@ -1172,16 +1217,21 @@ export class CrmStateService {
   // Lazy-load: Invoices
   loadInvoices(): void {
     if (this.invoicesLoaded()) return;
+    this.invoicesLoading.set(true);
+    this.invoicesError.set(null);
     this.api.getInvoices().subscribe({
       next: (invoices) => {
         if (invoices && invoices.length > 0) {
           this.invoices.set(invoices);
         }
         this.invoicesLoaded.set(true);
+        this.invoicesLoading.set(false);
       },
       error: (err) => {
         console.warn('Failed to load invoices from API, using seed data:', err);
         this.invoicesLoaded.set(true);
+        this.invoicesLoading.set(false);
+        this.invoicesError.set('Failed to load invoices from the server. Showing local data.');
       }
     });
   }
@@ -1189,16 +1239,21 @@ export class CrmStateService {
   // Lazy-load: Purchase Orders
   loadPurchaseOrders(): void {
     if (this.purchaseOrdersLoaded()) return;
+    this.purchaseOrdersLoading.set(true);
+    this.purchaseOrdersError.set(null);
     this.api.getPurchaseOrders().subscribe({
       next: (pos) => {
         if (pos && pos.length > 0) {
           this.purchaseOrders.set(pos);
         }
         this.purchaseOrdersLoaded.set(true);
+        this.purchaseOrdersLoading.set(false);
       },
       error: (err) => {
         console.warn('Failed to load purchase orders from API, using seed data:', err);
         this.purchaseOrdersLoaded.set(true);
+        this.purchaseOrdersLoading.set(false);
+        this.purchaseOrdersError.set('Failed to load purchase orders from the server. Showing local data.');
       }
     });
   }
@@ -1206,16 +1261,21 @@ export class CrmStateService {
   // Lazy-load: Campaigns
   loadCampaigns(): void {
     if (this.campaignsLoaded()) return;
+    this.campaignsLoading.set(true);
+    this.campaignsError.set(null);
     this.api.getCampaigns().subscribe({
       next: (campaigns) => {
         if (campaigns && campaigns.length > 0) {
           this.campaigns.set(campaigns);
         }
         this.campaignsLoaded.set(true);
+        this.campaignsLoading.set(false);
       },
       error: (err) => {
         console.warn('Failed to load campaigns from API, using seed data:', err);
         this.campaignsLoaded.set(true);
+        this.campaignsLoading.set(false);
+        this.campaignsError.set('Failed to load campaigns from the server. Showing local data.');
       }
     });
   }
@@ -1223,26 +1283,39 @@ export class CrmStateService {
   // Lazy-load: Automation Rules
   loadAutomationRules(): void {
     if (this.automationRulesLoaded()) return;
+    this.automationRulesLoading.set(true);
+    this.automationRulesError.set(null);
     this.api.getAutomationRules().subscribe({
       next: (rules) => {
         if (rules && rules.length > 0) {
           this.automationRules.set(rules);
         }
         this.automationRulesLoaded.set(true);
+        this.automationRulesLoading.set(false);
       },
       error: (err) => {
         console.warn('Failed to load automation rules from API, using seed data:', err);
         this.automationRulesLoaded.set(true);
+        this.automationRulesLoading.set(false);
+        this.automationRulesError.set('Failed to load automation rules from the server. Showing local data.');
       }
     });
   }
 
   // State mutations
   updateOrganization(patch: Partial<Organization>): void {
-    const current = this.organization();
-    if (current) {
-      this.organization.set({ ...current, ...patch });
-    }
+    this.api.updateOrganization(patch).subscribe({
+      next: (updated) => {
+        if (updated) {
+          this.organization.set(updated);
+        }
+        this.toast.show('Organization updated', { type: 'info' });
+      },
+      error: (err) => {
+        console.warn('Failed to update organization:', err);
+        this.toast.show('Failed to update organization', { type: 'error' });
+      }
+    });
   }
 
   addUser(draft: Omit<CrmUser, 'id' | 'initials' | 'createdAt' | 'lastActiveAt' | 'avatarColor' | 'name' | 'role' | 'team'>): void {
@@ -3749,85 +3822,86 @@ export class CrmStateService {
   }
 
   addAutomationRule(rule: Omit<AutomationRule, 'id' | 'createdAt' | 'updatedAt' | 'version' | 'executionCount' | 'changeHistory'>) {
-    const newRule: AutomationRule = {
-      ...rule,
-      id: 'rule-' + Date.now(),
-      version: 1,
-      createdAt: new Date().toISOString().split('T')[0],
-      updatedAt: new Date().toISOString().split('T')[0],
-      executionCount: 0,
-      changeHistory: []
-    };
-    this.automationRules.update(rules => [...rules, newRule]);
-    this.toast.show(`Rule <strong>${newRule.name}</strong> created`, {
-      undo: () => {
-        this.automationRules.update(rules => rules.filter(r => r.id !== newRule.id));
-      }
+    this.api.createAutomationRule(rule).subscribe({
+      next: (dto) => {
+        this.automationRules.update(rules => [...rules, dto]);
+        this.toast.show(`Rule <strong>${dto.name}</strong> created`, {
+          undo: () => {
+            this.automationRules.update(rules => rules.filter(r => r.id !== dto.id));
+          }
+        });
+      },
+      error: () => this.toast.show('Failed to create automation rule', { type: 'error' })
     });
-    return newRule;
   }
 
   updateAutomationRule(ruleId: string, updates: Partial<AutomationRule>) {
-    this.automationRules.update(rules => rules.map(r => {
-      if (r.id === ruleId) {
-        const nextVersion = (r.version || 1) + 1;
-        const snapshot = { ...r };
-        delete (snapshot as any).changeHistory;
+    const current = this.automationRules().find(r => r.id === ruleId);
+    if (!current) return;
+    const nextVersion = (current.version || 1) + 1;
+    const snapshot = { ...current };
+    delete (snapshot as any).changeHistory;
 
-        const history = r.changeHistory || [];
-        const newHistory = [
-          {
-            version: r.version || 1,
-            changedAt: new Date().toISOString().split('T')[0],
-            changedBy: updates.lastModifiedBy || 'Achraf (Manager)',
-            snapshot
-          },
-          ...history
-        ].slice(0, 10);
+    const history = current.changeHistory || [];
+    const newHistory = [
+      {
+        version: current.version || 1,
+        changedAt: new Date().toISOString().split('T')[0],
+        changedBy: updates.lastModifiedBy || 'Achraf (Manager)',
+        snapshot
+      },
+      ...history
+    ].slice(0, 10);
 
-        return {
-          ...r,
-          ...updates,
-          version: nextVersion,
-          updatedAt: new Date().toISOString().split('T')[0],
-          changeHistory: newHistory
-        };
-      }
-      return r;
-    }));
+    const payload = {
+      ...updates,
+      version: nextVersion,
+      updatedAt: new Date().toISOString().split('T')[0],
+      changeHistory: newHistory
+    };
+
+    this.api.updateAutomationRule(ruleId, payload).subscribe({
+      next: (dto) => {
+        this.automationRules.update(rules => rules.map(r => r.id === ruleId ? { ...r, ...dto } : r));
+      },
+      error: () => this.toast.show('Failed to update automation rule', { type: 'error' })
+    });
   }
 
   toggleAutomationRule(ruleId: string) {
-    let wasActive = false;
-    this.automationRules.update(rules => rules.map(r => {
-      if (r.id === ruleId) {
-        wasActive = r.isActive;
-        return { ...r, isActive: !r.isActive, updatedAt: new Date().toISOString().split('T')[0] };
-      }
-      return r;
-    }));
     const rule = this.automationRules().find(r => r.id === ruleId);
-    this.toast.show(`Rule <strong>${rule?.name || ruleId}</strong> ${wasActive ? 'paused' : 'activated'}`, {
-      undo: () => {
-        this.automationRules.update(rules => rules.map(r =>
-          r.id === ruleId ? { ...r, isActive: wasActive } : r
-        ));
-      }
+    if (!rule) return;
+    const wasActive = rule.isActive;
+    const payload = { isActive: !wasActive, updatedAt: new Date().toISOString().split('T')[0] };
+    this.api.updateAutomationRule(ruleId, payload).subscribe({
+      next: (dto) => {
+        this.automationRules.update(rules => rules.map(r => r.id === ruleId ? { ...r, ...dto } : r));
+        this.toast.show(`Rule <strong>${rule.name}</strong> ${wasActive ? 'paused' : 'activated'}`, {
+          undo: () => {
+            this.automationRules.update(rules => rules.map(r =>
+              r.id === ruleId ? { ...r, isActive: wasActive } : r
+            ));
+          }
+        });
+      },
+      error: () => this.toast.show('Failed to update automation rule', { type: 'error' })
     });
   }
 
   deleteAutomationRule(ruleId: string) {
-    let deleted: AutomationRule | undefined;
-    this.automationRules.update(rules => {
-      deleted = rules.find(r => r.id === ruleId);
-      return rules.filter(r => r.id !== ruleId);
-    });
-    this.toast.show(`Rule <strong>${deleted?.name || ruleId}</strong> deleted`, {
-      undo: () => {
-        if (deleted) {
-          this.automationRules.update(rules => [...rules, deleted!]);
-        }
-      }
+    const deleted = this.automationRules().find(r => r.id === ruleId);
+    this.api.deleteAutomationRule(ruleId).subscribe({
+      next: () => {
+        this.automationRules.update(rules => rules.filter(r => r.id !== ruleId));
+        this.toast.show(`Rule <strong>${deleted?.name || ruleId}</strong> deleted`, {
+          undo: () => {
+            if (deleted) {
+              this.automationRules.update(rules => [...rules, deleted]);
+            }
+          }
+        });
+      },
+      error: () => this.toast.show('Failed to delete automation rule', { type: 'error' })
     });
   }
 
@@ -4324,53 +4398,81 @@ export class CrmStateService {
     return 'ACC-' + String(count).padStart(5, '0');
   }
 
+  // Creates a partner and invokes onCreated with the server-assigned id once persisted.
+  // Use this (instead of the synchronous addPartner return value) whenever the id will be
+  // referenced by a subsequent API call (e.g. as a foreign key on a deal/PO) — addPartner's
+  // synchronous return is a client-side temp id that doesn't exist on the server yet.
+  createPartnerAwaitingId(
+    partner: Omit<Partner, 'id' | 'createdBy' | 'createdAt'> & { createdBy?: string; createdAt?: string },
+    onCreated: (id: string) => void
+  ): void {
+    this.api.createPartner(partner).subscribe({
+      next: (dto) => {
+        this.partners.update(pList => [...pList, dto]);
+        this.toast.show(`Partner <strong>${dto.name}</strong> added`);
+        onCreated(dto.id);
+      },
+      error: () => this.toast.show('Failed to save partner to the server', { type: 'error' })
+    });
+  }
+
   addPartner(partner: Omit<Partner, 'id' | 'createdBy' | 'createdAt'> & { createdBy?: string; createdAt?: string }) {
-    const newId = 'p' + (this.partners().length + 1);
+    // Return value is used synchronously by some callers (e.g. inline vendor creation),
+    // so we optimistically add a local placeholder immediately and reconcile it with the
+    // persisted record once the API responds (matched by object identity, not id).
+    const tempId = 'p' + (this.partners().length + 1) + '_' + Date.now();
     const now = new Date().toISOString().split('T')[0];
-    const newPartner = { ...partner, id: newId, createdBy: this.currentUserId(), createdAt: now };
+    const newPartner = { ...partner, id: tempId, createdBy: this.currentUserId(), createdAt: now };
     this.partners.update(pList => [...pList, newPartner]);
     this.toast.show(`Partner <strong>${newPartner.name}</strong> added`, {
       undo: () => {
         this.partners.update(pList => pList.filter(p => p.id !== newPartner.id));
       }
     });
+    this.api.createPartner(partner).subscribe({
+      next: (dto) => {
+        this.partners.update(pList => pList.map(p => p === newPartner ? dto : p));
+      },
+      error: () => {
+        this.partners.update(pList => pList.filter(p => p !== newPartner));
+        this.toast.show('Failed to save partner to the server', { type: 'error' });
+      }
+    });
     return newPartner;
   }
 
   addTask(task: Omit<Task, 'id' | 'createdBy' | 'createdAt'> & { createdBy?: string; createdAt?: string }) {
-    const newId = 't' + (this.tasks().length + 1);
-    const now = new Date().toISOString().split('T')[0];
-    const newTask = { ...task, id: newId, createdBy: this.currentUserId(), createdAt: now };
-    this.tasks.update(tList => [...tList, newTask]);
-    this.toast.show(`Task <strong>${newTask.title}</strong> created`, {
-      undo: () => {
-        this.tasks.update(tList => tList.filter(t => t.id !== newTask.id));
-      }
+    this.api.createTask(task).subscribe({
+      next: (dto) => {
+        this.tasks.update(tList => [...tList, dto]);
+        this.toast.show(`Task <strong>${dto.title}</strong> created`, {
+          undo: () => {
+            this.tasks.update(tList => tList.filter(t => t.id !== dto.id));
+          }
+        });
+      },
+      error: () => this.toast.show('Failed to create task', { type: 'error' })
     });
-    return newTask;
   }
 
   updateTaskStatus(taskId: string, status: TaskStatus, assignedTo?: string) {
-    let prevStatus: TaskStatus | undefined;
-    this.tasks.update(tasks =>
-      tasks.map(t => {
-        if (t.id === taskId) {
-          prevStatus = t.status;
-          const updated = { ...t, status };
-          if (assignedTo !== undefined) updated.assignedTo = assignedTo;
-          return updated;
-        }
-        return t;
-      })
-    );
-    this.toast.show(`Task status updated`, {
-      undo: () => {
-        if (prevStatus) {
-          this.tasks.update(tasks =>
-            tasks.map(t => t.id === taskId ? { ...t, status: prevStatus! } : t)
-          );
-        }
-      }
+    const current = this.tasks().find(t => t.id === taskId);
+    if (!current) return;
+    const prevStatus = current.status;
+    const payload: any = { status };
+    if (assignedTo !== undefined) payload.assignedTo = assignedTo;
+    this.api.updateTask(taskId, payload).subscribe({
+      next: (dto) => {
+        this.tasks.update(tasks => tasks.map(t => t.id === taskId ? dto : t));
+        this.toast.show(`Task status updated`, {
+          undo: () => {
+            this.tasks.update(tasks =>
+              tasks.map(t => t.id === taskId ? { ...t, status: prevStatus } : t)
+            );
+          }
+        });
+      },
+      error: () => this.toast.show('Failed to update task status', { type: 'error' })
     });
   }
 
@@ -4409,86 +4511,103 @@ export class CrmStateService {
   }
 
   addProposal(proposal: Omit<Proposal, 'id' | 'createdBy' | 'createdAt'> & { createdBy?: string; createdAt?: string }) {
-    const newId = 'pr' + (this.proposals().length + 1);
+    // Return value is used synchronously by callers (e.g. "assign task" flow needs the new
+    // proposal's id/title immediately), so optimistically add locally and reconcile with the
+    // persisted record once the API responds (matched by object identity, not id).
+    const tempId = 'pr' + (this.proposals().length + 1) + '_' + Date.now();
     const now = new Date().toISOString().split('T')[0];
-    const newProp = { ...proposal, id: newId, createdBy: this.currentUserId(), createdAt: now };
+    const newProp = { ...proposal, id: tempId, createdBy: this.currentUserId(), createdAt: now };
     this.proposals.update(props => [...props, newProp]);
-    this.toast.show(`Proposal <strong>${newProp.title || newId}</strong> created`, {
+    this.toast.show(`Proposal <strong>${newProp.title || tempId}</strong> created`, {
       undo: () => {
         this.proposals.update(props => props.filter(p => p.id !== newProp.id));
+      }
+    });
+    this.api.createProposal(proposal).subscribe({
+      next: (dto) => {
+        this.proposals.update(props => props.map(p => p === newProp ? dto : p));
+      },
+      error: () => {
+        this.proposals.update(props => props.filter(p => p !== newProp));
+        this.toast.show('Failed to save proposal to the server', { type: 'error' });
       }
     });
     return newProp;
   }
 
   updateProposalStatus(propId: string, status: 'Draft' | 'Sent' | 'Confirmed' | 'Rejected') {
-    let prevStatus: Proposal['status'] | undefined;
-    this.proposals.update(props =>
-      props.map(p => {
-        if (p.id === propId) {
-          prevStatus = p.status;
-          return { ...p, status };
-        }
-        return p;
-      })
-    );
-    this.toast.show(`Proposal <strong>#${propId}</strong> status updated`, {
-      undo: () => {
-        if (prevStatus) {
-          this.proposals.update(props =>
-            props.map(p => p.id === propId ? { ...p, status: prevStatus! } : p)
-          );
-        }
-      }
+    const current = this.proposals().find(p => p.id === propId);
+    if (!current) return;
+    const prevStatus = current.status;
+    this.api.updateProposal(propId, { status }).subscribe({
+      next: (dto) => {
+        this.proposals.update(props => props.map(p => p.id === propId ? dto : p));
+        this.toast.show(`Proposal <strong>#${propId}</strong> status updated`, {
+          undo: () => {
+            this.proposals.update(props =>
+              props.map(p => p.id === propId ? { ...p, status: prevStatus } : p)
+            );
+          }
+        });
+      },
+      error: () => this.toast.show('Failed to update proposal status', { type: 'error' })
     });
   }
 
   updateProposal(id: string, data: Partial<Proposal>) {
-    this.proposals.update(proposals =>
-      proposals.map(p => p.id === id ? { ...p, ...data } : p)
-    );
-    this.toast.show(`Proposal <strong>#${id}</strong> updated`);
+    this.api.updateProposal(id, data).subscribe({
+      next: (dto) => {
+        this.proposals.update(proposals => proposals.map(p => p.id === id ? dto : p));
+        this.toast.show(`Proposal <strong>#${id}</strong> updated`);
+      },
+      error: () => this.toast.show('Failed to update proposal', { type: 'error' })
+    });
   }
 
   addDeal(deal: Omit<Deal, 'id' | 'createdBy' | 'createdAt'> & { createdBy?: string; createdAt?: string }) {
-    const newId = 'd' + (this.deals().length + 1);
+    // Return value is used synchronously by callers (e.g. "assign task" flow needs the new
+    // deal's id/title immediately), so optimistically add locally and reconcile with the
+    // persisted record once the API responds (matched by object identity, not id).
+    const tempId = 'd' + (this.deals().length + 1) + '_' + Date.now();
     const now = new Date().toISOString().split('T')[0];
-    const newDeal = { ...deal, id: newId, createdBy: this.currentUserId(), createdAt: now };
+    const newDeal = { ...deal, id: tempId, createdBy: this.currentUserId(), createdAt: now };
     this.deals.update(dList => [...dList, newDeal]);
-    // Fire automation rules after deal is persisted
+    // Fire automation rules against the local (optimistic) record
     setTimeout(() => this.evaluateRules('DealCreated', newDeal as unknown as Record<string, any>, `Deal: ${newDeal.title}`), 0);
     this.toast.show(`Deal <strong>${newDeal.title}</strong> created`, {
       undo: () => {
         this.deals.update(dList => dList.filter(d => d.id !== newDeal.id));
       }
     });
+    this.api.createDeal(deal).subscribe({
+      next: (dto) => {
+        this.deals.update(dList => dList.map(d => d === newDeal ? dto : d));
+      },
+      error: () => {
+        this.deals.update(dList => dList.filter(d => d !== newDeal));
+        this.toast.show('Failed to save deal to the server', { type: 'error' });
+      }
+    });
     return newDeal;
   }
 
   updateDealStage(dealId: string, stage: DealStage) {
-    let prevStage: DealStage | undefined;
-    let updatedDeal: Deal | undefined;
-    this.deals.update(deals =>
-      deals.map(d => {
-        if (d.id === dealId) {
-          prevStage = d.stage;
-          updatedDeal = { ...d, stage };
-          return updatedDeal;
-        }
-        return d;
-      })
-    );
-    if (updatedDeal) {
-      setTimeout(() => this.evaluateRules('DealUpdated', (updatedDeal as Deal) as unknown as Record<string, any>, `Deal: ${(updatedDeal as Deal).title}`), 0);
-    }
-    this.toast.show(`Deal stage updated to <strong>${stage}</strong>`, {
-      undo: () => {
-        if (prevStage) {
-          this.deals.update(deals =>
-            deals.map(d => d.id === dealId ? { ...d, stage: prevStage! } : d)
-          );
-        }
-      }
+    const current = this.deals().find(d => d.id === dealId);
+    if (!current) return;
+    const prevStage = current.stage;
+    this.api.updateDeal(dealId, { stage }).subscribe({
+      next: (dto) => {
+        this.deals.update(deals => deals.map(d => d.id === dealId ? dto : d));
+        setTimeout(() => this.evaluateRules('DealUpdated', dto as unknown as Record<string, any>, `Deal: ${dto.title}`), 0);
+        this.toast.show(`Deal stage updated to <strong>${stage}</strong>`, {
+          undo: () => {
+            this.deals.update(deals =>
+              deals.map(d => d.id === dealId ? { ...d, stage: prevStage } : d)
+            );
+          }
+        });
+      },
+      error: () => this.toast.show('Failed to update deal stage', { type: 'error' })
     });
   }
 
@@ -4634,125 +4753,121 @@ export class CrmStateService {
 
 
   addPurchaseOrder(po: Omit<PurchaseOrder, 'id' | 'createdBy' | 'createdAt'> & { createdBy?: string; createdAt?: string }, vendorId?: string) {
-    const newId = 'po' + (this.purchaseOrders().length + 1);
-    const now = new Date().toISOString().split('T')[0];
-    const newPo = { ...po, id: newId, createdBy: this.currentUserId(), createdAt: now };
-    if (vendorId) {
-      newPo.vendorId = vendorId;
-    }
-    this.purchaseOrders.update(pos => [...pos, newPo]);
-    this.toast.show(`Purchase Order <strong>#${newId}</strong> created`, {
-      undo: () => {
-        this.purchaseOrders.update(pos => pos.filter(p => p.id !== newPo.id));
-      }
+    const payload = vendorId ? { ...po, vendorId } : po;
+    this.api.createPurchaseOrder(payload).subscribe({
+      next: (dto) => {
+        this.purchaseOrders.update(pos => [...pos, dto]);
+        this.toast.show(`Purchase Order <strong>#${dto.id}</strong> created`, {
+          undo: () => {
+            this.purchaseOrders.update(pos => pos.filter(p => p.id !== dto.id));
+          }
+        });
+      },
+      error: () => this.toast.show('Failed to create purchase order', { type: 'error' })
     });
-    return newPo;
   }
 
   updatePurchaseOrderStatus(poId: string, status: 'Draft' | 'Sent' | 'Delivered' | 'Invoiced', deliveryDate?: string) {
-    let prevStatus: PurchaseOrder['status'] | undefined;
-    this.purchaseOrders.update(pos =>
-      pos.map(po => {
-        if (po.id === poId) {
-          prevStatus = po.status;
-          const updated = { ...po, status };
-          if (deliveryDate) updated.deliveryDate = deliveryDate;
-          return updated;
-        }
-        return po;
-      })
-    );
-    this.toast.show(`Purchase Order <strong>#${poId}</strong> status updated`, {
-      undo: () => {
-        if (prevStatus) {
-          this.purchaseOrders.update(pos =>
-            pos.map(p => p.id === poId ? { ...p, status: prevStatus! } : p)
-          );
-        }
-      }
+    const current = this.purchaseOrders().find(po => po.id === poId);
+    if (!current) return;
+    const prevStatus = current.status;
+    const payload: any = { status };
+    if (deliveryDate) payload.deliveryDate = deliveryDate;
+    this.api.updatePurchaseOrder(poId, payload).subscribe({
+      next: (dto) => {
+        this.purchaseOrders.update(pos => pos.map(p => p.id === poId ? dto : p));
+        this.toast.show(`Purchase Order <strong>#${poId}</strong> status updated`, {
+          undo: () => {
+            this.purchaseOrders.update(pos =>
+              pos.map(p => p.id === poId ? { ...p, status: prevStatus } : p)
+            );
+          }
+        });
+      },
+      error: () => this.toast.show('Failed to update purchase order status', { type: 'error' })
     });
   }
 
   addInvoice(invoice: Omit<Invoice, 'id' | 'createdBy' | 'createdAt'> & { createdBy?: string; createdAt?: string }) {
-    const newId = 'i' + (this.invoices().length + 1);
-    const now = new Date().toISOString().split('T')[0];
-    const newInv = { ...invoice, id: newId, createdBy: this.currentUserId(), createdAt: now };
-    this.invoices.update(invs => [...invs, newInv]);
-    this.toast.show(`Invoice <strong>#${newId}</strong> created`, {
-      undo: () => {
-        this.invoices.update(invs => invs.filter(i => i.id !== newInv.id));
-      }
+    this.api.createInvoice(invoice).subscribe({
+      next: (dto) => {
+        this.invoices.update(invs => [...invs, dto]);
+        this.toast.show(`Invoice <strong>#${dto.id}</strong> created`, {
+          undo: () => {
+            this.invoices.update(invs => invs.filter(i => i.id !== dto.id));
+          }
+        });
+      },
+      error: () => this.toast.show('Failed to create invoice', { type: 'error' })
     });
-    return newInv;
   }
 
   updateInvoiceStatus(invoiceId: string, status: InvoiceStatus) {
-    let prevStatus: InvoiceStatus | undefined;
-    this.invoices.update(invs =>
-      invs.map(i => {
-        if (i.id === invoiceId) {
-          prevStatus = i.status;
-          return { ...i, status };
-        }
-        return i;
-      })
-    );
-    this.toast.show(`Invoice <strong>#${invoiceId}</strong> status updated`, {
-      undo: () => {
-        if (prevStatus) {
-          this.invoices.update(invs =>
-            invs.map(i => i.id === invoiceId ? { ...i, status: prevStatus! } : i)
-          );
-        }
-      }
+    const current = this.invoices().find(i => i.id === invoiceId);
+    if (!current) return;
+    const prevStatus = current.status;
+    this.api.updateInvoice(invoiceId, { status }).subscribe({
+      next: (dto) => {
+        this.invoices.update(invs => invs.map(i => i.id === invoiceId ? dto : i));
+        this.toast.show(`Invoice <strong>#${invoiceId}</strong> status updated`, {
+          undo: () => {
+            this.invoices.update(invs =>
+              invs.map(i => i.id === invoiceId ? { ...i, status: prevStatus } : i)
+            );
+          }
+        });
+      },
+      error: () => this.toast.show('Failed to update invoice status', { type: 'error' })
     });
   }
 
   addTicket(ticket: Omit<Ticket, 'id' | 'createdBy' | 'createdAt'> & { createdBy?: string; createdAt?: string }) {
-    const newId = 'tk' + (this.tickets().length + 1);
-    const now = new Date().toISOString().split('T')[0];
-    const newTicket = { ...ticket, id: newId, createdBy: this.currentUserId(), createdAt: now };
-    this.tickets.update(tList => [...tList, newTicket]);
-    this.toast.show(`Ticket <strong>#${newId}</strong> created`, {
-      undo: () => {
-        this.tickets.update(tList => tList.filter(t => t.id !== newTicket.id));
-      }
+    this.api.createTicket(ticket).subscribe({
+      next: (dto) => {
+        this.tickets.update(tList => [...tList, dto]);
+        this.toast.show(`Ticket <strong>#${dto.id}</strong> created`, {
+          undo: () => {
+            this.tickets.update(tList => tList.filter(t => t.id !== dto.id));
+          }
+        });
+      },
+      error: () => this.toast.show('Failed to create ticket', { type: 'error' })
     });
-    return newTicket;
   }
 
   updateTicket(id: string, data: Partial<Ticket>) {
-    let prevTicket: Partial<Ticket> | undefined;
-    this.tickets.update(tickets =>
-      tickets.map(t => {
-        if (t.id === id) {
-          prevTicket = { status: t.status, assignedTo: t.assignedTo, priority: t.priority };
-          return { ...t, ...data };
-        }
-        return t;
-      })
-    );
-    this.toast.show(`Ticket <strong>#${id}</strong> updated`, {
-      undo: () => {
-        this.tickets.update(tickets =>
-          tickets.map(t => t.id === id ? { ...t, ...prevTicket } : t)
-        );
-      }
+    const current = this.tickets().find(t => t.id === id);
+    if (!current) return;
+    const prevTicket: Partial<Ticket> = { status: current.status, assignedTo: current.assignedTo, priority: current.priority };
+    this.api.updateTicket(id, data).subscribe({
+      next: (dto) => {
+        this.tickets.update(tickets => tickets.map(t => t.id === id ? dto : t));
+        this.toast.show(`Ticket <strong>#${id}</strong> updated`, {
+          undo: () => {
+            this.tickets.update(tickets =>
+              tickets.map(t => t.id === id ? { ...t, ...prevTicket } : t)
+            );
+          }
+        });
+      },
+      error: () => this.toast.show('Failed to update ticket', { type: 'error' })
     });
   }
 
   deleteTicket(id: string) {
-    let deleted: Ticket | undefined;
-    this.tickets.update(tickets => {
-      deleted = tickets.find(t => t.id === id);
-      return tickets.filter(t => t.id !== id);
-    });
-    this.toast.show(`Ticket <strong>#${id}</strong> deleted`, {
-      undo: () => {
-        if (deleted) {
-          this.tickets.update(tickets => [...tickets, deleted!]);
-        }
-      }
+    const deleted = this.tickets().find(t => t.id === id);
+    this.api.deleteTicket(id).subscribe({
+      next: () => {
+        this.tickets.update(tickets => tickets.filter(t => t.id !== id));
+        this.toast.show(`Ticket <strong>#${id}</strong> deleted`, {
+          undo: () => {
+            if (deleted) {
+              this.tickets.update(tickets => [...tickets, deleted]);
+            }
+          }
+        });
+      },
+      error: () => this.toast.show('Failed to delete ticket', { type: 'error' })
     });
   }
 

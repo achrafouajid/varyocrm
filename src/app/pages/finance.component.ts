@@ -4,6 +4,7 @@ import { CrmStateService, Deal } from '../services/crm-state.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
+import { DataStatusBannerComponent } from '../shared/data-status-banner.component';
 
 // ── Local type alias for invoice line items ────────────────────────────────
 type InvoiceLine = {
@@ -16,9 +17,10 @@ type InvoiceLine = {
 
 @Component({
   selector: 'app-finance',
-  imports: [MatIconModule, CommonModule, FormsModule, CreatedByBadgeComponent],
+  imports: [MatIconModule, CommonModule, FormsModule, CreatedByBadgeComponent, DataStatusBannerComponent],
   template: `
     <div class="space-y-8">
+      <app-data-status-banner [loading]="state.invoicesLoading()" [error]="state.invoicesError()" />
       <div class="flex gap-5 sm:gap-6 border-b border-zinc-200">
         <button
           (click)="activeTab.set('Customer'); state.breadcrumbLabel.set('Customer Invoices')"
@@ -649,6 +651,8 @@ export class FinanceComponent {
   autoFilledFields = signal<Set<string>>(new Set());
 
   constructor() {
+    this.state.loadInvoices();
+    this.state.loadPartners();
     const tab = this.state.navigateTab();
     if (tab) {
       this.activeTab.set(tab as 'Customer' | 'Vendor' | 'Recovery');

@@ -3,12 +3,14 @@ import { MatIconModule } from '@angular/material/icon';
 import { CrmStateService } from '../services/crm-state.service';
 import { CommonModule } from '@angular/common';
 import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
+import { DataStatusBannerComponent } from '../shared/data-status-banner.component';
 
 @Component({
   selector: 'app-marketing',
-  imports: [MatIconModule, CommonModule, CreatedByBadgeComponent],
+  imports: [MatIconModule, CommonModule, CreatedByBadgeComponent, DataStatusBannerComponent],
   template: `
     <div class="space-y-8">
+      <app-data-status-banner [loading]="state.campaignsLoading()" [error]="state.campaignsError()" />
       <div class="flex gap-5 sm:gap-6 border-b border-zinc-200">
         <button
           (click)="activeTab.set('Email'); state.breadcrumbLabel.set('Email')"
@@ -107,6 +109,7 @@ export class MarketingComponent {
   activeTab = signal<'Email' | 'WhatsApp' | 'SMS'>('Email');
 
   constructor() {
+    this.state.loadCampaigns();
     const tab = this.state.navigateTab();
     if (tab) {
       this.activeTab.set(tab as 'Email' | 'WhatsApp' | 'SMS');

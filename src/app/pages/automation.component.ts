@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { CrmStateService, AutomationRule, AutomationRuleGroup, AutomationAction, AutomationExecutionLog, TRIGGER_FIELD_MAP, FieldDescriptor, ConditionOperator, AutomationTrigger, AutomationActionType } from '../services/crm-state.service';
+import { DataStatusBannerComponent } from '../shared/data-status-banner.component';
 
 const RULE_TEMPLATES: any[] = [
   {
@@ -124,7 +125,7 @@ const RULE_TEMPLATES: any[] = [
 @Component({
   selector: 'app-automation',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatIconModule],
+  imports: [CommonModule, FormsModule, MatIconModule, DataStatusBannerComponent],
   templateUrl: './automation.component.html',
   styleUrls: ['./automation.component.css']
 })
@@ -209,6 +210,7 @@ export class AutomationComponent {
   expandedLogId = signal<string | null>(null);
 
   constructor() {
+    this.state.loadAutomationRules();
     this.resetBuilder();
   }
 

@@ -5,14 +5,16 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
+import { DataStatusBannerComponent } from '../shared/data-status-banner.component';
 
 export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Proposal Sent' | 'Negotiation' | 'Won / Lost';
 
 @Component({
   selector: 'app-sales',
-  imports: [MatIconModule, CommonModule, FormsModule, RouterLink, CreatedByBadgeComponent],
+  imports: [MatIconModule, CommonModule, FormsModule, RouterLink, CreatedByBadgeComponent, DataStatusBannerComponent],
   template: `
     <div class="space-y-8">
+      <app-data-status-banner [loading]="activeTabLoading()" [error]="activeTabError()" />
       <div class="flex gap-5 sm:gap-6 border-b border-zinc-200">
         <button
           (click)="activeTab.set('deals'); state.breadcrumbLabel.set('Deals')"
@@ -2180,6 +2182,15 @@ export class SalesComponent {
   private router = inject(Router);
   activeTab = signal<'deals' | 'proposals' | 'pos'>('deals');
 
+  activeTabLoading = computed(() => {
+    const tab = this.activeTab();
+    return tab === 'deals' ? this.state.dealsLoading() : tab === 'proposals' ? this.state.proposalsLoading() : this.state.purchaseOrdersLoading();
+  });
+  activeTabError = computed(() => {
+    const tab = this.activeTab();
+    return tab === 'deals' ? this.state.dealsError() : tab === 'proposals' ? this.state.proposalsError() : this.state.purchaseOrdersError();
+  });
+
   constructor() {
     const tab = this.state.navigateTab();
     if (tab) {
@@ -2188,6 +2199,11 @@ export class SalesComponent {
     }
     const label = this.activeTab() === 'deals' ? 'Deals' : this.activeTab() === 'proposals' ? 'Proposals' : 'Purchase Orders';
     this.state.breadcrumbLabel.set(label);
+
+    this.state.loadDeals();
+    this.state.loadProposals();
+    this.state.loadPurchaseOrders();
+    this.state.loadPartners();
   }
 
   // Convert Proposal to Deal & Customer Modal State
@@ -2912,27 +2928,32 @@ export class SalesComponent {
     return this.poLines().reduce((acc, line) => acc + (line.qty * line.unitPrice), 0);
   }
 
-  getPOVendorId(): string | null {
-    let vendorId = this.selectedVendorId();
+  // Resolves the vendor id to use for the PO being created, invoking onResolved once known.
+  // If a new vendor is being created inline, waits for the server-assigned id (rather than
+  // handing back a client-side temp id that the PO's vendorId foreign key can't reference).
+  resolvePOVendorId(onResolved: (vendorId: string | null) => void): void {
+    const vendorId = this.selectedVendorId();
     if (this.showNewVendorForm()) {
       if (this.newVendorData.name.trim()) {
-        const newVendor = this.state.addPartner({
+        this.state.createPartnerAwaitingId({
           name: this.newVendorData.name,
           type: 'Vendor',
           email: this.newVendorData.email,
           phone: this.newVendorData.phone,
           city: this.newVendorData.city,
           comments: 'Created inline from PO generation.'
+        }, (id) => {
+          this.selectedVendorId.set(id);
+          this.showNewVendorForm.set(false);
+          onResolved(id);
         });
-        vendorId = newVendor.id;
-        this.selectedVendorId.set(vendorId);
-        this.showNewVendorForm.set(false);
       } else {
         alert('Please specify a vendor name');
-        return null;
+        onResolved(null);
       }
+      return;
     }
-    return vendorId;
+    onResolved(vendorId || null);
   }
 
   clearPoLocalState() {
@@ -2970,63 +2991,65 @@ export class SalesComponent {
     const deal = this.selectedDealForPO();
     if (!deal) return;
 
-    const vendorId = this.getPOVendorId();
-    if (!vendorId) return;
+    this.resolvePOVendorId((vendorId) => {
+      if (!vendorId) return;
 
-    const totalAmount = this.getPoTotal();
+      const totalAmount = this.getPoTotal();
 
-    // Add PO
-    this.state.addPurchaseOrder({
-      dealId: deal.id,
-      vendorId: vendorId,
-      amount: totalAmount,
-      status: 'Sent',
-      deliveryDate: this.newPoDeliveryDate || undefined,
-      sentVia: 'Email via CRM',
-      lines: this.poLines().map(line => ({
-        product: line.item,
-        description: line.description,
-        qty: line.qty,
-        cost: line.unitPrice,
-        type: line.type
-      }))
+      // Add PO
+      this.state.addPurchaseOrder({
+        dealId: deal.id,
+        vendorId: vendorId,
+        amount: totalAmount,
+        status: 'Sent',
+        deliveryDate: this.newPoDeliveryDate || undefined,
+        sentVia: 'Email via CRM',
+        lines: this.poLines().map(line => ({
+          product: line.item,
+          description: line.description,
+          qty: line.qty,
+          cost: line.unitPrice,
+          type: line.type
+        }))
+      });
+
+      // Automatically update deal stage to PO Sent
+      this.state.updateDealStage(deal.id, 'Confirmed');
+
+      this.clearPoLocalState();
+      this.poModalOpen.set(false);
+      this.activeTab.set('pos');
     });
-
-    // Automatically update deal stage to PO Sent
-    this.state.updateDealStage(deal.id, 'Confirmed');
-
-    this.clearPoLocalState();
-    this.poModalOpen.set(false);
-    this.activeTab.set('pos');
   }
 
   saveDraftPO() {
     const deal = this.selectedDealForPO();
     if (!deal) return;
 
-    const vendorId = this.getPOVendorId();
-    if (!vendorId) return;
+    this.resolvePOVendorId((vendorId) => {
+      if (!vendorId) return;
 
-    const totalAmount = this.getPoTotal();
+      const totalAmount = this.getPoTotal();
 
-    // Add PO with status Draft
-    this.state.addPurchaseOrder({
-      dealId: deal.id,
-      vendorId: vendorId,
-      amount: totalAmount,
-      status: 'Draft',
-      deliveryDate: this.newPoDeliveryDate || undefined,
-      lines: this.poLines().map(line => ({
-        product: line.item,
-        description: line.description,
-        qty: line.qty,
-        cost: line.unitPrice,
-        type: line.type
-      }))
+      // Add PO with status Draft
+      this.state.addPurchaseOrder({
+        dealId: deal.id,
+        vendorId: vendorId,
+        amount: totalAmount,
+        status: 'Draft',
+        deliveryDate: this.newPoDeliveryDate || undefined,
+        lines: this.poLines().map(line => ({
+          product: line.item,
+          description: line.description,
+          qty: line.qty,
+          cost: line.unitPrice,
+          type: line.type
+        }))
+      });
+
+      this.clearPoLocalState();
+      this.poModalOpen.set(false);
     });
-
-    this.clearPoLocalState();
-    this.poModalOpen.set(false);
   }
 
   // PO Delivery Dates

@@ -6,12 +6,14 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
 import { UserAvatarComponent } from '../shared/user-avatar.component';
+import { DataStatusBannerComponent } from '../shared/data-status-banner.component';
 
 @Component({
   selector: 'app-partners',
-  imports: [MatIconModule, CommonModule, FormsModule, CreatedByBadgeComponent, UserAvatarComponent],
+  imports: [MatIconModule, CommonModule, FormsModule, CreatedByBadgeComponent, UserAvatarComponent, DataStatusBannerComponent],
   template: `
     <div class="space-y-8">
+      <app-data-status-banner [loading]="state.partnersLoading()" [error]="state.partnersError()" />
       <div class="flex gap-5 sm:gap-6 border-b border-zinc-200">
         <button
           (click)="activeTab.set('Lead'); state.breadcrumbLabel.set('Leads')"
@@ -851,6 +853,7 @@ export class PartnersComponent {
   };
 
   constructor() {
+    this.state.loadPartners();
     effect(() => {
       const tab = this.state.navigateTab();
       if (tab) {

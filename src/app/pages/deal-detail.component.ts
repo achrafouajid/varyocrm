@@ -836,6 +836,10 @@ export class DealDetailComponent {
       this.dealId.set(params.get('dealId'));
       this.activeDealTabs.set({});
     });
+    this.state.loadDeals();
+    this.state.loadPartners();
+    this.state.loadProposals();
+    this.state.loadTasks();
   }
 
   getPartnerName(id: string) {
@@ -968,79 +972,83 @@ export class DealDetailComponent {
     const deal = this.selectedDealForPO();
     if (!deal) return;
 
-    const vendorId = this.getPOVendorId();
-    if (!vendorId) return;
+    this.resolvePOVendorId((vendorId) => {
+      if (!vendorId) return;
 
-    const totalAmount = this.getPoTotal();
+      const totalAmount = this.getPoTotal();
 
-    this.state.addPurchaseOrder({
-      dealId: deal.id,
-      vendorId: vendorId,
-      amount: totalAmount,
-      status: 'Sent',
-      deliveryDate: this.newPoDeliveryDate || undefined,
-      sentVia: 'Email via CRM',
-      lines: this.poLines().map(line => ({
-        product: line.item,
-        qty: line.qty,
-        cost: line.unitPrice,
-        type: line.type
-      }))
+      this.state.addPurchaseOrder({
+        dealId: deal.id,
+        vendorId: vendorId,
+        amount: totalAmount,
+        status: 'Sent',
+        deliveryDate: this.newPoDeliveryDate || undefined,
+        sentVia: 'Email via CRM',
+        lines: this.poLines().map(line => ({
+          product: line.item,
+          qty: line.qty,
+          cost: line.unitPrice,
+          type: line.type
+        }))
+      });
+
+      this.state.updateDealStage(deal.id, 'Confirmed');
+
+      this.clearPoLocalState();
+      this.poModalOpen.set(false);
     });
-
-    this.state.updateDealStage(deal.id, 'Confirmed');
-
-    this.clearPoLocalState();
-    this.poModalOpen.set(false);
   }
 
   saveDraftPO() {
     const deal = this.selectedDealForPO();
     if (!deal) return;
 
-    const vendorId = this.getPOVendorId();
-    if (!vendorId) return;
+    this.resolvePOVendorId((vendorId) => {
+      if (!vendorId) return;
 
-    const totalAmount = this.getPoTotal();
+      const totalAmount = this.getPoTotal();
 
-    this.state.addPurchaseOrder({
-      dealId: deal.id,
-      vendorId: vendorId,
-      amount: totalAmount,
-      status: 'Draft',
-      deliveryDate: this.newPoDeliveryDate || undefined,
-      lines: this.poLines().map(line => ({
-        product: line.item,
-        qty: line.qty,
-        cost: line.unitPrice,
-        type: line.type
-      }))
+      this.state.addPurchaseOrder({
+        dealId: deal.id,
+        vendorId: vendorId,
+        amount: totalAmount,
+        status: 'Draft',
+        deliveryDate: this.newPoDeliveryDate || undefined,
+        lines: this.poLines().map(line => ({
+          product: line.item,
+          qty: line.qty,
+          cost: line.unitPrice,
+          type: line.type
+        }))
+      });
+
+      this.clearPoLocalState();
+      this.poModalOpen.set(false);
     });
-
-    this.clearPoLocalState();
-    this.poModalOpen.set(false);
   }
 
-  private getPOVendorId(): string | null {
-    let vendorId = this.selectedVendorId();
+  private resolvePOVendorId(onResolved: (vendorId: string | null) => void): void {
+    const vendorId = this.selectedVendorId();
     if (this.showNewVendorForm()) {
       if (this.newVendorData.name.trim()) {
-        const newVendor = this.state.addPartner({
+        this.state.createPartnerAwaitingId({
           name: this.newVendorData.name,
           type: 'Vendor',
           email: this.newVendorData.email,
           phone: this.newVendorData.phone,
           city: this.newVendorData.city,
           comments: 'Created inline from PO generation.'
+        }, (id) => {
+          this.selectedVendorId.set(id);
+          this.showNewVendorForm.set(false);
+          onResolved(id);
         });
-        vendorId = newVendor.id;
-        this.selectedVendorId.set(vendorId);
-        this.showNewVendorForm.set(false);
       } else {
-        return null;
+        onResolved(null);
       }
+      return;
     }
-    return vendorId;
+    onResolved(vendorId || null);
   }
 
   clearPoLocalState() {
