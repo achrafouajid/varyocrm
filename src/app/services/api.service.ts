@@ -40,7 +40,7 @@ export class ApiService {
   }
 
   updateUser(id: string, user: any): Observable<any> {
-    return this.http.put(`${this.apiUrl}/users/${id}`, user);
+    return this.http.patch(`${this.apiUrl}/users/${id}`, user);
   }
 
   deleteUser(id: string): Observable<any> {
@@ -63,7 +63,7 @@ export class ApiService {
   }
 
   updateTeam(id: string, team: any): Observable<any> {
-    return this.http.put(`${this.apiUrl}/teams/${id}`, team);
+    return this.http.patch(`${this.apiUrl}/teams/${id}`, team);
   }
 
   deleteTeam(id: string): Observable<any> {
@@ -86,7 +86,7 @@ export class ApiService {
   }
 
   updateGroup(id: string, group: any): Observable<any> {
-    return this.http.put(`${this.apiUrl}/groups/${id}`, group);
+    return this.http.patch(`${this.apiUrl}/groups/${id}`, group);
   }
 
   deleteGroup(id: string): Observable<any> {
@@ -128,7 +128,7 @@ export class ApiService {
   }
 
   updatePartner(id: string, partner: any): Observable<any> {
-    return this.http.put(`${this.apiUrl}/partners/${id}`, partner);
+    return this.http.patch(`${this.apiUrl}/partners/${id}`, partner);
   }
 
   deletePartner(id: string): Observable<any> {
@@ -151,7 +151,7 @@ export class ApiService {
   }
 
   updateDeal(id: string, deal: any): Observable<any> {
-    return this.http.put(`${this.apiUrl}/deals/${id}`, deal);
+    return this.http.patch(`${this.apiUrl}/deals/${id}`, deal);
   }
 
   deleteDeal(id: string): Observable<any> {
@@ -174,7 +174,7 @@ export class ApiService {
   }
 
   updateProposal(id: string, proposal: any): Observable<any> {
-    return this.http.put(`${this.apiUrl}/proposals/${id}`, proposal);
+    return this.http.patch(`${this.apiUrl}/proposals/${id}`, proposal);
   }
 
   deleteProposal(id: string): Observable<any> {
@@ -197,7 +197,7 @@ export class ApiService {
   }
 
   updateTask(id: string, task: any): Observable<any> {
-    return this.http.put(`${this.apiUrl}/tasks/${id}`, task);
+    return this.http.patch(`${this.apiUrl}/tasks/${id}`, task);
   }
 
   deleteTask(id: string): Observable<any> {
@@ -220,7 +220,7 @@ export class ApiService {
   }
 
   updateTicket(id: string, ticket: any): Observable<any> {
-    return this.http.put(`${this.apiUrl}/tickets/${id}`, ticket);
+    return this.http.patch(`${this.apiUrl}/tickets/${id}`, ticket);
   }
 
   deleteTicket(id: string): Observable<any> {
@@ -243,7 +243,7 @@ export class ApiService {
   }
 
   updateInvoice(id: string, invoice: any): Observable<any> {
-    return this.http.put(`${this.apiUrl}/invoices/${id}`, invoice);
+    return this.http.patch(`${this.apiUrl}/invoices/${id}`, invoice);
   }
 
   deleteInvoice(id: string): Observable<any> {
@@ -266,7 +266,7 @@ export class ApiService {
   }
 
   updatePurchaseOrder(id: string, po: any): Observable<any> {
-    return this.http.put(`${this.apiUrl}/purchase-orders/${id}`, po);
+    return this.http.patch(`${this.apiUrl}/purchase-orders/${id}`, po);
   }
 
   deletePurchaseOrder(id: string): Observable<any> {
@@ -289,7 +289,7 @@ export class ApiService {
   }
 
   updateCampaign(id: string, campaign: any): Observable<any> {
-    return this.http.put(`${this.apiUrl}/campaigns/${id}`, campaign);
+    return this.http.patch(`${this.apiUrl}/campaigns/${id}`, campaign);
   }
 
   deleteCampaign(id: string): Observable<any> {
@@ -312,7 +312,7 @@ export class ApiService {
   }
 
   updateAutomationRule(id: string, rule: any): Observable<any> {
-    return this.http.put(`${this.apiUrl}/automation-rules/${id}`, rule);
+    return this.http.patch(`${this.apiUrl}/automation-rules/${id}`, rule);
   }
 
   deleteAutomationRule(id: string): Observable<any> {
