@@ -311,9 +311,9 @@ export class LoginComponent {
 
     this.authApi.login({ email, password }).subscribe({
       next: (response) => {
-        localStorage.setItem('accessToken', response.accessToken);
-        if (response.refreshToken) {
-          localStorage.setItem('refreshToken', response.refreshToken);
+        localStorage.setItem('accessToken', response.access_token);
+        if (response.refresh_token) {
+          localStorage.setItem('refreshToken', response.refresh_token);
         }
         // Set auth flag for persistence across page refreshes
         localStorage.setItem('bento_auth', 'true');

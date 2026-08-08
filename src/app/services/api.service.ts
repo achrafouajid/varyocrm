@@ -323,4 +323,21 @@ export class ApiService {
   deleteAutomationRule(id: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/automation-rules/${id}`);
   }
+
+  // Files
+  uploadFile(file: File, ownerEntityType: string, ownerEntityId: string): Observable<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('ownerEntityType', ownerEntityType);
+    formData.append('ownerEntityId', ownerEntityId);
+    return this.http.post(`${this.apiUrl}/files`, formData);
+  }
+
+  getFileDownloadUrl(id: string): string {
+    return `${this.apiUrl}/files/${id}`;
+  }
+
+  deleteFile(id: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/files/${id}`);
+  }
 }

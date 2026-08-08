@@ -1,6 +1,6 @@
 import { Component, inject, signal, computed, effect } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { CrmStateService, Deal } from '../services/crm-state.service';
+import { CrmStateService, Deal, Invoice } from '../services/crm-state.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
@@ -103,6 +103,9 @@ type InvoiceLine = {
                       @if (invoice.status !== 'Paid') {
                         <button (click)="state.updateInvoiceStatus(invoice.id, 'Paid')" class="bg-zinc-100 hover:bg-zinc-200 text-zinc-950 border border-zinc-300 px-2.5 py-1.5 rounded-lg transition-colors">Mark Paid</button>
                       }
+                      <button (click)="deleteInvoice(invoice)" title="Delete invoice" class="bg-zinc-50 hover:bg-red-50 hover:text-red-600 border border-zinc-200 hover:border-red-200 text-zinc-500 px-2 py-1.5 rounded-lg transition-colors">
+                        <mat-icon class="text-[16px] w-4 h-4 align-middle">delete</mat-icon>
+                      </button>
                     </td>
                   </tr>
                 } @empty {
@@ -603,6 +606,12 @@ type InvoiceLine = {
 export class FinanceComponent {
   state = inject(CrmStateService);
   activeTab = signal<'Customer' | 'Vendor' | 'Recovery'>('Customer');
+
+  deleteInvoice(invoice: Invoice) {
+    if (confirm(`Delete invoice "${invoice.id}"? This cannot be undone.`)) {
+      this.state.deleteInvoice(invoice.id);
+    }
+  }
 
   invoiceModalOpen  = signal(false);
   selectedInvoiceIds = signal<string[]>([]);

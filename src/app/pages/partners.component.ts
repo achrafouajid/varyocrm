@@ -692,6 +692,9 @@ import { DataStatusBannerComponent } from '../shared/data-status-banner.componen
                       View Customer Card
                     </button>
                   }
+                  <button (click)="deletePartner(partner)" title="Delete" class="shrink-0 rounded-xl px-3 py-2 text-sm font-semibold transition-all flex items-center justify-center bg-zinc-50 hover:bg-red-50 hover:text-red-600 border border-zinc-200 hover:border-red-200 text-zinc-500">
+                    <mat-icon class="text-[16px] w-4 h-4">delete</mat-icon>
+                  </button>
                 </div>
               </div>
             } @empty {
@@ -813,6 +816,12 @@ export class PartnersComponent {
   router = inject(Router);
   activeTab = signal<'Lead' | 'Customer' | 'Prospect' | 'Vendor'>('Lead');
   showCreateModal = signal(false);
+
+  deletePartner(partner: Partner) {
+    if (confirm(`Delete "${partner.name}"? This cannot be undone.`)) {
+      this.state.deletePartner(partner.id);
+    }
+  }
 
   // Leads-specific state
   searchQuery = signal('');

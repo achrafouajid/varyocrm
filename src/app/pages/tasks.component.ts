@@ -158,6 +158,9 @@ const SUB_MODULE_LABELS: Record<string, string> = {
                       <mat-icon class="text-[16px] w-4 h-4 mr-0.5">check_circle</mat-icon> Completed
                     </span>
                   }
+                  <button (click)="deleteTask(task)" title="Delete task" class="shrink-0 bg-zinc-50 hover:bg-red-50 hover:text-red-600 border border-zinc-200 hover:border-red-200 text-zinc-500 p-1.5 rounded-lg transition-colors">
+                    <mat-icon class="text-[16px] w-4 h-4">delete</mat-icon>
+                  </button>
 
                   @if (task.status !== 'Completed') {
                     <button (click)="openAssignModal(task)" class="bg-white hover:bg-zinc-50 border border-zinc-200 text-zinc-600 px-2 py-1.5 rounded-lg text-xs transition-colors flex items-center justify-center">
@@ -452,6 +455,12 @@ export class TasksComponent {
 
   clearFilter() {
     this.activePriorityFilter.set(null);
+  }
+
+  deleteTask(task: Task) {
+    if (confirm(`Delete task "${task.title}"? This cannot be undone.`)) {
+      this.state.deleteTask(task.id);
+    }
   }
 
   taskModalOpen = signal(false);

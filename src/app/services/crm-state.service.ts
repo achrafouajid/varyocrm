@@ -4871,6 +4871,146 @@ export class CrmStateService {
     });
   }
 
+  addCampaign(campaign: Omit<Campaign, 'id' | 'createdBy' | 'createdAt'> & { createdBy?: string; createdAt?: string }) {
+    const tempId = 'camp' + (this.campaigns().length + 1) + '_' + Date.now();
+    const now = new Date().toISOString().split('T')[0];
+    const newCampaign = { ...campaign, id: tempId, createdBy: this.currentUserId(), createdAt: now };
+    this.campaigns.update(list => [...list, newCampaign]);
+    this.toast.show(`Campaign <strong>${newCampaign.title}</strong> created`, {
+      undo: () => {
+        this.campaigns.update(list => list.filter(c => c.id !== newCampaign.id));
+      }
+    });
+    this.api.createCampaign(campaign).subscribe({
+      next: (dto) => {
+        this.campaigns.update(list => list.map(c => c === newCampaign ? dto : c));
+      },
+      error: () => {
+        this.campaigns.update(list => list.filter(c => c !== newCampaign));
+        this.toast.show('Failed to save campaign to the server', { type: 'error' });
+      }
+    });
+    return newCampaign;
+  }
+
+  updateCampaign(id: string, patch: Partial<Campaign>) {
+    const previous = this.campaigns().find(c => c.id === id);
+    this.campaigns.update(list => list.map(c => c.id === id ? { ...c, ...patch } : c));
+    this.api.updateCampaign(id, patch).subscribe({
+      next: (dto) => {
+        this.campaigns.update(list => list.map(c => c.id === id ? dto : c));
+      },
+      error: () => {
+        if (previous) {
+          this.campaigns.update(list => list.map(c => c.id === id ? previous : c));
+        }
+        this.toast.show('Failed to update campaign', { type: 'error' });
+      }
+    });
+  }
+
+  deleteCampaign(id: string) {
+    const deleted = this.campaigns().find(c => c.id === id);
+    this.api.deleteCampaign(id).subscribe({
+      next: () => {
+        this.campaigns.update(list => list.filter(c => c.id !== id));
+        this.toast.show(`Campaign <strong>${deleted?.title || id}</strong> deleted`, {
+          undo: () => {
+            if (deleted) {
+              this.campaigns.update(list => [...list, deleted]);
+            }
+          }
+        });
+      },
+      error: () => this.toast.show('Failed to delete campaign', { type: 'error' })
+    });
+  }
+
+  deleteDeal(id: string) {
+    const deleted = this.deals().find(d => d.id === id);
+    this.api.deleteDeal(id).subscribe({
+      next: () => {
+        this.deals.update(deals => deals.filter(d => d.id !== id));
+        this.toast.show(`Deal <strong>${deleted?.title || id}</strong> deleted`, {
+          undo: () => {
+            if (deleted) {
+              this.deals.update(deals => [...deals, deleted]);
+            }
+          }
+        });
+      },
+      error: () => this.toast.show('Failed to delete deal', { type: 'error' })
+    });
+  }
+
+  deletePartner(id: string) {
+    const deleted = this.partners().find(p => p.id === id);
+    this.api.deletePartner(id).subscribe({
+      next: () => {
+        this.partners.update(partners => partners.filter(p => p.id !== id));
+        this.toast.show(`Partner <strong>${deleted?.name || id}</strong> deleted`, {
+          undo: () => {
+            if (deleted) {
+              this.partners.update(partners => [...partners, deleted]);
+            }
+          }
+        });
+      },
+      error: () => this.toast.show('Failed to delete partner', { type: 'error' })
+    });
+  }
+
+  deleteTask(id: string) {
+    const deleted = this.tasks().find(t => t.id === id);
+    this.api.deleteTask(id).subscribe({
+      next: () => {
+        this.tasks.update(tasks => tasks.filter(t => t.id !== id));
+        this.toast.show(`Task <strong>${deleted?.title || id}</strong> deleted`, {
+          undo: () => {
+            if (deleted) {
+              this.tasks.update(tasks => [...tasks, deleted]);
+            }
+          }
+        });
+      },
+      error: () => this.toast.show('Failed to delete task', { type: 'error' })
+    });
+  }
+
+  deleteInvoice(id: string) {
+    const deleted = this.invoices().find(i => i.id === id);
+    this.api.deleteInvoice(id).subscribe({
+      next: () => {
+        this.invoices.update(invoices => invoices.filter(i => i.id !== id));
+        this.toast.show(`Invoice <strong>${deleted?.id || id}</strong> deleted`, {
+          undo: () => {
+            if (deleted) {
+              this.invoices.update(invoices => [...invoices, deleted]);
+            }
+          }
+        });
+      },
+      error: () => this.toast.show('Failed to delete invoice', { type: 'error' })
+    });
+  }
+
+  deletePurchaseOrder(id: string) {
+    const deleted = this.purchaseOrders().find(p => p.id === id);
+    this.api.deletePurchaseOrder(id).subscribe({
+      next: () => {
+        this.purchaseOrders.update(pos => pos.filter(p => p.id !== id));
+        this.toast.show(`Purchase order <strong>${deleted?.id || id}</strong> deleted`, {
+          undo: () => {
+            if (deleted) {
+              this.purchaseOrders.update(pos => [...pos, deleted]);
+            }
+          }
+        });
+      },
+      error: () => this.toast.show('Failed to delete purchase order', { type: 'error' })
+    });
+  }
+
   addActivityLog(log: Omit<ActivityLog, 'id'>) {
     const newId = 'act' + (this.activityLogs().length + 1);
     const newLog = { ...log, id: newId };

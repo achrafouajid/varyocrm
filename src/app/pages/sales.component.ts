@@ -1665,6 +1665,9 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                   <button (click)="openSetDeliveryDatePOModal(po); closePODrawer()" class="bg-white border border-zinc-200 text-zinc-700 px-3 py-1.5 rounded-lg hover:bg-zinc-50 text-xs font-semibold">Set Del. Date</button>
                   <button (click)="state.updatePurchaseOrderStatus(po.id, 'Delivered'); closePODrawer()" class="bg-zinc-900 hover:bg-zinc-950 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-lg shadow-zinc-300">Receive Goods</button>
                 }
+                <button (click)="deletePurchaseOrder(po)" title="Delete purchase order" class="bg-zinc-50 hover:bg-red-50 hover:text-red-600 border border-zinc-200 hover:border-red-200 text-zinc-500 px-2 py-1.5 rounded-lg transition-colors">
+                  <mat-icon class="text-[16px] w-4 h-4">delete</mat-icon>
+                </button>
                 <button (click)="closePODrawer()" class="bg-white border border-zinc-300 text-zinc-700 px-4 py-1.5 rounded-lg text-xs font-semibold">Close</button>
               </div>
             </div>
@@ -2417,6 +2420,13 @@ export class SalesComponent {
 
   closePODrawer() {
     this.selectedPOForDrawer.set(null);
+  }
+
+  deletePurchaseOrder(po: PurchaseOrder) {
+    if (confirm(`Delete purchase order "#${po.id}"? This cannot be undone.`)) {
+      this.state.deletePurchaseOrder(po.id);
+      this.closePODrawer();
+    }
   }
 
   expandedDeals = signal<{ [key: string]: boolean }>({});
