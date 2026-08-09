@@ -2256,6 +2256,7 @@ export class SalesComponent {
     this.state.loadProposals();
     this.state.loadPurchaseOrders();
     this.state.loadPartners();
+    this.state.loadProposalTemplates();
   }
 
   // Convert Proposal to Deal & Customer Modal State

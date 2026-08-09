@@ -875,6 +875,7 @@ export class CrmStateService {
   purchaseOrdersLoaded = signal<boolean>(false);
   campaignsLoaded = signal<boolean>(false);
   automationRulesLoaded = signal<boolean>(false);
+  proposalTemplatesLoaded = signal<boolean>(false);
 
   // Per-domain in-flight/error state, for page-level loading spinners and error banners
   dealsLoading = signal<boolean>(false);
@@ -895,6 +896,8 @@ export class CrmStateService {
   campaignsError = signal<string | null>(null);
   automationRulesLoading = signal<boolean>(false);
   automationRulesError = signal<string | null>(null);
+  proposalTemplatesLoading = signal<boolean>(false);
+  proposalTemplatesError = signal<string | null>(null);
 
   // Shared tab state for section pages
   salesSubTab = signal<'deals' | 'proposals' | 'pos'>('deals');
@@ -1302,6 +1305,77 @@ export class CrmStateService {
     });
   }
 
+  // Lazy-load: Proposal Templates
+  loadProposalTemplates(): void {
+    if (this.proposalTemplatesLoaded()) return;
+    this.proposalTemplatesLoading.set(true);
+    this.proposalTemplatesError.set(null);
+    this.api.getProposalTemplates().subscribe({
+      next: (templates) => {
+        if (templates && templates.length > 0) {
+          this.proposalTemplates.set(templates);
+        }
+        this.proposalTemplatesLoaded.set(true);
+        this.proposalTemplatesLoading.set(false);
+      },
+      error: (err) => {
+        console.warn('Failed to load proposal templates from API, using seed data:', err);
+        this.proposalTemplatesLoaded.set(true);
+        this.proposalTemplatesLoading.set(false);
+        this.proposalTemplatesError.set('Failed to load proposal templates from the server. Showing local data.');
+      }
+    });
+  }
+
+  addProposalTemplate(template: Omit<ProposalTemplate, 'id'>) {
+    const tempId = 'tpl' + (this.proposalTemplates().length + 1) + '_' + Date.now();
+    const newTemplate = { ...template, id: tempId };
+    this.proposalTemplates.update(list => [...list, newTemplate]);
+    this.api.createProposalTemplate(template).subscribe({
+      next: (dto) => {
+        this.proposalTemplates.update(list => list.map(t => t === newTemplate ? dto : t));
+      },
+      error: () => {
+        this.proposalTemplates.update(list => list.filter(t => t !== newTemplate));
+        this.toast.show('Failed to save proposal template to the server', { type: 'error' });
+      }
+    });
+    return newTemplate;
+  }
+
+  updateProposalTemplate(id: string, patch: Partial<ProposalTemplate>) {
+    const previous = this.proposalTemplates().find(t => t.id === id);
+    this.proposalTemplates.update(list => list.map(t => t.id === id ? { ...t, ...patch } : t));
+    this.api.updateProposalTemplate(id, patch).subscribe({
+      next: (dto) => {
+        this.proposalTemplates.update(list => list.map(t => t.id === id ? dto : t));
+      },
+      error: () => {
+        if (previous) {
+          this.proposalTemplates.update(list => list.map(t => t.id === id ? previous : t));
+        }
+        this.toast.show('Failed to update proposal template', { type: 'error' });
+      }
+    });
+  }
+
+  deleteProposalTemplate(id: string) {
+    const deleted = this.proposalTemplates().find(t => t.id === id);
+    this.api.deleteProposalTemplate(id).subscribe({
+      next: () => {
+        this.proposalTemplates.update(list => list.filter(t => t.id !== id));
+        this.toast.show(`Template <strong>${deleted?.name || id}</strong> deleted`, {
+          undo: () => {
+            if (deleted) {
+              this.proposalTemplates.update(list => [...list, deleted]);
+            }
+          }
+        });
+      },
+      error: () => this.toast.show('Failed to delete proposal template', { type: 'error' })
+    });
+  }
+
   // State mutations
   updateOrganization(patch: Partial<Organization>): void {
     this.api.updateOrganization(patch).subscribe({
@@ -1453,6 +1527,14 @@ export class CrmStateService {
       readByUserIds: [senderUserId]
     };
     this.groupMessages.update(list => [...list, newMessage]);
+    this.api.createGroupMessage(groupId, { content }).subscribe({
+      next: (dto) => {
+        if (dto?.id) {
+          this.groupMessages.update(list => list.map(m => m === newMessage ? { ...m, id: dto.id } : m));
+        }
+      },
+      error: () => this.toast.show('Failed to save message to the server', { type: 'error' })
+    });
   }
 
   scheduleMeeting(draft: Omit<GroupMeeting, 'id' | 'status'>): GroupMeeting {
@@ -1462,6 +1544,20 @@ export class CrmStateService {
       status: 'scheduled'
     };
     this.groupMeetings.update(list => [...list, newMeeting]);
+    this.api.createGroupMeeting(draft.groupId, {
+      title: draft.title,
+      description: draft.description,
+      scheduledAt: draft.scheduledAt,
+      meetingLink: (draft as any).meetingLink,
+      attendeeUserIds: draft.attendeeUserIds
+    }).subscribe({
+      next: (dto) => {
+        if (dto?.id) {
+          this.groupMeetings.update(list => list.map(m => m === newMeeting ? { ...m, id: dto.id } : m));
+        }
+      },
+      error: () => this.toast.show('Failed to save meeting to the server', { type: 'error' })
+    });
     return newMeeting;
   }
 

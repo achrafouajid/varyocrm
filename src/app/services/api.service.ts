@@ -100,7 +100,9 @@ export class ApiService {
 
   // Messages
   getGroupMessages(groupId: string): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/groups/${groupId}/messages`);
+    return this.http.get<PageResponse<any>>(`${this.apiUrl}/groups/${groupId}/messages`).pipe(
+      map(response => response.content || [])
+    );
   }
 
   createGroupMessage(groupId: string, message: any): Observable<any> {
@@ -109,7 +111,9 @@ export class ApiService {
 
   // Meetings
   getGroupMeetings(groupId: string): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/groups/${groupId}/meetings`);
+    return this.http.get<PageResponse<any>>(`${this.apiUrl}/groups/${groupId}/meetings`).pipe(
+      map(response => response.content || [])
+    );
   }
 
   createGroupMeeting(groupId: string, meeting: any): Observable<any> {
@@ -184,6 +188,25 @@ export class ApiService {
 
   deleteProposal(id: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/proposals/${id}`);
+  }
+
+  // Proposal Templates
+  getProposalTemplates(): Observable<any[]> {
+    return this.http.get<PageResponse<any>>(`${this.apiUrl}/proposal-templates`).pipe(
+      map(response => response.content || [])
+    );
+  }
+
+  createProposalTemplate(template: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/proposal-templates`, template);
+  }
+
+  updateProposalTemplate(id: string, template: any): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/proposal-templates/${id}`, template);
+  }
+
+  deleteProposalTemplate(id: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/proposal-templates/${id}`);
   }
 
   // Tasks
