@@ -1105,6 +1105,8 @@ export class CrmStateService {
         console.warn('Failed to load organization from API, using seed data:', err);
       }
     });
+
+    this.loadNotifications();
   }
 
   // Lazy-load: Deals
@@ -4286,12 +4288,55 @@ export class CrmStateService {
 
   unreadNotificationsCount = computed(() => this.notifications().filter(n => !n.read).length);
 
+  notificationsLoaded = signal<boolean>(false);
+  notificationsLoading = signal<boolean>(false);
+  notificationsError = signal<string | null>(null);
+
+  private mapNotificationDto(dto: any): Notification {
+    return {
+      id: dto.id,
+      type: (dto.type || 'system').toLowerCase(),
+      title: dto.title,
+      message: dto.message,
+      timestamp: dto.createdAt,
+      read: !!dto.isRead,
+      relatedId: dto.relatedEntityId || undefined
+    };
+  }
+
+  loadNotifications(): void {
+    if (this.notificationsLoaded()) return;
+    this.notificationsLoading.set(true);
+    this.notificationsError.set(null);
+    this.api.getNotifications().subscribe({
+      next: (notifications) => {
+        if (notifications && notifications.length > 0) {
+          this.notifications.set(notifications.map(n => this.mapNotificationDto(n)));
+        }
+        this.notificationsLoaded.set(true);
+        this.notificationsLoading.set(false);
+      },
+      error: (err) => {
+        console.warn('Failed to load notifications from API, using seed data:', err);
+        this.notificationsLoaded.set(true);
+        this.notificationsLoading.set(false);
+        this.notificationsError.set('Failed to load notifications from the server. Showing local data.');
+      }
+    });
+  }
+
   markNotificationRead(notifId: string) {
     this.notifications.update(list => list.map(n => n.id === notifId ? { ...n, read: true } : n));
+    this.api.markNotificationRead(notifId).subscribe({
+      error: () => console.warn('Failed to mark notification as read on the server')
+    });
   }
 
   markAllNotificationsRead() {
     this.notifications.update(list => list.map(n => ({ ...n, read: true })));
+    this.api.markAllNotificationsRead().subscribe({
+      error: () => console.warn('Failed to mark all notifications as read on the server')
+    });
   }
 
   // ────────────────────────────────────────────────────────

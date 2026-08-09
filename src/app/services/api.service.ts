@@ -363,4 +363,19 @@ export class ApiService {
   deleteFile(id: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/files/${id}`);
   }
+
+  // Notifications
+  getNotifications(): Observable<any[]> {
+    return this.http.get<PageResponse<any>>(`${this.apiUrl}/notifications`).pipe(
+      map(response => response.content || [])
+    );
+  }
+
+  markNotificationRead(id: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/notifications/${id}/read`, {});
+  }
+
+  markAllNotificationsRead(): Observable<any> {
+    return this.http.post(`${this.apiUrl}/notifications/read-all`, {});
+  }
 }
