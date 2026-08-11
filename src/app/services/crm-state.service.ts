@@ -231,7 +231,8 @@ export type ProposalStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Pr
 export type DealStage = 'New' | 'Proposal sent' | 'Confirmed' | 'Awaiting Invoicing' | 'Invoiced' | 'Closed Won' | 'Closed Lost' | ProposalStage;
 export type InvoiceStatus = 'Pending' | 'Paid' | 'Overdue' | 'Draft';
 export type CampaignType = 'WhatsApp' | 'SMS' | 'Email';
-export type TicketStatus = 'Open' | 'In Progress' | 'Resolved' | 'Closed';
+export type TicketStatus = 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED';
+export type TicketPriority = 'URGENT' | 'MEDIUM' | 'LOW';
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Workflow Automation Types
@@ -405,14 +406,14 @@ export const TRIGGER_FIELD_MAP: Record<AutomationTrigger, FieldDescriptor[]> = {
   TicketCreated: [
     { key: 'title', label: 'Title', type: 'string', path: 'title' },
     { key: 'assignedTo', label: 'Assigned To', type: 'string', path: 'assignedTo' },
-    { key: 'status', label: 'Status', type: 'enum', allowedValues: ['Open', 'In Progress', 'Resolved', 'Closed'], path: 'status' },
-    { key: 'priority', label: 'Priority', type: 'enum', allowedValues: ['Low', 'Medium', 'High'], path: 'priority' }
+    { key: 'status', label: 'Status', type: 'enum', allowedValues: ['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED'], path: 'status' },
+    { key: 'priority', label: 'Priority', type: 'enum', allowedValues: ['URGENT', 'MEDIUM', 'LOW'], path: 'priority' }
   ],
   TicketUpdated: [
     { key: 'title', label: 'Title', type: 'string', path: 'title' },
     { key: 'assignedTo', label: 'Assigned To', type: 'string', path: 'assignedTo' },
-    { key: 'status', label: 'Status', type: 'enum', allowedValues: ['Open', 'In Progress', 'Resolved', 'Closed'], path: 'status' },
-    { key: 'priority', label: 'Priority', type: 'enum', allowedValues: ['Low', 'Medium', 'High'], path: 'priority' }
+    { key: 'status', label: 'Status', type: 'enum', allowedValues: ['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED'], path: 'status' },
+    { key: 'priority', label: 'Priority', type: 'enum', allowedValues: ['URGENT', 'MEDIUM', 'LOW'], path: 'priority' }
   ]
 };
 
@@ -747,7 +748,7 @@ export interface Ticket {
   partnerId: string;
   assignedTo: string;
   status: TicketStatus;
-  priority: 'Low' | 'Medium' | 'High';
+  priority: TicketPriority;
   deadline?: string;
   type?: string;
   resolution?: string;

@@ -1,6 +1,6 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { CrmStateService, Ticket, TicketStatus } from '../services/crm-state.service';
+import { CrmStateService, Ticket, TicketStatus, TicketPriority } from '../services/crm-state.service';
 import { TicketsService } from '../services/domains';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -30,16 +30,16 @@ import { PaginatorComponent } from '../shared/paginator.component';
         </div>
         <select [ngModel]="priorityFilter()" (ngModelChange)="priorityFilter.set($event)" class="input-field rounded-lg p-2 text-sm focus:outline-blue-600 cursor-pointer w-40">
           <option [ngValue]="null">All Priorities</option>
-          <option value="High">High</option>
-          <option value="Medium">Medium</option>
-          <option value="Low">Low</option>
+          <option value="URGENT">High</option>
+          <option value="MEDIUM">Medium</option>
+          <option value="LOW">Low</option>
         </select>
         <select [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)" class="input-field rounded-lg p-2 text-sm focus:outline-blue-600 cursor-pointer w-44">
           <option [ngValue]="null">All Statuses</option>
-          <option value="Open">Open</option>
-          <option value="In Progress">In Progress</option>
-          <option value="Resolved">Resolved</option>
-          <option value="Closed">Closed</option>
+          <option value="OPEN">Open</option>
+          <option value="IN_PROGRESS">In Progress</option>
+          <option value="RESOLVED">Resolved</option>
+          <option value="CLOSED">Closed</option>
         </select>
         <select [ngModel]="typeFilter()" (ngModelChange)="typeFilter.set($event)" class="input-field rounded-lg p-2 text-sm focus:outline-blue-600 cursor-pointer w-44">
           <option [ngValue]="null">All Types</option>
@@ -76,7 +76,7 @@ import { PaginatorComponent } from '../shared/paginator.component';
                 <td (click)="openEditTicketModal(ticket)" class="px-6 py-4 whitespace-nowrap cursor-pointer">
                   <div class="flex items-center">
                     <mat-icon [class]="getPriorityColor(ticket.priority)" class="text-[18px] w-5 h-5">flag</mat-icon>
-                    <span [class]="getPriorityColor(ticket.priority)" class="ml-1.5 text-xs font-semibold">{{ ticket.priority }}</span>
+                    <span [class]="getPriorityColor(ticket.priority)" class="ml-1.5 text-xs font-semibold">{{ getPriorityLabel(ticket.priority) }}</span>
                   </div>
                 </td>
                 <td (click)="openEditTicketModal(ticket)" class="px-6 py-4 cursor-pointer">
@@ -106,7 +106,7 @@ import { PaginatorComponent } from '../shared/paginator.component';
                 </td>
                 <td (click)="openEditTicketModal(ticket)" class="px-6 py-4 whitespace-nowrap cursor-pointer">
                   <span [class]="getStatusColor(ticket.status)" class="px-2.5 py-1 text-xs font-semibold rounded-full border">
-                    {{ticket.status}}
+                    {{ getStatusLabel(ticket.status) }}
                   </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
@@ -199,24 +199,24 @@ import { PaginatorComponent } from '../shared/paginator.component';
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Priority</label>
                 <select [(ngModel)]="newTicket.priority" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600">
-                  <option value="Low">Low</option>
-                  <option value="Medium">Medium</option>
-                  <option value="High">High</option>
+                  <option value="LOW">Low</option>
+                  <option value="MEDIUM">Medium</option>
+                  <option value="URGENT">High</option>
                 </select>
               </div>
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Status</label>
                 <select [(ngModel)]="newTicket.status" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600">
-                  <option value="Open">Open</option>
-                  <option value="In Progress">In Progress</option>
-                  <option value="Resolved">Resolved</option>
-                  <option value="Closed">Closed</option>
+                  <option value="OPEN">Open</option>
+                  <option value="IN_PROGRESS">In Progress</option>
+                  <option value="RESOLVED">Resolved</option>
+                  <option value="CLOSED">Closed</option>
                 </select>
               </div>
             </div>
 
             <!-- Resolution Field: Displayed only if status is Resolved or Closed -->
-            @if (newTicket.status === 'Resolved' || newTicket.status === 'Closed') {
+            @if (newTicket.status === 'RESOLVED' || newTicket.status === 'CLOSED') {
               <div class="animate-in slide-in-from-top-2 duration-200">
                 <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Resolution Details *</label>
                 <textarea
@@ -233,7 +233,7 @@ import { PaginatorComponent } from '../shared/paginator.component';
             <button (click)="modalOpen.set(false)" class="px-4 py-2 border border-zinc-200 text-zinc-600 text-sm font-semibold rounded-lg hover:bg-zinc-50">
               Cancel
             </button>
-            <button (click)="saveTicket()" [disabled]="!newTicket.title.trim() || ((newTicket.status === 'Resolved' || newTicket.status === 'Closed') && !newTicket.resolution.trim())" class="px-4 py-2 bg-zinc-900 hover:bg-zinc-950 disabled:bg-zinc-300 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-lg shadow-sm shadow-lg shadow-zinc-300">
+            <button (click)="saveTicket()" [disabled]="!newTicket.title.trim() || ((newTicket.status === 'RESOLVED' || newTicket.status === 'CLOSED') && !newTicket.resolution.trim())" class="px-4 py-2 bg-zinc-900 hover:bg-zinc-950 disabled:bg-zinc-300 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-lg shadow-sm shadow-lg shadow-zinc-300">
               {{ isEditing() ? 'Save Changes' : 'Create Ticket' }}
             </button>
           </div>
@@ -280,7 +280,7 @@ export class TicketsComponent {
   modalOpen = signal(false);
   isEditing = signal(false);
   editingTicketId = signal<string | null>(null);
-  priorityFilter = signal<'High' | 'Medium' | 'Low' | null>(null);
+  priorityFilter = signal<TicketPriority | null>(null);
   statusFilter = signal<TicketStatus | null>(null);
   typeFilter = signal<string | null>(null);
 
@@ -314,8 +314,8 @@ export class TicketsComponent {
   constructor() {
     this.ticketsService.load();
     const filter = this.state.ticketFilter();
-    if (filter?.priority && ['High', 'Medium', 'Low'].includes(filter.priority)) {
-      this.priorityFilter.set(filter.priority as 'High' | 'Medium' | 'Low');
+    if (filter?.priority && ['URGENT', 'MEDIUM', 'LOW'].includes(filter.priority)) {
+      this.priorityFilter.set(filter.priority as TicketPriority);
       this.state.ticketFilter.set(null);
     }
   }
@@ -347,8 +347,8 @@ export class TicketsComponent {
     title: '',
     partnerId: '',
     assignedTo: '',
-    priority: 'Medium' as 'Low' | 'Medium' | 'High',
-    status: 'Open' as 'Open' | 'In Progress' | 'Resolved' | 'Closed',
+    priority: 'MEDIUM' as TicketPriority,
+    status: 'OPEN' as TicketStatus,
     type: 'Software issue',
     resolution: ''
   };
@@ -360,8 +360,8 @@ export class TicketsComponent {
       title: '',
       partnerId: this.state.partners()[0]?.id || '',
       assignedTo: this.state.users()[0]?.name || '',
-      priority: 'Medium',
-      status: 'Open',
+      priority: 'MEDIUM',
+      status: 'OPEN',
       type: this.state.ticketTypes()[0] || 'Software issue',
       resolution: ''
     };
@@ -386,7 +386,7 @@ export class TicketsComponent {
   saveTicket() {
     if (!this.newTicket.title.trim()) return;
 
-    if (this.newTicket.status !== 'Resolved' && this.newTicket.status !== 'Closed') {
+    if (this.newTicket.status !== 'RESOLVED' && this.newTicket.status !== 'CLOSED') {
       this.newTicket.resolution = '';
     }
 
@@ -418,21 +418,37 @@ export class TicketsComponent {
     return this.state.partners().find(p => p.id === id)?.name || 'Unknown';
   }
 
-  getPriorityColor(priority: string) {
+  getPriorityLabel(priority: TicketPriority): string {
     switch(priority) {
-      case 'High': return 'text-red-500';
-      case 'Medium': return 'text-green-500';
-      case 'Low': return 'text-blue-400';
-      default: return 'text-zinc-400';
+      case 'URGENT': return 'High';
+      case 'MEDIUM': return 'Medium';
+      case 'LOW': return 'Low';
     }
   }
 
-  getStatusColor(status: string) {
+  getStatusLabel(status: TicketStatus): string {
     switch(status) {
-      case 'Open': return 'text-red-600 border border-red-200';
-      case 'In Progress': return 'text-amber-600 border border-amber-200';
-      case 'Resolved': return 'text-emerald-600 border border-emerald-200';
-      default: return 'text-zinc-400 border border-zinc-200';
+      case 'OPEN': return 'Open';
+      case 'IN_PROGRESS': return 'In Progress';
+      case 'RESOLVED': return 'Resolved';
+      case 'CLOSED': return 'Closed';
+    }
+  }
+
+  getPriorityColor(priority: TicketPriority) {
+    switch(priority) {
+      case 'URGENT': return 'text-red-500';
+      case 'MEDIUM': return 'text-green-500';
+      case 'LOW': return 'text-blue-400';
+    }
+  }
+
+  getStatusColor(status: TicketStatus) {
+    switch(status) {
+      case 'OPEN': return 'text-red-600 border border-red-200';
+      case 'IN_PROGRESS': return 'text-amber-600 border border-amber-200';
+      case 'RESOLVED': return 'text-emerald-600 border border-emerald-200';
+      case 'CLOSED': return 'text-zinc-400 border border-zinc-200';
     }
   }
 }

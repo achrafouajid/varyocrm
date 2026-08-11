@@ -632,7 +632,7 @@ export class DashboardComponent {
   totalDealsValue = () => this.state.deals().reduce((acc, deal) => acc + deal.amount, 0);
   latePayersCount = () => this.state.overdueInvoices().length;
   activeCampaignsCount = () => this.state.campaigns().filter(c => c.status === 'Active').length;
-  openTicketsCount = () => this.state.tickets().filter(c => c.status === 'Open' || c.status === 'In Progress').length;
+  openTicketsCount = () => this.state.tickets().filter(c => c.status === 'OPEN' || c.status === 'IN_PROGRESS').length;
   prospectsCount = () => this.state.prospects().length;
 
   /** All pending (non-completed) tasks */
@@ -658,7 +658,7 @@ export class DashboardComponent {
 
   /** All open/in-progress tickets */
   private pendingTickets = computed(() =>
-    this.state.tickets().filter(t => t.status === 'Open' || t.status === 'In Progress')
+    this.state.tickets().filter(t => t.status === 'OPEN' || t.status === 'IN_PROGRESS')
   );
 
   /** Count of pending tickets */
@@ -673,9 +673,9 @@ export class DashboardComponent {
       return a.deadline.localeCompare(b.deadline);
     };
     return {
-      high: tickets.filter(t => t.priority === 'High').sort(sortByDeadline),
-      medium: tickets.filter(t => t.priority === 'Medium').sort(sortByDeadline),
-      low: tickets.filter(t => t.priority === 'Low').sort(sortByDeadline)
+      high: tickets.filter(t => t.priority === 'URGENT').sort(sortByDeadline),
+      medium: tickets.filter(t => t.priority === 'MEDIUM').sort(sortByDeadline),
+      low: tickets.filter(t => t.priority === 'LOW').sort(sortByDeadline)
     };
   });
 
