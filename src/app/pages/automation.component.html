@@ -149,11 +149,11 @@
                     </span>
                   </td>
                   <td class="px-6 py-4 text-center">
-                    <span class="inline-block text-xs font-bold px-2 py-0.5 rounded" 
-                          [class.bg-zinc-100]="rule.priority === 1" [class.text-zinc-950]="rule.priority === 1"
-                          [class.bg-zinc-100]="rule.priority === 2" [class.text-zinc-950]="rule.priority === 2"
-                          [class.bg-zinc-100]="rule.priority > 2" [class.text-zinc-700]="rule.priority > 2">
-                      P{{ rule.priority }}
+                    <span class="inline-block text-xs font-bold px-2 py-0.5 rounded"
+                          [class.bg-zinc-100]="(rule.priority || 0) === 1" [class.text-zinc-950]="(rule.priority || 0) === 1"
+                          [class.bg-zinc-100]="(rule.priority || 0) === 2" [class.text-zinc-950]="(rule.priority || 0) === 2"
+                          [class.bg-zinc-100]="(rule.priority || 0) > 2" [class.text-zinc-700]="(rule.priority || 0) > 2">
+                      P{{ rule.priority || 0 }}
                     </span>
                   </td>
                   <td class="px-6 py-4 text-center font-semibold text-zinc-900">

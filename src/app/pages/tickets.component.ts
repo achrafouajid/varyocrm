@@ -400,7 +400,7 @@ export class TicketsComponent {
         status: this.newTicket.status,
         priority: this.newTicket.priority,
         type: this.newTicket.type,
-        assignedByUserId: this.state.currentUser().id
+        assignedByUserId: this.state.currentUserId()
       });
     }
     this.modalOpen.set(false);

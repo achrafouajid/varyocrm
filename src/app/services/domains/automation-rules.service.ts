@@ -1,20 +1,9 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { ApiService } from '../api.service';
 import { ToastService } from '../toast.service';
+import { AutomationRule } from '../crm-state.service';
 
-export interface AutomationRule {
-  id: string;
-  name: string;
-  description?: string;
-  isActive: boolean;
-  trigger: string;
-  conditionGroups?: any[];
-  actions?: any[];
-  priority?: number;
-  stopOnMatch?: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
+export type { AutomationRule };
 
 @Injectable({
   providedIn: 'root'

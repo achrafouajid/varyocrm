@@ -2214,12 +2214,12 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
   `
 })
 export class SalesComponent {
-  private dealsService = inject(DealsService);
-  private proposalsService = inject(ProposalsService);
-  private purchaseOrdersService = inject(PurchaseOrdersService);
+  dealsService = inject(DealsService);
+  proposalsService = inject(ProposalsService);
+  purchaseOrdersService = inject(PurchaseOrdersService);
   private partnersService = inject(PartnersService);
   private tasksService = inject(TasksService);
-  private state = inject(CrmStateService);
+  state = inject(CrmStateService);
   private router = inject(Router);
 
   // UI-only state signals
@@ -2233,7 +2233,7 @@ export class SalesComponent {
   currentUserId = computed(() => this.state.currentUserId());
   proposalTemplates = computed(() => this.state.proposalTemplates());
   customers = computed(() => this.state.customers());
-  vendors = computed(() => this.vendors());
+  vendors = computed(() => this.partnersService.vendors());
 
   dealsPage = signal(1);
   dealsPageSize = signal(20);
@@ -2622,7 +2622,7 @@ export class SalesComponent {
 
     // First check org contacts (CustomerCard.personnel)
     const orgContacts = this.proposalOrgContacts();
-    const personnel = orgContacts.find(p => p.id === personnelId);
+    const personnel = orgContacts.find((p: any) => p.id === personnelId);
     if (personnel) {
       // Avoid duplicates
       const alreadyAdded = this.recipients().some(r => r.name === personnel.fullName);
@@ -2782,7 +2782,7 @@ export class SalesComponent {
       const template = this.proposalsService.proposalTemplates().find(t => t.id === this.selectedTemplateId);
       if (template) {
         this.newProposal.title = template.name;
-        this.newProposal.lines = template.lines.map(l => ({ ...l, vendor: l.vendor || '' }));
+        this.newProposal.lines = template.lines.map((l: any) => ({ ...l, vendor: l.vendor || '' }));
       }
     }
   }
@@ -2831,7 +2831,7 @@ export class SalesComponent {
         this.openAssignTaskModal('proposal', propId, payload.title);
       }
     } else {
-      const newProp = this.proposalsService.addProposal({
+      const newProp: any = this.proposalsService.addProposal({
         ...payload,
         status: 'Draft'
       });
@@ -2951,7 +2951,7 @@ export class SalesComponent {
 
   saveDeal(andAssignTask = false) {
     const finalAmount = this.newDeal.amount - (this.newDeal.amount * (this.newDeal.discount / 100));
-    const newDeal = this.dealsService.addDeal({
+    const newDeal: any = this.dealsService.addDeal({
       title: this.newDeal.title || 'New Deal',
       partnerId: this.newDeal.partnerId,
       amount: finalAmount,

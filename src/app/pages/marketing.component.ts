@@ -12,7 +12,7 @@ import { PaginatorComponent } from '../shared/paginator.component';
   imports: [MatIconModule, CommonModule, CreatedByBadgeComponent, DataStatusBannerComponent, PaginatorComponent],
   template: `
     <div class="space-y-8">
-      <app-data-status-banner [loading]="campaignsService.isLoading$ | async" [error]="campaignsService.error$ | async" />
+      <app-data-status-banner [loading]="campaignsService.isLoading$()" [error]="campaignsService.error$()" />
       <div class="flex gap-5 sm:gap-6 border-b border-zinc-200">
         <button
           (click)="activeTab.set('Email'); state.breadcrumbLabel.set('Email'); campaignsPage.set(1)"
@@ -137,9 +137,9 @@ export class MarketingComponent {
     this.state.breadcrumbLabel.set(this.activeTab());
   }
 
-  filteredCampaigns = () => this.campaignsService.allCampaigns.filter(c => c.type === this.activeTab());
+  filteredCampaigns = () => this.campaignsService.allCampaigns().filter((c: any) => c.type === this.activeTab());
 
-  filteredByType = (type: string) => this.campaignsService.allCampaigns.filter(c => c.type === type);
+  filteredByType = (type: string) => this.campaignsService.allCampaigns().filter((c: any) => c.type === type);
 
   getStatusColor(status: string) {
     switch(status) {

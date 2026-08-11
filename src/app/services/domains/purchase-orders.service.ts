@@ -1,21 +1,9 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { ApiService } from '../api.service';
 import { ToastService } from '../toast.service';
+import { PurchaseOrder } from '../crm-state.service';
 
-export interface PurchaseOrder {
-  id: string;
-  vendorId: string;
-  dealId?: string;
-  orderNumber: string;
-  status: 'DRAFT' | 'SENT' | 'CONFIRMED' | 'PARTIAL_RECEIPT' | 'RECEIVED' | 'INVOICED' | 'CANCELLED';
-  orderDate: string;
-  expectedDeliveryDate: string;
-  amount: number;
-  currency?: string;
-  description?: string;
-  createdAt: string;
-  updatedAt: string;
-}
+export type { PurchaseOrder };
 
 @Injectable({
   providedIn: 'root'
@@ -96,5 +84,16 @@ export class PurchaseOrdersService {
 
   getPurchaseOrderById(id: string): PurchaseOrder | undefined {
     return this.purchaseOrders().find(p => p.id === id);
+  }
+
+  updateStatus(id: string, status: string, deliveryDate?: string): void {
+    const po = this.getPurchaseOrderById(id);
+    if (po) {
+      const updates: any = { status: status as any };
+      if (deliveryDate) {
+        updates.deliveryDate = deliveryDate;
+      }
+      this.updatePurchaseOrder(id, { ...po, ...updates });
+    }
   }
 }

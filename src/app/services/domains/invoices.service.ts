@@ -1,23 +1,9 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { ApiService } from '../api.service';
 import { ToastService } from '../toast.service';
+import { Invoice } from '../crm-state.service';
 
-export interface Invoice {
-  id: string;
-  invoiceNumber: string;
-  partnerId: string;
-  dealId?: string;
-  status: 'DRAFT' | 'SENT' | 'VIEWED' | 'PARTIALLY_PAID' | 'PAID' | 'OVERDUE' | 'CANCELLED';
-  issueDate: string;
-  dueDate: string;
-  amount: number;
-  amountPaid?: number;
-  currency?: string;
-  description?: string;
-  notes?: string;
-  createdAt: string;
-  updatedAt: string;
-}
+export type { Invoice };
 
 @Injectable({
   providedIn: 'root'

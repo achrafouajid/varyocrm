@@ -1,40 +1,9 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { ApiService } from '../api.service';
 import { ToastService } from '../toast.service';
+import { Deal, CallLog, EmailLog, Meeting, TeamsRecording, Note, FollowUp } from '../crm-state.service';
 
-export interface Deal {
-  id: string;
-  partnerId: string;
-  proposalId?: string;
-  title: string;
-  stage: 'OPEN' | 'PO_SENT' | 'AWAITING_DELIVERY' | 'AWAITING_INVOICING' | 'INVOICED' | 'PAID' | 'OVERDUE' | 'CLOSED_WON' | 'CLOSED_LOST';
-  amount?: number;
-  discount?: number;
-  comments?: string;
-  orderNumber?: string;
-  orderDate?: string;
-  requestedDeliveryDate?: string;
-  estimatedDeliveryDate?: string;
-  expectedDeliveryDateVendor?: string;
-  deliveryDate?: string;
-  customerAccount?: string;
-  billingAddress?: string;
-  deliveryAddress?: string;
-  contactPerson?: string;
-  contactEmail?: string;
-  contactPhone?: string;
-  salesPersonUserId?: string;
-  salesRegion?: string;
-  currency?: string;
-  paymentTerms?: string;
-  orderTotalAmount?: number;
-  vendorAccount?: string;
-  purchaseOrderRef?: string;
-  warehouseAddress?: string;
-  transportationService?: string;
-  createdAt: string;
-  updatedAt: string;
-}
+export type { Deal, CallLog, EmailLog, Meeting, TeamsRecording, Note, FollowUp };
 
 @Injectable({
   providedIn: 'root'
@@ -115,5 +84,40 @@ export class DealsService {
 
   getDealById(id: string): Deal | undefined {
     return this.deals().find(d => d.id === id);
+  }
+
+  addMeeting(dealId: string, meeting: any): void {
+    // Stub method for adding meeting to deal
+  }
+
+  addRecording(dealId: string, recording: any): void {
+    // Stub method for adding recording to deal
+  }
+
+  addNote(dealId: string, note: any): void {
+    // Stub method for adding note to deal
+  }
+
+  addFollowUp(dealId: string, followUp: any): void {
+    // Stub method for adding follow-up to deal
+  }
+
+  updateDealStage(dealId: string, stage: string): void {
+    const deal = this.getDealById(dealId);
+    if (deal) {
+      this.updateDeal(dealId, { ...deal, stage: stage as any });
+    }
+  }
+
+  addEmailLog(dealId: string, emailLog: any): void {
+    // Stub method for adding email log to deal
+  }
+
+  addCallLog(dealId: string, callLog: any): void {
+    // Stub method for adding call log to deal
+  }
+
+  updateFollowUpStatus(dealId: string, followUpId: string, status: string): void {
+    // Stub method for updating follow-up status
   }
 }

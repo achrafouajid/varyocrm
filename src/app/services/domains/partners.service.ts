@@ -1,27 +1,9 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { ApiService } from '../api.service';
 import { ToastService } from '../toast.service';
+import { Partner } from '../crm-state.service';
 
-export interface Partner {
-  id: string;
-  name: string;
-  email?: string;
-  phone?: string;
-  website?: string;
-  address?: string;
-  city?: string;
-  country?: string;
-  industry?: string;
-  employeeCount?: number;
-  annualRevenue?: number;
-  description?: string;
-  status: 'active' | 'inactive' | 'prospect';
-  contactPerson?: string;
-  contactEmail?: string;
-  contactPhone?: string;
-  createdAt: string;
-  updatedAt: string;
-}
+export type { Partner };
 
 @Injectable({
   providedIn: 'root'
@@ -102,5 +84,41 @@ export class PartnersService {
 
   getPartnerById(id: string): Partner | undefined {
     return this.partners().find(p => p.id === id);
+  }
+
+  convertToCustomer(partnerId: string): void {
+    const partner = this.getPartnerById(partnerId);
+    if (partner) {
+      this.updatePartner(partnerId, { ...partner, type: 'Customer' });
+    }
+  }
+
+  generateAccountId(): string {
+    return 'ACC-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+  }
+
+  saveCustomerCard(card: any): void {
+    // Stub method for saving customer card
+  }
+
+  customerCards(): any[] {
+    // Stub method for getting customer cards
+    return [];
+  }
+
+  customers(): Partner[] {
+    return this.partners().filter((p: Partner) => p.type === 'Customer');
+  }
+
+  vendors(): Partner[] {
+    return this.partners().filter((p: Partner) => p.type === 'Vendor');
+  }
+
+  createPartnerAwaitingId(partialPartner: any, onCreated?: (id: string) => void): void {
+    // Stub method for creating a partner awaiting ID assignment
+  }
+
+  convertLeadToProspect(leadId: string): void {
+    // Stub method for converting lead to prospect
   }
 }

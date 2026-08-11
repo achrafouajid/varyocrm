@@ -1,22 +1,9 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { ApiService } from '../api.service';
 import { ToastService } from '../toast.service';
+import { Task } from '../crm-state.service';
 
-export interface Task {
-  id: string;
-  title: string;
-  description?: string;
-  assignedTeamId?: string;
-  assignedToUserId?: string;
-  assignedByUserId: string;
-  status: 'TODO' | 'IN_PROGRESS' | 'DONE' | 'BLOCKED';
-  priority?: 'URGENT' | 'MEDIUM' | 'LOW';
-  dueDate?: string;
-  relatedEntityType: 'PARTNER' | 'DEAL' | 'PROPOSAL' | 'PURCHASE_ORDER' | 'INVOICE' | 'TICKET' | 'CAMPAIGN';
-  relatedEntityId?: string;
-  createdAt: string;
-  updatedAt: string;
-}
+export type { Task };
 
 @Injectable({
   providedIn: 'root'

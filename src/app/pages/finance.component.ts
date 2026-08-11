@@ -22,7 +22,7 @@ type InvoiceLine = {
   imports: [MatIconModule, CommonModule, FormsModule, CreatedByBadgeComponent, DataStatusBannerComponent, PaginatorComponent],
   template: `
     <div class="space-y-8">
-      <app-data-status-banner [loading]="invoicesService.isLoading$ | async" [error]="invoicesService.error$ | async" />
+      <app-data-status-banner [loading]="invoicesService.isLoading$()" [error]="invoicesService.error$()" />
       <div class="flex gap-5 sm:gap-6 border-b border-zinc-200">
         <button
           (click)="activeTab.set('Customer'); state.breadcrumbLabel.set('Customer Invoices'); invoicesPage.set(1)"
@@ -621,7 +621,7 @@ export class FinanceComponent {
   activeTab = signal<'Customer' | 'Vendor' | 'Recovery'>('Customer');
 
   markInvoicePaid(invoice: Invoice) {
-    this.invoicesService.updateInvoice({ ...invoice, status: 'Paid' });
+    this.invoicesService.updateInvoice(invoice.id, { ...invoice, status: 'Paid' });
   }
 
   deleteInvoice(invoice: Invoice) {
@@ -657,17 +657,17 @@ export class FinanceComponent {
   // ── Invoice type filters ─────────────────────────────────────────────────
   /** Customer invoices (type === 'Customer') */
   customerInvoices = computed(() =>
-    (this.invoicesService.allInvoices || []).filter(inv => inv.type === 'Customer')
+    (this.invoicesService.allInvoices() || []).filter((inv: Invoice) => inv.type === 'Customer')
   );
 
   /** Vendor invoices (type === 'Vendor') */
   vendorInvoices = computed(() =>
-    (this.invoicesService.allInvoices || []).filter(inv => inv.type === 'Vendor')
+    (this.invoicesService.allInvoices() || []).filter((inv: Invoice) => inv.type === 'Vendor')
   );
 
   /** Overdue invoices (status === 'Overdue') */
   overdueInvoices = computed(() =>
-    (this.invoicesService.allInvoices || []).filter(inv => inv.status === 'Overdue')
+    (this.invoicesService.allInvoices() || []).filter((inv: Invoice) => inv.status === 'Overdue')
   );
 
   // ── Eligible Customers (Prospects blocked) ────────────────────────────────
@@ -919,8 +919,8 @@ export class FinanceComponent {
     this.invoicesService.addInvoice({
       type:            this.newInvoiceData.type,
       partnerId:       this.newInvoiceData.partnerId,
-      amount:          total,                              // ← always computed from lines
-      status:          status === 'Draft' ? 'Draft' : 'Pending',
+      amount:          total,
+      status:          status as 'Draft' | 'Pending',
       dueDate:         this.newInvoiceData.dueDate,
       dealId:          this.newInvoiceData.dealId || undefined,
       customerAccount: this.newInvoiceData.customerAccount || undefined,
@@ -928,6 +928,7 @@ export class FinanceComponent {
       deliveryAddress: this.newInvoiceData.deliveryAddress || undefined,
       vatNumber:       this.newInvoiceData.vatNumber       || undefined,
       lines:           this.invoiceLines().length > 0 ? [...this.invoiceLines()] : undefined,
+      createdBy:       this.state.currentUserId(),
     });
 
     this.invoiceModalOpen.set(false);

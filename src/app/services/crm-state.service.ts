@@ -324,7 +324,7 @@ export interface AutomationRule {
   priority: number;
   stopOnMatch: boolean;
   conflictStrategy: 'first-wins' | 'all-execute';
-  version: number;
+  version?: number;
   createdAt?: string;
   updatedAt?: string;
   createdBy?: string;
@@ -494,7 +494,7 @@ export interface Lead {
   salesTeam?: string;
   territory?: string;
   businessUnit?: string;
-  
+
   // Decision makers
   decisionMaker?: string;
   influencer?: string;
@@ -508,7 +508,7 @@ export interface Lead {
 
   // Audit
   createdDate: string;
-  createdBy: string;
+  createdBy?: string;
   modifiedDate: string;
   modifiedBy: string;
 
@@ -520,12 +520,23 @@ export interface Lead {
   productInterests?: LeadProductInterest[];
   campaigns?: LeadCampaign[];
   notes?: string;
+
+  // Partner-compatible properties for union type support
+  type?: 'Lead' | 'Customer' | 'Prospect' | 'Vendor';
+  email?: string;
+  phone?: string;
+  comments?: string;
+  city?: string;
+  source?: 'Website form' | 'Trade show' | 'LinkedIn' | 'Marketing campaign' | 'Referral';
+  assignedTo?: string;
+  createdAt?: string;
 }
 
 export interface Partner {
   id: string;
   name: string;
   type: PartnerType;
+  status?: 'prospect' | 'active' | 'inactive' | 'archived';
   email?: string;
   phone?: string;
   comments?: string;
@@ -533,7 +544,7 @@ export interface Partner {
   score?: number;
   source?: 'Website form' | 'Trade show' | 'LinkedIn' | 'Marketing campaign' | 'Referral';
   assignedTo?: string;
-  createdBy: string;
+  createdBy?: string;
   createdAt: string;
 }
 
@@ -550,7 +561,7 @@ export interface Task {
   relatedModule?: 'Sales' | 'Finance' | 'Partners' | 'Support' | 'Marketing';
   relatedSubModule?: string; // entity type: Deal, Proposal, PurchaseOrder, Lead, Customer, Prospect, Vendor, Ticket, Campaign, Invoice, Recovery
   relatedEntityId?: string; // id of the related entity
-  createdBy: string;
+  createdBy?: string;
   createdAt: string;
 }
 
@@ -571,7 +582,7 @@ export interface Proposal {
   status: 'Draft' | 'Sent' | 'Confirmed' | 'Rejected';
   templateId?: string;
   lines: ProposalLine[];
-  createdBy: string;
+  createdBy?: string;
   createdAt: string;
   deliveryMethod?: 'Email' | 'WhatsApp' | 'SMS';
   opportunityValue?: number;
@@ -648,7 +659,7 @@ export interface Deal {
   stage: DealStage;
   comments?: string;
   proposalId?: string;
-  createdBy: string;
+  createdBy?: string;
   createdAt: string;
   orderLines?: ProposalLine[];
   discount?: number;
@@ -707,8 +718,9 @@ export interface PurchaseOrder {
   deliveryDate?: string;
   lines: { product: string; description?: string; qty: number; cost: number; type?: 'software' | 'hardware' | 'service' }[];
   sentVia?: string;
-  createdBy: string;
+  createdBy?: string;
   createdAt: string;
+  orderNumber?: string;
 }
 
 export interface Invoice {
@@ -720,8 +732,9 @@ export interface Invoice {
   dueDate: string;
   dealId?: string;
   purchaseOrderId?: string;
-  createdBy: string;
+  createdBy?: string;
   createdAt: string;
+  invoiceNumber?: string;
   // Customer administrative information
   customerAccount?: string;   // Unique account code / ERP ID
   customerName?: string;      // Official corporate name
@@ -738,7 +751,7 @@ export interface Campaign {
   status: 'Draft' | 'Active' | 'Completed';
   targetAudience: string;
   sentCount: number;
-  createdBy: string;
+  createdBy?: string;
   createdAt: string;
 }
 
@@ -752,6 +765,10 @@ export interface Ticket {
   assignedToUserId?: string;
   assignedByUserId: string;
   relatedPartnerId?: string;
+  partnerId?: string;
+  assignedTo?: string;
+  deadline?: string;
+  createdBy?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -812,7 +829,7 @@ export interface CustomerCard {
   corporateEmail: string;
   websiteUrl: string;
   personnel: CustomerPersonnel[];
-  createdBy: string;
+  createdBy?: string;
   createdAt: string;
 }
 

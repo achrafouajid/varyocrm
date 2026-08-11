@@ -8,7 +8,7 @@ import { UserAvatarComponent } from './user-avatar.component';
   standalone: true,
   imports: [CommonModule, UserAvatarComponent],
   template: `
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-2" *ngIf="createdBy && createdAt">
       <app-user-avatar [userId]="createdBy" [size]="size" />
       <div class="flex flex-col">
         <span class="font-semibold text-zinc-700" [class.text-xs]="size <= 28" [class.text-sm]="size > 28">{{ userName() }}</span>
@@ -20,8 +20,8 @@ import { UserAvatarComponent } from './user-avatar.component';
 export class CreatedByBadgeComponent {
   private state = inject(CrmStateService);
 
-  @Input() createdBy!: string;
-  @Input() createdAt!: string;
+  @Input() createdBy?: string;
+  @Input() createdAt?: string;
   @Input() size: number = 28;
 
   userName = computed(() => {

@@ -2,7 +2,7 @@ import { Component, inject, signal, computed, effect } from '@angular/core';
 import { Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { CrmStateService, Lead, LeadActivity, LeadAttachment } from '../services/crm-state.service';
-import { PartnersService } from '../services/domains/partners.service';
+import { PartnersService, Partner } from '../services/domains/partners.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
@@ -966,7 +966,7 @@ export class PartnersComponent {
     this.showCreateModal.set(true);
   }
 
-  openConvertModal(partner: Partner) {
+  openConvertModal(partner: Partner | Lead) {
     this.newPartner = {
       id: partner.id,
       name: partner.name,

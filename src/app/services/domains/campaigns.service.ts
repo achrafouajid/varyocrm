@@ -1,20 +1,9 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { ApiService } from '../api.service';
 import { ToastService } from '../toast.service';
+import { Campaign } from '../crm-state.service';
 
-export interface Campaign {
-  id: string;
-  title: string;
-  channel: string;
-  status: 'DRAFT' | 'SCHEDULED' | 'RUNNING' | 'PAUSED' | 'COMPLETED' | 'CANCELLED';
-  templateId?: string;
-  targetFilter?: string;
-  scheduledAt?: string;
-  sentCount?: number;
-  description?: string;
-  createdAt: string;
-  updatedAt: string;
-}
+export type { Campaign };
 
 @Injectable({
   providedIn: 'root'

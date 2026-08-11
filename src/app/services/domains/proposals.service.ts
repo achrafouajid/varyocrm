@@ -1,18 +1,9 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { ApiService } from '../api.service';
 import { ToastService } from '../toast.service';
+import { Proposal, ProposalLine } from '../crm-state.service';
 
-export interface Proposal {
-  id: string;
-  partnerId: string;
-  title: string;
-  status: 'DRAFT' | 'SENT' | 'VIEWED' | 'ACCEPTED' | 'REJECTED' | 'EXPIRED';
-  amount: number;
-  validUntil: string;
-  description?: string;
-  createdAt: string;
-  updatedAt: string;
-}
+export type { Proposal, ProposalLine };
 
 @Injectable({
   providedIn: 'root'
@@ -93,5 +84,16 @@ export class ProposalsService {
 
   getProposalById(id: string): Proposal | undefined {
     return this.proposals().find(p => p.id === id);
+  }
+
+  updateStatus(id: string, status: string): void {
+    const proposal = this.getProposalById(id);
+    if (proposal) {
+      this.updateProposal(id, { ...proposal, status: status as any });
+    }
+  }
+
+  proposalTemplates = (): any[] => {
+    return [];
   }
 }
