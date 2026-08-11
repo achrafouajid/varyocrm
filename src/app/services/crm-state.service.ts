@@ -745,15 +745,15 @@ export interface Campaign {
 export interface Ticket {
   id: string;
   title: string;
-  partnerId: string;
-  assignedTo: string;
+  description?: string;
+  type: string;
   status: TicketStatus;
   priority: TicketPriority;
-  deadline?: string;
-  type?: string;
-  resolution?: string;
-  createdBy: string;
+  assignedToUserId?: string;
+  assignedByUserId: string;
+  relatedPartnerId?: string;
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface ActivityLog {
@@ -1912,20 +1912,20 @@ export class CrmStateService {
   ]);
 
   tickets = signal<Ticket[]>([
-    { id: 'tk1', title: 'Problème accès console Cloud', partnerId: 'p3', assignedTo: 'Fatima Chraibi', status: 'In Progress', priority: 'High', deadline: '2026-07-12', type: 'Software issue', createdBy: 'usr_zineb', createdAt: '2026-06-05' },
-    { id: 'tk-p5-1', title: 'ERP Login Issue', partnerId: 'p5', assignedTo: 'Fatima Chraibi', status: 'Open', priority: 'High', deadline: '2026-07-08', type: 'Software issue', createdBy: 'usr_mehdi', createdAt: '2026-06-15' },
-    { id: 'tk-p5-2', title: 'Hardware Delivery Delay', partnerId: 'p5', assignedTo: 'Khadija (Ops Manager)', status: 'Resolved', priority: 'Medium', type: 'Broken product', createdBy: 'usr_aya', createdAt: '2026-06-10' },
-    { id: 'tk2', title: 'Email configuration not sending on Outlook', partnerId: 'p3', assignedTo: 'Mehdi Qadiri', status: 'Open', priority: 'Medium', deadline: '2026-07-15', type: 'Software issue', createdBy: 'usr_aya', createdAt: '2026-06-20' },
-    { id: 'tk3', title: 'Billing discrepancy on June invoice', partnerId: 'p3', assignedTo: 'Samira Benjelloun', status: 'Open', priority: 'High', deadline: '2026-07-10', type: 'Billing issue', createdBy: 'usr_zineb', createdAt: '2026-06-22' },
-    { id: 'tk4', title: 'Vendor portal login not working', partnerId: 'p2', assignedTo: 'Zineb Tahiri', status: 'In Progress', priority: 'Medium', deadline: '2026-07-14', type: 'Software issue', createdBy: 'usr_mehdi', createdAt: '2026-06-25' },
-    { id: 'tk5', title: 'Server rack damaged during shipping', partnerId: 'p2', assignedTo: 'Fatima Chraibi', status: 'Open', priority: 'High', deadline: '2026-07-09', type: 'Broken product', createdBy: 'usr_aya', createdAt: '2026-06-28' },
-    { id: 'tk6', title: 'Cloud migration SLA breach - response time', partnerId: 'p1', assignedTo: 'Zineb Tahiri', status: 'In Progress', priority: 'High', deadline: '2026-07-11', type: 'Software issue', createdBy: 'usr_zineb', createdAt: '2026-07-01' },
-    { id: 'tk7', title: 'Incorrect discount applied on proposal', partnerId: 'p4', assignedTo: 'Samira Benjelloun', status: 'Open', priority: 'Medium', deadline: '2026-07-16', type: 'Billing issue', createdBy: 'usr_mehdi', createdAt: '2026-07-02' },
-    { id: 'tk8', title: 'API integration failure - CRM sync', partnerId: 'p5', assignedTo: 'Mehdi Qadiri', status: 'Open', priority: 'High', deadline: '2026-07-10', type: 'Software issue', createdBy: 'usr_zineb', createdAt: '2026-07-03' },
-    { id: 'tk9', title: 'Hardware warranty claim denied', partnerId: 'p5', assignedTo: 'Aya Mansouri', status: 'In Progress', priority: 'Low', deadline: '2026-07-20', type: 'Broken product', createdBy: 'usr_mehdi', createdAt: '2026-07-05' },
-    { id: 'tk10', title: 'Network latency issues on hosted platform', partnerId: 'p1', assignedTo: 'Mehdi Qadiri', status: 'Open', priority: 'Medium', deadline: '2026-07-18', type: 'Software issue', createdBy: 'usr_aya', createdAt: '2026-07-07' },
-    { id: 'tk11', title: 'Overdue invoice payment not reflected', partnerId: 'p3', assignedTo: 'Aya Mansouri', status: 'In Progress', priority: 'Medium', deadline: '2026-07-17', type: 'Billing issue', createdBy: 'usr_zineb', createdAt: '2026-07-08' },
-    { id: 'tk12', title: 'Feature request: bulk user import', partnerId: 'p4', assignedTo: '', status: 'Open', priority: 'Low', deadline: '2026-08-01', type: 'Software issue', createdBy: 'usr_mehdi', createdAt: '2026-07-10' }
+    { id: 'tk1', title: 'Problème accès console Cloud', type: 'Software issue', status: 'IN_PROGRESS', priority: 'URGENT', relatedPartnerId: 'p3', assignedToUserId: 'usr_fatima', assignedByUserId: 'usr_zineb', createdAt: '2026-06-05', updatedAt: '2026-07-05' },
+    { id: 'tk-p5-1', title: 'ERP Login Issue', type: 'Software issue', status: 'OPEN', priority: 'URGENT', relatedPartnerId: 'p5', assignedToUserId: 'usr_fatima', assignedByUserId: 'usr_mehdi', createdAt: '2026-06-15', updatedAt: '2026-07-05' },
+    { id: 'tk-p5-2', title: 'Hardware Delivery Delay', type: 'Broken product', status: 'RESOLVED', priority: 'MEDIUM', relatedPartnerId: 'p5', assignedToUserId: 'usr_khadija', assignedByUserId: 'usr_aya', createdAt: '2026-06-10', updatedAt: '2026-07-05' },
+    { id: 'tk2', title: 'Email configuration not sending on Outlook', type: 'Software issue', status: 'OPEN', priority: 'MEDIUM', relatedPartnerId: 'p3', assignedToUserId: 'usr_mehdi', assignedByUserId: 'usr_aya', createdAt: '2026-06-20', updatedAt: '2026-07-05' },
+    { id: 'tk3', title: 'Billing discrepancy on June invoice', type: 'Billing issue', status: 'OPEN', priority: 'URGENT', relatedPartnerId: 'p3', assignedToUserId: 'usr_samira', assignedByUserId: 'usr_zineb', createdAt: '2026-06-22', updatedAt: '2026-07-05' },
+    { id: 'tk4', title: 'Vendor portal login not working', type: 'Software issue', status: 'IN_PROGRESS', priority: 'MEDIUM', relatedPartnerId: 'p2', assignedToUserId: 'usr_zineb', assignedByUserId: 'usr_mehdi', createdAt: '2026-06-25', updatedAt: '2026-07-05' },
+    { id: 'tk5', title: 'Server rack damaged during shipping', type: 'Broken product', status: 'OPEN', priority: 'URGENT', relatedPartnerId: 'p2', assignedToUserId: 'usr_fatima', assignedByUserId: 'usr_aya', createdAt: '2026-06-28', updatedAt: '2026-07-05' },
+    { id: 'tk6', title: 'Cloud migration SLA breach - response time', type: 'Software issue', status: 'IN_PROGRESS', priority: 'URGENT', relatedPartnerId: 'p1', assignedToUserId: 'usr_zineb', assignedByUserId: 'usr_zineb', createdAt: '2026-07-01', updatedAt: '2026-07-05' },
+    { id: 'tk7', title: 'Incorrect discount applied on proposal', type: 'Billing issue', status: 'OPEN', priority: 'MEDIUM', relatedPartnerId: 'p4', assignedToUserId: 'usr_samira', assignedByUserId: 'usr_mehdi', createdAt: '2026-07-02', updatedAt: '2026-07-05' },
+    { id: 'tk8', title: 'API integration failure - CRM sync', type: 'Software issue', status: 'OPEN', priority: 'URGENT', relatedPartnerId: 'p5', assignedToUserId: 'usr_mehdi', assignedByUserId: 'usr_zineb', createdAt: '2026-07-03', updatedAt: '2026-07-05' },
+    { id: 'tk9', title: 'Hardware warranty claim denied', type: 'Broken product', status: 'IN_PROGRESS', priority: 'LOW', relatedPartnerId: 'p5', assignedToUserId: 'usr_aya', assignedByUserId: 'usr_mehdi', createdAt: '2026-07-05', updatedAt: '2026-07-05' },
+    { id: 'tk10', title: 'Network latency issues on hosted platform', type: 'Software issue', status: 'OPEN', priority: 'MEDIUM', relatedPartnerId: 'p1', assignedToUserId: 'usr_mehdi', assignedByUserId: 'usr_aya', createdAt: '2026-07-07', updatedAt: '2026-07-05' },
+    { id: 'tk11', title: 'Overdue invoice payment not reflected', type: 'Billing issue', status: 'IN_PROGRESS', priority: 'MEDIUM', relatedPartnerId: 'p3', assignedToUserId: 'usr_aya', assignedByUserId: 'usr_zineb', createdAt: '2026-07-08', updatedAt: '2026-07-05' },
+    { id: 'tk12', title: 'Feature request: bulk user import', type: 'Software issue', status: 'OPEN', priority: 'LOW', relatedPartnerId: 'p4', assignedToUserId: undefined, assignedByUserId: 'usr_mehdi', createdAt: '2026-07-10', updatedAt: '2026-07-05' }
   ]);
 
   ticketTypes = signal<string[]>(['Software issue', 'Broken product', 'Billing issue']);

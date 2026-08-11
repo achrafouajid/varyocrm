@@ -81,11 +81,8 @@ import { PaginatorComponent } from '../shared/paginator.component';
                 </td>
                 <td (click)="openEditTicketModal(ticket)" class="px-6 py-4 cursor-pointer">
                   <div class="text-sm font-medium text-zinc-900">{{ticket.title}}</div>
-                  @if (ticket.resolution) {
-                    <div class="text-[11px] text-zinc-900 font-medium mt-0.5 flex items-center gap-0.5">
-                      <mat-icon class="text-[12px] w-3 h-3">done_all</mat-icon>
-                      <span class="truncate max-w-xs" [title]="ticket.resolution">{{ticket.resolution}}</span>
-                    </div>
+                  @if (ticket.description) {
+                    <div class="text-[11px] text-zinc-500 font-medium mt-0.5 truncate max-w-xs" [title]="ticket.description">{{ticket.description}}</div>
                   }
                 </td>
                 <td (click)="openEditTicketModal(ticket)" class="px-6 py-4 whitespace-nowrap cursor-pointer text-sm text-zinc-600">
@@ -94,14 +91,14 @@ import { PaginatorComponent } from '../shared/paginator.component';
                   </span>
                 </td>
                 <td (click)="openEditTicketModal(ticket)" class="px-6 py-4 whitespace-nowrap cursor-pointer text-sm text-zinc-500">
-                  {{getPartnerName(ticket.partnerId)}}
+                  {{getPartnerName(ticket.relatedPartnerId)}}
                 </td>
                 <td (click)="openEditTicketModal(ticket)" class="px-6 py-4 whitespace-nowrap cursor-pointer text-sm text-zinc-600">
                   <div class="flex items-center gap-2">
                     <div class="h-5 w-5 bg-zinc-100 border border-zinc-200 rounded-full flex items-center justify-center text-[9px] font-bold text-zinc-900 uppercase">
-                      {{ticket.assignedTo ? ticket.assignedTo.substring(0,1) : 'U'}}
+                      {{getAssigneeInitials(ticket.assignedToUserId)}}
                     </div>
-                    {{ticket.assignedTo || 'Unassigned'}}
+                    {{getAssigneeDisplayName(ticket.assignedToUserId)}}
                   </div>
                 </td>
                 <td (click)="openEditTicketModal(ticket)" class="px-6 py-4 whitespace-nowrap cursor-pointer">
@@ -176,7 +173,7 @@ import { PaginatorComponent } from '../shared/paginator.component';
               </div>
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Related Partner</label>
-                <select [(ngModel)]="newTicket.partnerId" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600">
+                <select [(ngModel)]="newTicket.relatedPartnerId" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600">
                   <option value="">-- Select Partner --</option>
                   @for (p of state.partners(); track p.id) {
                     <option [value]="p.id">{{p.name}} ({{p.type}})</option>
@@ -187,10 +184,10 @@ import { PaginatorComponent } from '../shared/paginator.component';
 
             <div>
               <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Assigned To</label>
-              <select [(ngModel)]="newTicket.assignedTo" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600">
+              <select [(ngModel)]="newTicket.assignedToUserId" class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600">
                 <option value="">-- Select Assignee --</option>
-                @for (user of state.users(); track user.name) {
-                  <option [value]="user.name">{{user.name}} ({{user.role}})</option>
+                @for (user of state.users(); track user.id) {
+                  <option [value]="user.id">{{user.displayName}} ({{user.role}})</option>
                 }
               </select>
             </div>
@@ -215,25 +212,23 @@ import { PaginatorComponent } from '../shared/paginator.component';
               </div>
             </div>
 
-            <!-- Resolution Field: Displayed only if status is Resolved or Closed -->
-            @if (newTicket.status === 'RESOLVED' || newTicket.status === 'CLOSED') {
-              <div class="animate-in slide-in-from-top-2 duration-200">
-                <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Resolution Details *</label>
-                <textarea
-                  [(ngModel)]="newTicket.resolution"
-                  rows="3"
-                  placeholder="Describe how this issue was resolved..."
-                  class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600"
-                ></textarea>
-              </div>
-            }
+            <!-- Description Field -->
+            <div>
+              <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Description</label>
+              <textarea
+                [(ngModel)]="newTicket.description"
+                rows="3"
+                placeholder="Describe the issue..."
+                class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600"
+              ></textarea>
+            </div>
           </div>
 
           <div class="flex justify-end gap-2 pt-2 border-t border-white/30">
             <button (click)="modalOpen.set(false)" class="px-4 py-2 border border-zinc-200 text-zinc-600 text-sm font-semibold rounded-lg hover:bg-zinc-50">
               Cancel
             </button>
-            <button (click)="saveTicket()" [disabled]="!newTicket.title.trim() || ((newTicket.status === 'RESOLVED' || newTicket.status === 'CLOSED') && !newTicket.resolution.trim())" class="px-4 py-2 bg-zinc-900 hover:bg-zinc-950 disabled:bg-zinc-300 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-lg shadow-sm shadow-lg shadow-zinc-300">
+            <button (click)="saveTicket()" [disabled]="!newTicket.title.trim()" class="px-4 py-2 bg-zinc-900 hover:bg-zinc-950 disabled:bg-zinc-300 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-lg shadow-sm shadow-lg shadow-zinc-300">
               {{ isEditing() ? 'Save Changes' : 'Create Ticket' }}
             </button>
           </div>
@@ -345,12 +340,12 @@ export class TicketsComponent {
 
   newTicket = {
     title: '',
-    partnerId: '',
-    assignedTo: '',
+    description: '',
+    relatedPartnerId: '',
+    assignedToUserId: '',
     priority: 'MEDIUM' as TicketPriority,
     status: 'OPEN' as TicketStatus,
-    type: 'Software issue',
-    resolution: ''
+    type: 'Software issue'
   };
 
   openNewTicketModal() {
@@ -358,12 +353,12 @@ export class TicketsComponent {
     this.editingTicketId.set(null);
     this.newTicket = {
       title: '',
-      partnerId: this.state.partners()[0]?.id || '',
-      assignedTo: this.state.users()[0]?.name || '',
+      description: '',
+      relatedPartnerId: this.state.partners()[0]?.id || '',
+      assignedToUserId: this.state.users()[0]?.id || '',
       priority: 'MEDIUM',
       status: 'OPEN',
-      type: this.state.ticketTypes()[0] || 'Software issue',
-      resolution: ''
+      type: this.state.ticketTypes()[0] || 'Software issue'
     };
     this.modalOpen.set(true);
   }
@@ -373,12 +368,12 @@ export class TicketsComponent {
     this.editingTicketId.set(ticket.id);
     this.newTicket = {
       title: ticket.title,
-      partnerId: ticket.partnerId,
-      assignedTo: ticket.assignedTo,
+      description: ticket.description || '',
+      relatedPartnerId: ticket.relatedPartnerId || '',
+      assignedToUserId: ticket.assignedToUserId || '',
       priority: ticket.priority,
       status: ticket.status,
-      type: ticket.type || this.state.ticketTypes()[0] || 'Software issue',
-      resolution: ticket.resolution || ''
+      type: ticket.type || this.state.ticketTypes()[0] || 'Software issue'
     };
     this.modalOpen.set(true);
   }
@@ -386,36 +381,42 @@ export class TicketsComponent {
   saveTicket() {
     if (!this.newTicket.title.trim()) return;
 
-    if (this.newTicket.status !== 'RESOLVED' && this.newTicket.status !== 'CLOSED') {
-      this.newTicket.resolution = '';
-    }
-
     if (this.isEditing() && this.editingTicketId()) {
       this.ticketsService.updateTicket(this.editingTicketId()!, {
         title: this.newTicket.title,
-        partnerId: this.newTicket.partnerId,
-        assignedTo: this.newTicket.assignedTo,
+        description: this.newTicket.description,
+        relatedPartnerId: this.newTicket.relatedPartnerId,
+        assignedToUserId: this.newTicket.assignedToUserId,
         priority: this.newTicket.priority,
         status: this.newTicket.status,
-        type: this.newTicket.type,
-        resolution: this.newTicket.resolution
+        type: this.newTicket.type
       });
     } else {
       this.ticketsService.addTicket({
         title: this.newTicket.title,
-        partnerId: this.newTicket.partnerId,
-        assignedTo: this.newTicket.assignedTo || 'Unassigned',
+        description: this.newTicket.description,
+        relatedPartnerId: this.newTicket.relatedPartnerId,
+        assignedToUserId: this.newTicket.assignedToUserId,
         status: this.newTicket.status,
         priority: this.newTicket.priority,
         type: this.newTicket.type,
-        resolution: this.newTicket.resolution || undefined
+        assignedByUserId: this.state.currentUser().id
       });
     }
     this.modalOpen.set(false);
   }
 
-  getPartnerName(id: string) {
+  getPartnerName(id: string | undefined) {
     return this.state.partners().find(p => p.id === id)?.name || 'Unknown';
+  }
+
+  getAssigneeDisplayName(userId: string | undefined): string {
+    return this.state.users().find(u => u.id === userId)?.displayName || 'Unassigned';
+  }
+
+  getAssigneeInitials(userId: string | undefined): string {
+    const user = this.state.users().find(u => u.id === userId);
+    return user?.initials || 'U';
   }
 
   getPriorityLabel(priority: TicketPriority): string {
