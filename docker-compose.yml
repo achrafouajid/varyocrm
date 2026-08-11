@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  crm:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: bento-crm:latest
+    container_name: bento-crm
+    restart: unless-stopped
+
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      HOSTNAME: 0.0.0.0
+
+    networks:
+      - proxy
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.bento-crm.rule=Host(`crmbento.com`) || Host(`www.crmbento.com`)"
+      - "traefik.http.routers.bento-crm.entrypoints=websecure"
+      - "traefik.http.routers.bento-crm.tls=true"
+      - "traefik.http.routers.bento-crm.tls.certresolver=letsencrypt"
+      - "traefik.http.services.bento-crm.loadbalancer.server.port=4000"
+
+networks:
+  proxy:
+    external: true
