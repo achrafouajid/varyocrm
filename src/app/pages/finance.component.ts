@@ -1,6 +1,7 @@
 import { Component, inject, signal, computed, effect } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { CrmStateService, Deal, Invoice } from '../services/crm-state.service';
+import { InvoicesService } from '../services/domains/invoices.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
@@ -21,7 +22,7 @@ type InvoiceLine = {
   imports: [MatIconModule, CommonModule, FormsModule, CreatedByBadgeComponent, DataStatusBannerComponent, PaginatorComponent],
   template: `
     <div class="space-y-8">
-      <app-data-status-banner [loading]="state.invoicesLoading()" [error]="state.invoicesError()" />
+      <app-data-status-banner [loading]="invoicesService.isLoading$ | async" [error]="invoicesService.error$ | async" />
       <div class="flex gap-5 sm:gap-6 border-b border-zinc-200">
         <button
           (click)="activeTab.set('Customer'); state.breadcrumbLabel.set('Customer Invoices'); invoicesPage.set(1)"
@@ -30,7 +31,7 @@ type InvoiceLine = {
         >
           <mat-icon class="text-[18px] w-[18px] h-[18px]">receipt</mat-icon>
           Customer
-          <span class="text-xs">{{ state.customerInvoices().length }}</span>
+          <span class="text-xs">{{ customerInvoices().length }}</span>
         </button>
         <button
           (click)="activeTab.set('Vendor'); state.breadcrumbLabel.set('Vendor Invoices'); invoicesPage.set(1)"
@@ -39,7 +40,7 @@ type InvoiceLine = {
         >
           <mat-icon class="text-[18px] w-[18px] h-[18px]">receipt_long</mat-icon>
           Vendor
-          <span class="text-xs">{{ state.vendorInvoices().length }}</span>
+          <span class="text-xs">{{ vendorInvoices().length }}</span>
         </button>
         <button
           (click)="activeTab.set('Recovery'); state.breadcrumbLabel.set('Recovery')"
@@ -48,8 +49,8 @@ type InvoiceLine = {
         >
           <mat-icon class="text-[18px] w-[18px] h-[18px]">healing</mat-icon>
           Recovery
-          @if (state.overdueInvoices().length > 0) {
-            <span class="text-xs">{{ state.overdueInvoices().length }}</span>
+          @if (overdueInvoices().length > 0) {
+            <span class="text-xs">{{ overdueInvoices().length }}</span>
           }
         </button>
       </div>
@@ -102,11 +103,13 @@ type InvoiceLine = {
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-xs font-semibold space-x-1">
                       @if (invoice.status !== 'Paid') {
-                        <button (click)="state.updateInvoiceStatus(invoice.id, 'Paid')" class="bg-zinc-100 hover:bg-zinc-200 text-zinc-950 border border-zinc-300 px-2.5 py-1.5 rounded-lg transition-colors">Mark Paid</button>
+                        <button (click)="markInvoicePaid(invoice)" class="bg-zinc-100 hover:bg-zinc-200 text-zinc-950 border border-zinc-300 px-2.5 py-1.5 rounded-lg transition-colors">Mark Paid</button>
                       }
-                      <button (click)="deleteInvoice(invoice)" title="Delete invoice" class="bg-zinc-50 hover:bg-red-50 hover:text-red-600 border border-zinc-200 hover:border-red-200 text-zinc-500 px-2 py-1.5 rounded-lg transition-colors">
-                        <mat-icon class="text-[16px] w-4 h-4 align-middle">delete</mat-icon>
-                      </button>
+                      @if (state.currentUserPermissions().canDeleteRecords) {
+                        <button (click)="deleteInvoice(invoice)" title="Delete invoice" class="bg-zinc-50 hover:bg-red-50 hover:text-red-600 border border-zinc-200 hover:border-red-200 text-zinc-500 px-2 py-1.5 rounded-lg transition-colors">
+                          <mat-icon class="text-[16px] w-4 h-4 align-middle">delete</mat-icon>
+                        </button>
+                      }
                     </td>
                   </tr>
                 } @empty {
@@ -142,7 +145,7 @@ type InvoiceLine = {
               <!-- Left 2 columns: Checkbox selection of late payers -->
               <div class="lg:col-span-2 space-y-3">
                 <span class="text-xs font-bold text-zinc-400 uppercase tracking-wider block">Overdue Invoices</span>
-                @for (invoice of state.overdueInvoices(); track invoice.id) {
+                @for (invoice of overdueInvoices(); track invoice.id) {
                   <div class="card rounded-xl p-5 flex items-center justify-between transition-all"
                     [class.border-zinc-900]="selectedInvoiceIds().includes(invoice.id)"
                     [class.border-zinc-200]="!selectedInvoiceIds().includes(invoice.id)">
@@ -614,11 +617,16 @@ type InvoiceLine = {
 })
 export class FinanceComponent {
   state = inject(CrmStateService);
+  invoicesService = inject(InvoicesService);
   activeTab = signal<'Customer' | 'Vendor' | 'Recovery'>('Customer');
+
+  markInvoicePaid(invoice: Invoice) {
+    this.invoicesService.updateInvoice({ ...invoice, status: 'Paid' });
+  }
 
   deleteInvoice(invoice: Invoice) {
     if (confirm(`Delete invoice "${invoice.id}"? This cannot be undone.`)) {
-      this.state.deleteInvoice(invoice.id);
+      this.invoicesService.deleteInvoice(invoice.id);
     }
   }
 
@@ -646,6 +654,22 @@ export class FinanceComponent {
     this.invoiceLines().reduce((sum, l) => sum + l.qty * l.unitPrice, 0)
   );
 
+  // ── Invoice type filters ─────────────────────────────────────────────────
+  /** Customer invoices (type === 'Customer') */
+  customerInvoices = computed(() =>
+    (this.invoicesService.allInvoices || []).filter(inv => inv.type === 'Customer')
+  );
+
+  /** Vendor invoices (type === 'Vendor') */
+  vendorInvoices = computed(() =>
+    (this.invoicesService.allInvoices || []).filter(inv => inv.type === 'Vendor')
+  );
+
+  /** Overdue invoices (status === 'Overdue') */
+  overdueInvoices = computed(() =>
+    (this.invoicesService.allInvoices || []).filter(inv => inv.status === 'Overdue')
+  );
+
   // ── Eligible Customers (Prospects blocked) ────────────────────────────────
   /** Only Partners with type === 'Customer' may be invoiced. */
   invoiceEligibleCustomers = computed(() =>
@@ -669,7 +693,7 @@ export class FinanceComponent {
   autoFilledFields = signal<Set<string>>(new Set());
 
   constructor() {
-    this.state.loadInvoices();
+    this.invoicesService.load();
     this.state.loadPartners();
     const tab = this.state.navigateTab();
     if (tab) {
@@ -892,7 +916,7 @@ export class FinanceComponent {
       return;
     }
 
-    this.state.addInvoice({
+    this.invoicesService.addInvoice({
       type:            this.newInvoiceData.type,
       partnerId:       this.newInvoiceData.partnerId,
       amount:          total,                              // ← always computed from lines
@@ -914,8 +938,8 @@ export class FinanceComponent {
 
   filteredInvoices = () =>
     this.activeTab() === 'Customer'
-      ? this.state.customerInvoices()
-      : this.state.vendorInvoices();
+      ? this.customerInvoices()
+      : this.vendorInvoices();
 
   invoicesPage = signal(1);
   invoicesPageSize = signal(10);

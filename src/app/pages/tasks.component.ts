@@ -1,6 +1,7 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { CrmStateService, Task } from '../services/crm-state.service';
+import { TasksService } from '../services/domains';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DragDropModule, CdkDragDrop, transferArrayItem } from '@angular/cdk/drag-drop';
@@ -60,7 +61,7 @@ const SUB_MODULE_LABELS: Record<string, string> = {
   `],
   template: `
     <div class="space-y-8">
-      <app-data-status-banner [loading]="state.tasksLoading()" [error]="state.tasksError()" />
+      <app-data-status-banner [loading]="tasksService.isLoading$()" [error]="tasksService.error$()" />
       <div class="flex justify-end">
         <button (click)="openCreateTaskModal()" class="bg-zinc-900 hover:bg-zinc-950 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm shadow-lg shadow-zinc-300">
           <mat-icon class="w-5 h-5 text-[20px]! leading-none! flex items-center justify-center">add</mat-icon>
@@ -159,9 +160,11 @@ const SUB_MODULE_LABELS: Record<string, string> = {
                       <mat-icon class="text-[16px] w-4 h-4 mr-0.5">check_circle</mat-icon> Completed
                     </span>
                   }
-                  <button (click)="deleteTask(task)" title="Delete task" class="shrink-0 bg-zinc-50 hover:bg-red-50 hover:text-red-600 border border-zinc-200 hover:border-red-200 text-zinc-500 p-1.5 rounded-lg transition-colors">
-                    <mat-icon class="text-[16px] w-4 h-4">delete</mat-icon>
-                  </button>
+                  @if (state.currentUserPermissions().canDeleteRecords) {
+                    <button (click)="deleteTask(task)" title="Delete task" class="shrink-0 bg-zinc-50 hover:bg-red-50 hover:text-red-600 border border-zinc-200 hover:border-red-200 text-zinc-500 p-1.5 rounded-lg transition-colors">
+                      <mat-icon class="text-[16px] w-4 h-4">delete</mat-icon>
+                    </button>
+                  }
 
                   @if (task.status !== 'Completed') {
                     <button (click)="openAssignModal(task)" class="bg-white hover:bg-zinc-50 border border-zinc-200 text-zinc-600 px-2 py-1.5 rounded-lg text-xs transition-colors flex items-center justify-center">
@@ -445,6 +448,7 @@ const SUB_MODULE_LABELS: Record<string, string> = {
 })
 export class TasksComponent {
   state = inject(CrmStateService);
+  tasksService = inject(TasksService);
 
   moduleList = Object.keys(MODULE_SUB_MODULES);
 
@@ -454,8 +458,8 @@ export class TasksComponent {
   /** All tasks, filtered by priority if a filter is active */
   filteredTasks = computed(() => {
     const filter = this.activePriorityFilter();
-    if (!filter) return this.state.tasks();
-    return this.state.tasks().filter(t => t.priority === filter);
+    if (!filter) return this.tasksService.allTasks();
+    return this.tasksService.allTasks().filter(t => t.priority === filter);
   });
 
   pendingTasks = computed(() => this.filteredTasks().filter(t => t.status === 'Pending'));
@@ -476,7 +480,7 @@ export class TasksComponent {
 
   deleteTask(task: Task) {
     if (confirm(`Delete task "${task.title}"? This cannot be undone.`)) {
-      this.state.deleteTask(task.id);
+      this.tasksService.deleteTask(task.id);
     }
   }
 
@@ -504,7 +508,7 @@ export class TasksComponent {
   };
 
   constructor() {
-    this.state.loadTasks();
+    this.tasksService.load();
     const filter = this.state.taskFilter();
     if (filter?.priority && ['Urgent', 'Medium', 'Low'].includes(filter.priority)) {
       this.activePriorityFilter.set(filter.priority as 'Urgent' | 'Medium' | 'Low');
@@ -603,7 +607,7 @@ export class TasksComponent {
       relatedTo = found ? found.label : entityId;
     }
 
-    this.state.addTask({
+    this.tasksService.addTask({
       title: this.newTaskData.title,
       description: this.newTaskData.description,
       assignedTeam: this.newTaskData.assignedTeam,
@@ -613,7 +617,7 @@ export class TasksComponent {
       relatedModule: relatedModule as Task['relatedModule'],
       relatedSubModule,
       relatedEntityId
-    });
+    } as any);
     this.taskModalOpen.set(false);
   }
 

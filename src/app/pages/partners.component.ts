@@ -1,7 +1,8 @@
 import { Component, inject, signal, computed, effect } from '@angular/core';
 import { Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
-import { CrmStateService, Partner, Lead, LeadActivity, LeadAttachment } from '../services/crm-state.service';
+import { CrmStateService, Lead, LeadActivity, LeadAttachment } from '../services/crm-state.service';
+import { PartnersService } from '../services/domains/partners.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
@@ -14,7 +15,7 @@ import { PaginatorComponent } from '../shared/paginator.component';
   imports: [MatIconModule, CommonModule, FormsModule, CreatedByBadgeComponent, UserAvatarComponent, DataStatusBannerComponent, PaginatorComponent],
   template: `
     <div class="space-y-8">
-      <app-data-status-banner [loading]="state.partnersLoading()" [error]="state.partnersError()" />
+      <app-data-status-banner [loading]="partnersService.isLoading$()" [error]="partnersService.error$()" />
       <div class="flex gap-5 sm:gap-6 border-b border-zinc-200">
         <button
           (click)="activeTab.set('Lead'); state.breadcrumbLabel.set('Leads')"
@@ -32,7 +33,7 @@ import { PaginatorComponent } from '../shared/paginator.component';
         >
           <mat-icon class="text-[18px] w-[18px] h-[18px]">people</mat-icon>
           Customers
-          <span class="text-xs">{{ state.customers().length }}</span>
+          <span class="text-xs">{{ customers().length }}</span>
         </button>
         <button
           (click)="activeTab.set('Prospect'); state.breadcrumbLabel.set('Prospects'); partnersPage.set(1)"
@@ -41,7 +42,7 @@ import { PaginatorComponent } from '../shared/paginator.component';
         >
           <mat-icon class="text-[18px] w-[18px] h-[18px]">person_search</mat-icon>
           Prospects
-          <span class="text-xs">{{ state.prospects().length }}</span>
+          <span class="text-xs">{{ prospects().length }}</span>
         </button>
         <button
           (click)="activeTab.set('Vendor'); state.breadcrumbLabel.set('Vendors'); partnersPage.set(1)"
@@ -50,7 +51,7 @@ import { PaginatorComponent } from '../shared/paginator.component';
         >
           <mat-icon class="text-[18px] w-[18px] h-[18px]">store</mat-icon>
           Vendors
-          <span class="text-xs">{{ state.vendors().length }}</span>
+          <span class="text-xs">{{ vendors().length }}</span>
         </button>
       </div>
 
@@ -676,7 +677,7 @@ import { PaginatorComponent } from '../shared/paginator.component';
 
                 <div class="mt-6 pt-4 border-t border-white/30 flex gap-2">
                   @if(partner.type === 'Lead') {
-                    <button (click)="state.convertLeadToProspect(partner.id)" class="w-full btn-secondary rounded-xl px-3 py-2 text-sm font-semibold text-zinc-900 transition-all flex items-center justify-center">
+                    <button (click)="partnersService.updatePartner(partner.id, { status: 'prospect' })" class="w-full btn-secondary rounded-xl px-3 py-2 text-sm font-semibold text-zinc-900 transition-all flex items-center justify-center">
                       <mat-icon class="mr-2 text-[16px] w-4 h-4">arrow_forward</mat-icon>
                       Convert to Prospect
                     </button>
@@ -693,9 +694,11 @@ import { PaginatorComponent } from '../shared/paginator.component';
                       View Customer Card
                     </button>
                   }
-                  <button (click)="deletePartner(partner)" title="Delete" class="shrink-0 rounded-xl px-3 py-2 text-sm font-semibold transition-all flex items-center justify-center bg-zinc-50 hover:bg-red-50 hover:text-red-600 border border-zinc-200 hover:border-red-200 text-zinc-500">
-                    <mat-icon class="text-[16px] w-4 h-4">delete</mat-icon>
-                  </button>
+                  @if (state.currentUserPermissions().canDeleteRecords) {
+                    <button (click)="deletePartner(partner)" title="Delete" class="shrink-0 rounded-xl px-3 py-2 text-sm font-semibold transition-all flex items-center justify-center bg-zinc-50 hover:bg-red-50 hover:text-red-600 border border-zinc-200 hover:border-red-200 text-zinc-500">
+                      <mat-icon class="text-[16px] w-4 h-4">delete</mat-icon>
+                    </button>
+                  }
                 </div>
               </div>
             } @empty {
@@ -823,13 +826,14 @@ import { PaginatorComponent } from '../shared/paginator.component';
 })
 export class PartnersComponent {
   state = inject(CrmStateService);
+  partnersService = inject(PartnersService);
   router = inject(Router);
   activeTab = signal<'Lead' | 'Customer' | 'Prospect' | 'Vendor'>('Lead');
   showCreateModal = signal(false);
 
-  deletePartner(partner: Partner) {
+  deletePartner(partner: any) {
     if (confirm(`Delete "${partner.name}"? This cannot be undone.`)) {
-      this.state.deletePartner(partner.id);
+      this.partnersService.deletePartner(partner.id);
     }
   }
 
@@ -872,7 +876,7 @@ export class PartnersComponent {
   };
 
   constructor() {
-    this.state.loadPartners();
+    this.partnersService.load();
     effect(() => {
       const tab = this.state.navigateTab();
       if (tab) {
@@ -894,6 +898,13 @@ export class PartnersComponent {
       });
     }
   }
+
+  // Derived partner types - keep as computed derived from CrmStateService for now
+  // since PartnersService doesn't support type filtering. These will be refactored
+  // once PartnersService adds support for partner type/role classification.
+  customers = computed(() => this.state.partners().filter(p => p.type === 'Customer'));
+  prospects = computed(() => this.state.partners().filter(p => p.type === 'Prospect'));
+  vendors = computed(() => this.state.partners().filter(p => p.type === 'Vendor'));
 
   // Leads KPI computed
   totalLeadsCount = computed(() => this.state.leadsData().length);
@@ -996,8 +1007,11 @@ export class PartnersComponent {
 
   filteredPartners = () => {
     if (this.activeTab() === 'Lead') {
-      return this.state.leads();
+      return this.state.leadsData();
     }
+    // Note: Using state.partners() for type-based filtering since PartnersService
+    // Partner model doesn't include type field. For full PartnersService integration,
+    // the service should be extended to support partner type/role classification.
     return this.state.partners().filter(p => p.type === this.activeTab());
   };
 
@@ -1026,19 +1040,16 @@ export class PartnersComponent {
       }
 
       if (this.newPartner.id) {
-        this.state.convertToCustomer(this.newPartner.id);
+        this.partnersService.updatePartner(this.newPartner.id, { status: 'active' });
       } else {
-        this.state.addPartner({
+        this.partnersService.addPartner({
           name: this.newPartner.name,
-          type: this.newPartner.type,
           email: this.newPartner.email,
           phone: this.newPartner.phone,
           city: this.newPartner.city,
-          comments: this.newPartner.comments,
-          score: this.newPartner.type === 'Lead' ? this.newPartner.score : undefined,
-          source: this.newPartner.type === 'Lead' ? this.newPartner.source : undefined,
-          assignedTo: this.newPartner.type === 'Lead' && this.newPartner.assignedTo ? this.newPartner.assignedTo : undefined
-        });
+          description: this.newPartner.comments,
+          status: 'active'
+        } as any);
       }
 
       this.activeTab.set(this.newPartner.type);

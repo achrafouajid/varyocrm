@@ -1,6 +1,7 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { CrmStateService } from '../services/crm-state.service';
+import { CampaignsService } from '../services/domains';
 import { CommonModule } from '@angular/common';
 import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
 import { DataStatusBannerComponent } from '../shared/data-status-banner.component';
@@ -11,7 +12,7 @@ import { PaginatorComponent } from '../shared/paginator.component';
   imports: [MatIconModule, CommonModule, CreatedByBadgeComponent, DataStatusBannerComponent, PaginatorComponent],
   template: `
     <div class="space-y-8">
-      <app-data-status-banner [loading]="state.campaignsLoading()" [error]="state.campaignsError()" />
+      <app-data-status-banner [loading]="campaignsService.isLoading$ | async" [error]="campaignsService.error$ | async" />
       <div class="flex gap-5 sm:gap-6 border-b border-zinc-200">
         <button
           (click)="activeTab.set('Email'); state.breadcrumbLabel.set('Email'); campaignsPage.set(1)"
@@ -115,6 +116,7 @@ import { PaginatorComponent } from '../shared/paginator.component';
     `})
 export class MarketingComponent {
   state = inject(CrmStateService);
+  campaignsService = inject(CampaignsService);
   activeTab = signal<'Email' | 'WhatsApp' | 'SMS'>('Email');
 
   campaignsPage = signal(1);
@@ -126,7 +128,7 @@ export class MarketingComponent {
   });
 
   constructor() {
-    this.state.loadCampaigns();
+    this.campaignsService.load();
     const tab = this.state.navigateTab();
     if (tab) {
       this.activeTab.set(tab as 'Email' | 'WhatsApp' | 'SMS');
@@ -135,9 +137,9 @@ export class MarketingComponent {
     this.state.breadcrumbLabel.set(this.activeTab());
   }
 
-  filteredCampaigns = () => this.state.campaigns().filter(c => c.type === this.activeTab());
+  filteredCampaigns = () => this.campaignsService.allCampaigns.filter(c => c.type === this.activeTab());
 
-  filteredByType = (type: string) => this.state.campaigns().filter(c => c.type === type);
+  filteredByType = (type: string) => this.campaignsService.allCampaigns.filter(c => c.type === type);
 
   getStatusColor(status: string) {
     switch(status) {

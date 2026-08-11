@@ -31,9 +31,11 @@ import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
               <span class="px-3 py-1 text-xs font-semibold rounded-full bg-zinc-100 text-zinc-950 border border-zinc-200">
                 {{deal.stage}}
               </span>
-              <button (click)="deleteDeal(deal)" title="Delete deal" class="p-1.5 rounded-lg bg-zinc-50 hover:bg-red-50 hover:text-red-600 border border-zinc-200 hover:border-red-200 text-zinc-500 transition-colors">
-                <mat-icon class="text-[16px] w-4 h-4">delete</mat-icon>
-              </button>
+              @if (state.currentUserPermissions().canDeleteRecords) {
+                <button (click)="deleteDeal(deal)" title="Delete deal" class="p-1.5 rounded-lg bg-zinc-50 hover:bg-red-50 hover:text-red-600 border border-zinc-200 hover:border-red-200 text-zinc-500 transition-colors">
+                  <mat-icon class="text-[16px] w-4 h-4">delete</mat-icon>
+                </button>
+              }
             </div>
           </div>
         </div>

@@ -2,7 +2,8 @@ import { Component, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
-import { CrmStateService, AutomationRule, AutomationRuleGroup, AutomationAction, AutomationExecutionLog, TRIGGER_FIELD_MAP, FieldDescriptor, ConditionOperator, AutomationTrigger, AutomationActionType } from '../services/crm-state.service';
+import { CrmStateService, AutomationRuleGroup, AutomationAction, AutomationExecutionLog, TRIGGER_FIELD_MAP, FieldDescriptor, ConditionOperator, AutomationTrigger, AutomationActionType } from '../services/crm-state.service';
+import { AutomationRulesService, AutomationRule } from '../services/domains/automation-rules.service';
 import { DataStatusBannerComponent } from '../shared/data-status-banner.component';
 import { PaginatorComponent } from '../shared/paginator.component';
 
@@ -132,15 +133,16 @@ const RULE_TEMPLATES: any[] = [
 })
 export class AutomationComponent {
   state = inject(CrmStateService);
+  automationRulesService = inject(AutomationRulesService);
 
   activeTab = signal<'rules' | 'templates' | 'logs'>('rules');
 
   rulesPage = signal(1);
   rulesPageSize = signal(10);
-  rulesTotalPages = computed(() => Math.max(1, Math.ceil(this.state.automationRules().length / this.rulesPageSize())));
+  rulesTotalPages = computed(() => Math.max(1, Math.ceil(this.automationRulesService.allAutomationRules().length / this.rulesPageSize())));
   paginatedRules = computed(() => {
     const start = (this.rulesPage() - 1) * this.rulesPageSize();
-    return this.state.automationRules().slice(start, start + this.rulesPageSize());
+    return this.automationRulesService.allAutomationRules().slice(start, start + this.rulesPageSize());
   });
 
   // Rule Builder Form State
@@ -173,7 +175,7 @@ export class AutomationComponent {
 
   // KPI Computations
   kpis = computed(() => {
-    const rules = this.state.automationRules();
+    const rules = this.automationRulesService.allAutomationRules();
     const activeCount = rules.filter(r => r.isActive).length;
     const totalExecs = this.state.automationExecutions().length;
     const timeSavedMin = totalExecs * 3; // Est. 3 mins saved per execution
@@ -219,7 +221,7 @@ export class AutomationComponent {
   expandedLogId = signal<string | null>(null);
 
   constructor() {
-    this.state.loadAutomationRules();
+    this.automationRulesService.load();
     this.resetBuilder();
   }
 
@@ -349,9 +351,9 @@ export class AutomationComponent {
     };
 
     if (this.editingRuleId()) {
-      this.state.updateAutomationRule(this.editingRuleId()!, payload);
+      this.automationRulesService.updateRule(this.editingRuleId()!, payload);
     } else {
-      this.state.addAutomationRule(payload);
+      this.automationRulesService.addRule(payload);
     }
 
     this.isBuilderOpen.set(false);
@@ -359,12 +361,15 @@ export class AutomationComponent {
   }
 
   toggleActive(ruleId: string) {
-    this.state.toggleAutomationRule(ruleId);
+    const rule = this.automationRulesService.getRuleById(ruleId);
+    if (rule) {
+      this.automationRulesService.updateRule(ruleId, { isActive: !rule.isActive });
+    }
   }
 
   deleteRule(ruleId: string) {
     if (confirm('Are you sure you want to delete this automation rule?')) {
-      this.state.deleteAutomationRule(ruleId);
+      this.automationRulesService.deleteRule(ruleId);
     }
   }
 
@@ -379,7 +384,7 @@ export class AutomationComponent {
     delete (copy as any).updatedAt;
     delete (copy as any).changeHistory;
 
-    this.state.addAutomationRule(copy);
+    this.automationRulesService.addRule(copy);
   }
 
   // Sandbox Methods

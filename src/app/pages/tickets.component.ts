@@ -1,6 +1,7 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { CrmStateService, Ticket, TicketStatus } from '../services/crm-state.service';
+import { TicketsService } from '../services/domains';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
@@ -13,7 +14,7 @@ import { PaginatorComponent } from '../shared/paginator.component';
   imports: [MatIconModule, CommonModule, FormsModule, CreatedByBadgeComponent, RouterModule, DataStatusBannerComponent, PaginatorComponent],
   template: `
     <div class="space-y-8">
-      <app-data-status-banner [loading]="state.ticketsLoading()" [error]="state.ticketsError()" />
+      <app-data-status-banner [loading]="ticketsService.isLoading$()" [error]="ticketsService.error$()" />
       <div class="flex justify-end">
         <button (click)="openNewTicketModal()" class="bg-zinc-900 hover:bg-zinc-950 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm shadow-lg shadow-zinc-300">
           <mat-icon class="w-5 h-5 text-[20px]! leading-none! flex items-center justify-center">add</mat-icon>
@@ -112,9 +113,11 @@ import { PaginatorComponent } from '../shared/paginator.component';
                   <app-created-by-badge [createdBy]="ticket.createdBy" [createdAt]="ticket.createdAt" />
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
-                  <button (click)="openDeleteModal(ticket)" class="text-zinc-700 hover:text-red-600 hover:bg-red-50 p-1.5 rounded-lg transition-colors" title="Delete Ticket">
-                    <mat-icon class="text-[18px] w-4.5 h-4.5">delete</mat-icon>
-                  </button>
+                  @if (state.currentUserPermissions().canDeleteRecords) {
+                    <button (click)="openDeleteModal(ticket)" class="text-zinc-700 hover:text-red-600 hover:bg-red-50 p-1.5 rounded-lg transition-colors" title="Delete Ticket">
+                      <mat-icon class="text-[18px] w-4.5 h-4.5">delete</mat-icon>
+                    </button>
+                  }
                 </td>
               </tr>
             } @empty {
@@ -273,6 +276,7 @@ import { PaginatorComponent } from '../shared/paginator.component';
 })
 export class TicketsComponent {
   state = inject(CrmStateService);
+  ticketsService = inject(TicketsService);
   modalOpen = signal(false);
   isEditing = signal(false);
   editingTicketId = signal<string | null>(null);
@@ -284,7 +288,7 @@ export class TicketsComponent {
     const priority = this.priorityFilter();
     const status = this.statusFilter();
     const type = this.typeFilter();
-    return this.state.tickets().filter(t =>
+    return this.ticketsService.allTickets().filter(t =>
       (!priority || t.priority === priority) &&
       (!status || t.status === status) &&
       (!type || t.type === type)
@@ -308,7 +312,7 @@ export class TicketsComponent {
   }
 
   constructor() {
-    this.state.loadTickets();
+    this.ticketsService.load();
     const filter = this.state.ticketFilter();
     if (filter?.priority && ['High', 'Medium', 'Low'].includes(filter.priority)) {
       this.priorityFilter.set(filter.priority as 'High' | 'Medium' | 'Low');
@@ -333,7 +337,7 @@ export class TicketsComponent {
   deleteConfirm() {
     const ticket = this.ticketToDelete();
     if (ticket) {
-      this.state.deleteTicket(ticket.id);
+      this.ticketsService.deleteTicket(ticket.id);
     }
     this.deleteModalOpen.set(false);
     this.ticketToDelete.set(null);
@@ -387,7 +391,7 @@ export class TicketsComponent {
     }
 
     if (this.isEditing() && this.editingTicketId()) {
-      this.state.updateTicket(this.editingTicketId()!, {
+      this.ticketsService.updateTicket(this.editingTicketId()!, {
         title: this.newTicket.title,
         partnerId: this.newTicket.partnerId,
         assignedTo: this.newTicket.assignedTo,
@@ -397,7 +401,7 @@ export class TicketsComponent {
         resolution: this.newTicket.resolution
       });
     } else {
-      this.state.addTicket({
+      this.ticketsService.addTicket({
         title: this.newTicket.title,
         partnerId: this.newTicket.partnerId,
         assignedTo: this.newTicket.assignedTo || 'Unassigned',

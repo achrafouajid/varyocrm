@@ -1607,17 +1607,6 @@ export class CrmStateService {
     return false;
   }
 
-  loginWithGoogle(): boolean {
-    const firstActive = this.users().find(u => u.isActive);
-    if (firstActive) {
-      this.currentUserId.set(firstActive.id);
-      this.isAuthenticated.set(true);
-      this.saveAuthState(true);
-      return true;
-    }
-    return false;
-  }
-
   logout(): void {
     this.isAuthenticated.set(false);
     this.currentUserId.set('usr_rachid');

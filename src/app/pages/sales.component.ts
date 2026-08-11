@@ -1,12 +1,18 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { CrmStateService, Partner, Proposal, Deal, PurchaseOrder, Task } from '../services/crm-state.service';
+import { Partner, Proposal, Deal, PurchaseOrder, Task } from '../services/crm-state.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
 import { DataStatusBannerComponent } from '../shared/data-status-banner.component';
 import { PaginatorComponent } from '../shared/paginator.component';
+import { DealsService } from '../services/domains/deals.service';
+import { ProposalsService } from '../services/domains/proposals.service';
+import { PurchaseOrdersService } from '../services/domains/purchase-orders.service';
+import { PartnersService } from '../services/domains/partners.service';
+import { TasksService } from '../services/domains/tasks.service';
+import { CrmStateService } from '../services/crm-state.service';
 
 export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Proposal Sent' | 'Negotiation' | 'Won / Lost';
 
@@ -18,31 +24,31 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
       <app-data-status-banner [loading]="activeTabLoading()" [error]="activeTabError()" />
       <div class="flex gap-5 sm:gap-6 border-b border-zinc-200">
         <button
-          (click)="activeTab.set('deals'); state.breadcrumbLabel.set('Deals')"
+          (click)="activeTab.set('deals'); breadcrumbLabel.set('Deals')"
           [class]="activeTab() === 'deals' ? 'border-zinc-900 text-zinc-900' : 'border-transparent text-zinc-400 hover:text-zinc-600'"
           class="px-1 py-3 -mb-px border-b-2 text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap"
         >
           <mat-icon class="text-[18px] w-[18px] h-[18px]">monetization_on</mat-icon>
           Deals
-          <span class="text-xs">{{ state.deals().length }}</span>
+          <span class="text-xs">{{ dealsService.allDeals().length }}</span>
         </button>
         <button
-          (click)="activeTab.set('proposals'); state.breadcrumbLabel.set('Proposals')"
+          (click)="activeTab.set('proposals'); breadcrumbLabel.set('Proposals')"
           [class]="activeTab() === 'proposals' ? 'border-zinc-900 text-zinc-900' : 'border-transparent text-zinc-400 hover:text-zinc-600'"
           class="px-1 py-3 -mb-px border-b-2 text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap"
         >
           <mat-icon class="text-[18px] w-[18px] h-[18px]">description</mat-icon>
           Proposals
-          <span class="text-xs">{{ state.proposals().length }}</span>
+          <span class="text-xs">{{ proposalsService.allProposals().length }}</span>
         </button>
         <button
-          (click)="activeTab.set('pos'); state.breadcrumbLabel.set('Purchase Orders')"
+          (click)="activeTab.set('pos'); breadcrumbLabel.set('Purchase Orders')"
           [class]="activeTab() === 'pos' ? 'border-zinc-900 text-zinc-900' : 'border-transparent text-zinc-400 hover:text-zinc-600'"
           class="px-1 py-3 -mb-px border-b-2 text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap"
         >
           <mat-icon class="text-[18px] w-[18px] h-[18px]">shopping_cart</mat-icon>
           Purchase Orders
-          <span class="text-xs">{{ state.purchaseOrders().length }}</span>
+          <span class="text-xs">{{ purchaseOrdersService.allPurchaseOrders().length }}</span>
         </button>
       </div>
       <div class="flex justify-end">
@@ -124,7 +130,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
               }
             </tbody>
           </table>
-          @if (state.deals().length > 0) {
+          @if (dealsService.allDeals().length > 0) {
             <app-paginator
               [currentPage]="dealsPage()"
               [totalPages]="dealsTotalPages()"
@@ -285,7 +291,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
             <div class="col-span-2 card rounded-2xl p-8 text-center text-zinc-500">No proposals found.</div>
           }
         </div>
-        @if (state.proposals().length > 0) {
+        @if (proposalsService.allProposals().length > 0) {
           <app-paginator
             [currentPage]="proposalsPage()"
             [totalPages]="proposalsTotalPages()"
@@ -350,7 +356,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                     </button>
                     @if (po.status === 'Sent') {
                       <button (click)="$event.stopPropagation(); openSetDeliveryDatePOModal(po)" class="bg-white border border-zinc-200 text-zinc-700 px-2 py-1 rounded-lg hover:bg-zinc-50">Set Del. Date</button>
-                      <button (click)="$event.stopPropagation(); state.updatePurchaseOrderStatus(po.id, 'Delivered')" class="bg-zinc-900 text-white px-2 py-1 rounded-lg hover:bg-zinc-950 shadow-lg shadow-zinc-300">Receive Goods</button>
+                      <button (click)="$event.stopPropagation(); purchaseOrdersService.updateStatus(po.id, 'Delivered')" class="bg-zinc-900 text-white px-2 py-1 rounded-lg hover:bg-zinc-950 shadow-lg shadow-zinc-300">Receive Goods</button>
                     }
                   </td>
                 </tr>
@@ -361,7 +367,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
               }
             </tbody>
           </table>
-          @if (state.purchaseOrders().length > 0) {
+          @if (purchaseOrdersService.allPurchaseOrders().length > 0) {
             <app-paginator
               [currentPage]="posPage()"
               [totalPages]="posTotalPages()"
@@ -511,7 +517,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                 <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Select Template</label>
                 <select [(ngModel)]="selectedTemplateId" (change)="applyTemplate()" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-blue-600">
                   <option value="">-- Manual/No Template --</option>
-                  @for (temp of state.proposalTemplates(); track temp.id) {
+                  @for (temp of proposalTemplates(); track temp.id) {
                     <option [value]="temp.id">{{temp.name}}</option>
                   }
                 </select>
@@ -627,7 +633,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                     <div>
                       <label class="block text-xs font-semibold text-zinc-500 mb-1">Select Client (Must be Customer)</label>
                       <select [(ngModel)]="newDeal.partnerId" (change)="onPartnerChange()" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-blue-600">
-                        @for (c of state.customers(); track c.id) {
+                        @for (c of customers(); track c.id) {
                           <option [value]="c.id">{{c.name}}</option>
                         }
                       </select>
@@ -636,7 +642,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                       <label class="block text-xs font-semibold text-zinc-500 mb-1">Linked Proposal</label>
                       <select [(ngModel)]="newDeal.proposalId" (change)="onProposalChange()" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-blue-600">
                         <option value="">None</option>
-                        @for (p of state.proposals(); track p.id) {
+                        @for (p of proposalsService.allProposals(); track p.id) {
                           <option [value]="p.id">#{{p.id}} - {{p.title}}</option>
                         }
                       </select>
@@ -728,7 +734,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                     <div>
                       <label class="block text-xs font-semibold text-zinc-500 mb-1">Sales Person</label>
                       <select [(ngModel)]="newDeal.salesPerson" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-blue-600">
-                        @for (u of state.users(); track u.name) {
+                        @for (u of users(); track u.name) {
                           @if (u.team === 'Sales') {
                             <option [value]="u.name">{{u.name}}</option>
                           }
@@ -865,7 +871,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                       <td class="px-4 py-2">
                         <select class="w-full input-field rounded-lg p-1.5 text-sm bg-white focus:outline-blue-600" [(ngModel)]="line.vendor">
                           <option value="">-- Select Vendor --</option>
-                          @for (v of state.vendors(); track v.id) {
+                          @for (v of vendors(); track v.id) {
                             <option [value]="v.name">{{v.name}}</option>
                           }
                         </select>
@@ -934,7 +940,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                 </div>
               } @else {
                 <select [ngModel]="selectedVendorId()" (ngModelChange)="selectedVendorId.set($event)" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-blue-600">
-                  @for (vendor of state.vendors(); track vendor.id) {
+                  @for (vendor of vendors(); track vendor.id) {
                     <option [value]="vendor.id">{{vendor.name}}</option>
                   }
                 </select>
@@ -1221,7 +1227,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Assigned Owner</label>
                 <select [(ngModel)]="newActivityInput.followups.assignedTo" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-blue-600">
-                  @for (user of state.users(); track user.name) {
+                  @for (user of users(); track user.name) {
                     <option [value]="user.name">{{ user.name }} ({{ user.team }})</option>
                   }
                 </select>
@@ -1441,7 +1447,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
               <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Assigned Person</label>
               <select [(ngModel)]="assignTaskData.assignedTo" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-blue-600">
                 <option value="">-- Select --</option>
-                @for (user of state.users(); track user.name) {
+                @for (user of users(); track user.name) {
                   <option [value]="user.name">{{ user.name }} ({{ user.team }})</option>
                 }
               </select>
@@ -1688,11 +1694,13 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                 </button>
                 @if (po.status === 'Sent') {
                   <button (click)="openSetDeliveryDatePOModal(po); closePODrawer()" class="bg-white border border-zinc-200 text-zinc-700 px-3 py-1.5 rounded-lg hover:bg-zinc-50 text-xs font-semibold">Set Del. Date</button>
-                  <button (click)="state.updatePurchaseOrderStatus(po.id, 'Delivered'); closePODrawer()" class="bg-zinc-900 hover:bg-zinc-950 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-lg shadow-zinc-300">Receive Goods</button>
+                  <button (click)="purchaseOrdersService.updateStatus(po.id, 'Delivered'); closePODrawer()" class="bg-zinc-900 hover:bg-zinc-950 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-lg shadow-zinc-300">Receive Goods</button>
                 }
-                <button (click)="deletePurchaseOrder(po)" title="Delete purchase order" class="bg-zinc-50 hover:bg-red-50 hover:text-red-600 border border-zinc-200 hover:border-red-200 text-zinc-500 px-2 py-1.5 rounded-lg transition-colors">
-                  <mat-icon class="text-[16px] w-4 h-4">delete</mat-icon>
-                </button>
+                @if (currentUserPermissions().canDeleteRecords) {
+                  <button (click)="deletePurchaseOrder(po)" title="Delete purchase order" class="bg-zinc-50 hover:bg-red-50 hover:text-red-600 border border-zinc-200 hover:border-red-200 text-zinc-500 px-2 py-1.5 rounded-lg transition-colors">
+                    <mat-icon class="text-[16px] w-4 h-4">delete</mat-icon>
+                  </button>
+                }
                 <button (click)="closePODrawer()" class="bg-white border border-zinc-300 text-zinc-700 px-4 py-1.5 rounded-lg text-xs font-semibold">Close</button>
               </div>
             </div>
@@ -2192,7 +2200,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                   <mat-icon class="text-[16px] w-4 h-4">assignment</mat-icon> Assign Task
                 </button>
                 @if (deal.stage === 'New') {
-                  <button (click)="state.updateDealStage(deal.id, 'Confirmed')" class="bg-zinc-900 hover:bg-zinc-950 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors flex items-center">
+                  <button (click)="dealsService.updateDealStage(deal.id, 'Confirmed')" class="bg-zinc-900 hover:bg-zinc-950 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors flex items-center">
                     <mat-icon class="mr-1 text-[16px] w-4 h-4">check</mat-icon> Confirm Deal
                   </button>
                 }
@@ -2206,56 +2214,73 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
   `
 })
 export class SalesComponent {
-  state = inject(CrmStateService);
+  private dealsService = inject(DealsService);
+  private proposalsService = inject(ProposalsService);
+  private purchaseOrdersService = inject(PurchaseOrdersService);
+  private partnersService = inject(PartnersService);
+  private tasksService = inject(TasksService);
+  private state = inject(CrmStateService);
   private router = inject(Router);
+
+  // UI-only state signals
+  breadcrumbLabel = signal('Deals');
+  navigateTab = signal<string | null>(null);
   activeTab = signal<'deals' | 'proposals' | 'pos'>('deals');
+
+  // Expose state properties for template and non-domain operations
+  users = computed(() => this.state.users());
+  currentUserPermissions = computed(() => this.state.currentUserPermissions());
+  currentUserId = computed(() => this.state.currentUserId());
+  proposalTemplates = computed(() => this.state.proposalTemplates());
+  customers = computed(() => this.state.customers());
+  vendors = computed(() => this.vendors());
 
   dealsPage = signal(1);
   dealsPageSize = signal(20);
-  dealsTotalPages = computed(() => Math.max(1, Math.ceil(this.state.deals().length / this.dealsPageSize())));
+  dealsTotalPages = computed(() => Math.max(1, Math.ceil(this.dealsService.allDeals().length / this.dealsPageSize())));
   paginatedDeals = computed(() => {
     const start = (this.dealsPage() - 1) * this.dealsPageSize();
-    return this.state.deals().slice(start, start + this.dealsPageSize());
+    return this.dealsService.allDeals().slice(start, start + this.dealsPageSize());
   });
 
   proposalsPage = signal(1);
   proposalsPageSize = signal(10);
-  proposalsTotalPages = computed(() => Math.max(1, Math.ceil(this.state.proposals().length / this.proposalsPageSize())));
+  proposalsTotalPages = computed(() => Math.max(1, Math.ceil(this.proposalsService.allProposals().length / this.proposalsPageSize())));
   paginatedProposals = computed(() => {
     const start = (this.proposalsPage() - 1) * this.proposalsPageSize();
-    return this.state.proposals().slice(start, start + this.proposalsPageSize());
+    return this.proposalsService.allProposals().slice(start, start + this.proposalsPageSize());
   });
 
   posPage = signal(1);
   posPageSize = signal(20);
-  posTotalPages = computed(() => Math.max(1, Math.ceil(this.state.purchaseOrders().length / this.posPageSize())));
+  posTotalPages = computed(() => Math.max(1, Math.ceil(this.purchaseOrdersService.allPurchaseOrders().length / this.posPageSize())));
   paginatedPOs = computed(() => {
     const start = (this.posPage() - 1) * this.posPageSize();
-    return this.state.purchaseOrders().slice(start, start + this.posPageSize());
+    return this.purchaseOrdersService.allPurchaseOrders().slice(start, start + this.posPageSize());
   });
 
   activeTabLoading = computed(() => {
     const tab = this.activeTab();
-    return tab === 'deals' ? this.state.dealsLoading() : tab === 'proposals' ? this.state.proposalsLoading() : this.state.purchaseOrdersLoading();
+    return tab === 'deals' ? this.dealsService.isLoading$() : tab === 'proposals' ? this.proposalsService.isLoading$() : this.purchaseOrdersService.isLoading$();
   });
   activeTabError = computed(() => {
     const tab = this.activeTab();
-    return tab === 'deals' ? this.state.dealsError() : tab === 'proposals' ? this.state.proposalsError() : this.state.purchaseOrdersError();
+    return tab === 'deals' ? this.dealsService.error$() : tab === 'proposals' ? this.proposalsService.error$() : this.purchaseOrdersService.error$();
   });
 
   constructor() {
-    const tab = this.state.navigateTab();
+    const tab = this.navigateTab();
     if (tab) {
       this.activeTab.set(tab as 'deals' | 'proposals' | 'pos');
-      this.state.navigateTab.set(null);
+      this.navigateTab.set(null);
     }
     const label = this.activeTab() === 'deals' ? 'Deals' : this.activeTab() === 'proposals' ? 'Proposals' : 'Purchase Orders';
-    this.state.breadcrumbLabel.set(label);
+    this.breadcrumbLabel.set(label);
 
-    this.state.loadDeals();
-    this.state.loadProposals();
-    this.state.loadPurchaseOrders();
-    this.state.loadPartners();
+    this.dealsService.load();
+    this.proposalsService.load();
+    this.purchaseOrdersService.load();
+    this.partnersService.load();
     this.state.loadProposalTemplates();
   }
 
@@ -2279,7 +2304,7 @@ export class SalesComponent {
   };
 
   salesEligiblePartners = computed(() => 
-    this.state.partners().filter(p => p.type === 'Prospect' || p.type === 'Customer')
+    this.partnersService.allPartners().filter(p => p.type === 'Prospect' || p.type === 'Customer')
   );
 
   // Modals state
@@ -2296,8 +2321,8 @@ export class SalesComponent {
   confirmNote = signal<string>('');
 
   currentProposalPartner = computed(() => {
-    const prop = this.state.proposals().find(p => p.id === this.sendingProposalId());
-    return this.state.partners().find(p => p.id === prop?.partnerId) ?? null;
+    const prop = this.proposalsService.allProposals().find(p => p.id === this.sendingProposalId());
+    return this.partnersService.allPartners().find(p => p.id === prop?.partnerId) ?? null;
   });
 
   currentProposalPartnerName = computed(() => {
@@ -2308,12 +2333,12 @@ export class SalesComponent {
   proposalOrgContacts = computed(() => {
     const partner = this.currentProposalPartner();
     if (!partner) return [];
-    const card = this.state.customerCards().find(c => c.partnerId === partner.id);
+    const card = this.partnersService.customerCards().find(c => c.partnerId === partner.id);
     return card ? card.personnel : [];
   });
 
   /** All other partners of the same type (Prospect) for cross-org additions */
-  availableProspects = computed(() => this.state.partners().filter(p => p.type === 'Prospect'));
+  availableProspects = computed(() => this.partnersService.allPartners().filter(p => p.type === 'Prospect'));
   editingProposalId = signal<string | null>(null);
   proposalModalOpen = signal(false);
   dealModalOpen = signal(false);
@@ -2431,7 +2456,7 @@ export class SalesComponent {
   selectedDeal = computed(() => {
     const id = this.selectedDealForDrawer()?.id;
     if (!id) return null;
-    return this.state.deals().find(d => d.id === id) || null;
+    return this.dealsService.allDeals().find(d => d.id === id) || null;
   });
 
   openDealDrawer(deal: Deal) {
@@ -2446,7 +2471,7 @@ export class SalesComponent {
   selectedProposal = computed(() => {
     const id = this.selectedProposalForDrawer()?.id;
     if (!id) return null;
-    return this.state.proposals().find(p => p.id === id) || null;
+    return this.proposalsService.allProposals().find(p => p.id === id) || null;
   });
 
   openProposalDrawer(prop: Proposal) {
@@ -2461,7 +2486,7 @@ export class SalesComponent {
   selectedPO = computed(() => {
     const id = this.selectedPOForDrawer()?.id;
     if (!id) return null;
-    return this.state.purchaseOrders().find(p => p.id === id) || null;
+    return this.purchaseOrdersService.allPurchaseOrders().find(p => p.id === id) || null;
   });
 
   openPODrawer(po: PurchaseOrder) {
@@ -2474,7 +2499,7 @@ export class SalesComponent {
 
   deletePurchaseOrder(po: PurchaseOrder) {
     if (confirm(`Delete purchase order "#${po.id}"? This cannot be undone.`)) {
-      this.state.deletePurchaseOrder(po.id);
+      this.purchaseOrdersService.deletePurchaseOrder(po.id);
       this.closePODrawer();
     }
   }
@@ -2486,7 +2511,7 @@ export class SalesComponent {
   }
 
   onPartnerChange() {
-    const partner = this.state.partners().find(p => p.id === this.newDeal.partnerId);
+    const partner = this.partnersService.allPartners().find(p => p.id === this.newDeal.partnerId);
     if (partner) {
       this.newDeal.customerAccount = 'ACC-' + partner.name.substring(0, 5).toUpperCase().replace(/[^A-Z]/g, '') + '-' + partner.id.toUpperCase();
       
@@ -2500,7 +2525,7 @@ export class SalesComponent {
   }
 
   onProposalChange() {
-    const prop = this.state.proposals().find(p => p.id === this.newDeal.proposalId);
+    const prop = this.proposalsService.allProposals().find(p => p.id === this.newDeal.proposalId);
     if (prop) {
       this.newDeal.amount = prop.amount;
       this.newDeal.orderTotalAmount = prop.amount;
@@ -2515,15 +2540,15 @@ export class SalesComponent {
   }
 
   getPartnerName(id: string) {
-    return this.state.partners().find(p => p.id === id)?.name || 'Unknown';
+    return this.partnersService.allPartners().find(p => p.id === id)?.name || 'Unknown';
   }
 
   getProposalTitle(id?: string) {
-    return this.state.proposals().find(p => p.id === id)?.title || 'N/A';
+    return this.proposalsService.allProposals().find(p => p.id === id)?.title || 'N/A';
   }
 
   getDealTitle(id?: string) {
-    return this.state.deals().find(d => d.id === id)?.title || 'N/A';
+    return this.dealsService.allDeals().find(d => d.id === id)?.title || 'N/A';
   }
 
   formatCurrency(value: number) {
@@ -2558,7 +2583,7 @@ export class SalesComponent {
   }
 
   hasPOForDeal(dealId: string) {
-    return this.state.purchaseOrders().some(po => po.dealId === dealId);
+    return this.purchaseOrdersService.allPurchaseOrders().some(po => po.dealId === dealId);
   }
 
   // Proposal Creation
@@ -2566,7 +2591,7 @@ export class SalesComponent {
     this.sendingProposalId.set(prop.id);
     this.selectedChannels.set(new Set());
     // Pre-populate primary recipient from the proposal's partner
-    const partner = this.state.partners().find(p => p.id === prop.partnerId);
+    const partner = this.partnersService.allPartners().find(p => p.id === prop.partnerId);
     if (partner) {
       this.recipients.set([{ name: partner.name, email: partner.email, phone: partner.phone }]);
     } else {
@@ -2641,7 +2666,7 @@ export class SalesComponent {
   submitSendProposal() {
     const propId = this.sendingProposalId();
     if (propId) {
-      this.state.updateProposalStatus(propId, 'Sent');
+      this.proposalsService.updateStatus(propId, 'Sent');
     }
     this.sendingProposalId.set(null);
   }
@@ -2671,7 +2696,7 @@ export class SalesComponent {
   submitConfirmProposal() {
     const prop = this.proposalToConfirm();
     if (prop) {
-      this.state.updateProposal(prop.id, {
+      this.proposalsService.updateProposal(prop.id, {
         status: 'Confirmed',
         confirmationMethod: this.confirmMethod(),
         confirmationAttachmentName: this.confirmAttachmentName(),
@@ -2680,16 +2705,16 @@ export class SalesComponent {
         confirmedAt: new Date().toISOString().split('T')[0]
       });
 
-      const deal = this.state.deals().find(d => d.proposalId === prop.id);
+      const deal = this.dealsService.allDeals().find(d => d.proposalId === prop.id);
       if (deal) {
         const today = new Date().toISOString().split('T')[0];
-        const me = this.state.users().find(u => u.id === this.state.currentUserId());
+        const me = this.users().find(u => u.id === this.state.currentUserId());
         const authorName = me?.displayName || 'System';
-        const partner = this.state.partners().find(p => p.id === prop.partnerId);
+        const partner = this.partnersService.allPartners().find(p => p.id === prop.partnerId);
         const method = this.confirmMethod();
 
         if (method === 'Email') {
-          this.state.addEmailLog(deal.id, {
+          this.dealsService.addEmailLog(deal.id, {
             date: today,
             from: me?.email || 'system@crm.ma',
             to: partner?.email || '',
@@ -2698,13 +2723,13 @@ export class SalesComponent {
             direction: 'sent'
           });
         } else if (method === 'WhatsApp') {
-          this.state.addNote(deal.id, {
+          this.dealsService.addNote(deal.id, {
             date: today,
             author: authorName,
             content: this.confirmNote() || `Proposal #${prop.id} confirmed via WhatsApp. Attachment: ${this.confirmAttachmentName()}`
           });
         } else if (method === 'Call') {
-          this.state.addCallLog(deal.id, {
+          this.dealsService.addCallLog(deal.id, {
             date: today,
             duration: 0,
             callerName: authorName,
@@ -2754,7 +2779,7 @@ export class SalesComponent {
 
   applyTemplate() {
     if (this.selectedTemplateId) {
-      const template = this.state.proposalTemplates().find(t => t.id === this.selectedTemplateId);
+      const template = this.proposalsService.proposalTemplates().find(t => t.id === this.selectedTemplateId);
       if (template) {
         this.newProposal.title = template.name;
         this.newProposal.lines = template.lines.map(l => ({ ...l, vendor: l.vendor || '' }));
@@ -2799,14 +2824,14 @@ export class SalesComponent {
     };
 
     if (propId) {
-      this.state.updateProposal(propId, payload);
+      this.proposalsService.updateProposal(propId, payload);
       this.proposalModalOpen.set(false);
       this.editingProposalId.set(null);
       if (andAssignTask) {
         this.openAssignTaskModal('proposal', propId, payload.title);
       }
     } else {
-      const newProp = this.state.addProposal({
+      const newProp = this.proposalsService.addProposal({
         ...payload,
         status: 'Draft'
       });
@@ -2820,7 +2845,7 @@ export class SalesComponent {
 
   // Deal Creation
   openCreateDealModal() {
-    const defaultCust = this.state.customers()[0]?.id || '';
+    const defaultCust = this.partnersService.customers()[0]?.id || '';
     const today = new Date().toISOString().split('T')[0];
     const deliveryDate = new Date();
     deliveryDate.setDate(deliveryDate.getDate() + 30);
@@ -2850,7 +2875,7 @@ export class SalesComponent {
       contactEmail: '',
       contactPhone: '',
 
-      salesPerson: this.state.users().find(u => u.team === 'Sales')?.name || 'Youssef El Alami',
+      salesPerson: this.users().find(u => u.team === 'Sales')?.name || 'Youssef El Alami',
       salesRegion: 'Casablanca-Settat / Maroc',
 
       currency: 'MAD',
@@ -2909,7 +2934,7 @@ export class SalesComponent {
 
     const moduleMap: Record<string, string> = { deal: 'Sales', proposal: 'Sales', po: 'Sales' };
     const subModuleMap: Record<string, string> = { deal: 'Deal', proposal: 'Proposal', po: 'PurchaseOrder' };
-    this.state.addTask({
+    this.tasksService.addTask({
       title: this.assignTaskData.title.trim(),
       description: this.assignTaskData.description.trim() || undefined,
       assignedTeam: this.assignTaskData.assignedTeam,
@@ -2926,7 +2951,7 @@ export class SalesComponent {
 
   saveDeal(andAssignTask = false) {
     const finalAmount = this.newDeal.amount - (this.newDeal.amount * (this.newDeal.discount / 100));
-    const newDeal = this.state.addDeal({
+    const newDeal = this.dealsService.addDeal({
       title: this.newDeal.title || 'New Deal',
       partnerId: this.newDeal.partnerId,
       amount: finalAmount,
@@ -2995,7 +3020,7 @@ export class SalesComponent {
     const vendorId = this.selectedVendorId();
     if (this.showNewVendorForm()) {
       if (this.newVendorData.name.trim()) {
-        this.state.createPartnerAwaitingId({
+        this.partnersService.createPartnerAwaitingId({
           name: this.newVendorData.name,
           type: 'Vendor',
           email: this.newVendorData.email,
@@ -3027,7 +3052,7 @@ export class SalesComponent {
 
   openCreatePOModal(deal: Deal) {
     this.selectedDealForPO.set(deal);
-    this.selectedVendorId.set(this.state.vendors()[0]?.id || '');
+    this.selectedVendorId.set(this.partnersService.vendors()[0]?.id || '');
     this.showNewVendorForm.set(false);
     
     // Auto-populate poLines with deal lines if available, estimating 70% cost of goods
@@ -3057,7 +3082,7 @@ export class SalesComponent {
       const totalAmount = this.getPoTotal();
 
       // Add PO
-      this.state.addPurchaseOrder({
+      this.purchaseOrdersService.addPurchaseOrder({
         dealId: deal.id,
         vendorId: vendorId,
         amount: totalAmount,
@@ -3074,7 +3099,7 @@ export class SalesComponent {
       });
 
       // Automatically update deal stage to PO Sent
-      this.state.updateDealStage(deal.id, 'Confirmed');
+      this.dealsService.updateDealStage(deal.id, 'Confirmed');
 
       this.clearPoLocalState();
       this.poModalOpen.set(false);
@@ -3092,7 +3117,7 @@ export class SalesComponent {
       const totalAmount = this.getPoTotal();
 
       // Add PO with status Draft
-      this.state.addPurchaseOrder({
+      this.purchaseOrdersService.addPurchaseOrder({
         dealId: deal.id,
         vendorId: vendorId,
         amount: totalAmount,
@@ -3122,10 +3147,10 @@ export class SalesComponent {
   saveDeliveryDate() {
     const po = this.selectedPOForDelivery();
     if (po) {
-      this.state.updatePurchaseOrderStatus(po.id, po.status, this.loggedDeliveryDate);
+      this.purchaseOrdersService.updateStatus(po.id, po.status, this.loggedDeliveryDate);
       
       // Update Deal's estimated delivery date
-      const deal = this.state.deals().find(d => d.id === po.dealId);
+      const deal = this.dealsService.allDeals().find(d => d.id === po.dealId);
       if (deal) {
         // Estimate customer delivery 3 days after vendor delivery
         const parts = this.loggedDeliveryDate.split('-');
@@ -3155,13 +3180,13 @@ export class SalesComponent {
 
   toggleFollowUpStatus(dealId: string, followUpId: string, currentStatus: string): void {
     const nextStatus = currentStatus === 'done' ? 'pending' : 'done';
-    this.state.updateFollowUpStatus(dealId, followUpId, nextStatus);
+    this.dealsService.updateFollowUpStatus(dealId, followUpId, nextStatus);
   }
 
   openAddActivityModal(dealId: string, type: 'calls' | 'emails' | 'meetings' | 'recordings' | 'notes' | 'followups') {
     this.addActivityModalOpen.set({ dealId, type });
-    const me = this.state.users().find(u => u.team === 'Sales')?.name || 'Youssef El Alami';
-    const deal = this.state.deals().find(d => d.id === dealId);
+    const me = this.users().find(u => u.team === 'Sales')?.name || 'Youssef El Alami';
+    const deal = this.dealsService.allDeals().find(d => d.id === dealId);
     const clientEmail = deal?.contactEmail || 'contact@client.ma';
     
     this.newActivityInput = {
@@ -3180,21 +3205,21 @@ export class SalesComponent {
 
     const { dealId, type } = modal;
     if (type === 'calls') {
-      this.state.addCallLog(dealId, { ...this.newActivityInput.calls });
+      this.dealsService.addCallLog(dealId, { ...this.newActivityInput.calls });
     } else if (type === 'emails') {
-      this.state.addEmailLog(dealId, { ...this.newActivityInput.emails });
+      this.dealsService.addEmailLog(dealId, { ...this.newActivityInput.emails });
     } else if (type === 'meetings') {
       const atts = this.newActivityInput.meetings.attendees.split(',').map(s => s.trim()).filter(Boolean);
-      this.state.addMeeting(dealId, {
+      this.dealsService.addMeeting(dealId, {
         ...this.newActivityInput.meetings,
         attendees: atts
       });
     } else if (type === 'recordings') {
-      this.state.addRecording(dealId, { ...this.newActivityInput.recordings });
+      this.dealsService.addRecording(dealId, { ...this.newActivityInput.recordings });
     } else if (type === 'notes') {
-      this.state.addNote(dealId, { ...this.newActivityInput.notes });
+      this.dealsService.addNote(dealId, { ...this.newActivityInput.notes });
     } else if (type === 'followups') {
-      this.state.addFollowUp(dealId, {
+      this.dealsService.addFollowUp(dealId, {
         ...this.newActivityInput.followups,
         status: 'pending'
       });
@@ -3229,7 +3254,7 @@ export class SalesComponent {
 
   openConvertProposalModal(prop: Proposal) {
     this.proposalToConvert.set(prop);
-    const partner = this.state.partners().find(p => p.id === prop.partnerId);
+    const partner = this.partnersService.allPartners().find(p => p.id === prop.partnerId);
     this.newPartner = {
       id: partner?.id,
       name: partner?.name || '',
@@ -3269,7 +3294,7 @@ export class SalesComponent {
       const partnerId = prop.partnerId;
 
       // 1. Promote the associated Prospect → Customer
-      this.state.convertToCustomer(partnerId);
+      this.partnersService.convertToCustomer(partnerId);
 
       // 2. Update the partner details in the list
       this.state.partners.update(partners =>
@@ -3284,8 +3309,8 @@ export class SalesComponent {
       );
 
       // 3. Create the Customer Card
-      const accountId = this.state.generateAccountId();
-      this.state.saveCustomerCard({
+      const accountId = this.partnersService.generateAccountId();
+      this.partnersService.saveCustomerCard({
         id: 'cc-' + partnerId,
         partnerId: partnerId,
         accountId,
@@ -3315,7 +3340,7 @@ export class SalesComponent {
       const formattedDelivery = deliveryDate.toISOString().split('T')[0];
       const randomSuffix = Math.floor(1000 + Math.random() * 9000);
 
-      this.state.addDeal({
+      this.dealsService.addDeal({
         title: prop.title + ' — Deal',
         partnerId: partnerId,
         amount: prop.amount,
@@ -3331,7 +3356,7 @@ export class SalesComponent {
         currency: 'MAD',
         paymentTerms: '30 Days Net',
         orderTotalAmount: prop.amount,
-        salesPerson: this.state.users().find(u => u.team === 'Sales')?.name || '',
+        salesPerson: this.users().find(u => u.team === 'Sales')?.name || '',
         salesRegion: 'Casablanca-Settat / Maroc'
       });
 
@@ -3361,7 +3386,7 @@ export class SalesComponent {
 
   saveLead() {
     if (this.newLeadData.name.trim()) {
-      this.state.addPartner({
+      this.partnersService.addPartner({
         name: this.newLeadData.name,
         type: 'Lead',
         email: this.newLeadData.email,
@@ -3376,6 +3401,6 @@ export class SalesComponent {
   }
 
   convertLeadToProspect(leadId: string) {
-    this.state.convertLeadToProspect(leadId);
+    this.partnersService.convertLeadToProspect(leadId);
   }
 }

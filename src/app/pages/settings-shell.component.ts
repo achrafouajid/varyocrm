@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { CrmStateService } from '../services/crm-state.service';
 
 @Component({
   selector: 'app-settings-shell',
@@ -21,22 +22,26 @@ import { CommonModule } from '@angular/common';
             <i class="ti ti-building text-base leading-none"></i>
             Organization
           </a>
-          <a
-            routerLink="/settings/users"
-            routerLinkActive="bg-zinc-100 text-zinc-900 border-l-2 border-zinc-900 font-semibold"
-            class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg btn-secondary text-zinc-500 hover:text-zinc-900 transition-colors border-l-2 border-transparent"
-          >
-            <i class="ti ti-users text-base leading-none"></i>
-            Users
-          </a>
-          <a
-            routerLink="/settings/teams"
-            routerLinkActive="bg-zinc-100 text-zinc-900 border-l-2 border-zinc-900 font-semibold"
-            class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg btn-secondary text-zinc-500 hover:text-zinc-900 transition-colors border-l-2 border-transparent"
-          >
-            <i class="ti ti-users-group text-base leading-none"></i>
-            Teams
-          </a>
+          @if (state.currentUserPermissions().canManageUsers) {
+            <a
+              routerLink="/settings/users"
+              routerLinkActive="bg-zinc-100 text-zinc-900 border-l-2 border-zinc-900 font-semibold"
+              class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg btn-secondary text-zinc-500 hover:text-zinc-900 transition-colors border-l-2 border-transparent"
+            >
+              <i class="ti ti-users text-base leading-none"></i>
+              Users
+            </a>
+          }
+          @if (state.currentUserPermissions().canManageTeams) {
+            <a
+              routerLink="/settings/teams"
+              routerLinkActive="bg-zinc-100 text-zinc-900 border-l-2 border-zinc-900 font-semibold"
+              class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg btn-secondary text-zinc-500 hover:text-zinc-900 transition-colors border-l-2 border-transparent"
+            >
+              <i class="ti ti-users-group text-base leading-none"></i>
+              Teams
+            </a>
+          }
           <a
             routerLink="/settings/groups"
             routerLinkActive="bg-zinc-100 text-zinc-900 border-l-2 border-zinc-900 font-semibold"
@@ -55,4 +60,6 @@ import { CommonModule } from '@angular/common';
     </div>
   `
 })
-export class SettingsShellComponent {}
+export class SettingsShellComponent {
+  state = inject(CrmStateService);
+}
