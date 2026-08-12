@@ -17,8 +17,10 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-COPY --from=build /app/dist ./dist
+RUN npm install -g serve
+
+COPY --from=build /app/dist/app/browser ./dist
 
 EXPOSE 4000
 
-CMD ["node", "dist/app/server/server.mjs"]
+CMD ["serve", "-s", "dist", "-l", "4000"]
