@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import {
   HttpRequest,
   HttpHandler,
@@ -8,10 +8,11 @@ import {
 } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { CrmStateService } from '../../services/crm-state.service';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
-  constructor() {}
+  private state = inject(CrmStateService);
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     const token = typeof localStorage !== 'undefined' ? localStorage.getItem('accessToken') : null;
@@ -34,15 +35,14 @@ export class AuthInterceptor implements HttpInterceptor {
 
     return next.handle(request).pipe(
       catchError((error: HttpErrorResponse) => {
-        if (error.status === 401 && typeof localStorage !== 'undefined') {
-          // Handle unauthorized: clear the stale session and force back to the
-          // (template-gated) login screen — there is no dedicated /login route.
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
-          localStorage.removeItem('bento_auth');
-          if (typeof window !== 'undefined') {
-            window.location.href = '/';
-          }
+        // Only treat this as "the session expired" when the request actually
+        // carried a token. A 401 on an unauthenticated (anonymous) request is
+        // expected, not an error condition — reacting to it here previously
+        // triggered a hard `window.location.href` reload, which re-ran the
+        // app's eager data loads, re-fired the same 401s, and reloaded again:
+        // an infinite reload loop for anyone who wasn't logged in yet.
+        if (error.status === 401 && token) {
+          this.state.logout();
         }
         return throwError(() => error);
       })

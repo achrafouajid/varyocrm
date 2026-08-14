@@ -1629,6 +1629,10 @@ export class CrmStateService {
     this.isAuthenticated.set(false);
     this.currentUserId.set('usr_rachid');
     this.saveAuthState(false);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+    }
   }
 
   // Proposal templates
@@ -5166,9 +5170,23 @@ export class CrmStateService {
     return newLog;
   }
 
+  private eagerDataLoadedFor: boolean | null = null;
+
   constructor() {
-    // Load only eager data (organization, users, teams, groups) on init
-    this.loadEagerDataFromApi();
+    // Eager data (organization, users, teams, groups, notifications) is
+    // protected — fetching it while logged out just produces a wall of 401s.
+    // Load it once whenever isAuthenticated() becomes true (on boot with a
+    // persisted session, or right after an interactive login), and skip it
+    // entirely while logged out.
+    effect(() => {
+      const authenticated = this.isAuthenticated();
+      if (authenticated && this.eagerDataLoadedFor !== authenticated) {
+        this.eagerDataLoadedFor = authenticated;
+        this.loadEagerDataFromApi();
+      } else if (!authenticated) {
+        this.eagerDataLoadedFor = authenticated;
+      }
+    });
   }
 
 }
