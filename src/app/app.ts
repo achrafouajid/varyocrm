@@ -1115,7 +1115,11 @@ const SEARCH_ITEMS: SearchItem[] = [
 
       <app-toast-container></app-toast-container>
     } @else {
-      <app-login></app-login>
+      @if (activeRoute().startsWith('/onboarding')) {
+        <router-outlet></router-outlet>
+      } @else {
+        <app-login></app-login>
+      }
     }
   `
 })

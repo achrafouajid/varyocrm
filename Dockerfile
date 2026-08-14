@@ -17,10 +17,12 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-RUN npm install -g serve
+COPY server/package.json ./
+RUN npm install --omit=dev
 
+COPY server/server.js ./server.js
 COPY --from=build /app/dist/app/browser ./dist
 
 EXPOSE 4000
 
-CMD ["serve", "-s", "dist", "-l", "4000"]
+CMD ["node", "server.js"]

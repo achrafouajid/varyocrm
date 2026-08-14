@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { CrmStateService } from '../services/crm-state.service';
@@ -9,7 +9,7 @@ import { AuthApiService } from '../core/services/auth-api.service';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule, CommonModule, MatIconModule],
+  imports: [FormsModule, CommonModule, MatIconModule, RouterLink],
   styles: [`
     :host {
       display: block;
@@ -158,6 +158,24 @@ import { AuthApiService } from '../core/services/auth-api.service';
     .forgot-link:hover {
       color: #09090B;
     }
+
+    .signup-link {
+      text-align: center;
+      font-size: 12px;
+      color: #71717A;
+      margin: 20px 0 0;
+    }
+
+    .signup-link a {
+      color: #09090B;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .signup-link a:hover {
+      color: var(--color-accent);
+    }
   `],
   template: `
     <div class="login-container">
@@ -214,6 +232,11 @@ import { AuthApiService } from '../core/services/auth-api.service';
             {{ loading() ? 'Signing in...' : 'Sign in' }}
           </button>
         </form>
+
+        <p class="signup-link">
+          New to Bento?
+          <a routerLink="/onboarding">Create an organization</a>
+        </p>
       </div>
     </div>
   `

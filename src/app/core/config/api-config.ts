@@ -9,6 +9,11 @@ export const API_CONFIG = {
       logout: '/auth/logout',
       me: '/auth/me',
     },
+    organizations: {
+      create: '/organizations',
+      me: '/organizations/me',
+      update: '/organizations/me',
+    },
     users: {
       list: '/users',
       create: '/users',

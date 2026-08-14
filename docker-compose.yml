@@ -13,6 +13,7 @@ services:
       NODE_ENV: production
       PORT: 4000
       HOSTNAME: 0.0.0.0
+      BACKEND_URL: http://crm-backend:8080
 
     networks:
       - proxy
