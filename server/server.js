@@ -13,11 +13,14 @@ app.disable('x-powered-by');
 app.use(compression());
 
 // Anything under /api/* is a backend concern — proxy it, never fall back to index.html.
+// Mounted at root (not app.use('/api', ...)) so Express doesn't strip the /api
+// prefix from req.url before the proxy sees it — the backend's Spring context-path
+// is /api/v1, so it needs the full original path forwarded unchanged.
 app.use(
-  '/api',
   createProxyMiddleware({
     target: BACKEND_URL,
     changeOrigin: true,
+    pathFilter: '/api',
     logger: console,
     on: {
       error: (err, req, res) => {
