@@ -5,6 +5,10 @@ on:
     branches: [main]
   workflow_dispatch: {}
 
+concurrency:
+  group: deploy-crm
+  cancel-in-progress: false
+
 env:
   IMAGE: ghcr.io/${{ github.repository_owner }}/varyocrm-crm
 
@@ -49,9 +53,15 @@ jobs:
     steps:
       - uses: webfactory/ssh-agent@v0.9.0
         with:
-          ssh-private-key: ${{ secrets.CRM_DEPLOY_SSH_KEY }}
+          ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
+
+      - name: Pin host key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
 
       - name: Deploy new image to host
         run: |
-          ssh -o StrictHostKeyChecking=accept-new "${{ secrets.CRM_DEPLOY_SSH_HOST }}" \
+          ssh "${{ secrets.DEPLOY_SSH_HOST }}" \
             "GHCR_LOGIN_USER='${{ github.actor }}' GHCR_LOGIN_TOKEN='${{ secrets.GITHUB_TOKEN }}' /srv/bento/apps/crm/deploy.sh ${{ needs.build.outputs.tag }}"
