@@ -36,15 +36,33 @@
   --color-accent-light: #EFF6FF;
   --color-accent-text: #2563EB;
 
-  /* Status Colors (Monochrome for now) */
-  --color-success: #09090B;
-  --color-success-light: #F4F4F5;
-  --color-warning: #09090B;
-  --color-warning-light: #F4F4F5;
-  --color-danger: #09090B;
-  --color-danger-light: #F4F4F5;
+  /* Status Colors */
+  --color-success: #059669;
+  --color-success-light: #ECFDF5;
+  --color-warning: #D97706;
+  --color-warning-light: #FFFBEB;
+  --color-danger: #DC2626;
+  --color-danger-light: #FEF2F2;
   --color-info: #2563EB;
   --color-info-light: #EFF6FF;
+
+  /* Pipeline Stage Progression (cold → warm → resolved) */
+  --stage-new: #64748B;
+  --stage-new-light: #F1F5F9;
+  --stage-contacted: #0284C7;
+  --stage-contacted-light: #F0F9FF;
+  --stage-meeting: #4F46E5;
+  --stage-meeting-light: #EEF2FF;
+  --stage-qualified: #7C3AED;
+  --stage-qualified-light: #F5F3FF;
+  --stage-proposal: #9333EA;
+  --stage-proposal-light: #FAF5FF;
+  --stage-negotiation: #D97706;
+  --stage-negotiation-light: #FFFBEB;
+  --stage-won: #059669;
+  --stage-won-light: #ECFDF5;
+  --stage-lost: #DC2626;
+  --stage-lost-light: #FEF2F2;
 
   /* Shadows */
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
@@ -122,7 +140,7 @@ body {
    Button System
    ═══════════════════════════════════════════ */
 .btn-primary {
-  background: var(--color-accent);
+  background: var(--color-text-primary);
   color: white;
   font-weight: 500;
   font-size: 13px;
@@ -137,8 +155,8 @@ body {
 }
 
 .btn-primary:hover {
-  background: var(--color-accent-hover);
-  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.3);
+  background: #27272A;
+  box-shadow: var(--shadow-sm);
 }
 
 .btn-primary:active {
@@ -562,114 +580,3 @@ body {
   animation: fadeIn 200ms ease-out;
 }
 
-/* ═══════════════════════════════════════════
-   Legacy compatibility aliases
-   (Mapped to new design system — prevents
-    broken styles during incremental migration)
-   ═══════════════════════════════════════════ */
-.glass,
-.glass-strong {
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-}
-
-.glass-card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-xs);
-  transition: box-shadow var(--transition-base);
-}
-
-.glass-card:hover {
-  box-shadow: var(--shadow-sm);
-}
-
-.glass-sidebar {
-  background: var(--color-surface);
-  border-right: 1px solid var(--color-border);
-}
-
-.glass-button {
-  background: transparent;
-  border: none;
-  transition: all var(--transition-fast);
-}
-
-.glass-button:hover {
-  background: var(--color-surface-active);
-}
-
-.glass-input {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  transition: all var(--transition-fast);
-}
-
-.glass-input:focus {
-  border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-}
-
-.glass-chip {
-  background: var(--color-surface-active);
-  border: 1px solid var(--color-border-light);
-}
-
-.glass-dialog {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  box-shadow: var(--shadow-overlay);
-}
-
-.glass-search {
-  background: var(--color-surface) !important;
-  border: 1px solid var(--color-border) !important;
-  color: var(--color-text-primary) !important;
-  box-shadow: none !important;
-}
-
-.glass-search::placeholder {
-  color: var(--color-text-tertiary) !important;
-}
-
-.glass-search:focus {
-  border-color: var(--color-accent) !important;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
-}
-
-.quick-action-btn {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  transition: all var(--transition-base);
-}
-
-.quick-action-btn:hover {
-  border-color: #D1D5DB;
-  box-shadow: var(--shadow-sm);
-  transform: translateY(-1px);
-}
-
-.quick-action-btn:active {
-  transform: translateY(0);
-}
-
-.quick-action-btn .icon-wrap {
-  transition: all var(--transition-base);
-}
-
-.quick-action-btn:hover .icon-wrap {
-  transform: scale(1.05);
-}
-
-.skeleton-shimmer {
-  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
-  background-size: 200% 100%;
-  animation: shimmer 2s infinite;
-}
-
-@keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}

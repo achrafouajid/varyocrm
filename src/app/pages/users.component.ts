@@ -27,6 +27,7 @@ import { PaginatorComponent } from '../shared/paginator.component';
   template: `
     <div class="space-y-6 font-sans">
       <!-- Header -->
+      @if (canWrite()) {
       <div class="flex justify-end">
         <button
           (click)="openAddPanel()"
@@ -36,6 +37,7 @@ import { PaginatorComponent } from '../shared/paginator.component';
           Add User
         </button>
       </div>
+      }
 
       <!-- Add/Edit User Panel (Inline) -->
       <div [class.open]="showAddPanel()" class="panel bg-zinc-50 border border-zinc-200/80 rounded-2xl p-0 shadow-xs">
@@ -263,7 +265,7 @@ import { PaginatorComponent } from '../shared/paginator.component';
                 <!-- Status -->
                 <td class="px-6 py-4 whitespace-nowrap text-xs">
                   <span
-                    [class]="user.isActive ? 'bg-zinc-100 text-zinc-950 border-zinc-200' : 'bg-zinc-100 text-zinc-500 border-zinc-200'"
+                    [class]="user.isActive ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-zinc-100 text-zinc-500 border-zinc-200'"
                     class="inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold border"
                   >
                     {{ user.isActive ? 'Active' : 'Inactive' }}
@@ -272,15 +274,17 @@ import { PaginatorComponent } from '../shared/paginator.component';
 
                 <!-- Actions Menu -->
                 <td class="px-6 py-4 whitespace-nowrap text-right text-xs relative">
+                  @if (canWrite()) {
                   <button
                     (click)="toggleMenu(user.id, $event)"
                     class="text-zinc-400 hover:text-zinc-700 p-1 rounded-lg transition-colors flex items-center ml-auto cursor-pointer"
                   >
                     <mat-icon class="text-base w-5 h-5 flex items-center justify-center">more_vert</mat-icon>
                   </button>
+                  }
 
                   <!-- Actions Dropdown panel -->
-                  @if (activeMenuUserId() === user.id) {
+                  @if (activeMenuUserId() === user.id && canWrite()) {
                     <div class="absolute right-6 top-11 bg-white border border-zinc-200 rounded-xl shadow-lg py-1.5 z-10 w-36 text-left animate-in fade-in slide-in-from-top-1 duration-100">
                       <button
                         (click)="editUser(user)"
@@ -412,6 +416,10 @@ export class UsersComponent {
     }
   }
 
+  canWrite(): boolean {
+    return this.state.hasAuthority('USERS_WRITE');
+  }
+
   toggleMenu(userId: string, event: Event) {
     event.stopPropagation();
     if (this.activeMenuUserId() === userId) {
@@ -476,6 +484,7 @@ export class UsersComponent {
   }
 
   openAddPanel() {
+    if (!this.canWrite()) return;
     this.editingUser.set(null);
     this.formDisplayName = '';
     this.formEmail = '';
@@ -487,6 +496,7 @@ export class UsersComponent {
   }
 
   editUser(user: CrmUser) {
+    if (!this.canWrite()) return;
     this.editingUser.set(user);
     this.formDisplayName = user.displayName;
     this.formEmail = user.email;
@@ -504,6 +514,7 @@ export class UsersComponent {
   }
 
   saveUser() {
+    if (!this.canWrite()) return;
     const editMode = this.editingUser();
     if (editMode) {
       this.state.updateUser(editMode.id, {
@@ -548,6 +559,7 @@ export class UsersComponent {
 
   // Inline role editing
   startRoleEdit(userId: string) {
+    if (!this.canWrite()) return;
     this.editingRoleIdUserId.set(userId);
     this.roleErrorUserId.set(null);
     this.roleErrorMessage.set('');
@@ -571,6 +583,7 @@ export class UsersComponent {
 
   // Deactivation
   confirmDeactivate(userId: string) {
+    if (!this.canWrite()) return;
     this.deactivateConfirmUserId.set(userId);
     this.deactivateErrorMessage.set('');
     this.activeMenuUserId.set(null);

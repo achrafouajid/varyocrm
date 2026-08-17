@@ -21,13 +21,13 @@ export class RoleBadgeComponent {
   getBadgeClass(): string {
     switch (this.roleId) {
       case 'admin':
-        return 'bg-zinc-100 text-zinc-950 border-zinc-200';
+        return 'bg-rose-50 text-rose-700 border-rose-200';
       case 'manager':
-        return 'bg-zinc-100 text-zinc-950 border-zinc-200';
+        return 'bg-violet-50 text-violet-700 border-violet-200';
       case 'salesperson':
-        return 'bg-zinc-100 text-zinc-950 border-zinc-200';
+        return 'bg-sky-50 text-sky-700 border-sky-200';
       case 'support':
-        return 'bg-zinc-100 text-zinc-950 border-zinc-200';
+        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
       case 'viewer':
       default:
         return 'bg-zinc-50 text-zinc-600 border-zinc-200';

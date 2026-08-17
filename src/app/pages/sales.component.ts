@@ -53,12 +53,12 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
       </div>
       <div class="flex justify-end">
           <div class="flex gap-2">
-            @if (activeTab() === 'deals') {
+            @if (activeTab() === 'deals' && canCreateDeal()) {
               <button (click)="openCreateDealModal()" class="bg-zinc-900 hover:bg-zinc-950 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-lg shadow-zinc-300">
                 <mat-icon class="w-5 h-5 text-[20px]! leading-none! flex items-center justify-center">add</mat-icon>
                 New Deal
               </button>
-            } @else if (activeTab() === 'proposals') {
+            } @else if (activeTab() === 'proposals' && canCreateProposal()) {
               <button (click)="openCreateProposalModal()" class="bg-zinc-900 hover:bg-zinc-950 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-lg shadow-zinc-300">
                 <mat-icon class="w-5 h-5 text-[20px]! leading-none! flex items-center justify-center">add</mat-icon>
                 New Proposal
@@ -149,7 +149,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
               <div class="space-y-3">
                 <div class="flex justify-between items-start">
                   <span class="px-2 py-0.5 text-[10px] font-bold rounded-full uppercase"
-                    [class]="prop.status === 'Confirmed' ? 'bg-zinc-200 text-zinc-950' : (prop.status === 'Sent' ? 'bg-zinc-200 text-zinc-950' : 'bg-zinc-100 text-zinc-800')">
+                    [class]="prop.status === 'Confirmed' ? 'bg-emerald-50 text-emerald-700' : (prop.status === 'Sent' ? 'bg-sky-50 text-sky-700' : 'bg-zinc-100 text-zinc-800')">
                     {{prop.status}}
                   </span>
                   <span class="font-sans text-sm text-zinc-400">#{{prop.id}}</span>
@@ -340,7 +340,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <span class="px-2.5 py-1 text-[10px] font-bold uppercase rounded-full"
-                      [class]="po.status === 'Delivered' ? 'bg-zinc-200 text-zinc-950' : (po.status === 'Sent' ? 'bg-zinc-200 text-zinc-950' : 'bg-zinc-100 text-zinc-800')">
+                      [class]="po.status === 'Delivered' ? 'bg-emerald-50 text-emerald-700' : (po.status === 'Sent' ? 'bg-sky-50 text-sky-700' : 'bg-zinc-100 text-zinc-800')">
                       {{po.status}}
                     </span>
                   </td>
@@ -354,7 +354,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                     <button (click)="$event.stopPropagation(); openAssignTaskModal('po', po.id, 'PO #' + po.id)" class="bg-white border border-zinc-200 text-zinc-900 px-2 py-1 rounded-lg hover:bg-zinc-100 flex items-center gap-1 ml-auto" title="Assign Task">
                       <mat-icon class="text-[14px] w-3.5 h-3.5">assignment</mat-icon> Assign
                     </button>
-                    @if (po.status === 'Sent') {
+                    @if (po.status === 'Sent' && canWritePO()) {
                       <button (click)="$event.stopPropagation(); openSetDeliveryDatePOModal(po)" class="bg-white border border-zinc-200 text-zinc-700 px-2 py-1 rounded-lg hover:bg-zinc-50">Set Del. Date</button>
                       <button (click)="$event.stopPropagation(); purchaseOrdersService.updateStatus(po.id, 'Delivered')" class="bg-zinc-900 text-white px-2 py-1 rounded-lg hover:bg-zinc-950 shadow-lg shadow-zinc-300">Receive Goods</button>
                     }
@@ -1480,7 +1480,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
               </div>
               <div class="flex items-center gap-3">
                 <span class="px-3 py-1 text-xs font-semibold rounded-full uppercase"
-                  [class]="prop.status === 'Confirmed' ? 'bg-zinc-200 text-zinc-950' : (prop.status === 'Sent' ? 'bg-zinc-200 text-zinc-950' : 'bg-zinc-100 text-zinc-800')">
+                  [class]="prop.status === 'Confirmed' ? 'bg-emerald-50 text-emerald-700' : (prop.status === 'Sent' ? 'bg-sky-50 text-sky-700' : 'bg-zinc-100 text-zinc-800')">
                   {{prop.status}}
                 </span>
                 <button (click)="closeProposalDrawer()" class="text-zinc-400 hover:text-zinc-600 p-1.5 rounded-lg hover:bg-zinc-100 transition-colors">
@@ -1626,7 +1626,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
               </div>
               <div class="flex items-center gap-3">
                 <span class="px-3 py-1 text-xs font-bold uppercase rounded-full"
-                  [class]="po.status === 'Delivered' ? 'bg-zinc-200 text-zinc-950' : (po.status === 'Sent' ? 'bg-zinc-200 text-zinc-950' : 'bg-zinc-100 text-zinc-800')">
+                  [class]="po.status === 'Delivered' ? 'bg-emerald-50 text-emerald-700' : (po.status === 'Sent' ? 'bg-sky-50 text-sky-700' : 'bg-zinc-100 text-zinc-800')">
                   {{po.status}}
                 </span>
                 <button (click)="closePODrawer()" class="text-zinc-400 hover:text-zinc-600 p-1.5 rounded-lg hover:bg-zinc-100 transition-colors">
@@ -1689,10 +1689,12 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
             <div class="px-6 py-4 bg-zinc-50 border-t border-zinc-200 flex justify-between items-center shrink-0">
               <span class="text-xs text-zinc-500">{{ po.lines.length }} item(s)</span>
               <div class="flex gap-2">
-                <button (click)="openAssignTaskModal('po', po.id, 'PO #' + po.id); closePODrawer()" class="bg-white border border-zinc-300 text-zinc-900 hover:bg-zinc-100 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
-                  <mat-icon class="text-[16px] w-4 h-4">assignment</mat-icon> Assign Task
-                </button>
-                @if (po.status === 'Sent') {
+                @if (canCreateTask()) {
+                  <button (click)="openAssignTaskModal('po', po.id, 'PO #' + po.id); closePODrawer()" class="bg-white border border-zinc-300 text-zinc-900 hover:bg-zinc-100 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                    <mat-icon class="text-[16px] w-4 h-4">assignment</mat-icon> Assign Task
+                  </button>
+                }
+                @if (po.status === 'Sent' && canWritePO()) {
                   <button (click)="openSetDeliveryDatePOModal(po); closePODrawer()" class="bg-white border border-zinc-200 text-zinc-700 px-3 py-1.5 rounded-lg hover:bg-zinc-50 text-xs font-semibold">Set Del. Date</button>
                   <button (click)="purchaseOrdersService.updateStatus(po.id, 'Delivered'); closePODrawer()" class="bg-zinc-900 hover:bg-zinc-950 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-lg shadow-zinc-300">Receive Goods</button>
                 }
@@ -1909,8 +1911,8 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                                 <span class="font-bold text-zinc-800">{{ call.callerName }}</span>
                                 <span class="text-zinc-400 font-sans text-[10px]">{{ call.date }} ({{ call.duration }} min)</span>
                               </div>
-                              <span [class]="call.outcome === 'Interested' ? 'bg-zinc-100 text-zinc-950 border-zinc-200' : 
-                                             call.outcome === 'Follow-up' ? 'bg-zinc-100 text-zinc-950 border-zinc-200' : 
+                              <span [class]="call.outcome === 'Interested' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                                             call.outcome === 'Follow-up' ? 'bg-amber-50 text-amber-700 border-amber-200' :
                                              'bg-zinc-100 text-zinc-600 border-zinc-200'"
                                     class="px-2 py-0.5 rounded text-[10px] font-semibold border">
                                 {{ call.outcome }}
@@ -2100,7 +2102,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                               </div>
                             </div>
                             
-                            <span [class]="f.status === 'done' ? 'bg-zinc-100 text-zinc-950 border-zinc-200' : 'bg-zinc-100 text-zinc-950 border-zinc-200'" class="px-2 py-0.5 border text-[9px] font-bold uppercase rounded font-sans">
+                            <span [class]="f.status === 'done' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'" class="px-2 py-0.5 border text-[9px] font-bold uppercase rounded font-sans">
                               {{ f.status === 'done' ? 'Completed' : 'Pending' }}
                             </span>
                           </div>
@@ -2191,15 +2193,17 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
               </div>
               <div class="flex gap-2">
                 <!-- Create PO trigger if none exists for this deal -->
-                @if (!hasPOForDeal(deal.id)) {
+                @if (!hasPOForDeal(deal.id) && canCreatePO()) {
                   <button (click)="openCreatePOModal(deal)" class="bg-zinc-100 hover:bg-zinc-200 border border-zinc-300 text-zinc-950 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors flex items-center">
                     <mat-icon class="mr-1 text-[16px] w-4 h-4">add_shopping_cart</mat-icon> Create PO (Operations)
                   </button>
                 }
-                <button (click)="openAssignTaskModal('deal', deal.id, deal.title)" class="bg-white border border-zinc-300 text-zinc-900 hover:bg-zinc-100 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
-                  <mat-icon class="text-[16px] w-4 h-4">assignment</mat-icon> Assign Task
-                </button>
-                @if (deal.stage === 'New') {
+                @if (canCreateTask()) {
+                  <button (click)="openAssignTaskModal('deal', deal.id, deal.title)" class="bg-white border border-zinc-300 text-zinc-900 hover:bg-zinc-100 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                    <mat-icon class="text-[16px] w-4 h-4">assignment</mat-icon> Assign Task
+                  </button>
+                }
+                @if (deal.stage === 'New' && canWriteDeal()) {
                   <button (click)="dealsService.updateDealStage(deal.id, 'Confirmed')" class="bg-zinc-900 hover:bg-zinc-950 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors flex items-center">
                     <mat-icon class="mr-1 text-[16px] w-4 h-4">check</mat-icon> Confirm Deal
                   </button>
@@ -2221,6 +2225,16 @@ export class SalesComponent {
   private tasksService = inject(TasksService);
   state = inject(CrmStateService);
   private router = inject(Router);
+
+  canCreateDeal(): boolean { return this.state.hasAuthority('DEALS_CREATE'); }
+  canWriteDeal(): boolean { return this.state.hasAuthority('DEALS_WRITE'); }
+  canCreateProposal(): boolean { return this.state.hasAuthority('PROPOSALS_CREATE'); }
+  canWriteProposal(): boolean { return this.state.hasAuthority('PROPOSALS_WRITE'); }
+  canCreatePO(): boolean { return this.state.hasAuthority('PURCHASE_ORDERS_CREATE'); }
+  canWritePO(): boolean { return this.state.hasAuthority('PURCHASE_ORDERS_WRITE'); }
+  canCreateTask(): boolean { return this.state.hasAuthority('TASKS_CREATE'); }
+  canWriteDealActivity(): boolean { return this.state.hasAuthority('DEAL_ACTIVITIES_WRITE'); }
+  canCreateDealActivity(): boolean { return this.state.hasAuthority('DEAL_ACTIVITIES_CREATE'); }
 
   // UI-only state signals
   breadcrumbLabel = signal('Deals');
@@ -2557,8 +2571,8 @@ export class SalesComponent {
 
   getStatusColor(status: string) {
     switch (status) {
-      case 'Completed': return 'bg-zinc-200 text-zinc-950 border border-zinc-300';
-      case 'In Progress': return 'bg-zinc-200 text-zinc-950 border border-zinc-300';
+      case 'Completed': return 'bg-emerald-50 text-emerald-700 border border-emerald-200';
+      case 'In Progress': return 'bg-sky-50 text-sky-700 border border-sky-200';
       default: return 'bg-zinc-100 text-zinc-800 border border-zinc-200';
     }
   }
@@ -2566,17 +2580,17 @@ export class SalesComponent {
   getStageBadgeClass(stage?: string) {
     switch (stage) {
       case 'New Lead':
-        return 'bg-zinc-100 text-zinc-950 border-zinc-200';
+        return 'bg-slate-100 text-slate-700 border-slate-200';
       case 'Qualified':
-        return 'bg-zinc-100 text-zinc-950 border-zinc-200';
+        return 'bg-sky-50 text-sky-700 border-sky-200';
       case 'Meeting Scheduled':
-        return 'bg-zinc-100 text-zinc-950 border-zinc-200';
+        return 'bg-indigo-50 text-indigo-700 border-indigo-200';
       case 'Proposal Sent':
-        return 'bg-zinc-100 text-zinc-950 border-zinc-200';
+        return 'bg-violet-50 text-violet-700 border-violet-200';
       case 'Negotiation':
-        return 'bg-zinc-100 text-zinc-950 border-zinc-200';
+        return 'bg-amber-50 text-amber-700 border-amber-200';
       case 'Won / Lost':
-        return 'bg-zinc-100 text-zinc-950 border-zinc-200';
+        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
       default:
         return 'bg-zinc-50 text-zinc-600 border-zinc-100';
     }
@@ -2588,6 +2602,7 @@ export class SalesComponent {
 
   // Proposal Creation
   openSendProposalModal(prop: Proposal) {
+    if (!this.canWriteProposal()) return;
     this.sendingProposalId.set(prop.id);
     this.selectedChannels.set(new Set());
     // Pre-populate primary recipient from the proposal's partner
@@ -2672,6 +2687,7 @@ export class SalesComponent {
   }
 
   openConfirmProposalModal(prop: Proposal) {
+    if (!this.canWriteProposal()) return;
     this.proposalToConfirm.set(prop);
     this.confirmMethod.set('Email');
     this.confirmAttachmentName.set('');
@@ -2744,6 +2760,7 @@ export class SalesComponent {
   }
 
   openCreateProposalModal() {
+    if (!this.canCreateProposal()) return;
     this.editingProposalId.set(null);
     this.newProposal = {
       title: '',
@@ -2762,6 +2779,7 @@ export class SalesComponent {
   }
 
   openEditProposalModal(prop: Proposal) {
+    if (!this.canWriteProposal()) return;
     this.editingProposalId.set(prop.id);
     this.newProposal = {
       title: prop.title,
@@ -2804,8 +2822,9 @@ export class SalesComponent {
   }
 
   saveProposal(andAssignTask = false) {
-    const total = this.getNewProposalTotal();
     const propId = this.editingProposalId();
+    if (propId ? !this.canWriteProposal() : !this.canCreateProposal()) return;
+    const total = this.getNewProposalTotal();
     const competitorsArray = this.newProposal.competitors
       ? this.newProposal.competitors.split(',').map(c => c.trim()).filter(Boolean)
       : [];
@@ -2845,6 +2864,7 @@ export class SalesComponent {
 
   // Deal Creation
   openCreateDealModal() {
+    if (!this.canCreateDeal()) return;
     const defaultCust = this.partnersService.customers()[0]?.id || '';
     const today = new Date().toISOString().split('T')[0];
     const deliveryDate = new Date();
@@ -2919,6 +2939,7 @@ export class SalesComponent {
 
   // Assign Task Methods
   openAssignTaskModal(entityType: 'deal' | 'proposal' | 'po', entityId: string, entityTitle: string) {
+    if (!this.canCreateTask()) return;
     this.assignTaskData = {
       title: '',
       description: '',
@@ -2929,6 +2950,7 @@ export class SalesComponent {
   }
 
   saveAssignTask() {
+    if (!this.canCreateTask()) return;
     const ctx = this.assignTaskModalOpen();
     if (!ctx || !this.assignTaskData.title.trim() || !this.assignTaskData.assignedTo) return;
 
@@ -2950,6 +2972,7 @@ export class SalesComponent {
   }
 
   saveDeal(andAssignTask = false) {
+    if (!this.canCreateDeal()) return;
     const finalAmount = this.newDeal.amount - (this.newDeal.amount * (this.newDeal.discount / 100));
     const newDeal: any = this.dealsService.addDeal({
       title: this.newDeal.title || 'New Deal',
@@ -3051,6 +3074,7 @@ export class SalesComponent {
   }
 
   openCreatePOModal(deal: Deal) {
+    if (!this.canCreatePO()) return;
     this.selectedDealForPO.set(deal);
     this.selectedVendorId.set(this.partnersService.vendors()[0]?.id || '');
     this.showNewVendorForm.set(false);
@@ -3073,6 +3097,7 @@ export class SalesComponent {
   }
 
   savePurchaseOrder() {
+    if (!this.canCreatePO()) return;
     const deal = this.selectedDealForPO();
     if (!deal) return;
 
@@ -3108,6 +3133,7 @@ export class SalesComponent {
   }
 
   saveDraftPO() {
+    if (!this.canCreatePO()) return;
     const deal = this.selectedDealForPO();
     if (!deal) return;
 
@@ -3139,12 +3165,14 @@ export class SalesComponent {
 
   // PO Delivery Dates
   openSetDeliveryDatePOModal(po: PurchaseOrder) {
+    if (!this.canWritePO()) return;
     this.selectedPOForDelivery.set(po);
     this.loggedDeliveryDate = po.deliveryDate || '';
     this.setDeliveryDateModalOpen.set(true);
   }
 
   saveDeliveryDate() {
+    if (!this.canWritePO()) return;
     const po = this.selectedPOForDelivery();
     if (po) {
       this.purchaseOrdersService.updateStatus(po.id, po.status, this.loggedDeliveryDate);
@@ -3179,11 +3207,13 @@ export class SalesComponent {
   }
 
   toggleFollowUpStatus(dealId: string, followUpId: string, currentStatus: string): void {
+    if (!this.canWriteDealActivity()) return;
     const nextStatus = currentStatus === 'done' ? 'pending' : 'done';
     this.dealsService.updateFollowUpStatus(dealId, followUpId, nextStatus);
   }
 
   openAddActivityModal(dealId: string, type: 'calls' | 'emails' | 'meetings' | 'recordings' | 'notes' | 'followups') {
+    if (!this.canCreateDealActivity()) return;
     this.addActivityModalOpen.set({ dealId, type });
     const me = this.users().find(u => u.team === 'Sales')?.name || 'Youssef El Alami';
     const deal = this.dealsService.allDeals().find(d => d.id === dealId);
@@ -3200,6 +3230,7 @@ export class SalesComponent {
   }
 
   saveActivityEntry() {
+    if (!this.canCreateDealActivity()) return;
     const modal = this.addActivityModalOpen();
     if (!modal) return;
 
@@ -3253,6 +3284,7 @@ export class SalesComponent {
   }
 
   openConvertProposalModal(prop: Proposal) {
+    if (!this.canWriteProposal()) return;
     this.proposalToConvert.set(prop);
     const partner = this.partnersService.allPartners().find(p => p.id === prop.partnerId);
     this.newPartner = {

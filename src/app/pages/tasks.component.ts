@@ -62,12 +62,14 @@ const SUB_MODULE_LABELS: Record<string, string> = {
   template: `
     <div class="space-y-8">
       <app-data-status-banner [loading]="tasksService.isLoading$()" [error]="tasksService.error$()" />
+      @if (canCreate()) {
       <div class="flex justify-end">
         <button (click)="openCreateTaskModal()" class="bg-zinc-900 hover:bg-zinc-950 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm shadow-lg shadow-zinc-300">
           <mat-icon class="w-5 h-5 text-[20px]! leading-none! flex items-center justify-center">add</mat-icon>
           New Task
         </button>
       </div>
+      }
 
       <!-- Priority Filter Banner -->
       @if (activePriorityFilter()) {
@@ -147,15 +149,15 @@ const SUB_MODULE_LABELS: Record<string, string> = {
                 </div>
 
                 <div class="flex gap-2 pt-2 border-t border-zinc-50">
-                  @if (task.status === 'Pending') {
+                  @if (task.status === 'Pending' && canWrite()) {
                     <button (click)="state.updateTaskStatus(task.id, 'In Progress')" class="w-full bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 text-zinc-900 py-1.5 rounded-lg text-xs font-semibold transition-colors">
                       Start Task
                     </button>
-                  } @else if (task.status === 'In Progress') {
+                  } @else if (task.status === 'In Progress' && canWrite()) {
                     <button (click)="state.updateTaskStatus(task.id, 'Completed')" class="w-full bg-zinc-900 hover:bg-zinc-950 text-white py-1.5 rounded-lg text-xs font-semibold transition-colors">
                       Complete Task
                     </button>
-                  } @else {
+                  } @else if (task.status === 'Completed') {
                     <span class="text-zinc-900 text-xs font-bold py-1.5 text-center w-full flex items-center justify-center">
                       <mat-icon class="text-[16px] w-4 h-4 mr-0.5">check_circle</mat-icon> Completed
                     </span>
@@ -166,7 +168,7 @@ const SUB_MODULE_LABELS: Record<string, string> = {
                     </button>
                   }
 
-                  @if (task.status !== 'Completed') {
+                  @if (task.status !== 'Completed' && canWrite()) {
                     <button (click)="openAssignModal(task)" class="bg-white hover:bg-zinc-50 border border-zinc-200 text-zinc-600 px-2 py-1.5 rounded-lg text-xs transition-colors flex items-center justify-center">
                       <mat-icon class="text-[16px] w-4 h-4">person</mat-icon> Assign
                     </button>
@@ -450,6 +452,10 @@ export class TasksComponent {
   state = inject(CrmStateService);
   tasksService = inject(TasksService);
 
+  canCreate(): boolean { return this.state.hasAuthority('TASKS_CREATE'); }
+  canWrite(): boolean { return this.state.hasAuthority('TASKS_WRITE'); }
+  canDelete(): boolean { return this.state.hasAuthority('TASKS_DELETE'); }
+
   moduleList = Object.keys(MODULE_SUB_MODULES);
 
   activeView = signal<'list' | 'kanban'>('list');
@@ -479,6 +485,7 @@ export class TasksComponent {
   }
 
   deleteTask(task: Task) {
+    if (!this.canDelete()) return;
     if (confirm(`Delete task "${task.title}"? This cannot be undone.`)) {
       this.tasksService.deleteTask(task.id);
     }
@@ -536,8 +543,8 @@ export class TasksComponent {
 
   getStatusColor(status: string) {
     switch (status) {
-      case 'Completed': return 'bg-zinc-200 text-zinc-950 border border-zinc-300';
-      case 'In Progress': return 'bg-zinc-200 text-zinc-950 border border-zinc-300';
+      case 'Completed': return 'bg-emerald-50 text-emerald-700 border border-emerald-200';
+      case 'In Progress': return 'bg-sky-50 text-sky-700 border border-sky-200';
       default: return 'bg-zinc-100 text-zinc-800 border border-zinc-200';
     }
   }
@@ -552,7 +559,7 @@ export class TasksComponent {
   }
 
   onDrop(event: CdkDragDrop<Task[]>, targetStatus: Task['status']) {
-    if (event.previousContainer === event.container) return;
+    if (event.previousContainer === event.container || !this.canWrite()) return;
     const task = event.item.data as Task;
     transferArrayItem(
       event.previousContainer.data,
@@ -573,6 +580,7 @@ export class TasksComponent {
   }
 
   openCreateTaskModal() {
+    if (!this.canCreate()) return;
     this.newTaskData = {
       title: '',
       description: '',
@@ -590,6 +598,7 @@ export class TasksComponent {
   }
 
   saveTask() {
+    if (!this.canCreate()) return;
     const mod = this.selectedModule();
     const sub = this.selectedSubModule();
     const entityId = this.newTaskData.relatedEntityId;
@@ -622,12 +631,14 @@ export class TasksComponent {
   }
 
   openAssignModal(task: Task) {
+    if (!this.canWrite()) return;
     this.selectedTask.set(task);
     this.reassignedUser = task.assignedTo || '';
     this.assignModalOpen.set(true);
   }
 
   saveAssignment() {
+    if (!this.canWrite()) return;
     const task = this.selectedTask();
     if (task) {
       this.state.updateTaskStatus(task.id, task.status, this.reassignedUser);

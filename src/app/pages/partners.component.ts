@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { CrmStateService, Lead, LeadActivity, LeadAttachment } from '../services/crm-state.service';
 import { PartnersService, Partner } from '../services/domains/partners.service';
+import { ApiService } from '../services/api.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
@@ -57,6 +58,7 @@ import { PaginatorComponent } from '../shared/paginator.component';
 
       <!-- Page Header actions -->
       <div class="flex justify-end">
+        @if (canCreate()) {
         @if (activeTab() === 'Lead') {
           <button (click)="openAddLeadModal()" class="bg-zinc-900 hover:bg-zinc-950 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 shadow-lg shadow-zinc-300">
             <mat-icon class="w-5 h-5 text-[20px]! leading-none! flex items-center justify-center">add</mat-icon>
@@ -67,6 +69,7 @@ import { PaginatorComponent } from '../shared/paginator.component';
             <mat-icon class="w-5 h-5 text-[20px]! leading-none! flex items-center justify-center">person_add</mat-icon>
             New {{activeTab()}}
           </button>
+        }
         }
       </div>
 
@@ -224,7 +227,7 @@ import { PaginatorComponent } from '../shared/paginator.component';
                           </span>
                         </td>
                         <td class="px-3 py-2.5 whitespace-nowrap relative">
-                          @if (lead.status !== 'Converted') {
+                          @if (lead.status !== 'Converted' && canWrite()) {
                             <button (click)="$event.stopPropagation(); toggleConvertMenu(lead.id, $event)" class="btn-secondary rounded-lg px-2 py-1 text-[10px] font-semibold text-zinc-900 transition-all flex items-center gap-1 whitespace-nowrap">
                               <mat-icon class="text-[12px] w-3 h-3">arrow_forward</mat-icon>
                               Convert
@@ -242,7 +245,7 @@ import { PaginatorComponent } from '../shared/paginator.component';
                               </div>
                             }
                           } @else {
-                            <span class="px-2 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full bg-zinc-200 text-zinc-950 border border-zinc-300 whitespace-nowrap">Converted</span>
+                            <span class="px-2 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap">Converted</span>
                           }
                         </td>
                         <td class="px-3 py-2.5 whitespace-nowrap text-center">
@@ -469,10 +472,10 @@ import { PaginatorComponent } from '../shared/paginator.component';
                       @if (activeDetailTab() === 'attachments') {
                         <div class="space-y-6">
                           <div class="card rounded-xl p-4 space-y-3">
-                            <h3 class="text-xs font-bold text-zinc-700 uppercase">Upload Document (Mock)</h3>
-                            <div class="flex gap-3">
-                              <input [(ngModel)]="newAttachmentName" type="text" placeholder="e.g. Business_Card.png" class="flex-1 input-field rounded-lg p-2 text-xs outline-none">
-                              <button (click)="submitAttachment(lead.id)" class="bg-zinc-900/80 hover:bg-zinc-950 text-white px-3 py-2 rounded-lg text-xs font-semibold backdrop-blur-sm">Upload File</button>
+                            <h3 class="text-xs font-bold text-zinc-700 uppercase">Upload Document</h3>
+                            <div class="flex gap-3 items-center">
+                              <input type="file" (change)="onFileSelected($event, lead.id)" class="flex-1 text-xs">
+                              @if (uploading()) { <span class="text-[10px] text-zinc-400">Uploading&hellip;</span> }
                             </div>
                           </div>
                           <div class="space-y-3">
@@ -482,9 +485,16 @@ import { PaginatorComponent } from '../shared/paginator.component';
                                 <div class="px-4 py-3 flex justify-between items-center text-xs">
                                   <div class="flex items-center gap-2.5">
                                     <mat-icon class="text-zinc-400 text-[20px]! w-5 h-5">insert_drive_file</mat-icon>
-                                    <div><div class="font-semibold text-zinc-800">{{ file.fileName }}</div><div class="text-[10px] text-zinc-400">Uploaded: {{ file.uploadedAt }} &bull; {{ file.fileSize || 'N/A' }}</div></div>
+                                    <div>
+                                      <div class="font-semibold text-zinc-800">
+                                        @if (file.fileId) {
+                                          <a [href]="getDownloadUrl(file.fileId)" target="_blank" class="hover:underline">{{ file.fileName }}</a>
+                                        } @else { {{ file.fileName }} }
+                                      </div>
+                                      <div class="text-[10px] text-zinc-400">Uploaded: {{ file.uploadedAt }} &bull; {{ file.fileSize || 'N/A' }}</div>
+                                    </div>
                                   </div>
-                                  <button title="Delete attachment" class="text-zinc-400 hover:text-zinc-900 transition-colors"><mat-icon class="text-[16px]! w-4 h-4">delete_outline</mat-icon></button>
+                                  <button title="Delete attachment" (click)="deleteAttachment(lead.id, file)" class="text-zinc-400 hover:text-zinc-900 transition-colors"><mat-icon class="text-[16px]! w-4 h-4">delete_outline</mat-icon></button>
                                 </div>
                               } @empty { <p class="text-xs text-zinc-400 text-center py-6">No attachments uploaded yet.</p> }
                             </div>
@@ -676,13 +686,13 @@ import { PaginatorComponent } from '../shared/paginator.component';
                 </div>
 
                 <div class="mt-6 pt-4 border-t border-white/30 flex gap-2">
-                  @if(partner.type === 'Lead') {
+                  @if(partner.type === 'Lead' && canWrite()) {
                     <button (click)="partnersService.updatePartner(partner.id, { status: 'prospect' })" class="w-full btn-secondary rounded-xl px-3 py-2 text-sm font-semibold text-zinc-900 transition-all flex items-center justify-center">
                       <mat-icon class="mr-2 text-[16px] w-4 h-4">arrow_forward</mat-icon>
                       Convert to Prospect
                     </button>
                   }
-                  @if(partner.type === 'Prospect') {
+                  @if(partner.type === 'Prospect' && canWrite()) {
                     <button (click)="openConvertModal(partner)" class="w-full btn-secondary rounded-xl px-3 py-2 text-sm font-semibold text-zinc-900 transition-all flex items-center justify-center">
                       <mat-icon class="mr-2 text-[16px] w-4 h-4">published_with_changes</mat-icon>
                       Convert to Customer
@@ -827,11 +837,22 @@ import { PaginatorComponent } from '../shared/paginator.component';
 export class PartnersComponent {
   state = inject(CrmStateService);
   partnersService = inject(PartnersService);
+  api = inject(ApiService);
   router = inject(Router);
+  uploading = signal(false);
   activeTab = signal<'Lead' | 'Customer' | 'Prospect' | 'Vendor'>('Lead');
   showCreateModal = signal(false);
 
+  canCreate(): boolean {
+    return this.state.hasAuthority('PARTNERS_CREATE');
+  }
+
+  canWrite(): boolean {
+    return this.state.hasAuthority('PARTNERS_WRITE');
+  }
+
   deletePartner(partner: any) {
+    if (!this.state.hasAuthority('PARTNERS_DELETE')) return;
     if (confirm(`Delete "${partner.name}"? This cannot be undone.`)) {
       this.partnersService.deletePartner(partner.id);
     }
@@ -854,8 +875,6 @@ export class PartnersComponent {
     summary: '',
     detail: ''
   };
-
-  newAttachmentName = '';
 
   newLead = {
     name: '',
@@ -961,12 +980,14 @@ export class PartnersComponent {
   }
 
   openCreateModal() {
+    if (!this.canCreate()) return;
     this.newPartner.id = undefined;
     this.newPartner.type = this.activeTab();
     this.showCreateModal.set(true);
   }
 
   openConvertModal(partner: Partner | Lead) {
+    if (!this.canWrite()) return;
     this.newPartner = {
       id: partner.id,
       name: partner.name,
@@ -1032,7 +1053,8 @@ export class PartnersComponent {
   }
 
   savePartner() {
-    if (this.newPartner.name.trim()) {
+    const allowed = this.newPartner.id ? this.canWrite() : this.canCreate();
+    if (allowed && this.newPartner.name.trim()) {
       if (this.newPartner.type === 'Customer') {
         if (!this.newPartner.ICE || this.newPartner.ICE.length !== 15) { alert('ICE must be exactly 15 digits.'); return; }
         if (!this.newPartner.IF || !this.newPartner.IF.trim()) { alert('IF is required.'); return; }
@@ -1083,10 +1105,12 @@ export class PartnersComponent {
   }
 
   markLeadAsLost(lead: Lead) {
+    if (!this.canWrite()) return;
     this.state.updateLeadStatus(lead.id, 'Lost');
   }
 
   convertLeadToProspect(lead: Lead) {
+    if (!this.canWrite()) return;
     this.state.convertLeadDataToProspect(lead);
   }
 
@@ -1099,7 +1123,6 @@ export class PartnersComponent {
       summary: '',
       detail: ''
     };
-    this.newAttachmentName = '';
   }
 
   closeDetails() {
@@ -1115,7 +1138,7 @@ export class PartnersComponent {
   }
 
   submitActivity(leadId: string) {
-    if (!this.newActivity.summary.trim()) return;
+    if (!this.canWrite() || !this.newActivity.summary.trim()) return;
     this.state.addLeadActivity(leadId, {
       type: this.newActivity.type,
       date: this.newActivity.date,
@@ -1135,21 +1158,58 @@ export class PartnersComponent {
     };
   }
 
-  submitAttachment(leadId: string) {
-    if (!this.newAttachmentName.trim()) return;
-    this.state.addLeadAttachment(leadId, {
-      fileName: this.newAttachmentName,
-      fileSize: '1.5 MB',
-      uploadedAt: new Date().toISOString().split('T')[0]
+  onFileSelected(event: Event, leadId: string) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file || !this.canWrite()) return;
+    this.uploading.set(true);
+    this.api.uploadFile(file, 'PARTNER', leadId).subscribe({
+      next: (dto) => {
+        this.uploading.set(false);
+        this.state.addLeadAttachment(leadId, {
+          fileName: dto.fileName,
+          fileSize: this.formatFileSize(dto.sizeBytes),
+          uploadedAt: new Date().toISOString().split('T')[0],
+          fileId: dto.id
+        });
+        const updated = this.state.leadsData().find(l => l.id === leadId);
+        if (updated) {
+          this.selectedLead.set(updated);
+        }
+        input.value = '';
+      },
+      error: () => {
+        this.uploading.set(false);
+        input.value = '';
+      }
     });
+  }
+
+  formatFileSize(bytes?: number): string {
+    if (!bytes) return 'N/A';
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  getDownloadUrl(fileId: string): string {
+    return this.api.getFileDownloadUrl(fileId);
+  }
+
+  deleteAttachment(leadId: string, file: LeadAttachment) {
+    if (!this.canWrite()) return;
+    this.state.removeLeadAttachment(leadId, file.id);
+    if (file.fileId) {
+      this.api.deleteFile(file.fileId).subscribe({ error: () => {} });
+    }
     const updated = this.state.leadsData().find(l => l.id === leadId);
     if (updated) {
       this.selectedLead.set(updated);
     }
-    this.newAttachmentName = '';
   }
 
   openAddLeadModal() {
+    if (!this.canCreate()) return;
     this.newLead = {
       name: '',
       companyName: '',
@@ -1171,6 +1231,7 @@ export class PartnersComponent {
   }
 
   saveLead() {
+    if (!this.canCreate()) return;
     if (!this.newLead.name.trim() || !this.newLead.companyName.trim()) {
       alert('Lead Name and Company Name are required.');
       return;
@@ -1238,23 +1299,23 @@ export class PartnersComponent {
 
   getStatusClass(status: string): string {
     switch (status) {
-      case 'New': return 'bg-zinc-200 text-zinc-950';
-      case 'Contacted': return 'bg-zinc-200 text-zinc-950';
-      case 'Attempted Contact': return 'bg-zinc-200 text-zinc-950';
-      case 'Meeting Scheduled': return 'bg-zinc-200 text-zinc-950';
-      case 'Qualified': return 'bg-zinc-200 text-zinc-950';
-      case 'Proposal Requested': return 'bg-zinc-200 text-zinc-950';
-      case 'Converted': return 'bg-zinc-200 text-zinc-950';
-      case 'Lost': return 'bg-zinc-200 text-zinc-950';
-      case 'Disqualified': return 'bg-zinc-100 text-zinc-800';
+      case 'New': return 'bg-slate-100 text-slate-700';
+      case 'Contacted': return 'bg-sky-50 text-sky-700';
+      case 'Attempted Contact': return 'bg-sky-50 text-sky-700';
+      case 'Meeting Scheduled': return 'bg-indigo-50 text-indigo-700';
+      case 'Qualified': return 'bg-violet-50 text-violet-700';
+      case 'Proposal Requested': return 'bg-purple-50 text-purple-700';
+      case 'Converted': return 'bg-emerald-50 text-emerald-700';
+      case 'Lost': return 'bg-red-50 text-red-700';
+      case 'Disqualified': return 'bg-red-50 text-red-600';
       default: return 'bg-zinc-100 text-zinc-800';
     }
   }
 
   getPriorityBadge(priority: string): string {
     switch(priority) {
-      case 'High': return 'bg-zinc-100 text-zinc-900 border border-zinc-200';
-      case 'Medium': return 'bg-zinc-100 text-zinc-900 border border-zinc-200';
+      case 'High': return 'bg-red-50 text-red-700 border border-red-200';
+      case 'Medium': return 'bg-amber-50 text-amber-700 border border-amber-200';
       case 'Low': return 'bg-zinc-50 text-zinc-600 border border-zinc-100';
       default: return 'bg-zinc-50 text-zinc-600';
     }
@@ -1262,9 +1323,9 @@ export class PartnersComponent {
 
   getTempBadge(temp: string): string {
     switch(temp) {
-      case 'Hot': return 'bg-zinc-100 text-zinc-900 border border-zinc-200';
-      case 'Warm': return 'bg-zinc-100 text-zinc-900 border border-zinc-200';
-      case 'Cold': return 'bg-zinc-100 text-zinc-900 border border-zinc-200';
+      case 'Hot': return 'bg-red-50 text-red-700 border border-red-200';
+      case 'Warm': return 'bg-amber-50 text-amber-700 border border-amber-200';
+      case 'Cold': return 'bg-sky-50 text-sky-700 border border-sky-200';
       default: return 'bg-zinc-50 text-zinc-600';
     }
   }

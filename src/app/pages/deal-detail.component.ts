@@ -205,7 +205,7 @@ import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
                           <span class="font-bold text-zinc-800">{{ call.callerName }}</span>
                           <span class="text-zinc-400 font-sans text-[10px]">{{ call.date }} ({{ call.duration }} min)</span>
                         </div>
-                        <span [class]="call.outcome === 'Interested' ? 'bg-zinc-100 text-zinc-950 border-zinc-200' : call.outcome === 'Follow-up' ? 'bg-zinc-100 text-zinc-950 border-zinc-200' : 'bg-zinc-100 text-zinc-600 border-zinc-200'"
+                        <span [class]="call.outcome === 'Interested' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : call.outcome === 'Follow-up' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-zinc-100 text-zinc-600 border-zinc-200'"
                               class="px-2 py-0.5 rounded text-[10px] font-semibold border">{{ call.outcome }}</span>
                       </div>
                       <p class="text-[11px] text-zinc-600 font-sans leading-relaxed">{{ call.summary }}</p>
@@ -375,7 +375,7 @@ import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
                           <span class="text-[10px] text-zinc-400 font-sans">Due date: {{ f.dueDate }} | Owner: {{ f.assignedTo }}</span>
                         </div>
                       </div>
-                      <span [class]="f.status === 'done' ? 'bg-zinc-100 text-zinc-950 border-zinc-200' : 'bg-zinc-100 text-zinc-950 border-zinc-200'" class="px-2 py-0.5 border text-[9px] font-bold uppercase rounded font-sans">
+                      <span [class]="f.status === 'done' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'" class="px-2 py-0.5 border text-[9px] font-bold uppercase rounded font-sans">
                         {{ f.status === 'done' ? 'Completed' : 'Pending' }}
                       </span>
                     </div>
@@ -450,15 +450,17 @@ import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
             <span class="text-xs text-zinc-500">Lines: {{ deal.orderLines?.length || 0 }} items</span>
           </div>
           <div class="flex gap-2">
-            @if (!hasPOForDeal(deal.id)) {
+            @if (!hasPOForDeal(deal.id) && canCreatePO()) {
               <button (click)="openCreatePOModal(deal)" class="bg-zinc-100 hover:bg-zinc-200 border border-zinc-300 text-zinc-950 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors flex items-center">
                 <mat-icon class="mr-1 text-[16px] w-4 h-4">add_shopping_cart</mat-icon> Create PO (Operations)
               </button>
             }
-            <button (click)="openAssignTaskModal(deal.id, deal.title)" class="bg-white border border-zinc-300 text-zinc-900 hover:bg-zinc-100 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
-              <mat-icon class="text-[16px] w-4 h-4">assignment</mat-icon> Assign Task
-            </button>
-            @if (deal.stage === 'New') {
+            @if (canCreateTask()) {
+              <button (click)="openAssignTaskModal(deal.id, deal.title)" class="bg-white border border-zinc-300 text-zinc-900 hover:bg-zinc-100 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                <mat-icon class="text-[16px] w-4 h-4">assignment</mat-icon> Assign Task
+              </button>
+            }
+            @if (deal.stage === 'New' && canWriteDeal()) {
               <button (click)="state.updateDealStage(deal.id, 'Confirmed')" class="bg-zinc-900 hover:bg-zinc-950 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors flex items-center">
                 <mat-icon class="mr-1 text-[16px] w-4 h-4">check</mat-icon> Confirm Deal
               </button>
@@ -795,6 +797,12 @@ export class DealDetailComponent {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
+  canWriteDeal(): boolean { return this.state.hasAuthority('DEALS_WRITE'); }
+  canCreatePO(): boolean { return this.state.hasAuthority('PURCHASE_ORDERS_CREATE'); }
+  canCreateTask(): boolean { return this.state.hasAuthority('TASKS_CREATE'); }
+  canWriteDealActivity(): boolean { return this.state.hasAuthority('DEAL_ACTIVITIES_WRITE'); }
+  canCreateDealActivity(): boolean { return this.state.hasAuthority('DEAL_ACTIVITIES_CREATE'); }
+
   dealId = signal<string | null>(null);
 
   deal = computed(() => {
@@ -804,6 +812,7 @@ export class DealDetailComponent {
   });
 
   deleteDeal(deal: Deal) {
+    if (!this.state.hasAuthority('DEALS_DELETE')) return;
     if (confirm(`Delete deal "${deal.title}"? This cannot be undone.`)) {
       this.state.deleteDeal(deal.id);
       this.router.navigate(['/sales']);
@@ -882,11 +891,13 @@ export class DealDetailComponent {
   }
 
   toggleFollowUpStatus(dealId: string, followUpId: string, currentStatus: string): void {
+    if (!this.canWriteDealActivity()) return;
     const nextStatus = currentStatus === 'done' ? 'pending' : 'done';
     this.state.updateFollowUpStatus(dealId, followUpId, nextStatus);
   }
 
   openAddActivityModal(dealId: string, type: 'calls' | 'emails' | 'meetings' | 'recordings' | 'notes' | 'followups') {
+    if (!this.canCreateDealActivity()) return;
     this.addActivityModalOpen.set({ dealId, type });
     const me = this.state.users().find(u => u.team === 'Sales')?.name || 'Youssef El Alami';
     const deal = this.state.deals().find(d => d.id === dealId);
@@ -903,6 +914,7 @@ export class DealDetailComponent {
   }
 
   saveActivityEntry() {
+    if (!this.canCreateDealActivity()) return;
     const modal = this.addActivityModalOpen();
     if (!modal) return;
 
@@ -963,6 +975,7 @@ export class DealDetailComponent {
   }
 
   openCreatePOModal(deal: Deal) {
+    if (!this.canCreatePO()) return;
     this.selectedDealForPO.set(deal);
     this.selectedVendorId.set(this.state.vendors()[0]?.id || '');
     this.showNewVendorForm.set(false);
@@ -983,6 +996,7 @@ export class DealDetailComponent {
   }
 
   savePurchaseOrder() {
+    if (!this.canCreatePO()) return;
     const deal = this.selectedDealForPO();
     if (!deal) return;
 
@@ -1014,6 +1028,7 @@ export class DealDetailComponent {
   }
 
   saveDraftPO() {
+    if (!this.canCreatePO()) return;
     const deal = this.selectedDealForPO();
     if (!deal) return;
 
@@ -1076,6 +1091,7 @@ export class DealDetailComponent {
 
   // Assign Task
   openAssignTaskModal(entityId: string, entityTitle: string) {
+    if (!this.canCreateTask()) return;
     this.assignTaskData = {
       title: '',
       description: '',
@@ -1086,6 +1102,7 @@ export class DealDetailComponent {
   }
 
   saveAssignTask() {
+    if (!this.canCreateTask()) return;
     const ctx = this.assignTaskModalOpen();
     if (!ctx || !this.assignTaskData.title.trim() || !this.assignTaskData.assignedTo) return;
 
