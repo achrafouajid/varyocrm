@@ -145,7 +145,7 @@ import { MatIconModule } from '@angular/material/icon';
                   <span
                     [style.background-color]="team.color + '15'"
                     [style.color]="team.color"
-                    class="inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold border border-transparent tracking-wide uppercase mt-1"
+                    class="inline-flex px-2 py-0.5 rounded-full text-meta font-bold border border-transparent tracking-wide uppercase mt-1"
                   >
                     {{ team.department }}
                   </span>
@@ -168,7 +168,7 @@ import { MatIconModule } from '@angular/material/icon';
                     <span>{{ getLeadName(team.leadUserId) }}</span>
                     <mat-icon class="text-zinc-700 text-xs w-4 h-4 flex items-center justify-center" title="Team Lead">star</mat-icon>
                   </div>
-                  <span class="text-[10px] text-zinc-400 block mt-0.5">Team Lead</span>
+                  <span class="text-meta text-zinc-400 block mt-0.5">Team Lead</span>
                 </div>
               </div>
 
@@ -201,7 +201,7 @@ import { MatIconModule } from '@angular/material/icon';
                           <app-user-avatar [userId]="user.id" [size]="28"></app-user-avatar>
                           <div class="min-w-0">
                             <span class="text-xs font-bold text-zinc-800 truncate block">{{ user.displayName }}</span>
-                            <span class="text-[9px] text-zinc-400 block">{{ user.jobTitle || 'No title' }}</span>
+                            <span class="text-meta text-zinc-400 block">{{ user.jobTitle || 'No title' }}</span>
                           </div>
                         </div>
 
@@ -211,7 +211,7 @@ import { MatIconModule } from '@angular/material/icon';
                             @if (canWrite()) {
                               <button
                                 (click)="startTransferLead(team.id)"
-                                class="text-[10px] text-zinc-900 hover:text-zinc-950 font-bold hover:underline cursor-pointer"
+                                class="text-meta text-zinc-900 hover:text-zinc-950 font-bold hover:underline cursor-pointer"
                               >
                                 Transfer Lead
                               </button>
@@ -234,7 +234,7 @@ import { MatIconModule } from '@angular/material/icon';
                 <!-- Inline lead transfer panel -->
                 @if (transferLeadTeamId() === team.id) {
                   <div class="bg-zinc-100/50 border border-zinc-200 rounded-xl p-3 space-y-2">
-                    <label class="block text-[10px] font-bold text-zinc-950 uppercase">Transfer Lead to:</label>
+                    <label class="block text-meta font-bold text-zinc-950 uppercase">Transfer Lead to:</label>
                     <div class="flex items-center gap-2">
                       <select
                         (change)="executeLeadTransfer(team.id, $event)"
@@ -249,20 +249,20 @@ import { MatIconModule } from '@angular/material/icon';
                       </select>
                       <button
                         (click)="cancelTransferLead()"
-                        class="text-[10px] text-zinc-500 hover:text-zinc-700 font-bold hover:underline cursor-pointer"
+                        class="text-meta text-zinc-500 hover:text-zinc-700 font-bold hover:underline cursor-pointer"
                       >
                         Cancel
                       </button>
                     </div>
                     @if (leadTransferError()) {
-                      <p class="text-[9px] text-zinc-900 font-semibold mt-1">{{ leadTransferError() }}</p>
+                      <p class="text-meta text-zinc-900 font-semibold mt-1">{{ leadTransferError() }}</p>
                     }
                   </div>
                 }
 
                 <!-- Remove member errors -->
                 @if (memberErrorTeamId() === team.id) {
-                  <div class="text-[10px] text-zinc-900 font-semibold bg-zinc-100 border border-zinc-200 rounded-lg p-2 flex items-center gap-1.5 animate-in fade-in duration-200">
+                  <div class="text-meta text-zinc-900 font-semibold bg-zinc-100 border border-zinc-200 rounded-lg p-2 flex items-center gap-1.5 animate-in fade-in duration-200">
                     <mat-icon class="text-zinc-700 text-xs w-4 h-4 flex items-center justify-center">error</mat-icon>
                     <span>{{ memberErrorMessage() }}</span>
                   </div>

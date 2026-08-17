@@ -51,35 +51,35 @@ import { CrmStateService, Customer360View } from '../services/crm-state.service'
             <div class="flex items-center gap-4 group">
               <mat-icon class="text-zinc-400 shrink-0" style="font-size:20px;width:20px;height:20px">person_outline</mat-icon>
               <div class="flex-1">
-                <span class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider font-sans block">First Name</span>
+                <span class="text-meta font-bold text-zinc-400 uppercase tracking-wider font-sans block">First Name</span>
                 <span class="text-base font-bold text-zinc-900 font-sans">{{ firstName() }}</span>
               </div>
             </div>
             <div class="flex items-center gap-4 group">
               <mat-icon class="text-zinc-400 shrink-0" style="font-size:20px;width:20px;height:20px">person_outline</mat-icon>
               <div class="flex-1">
-                <span class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider font-sans block">Last Name</span>
+                <span class="text-meta font-bold text-zinc-400 uppercase tracking-wider font-sans block">Last Name</span>
                 <span class="text-base font-bold text-zinc-900 font-sans">{{ lastName() }}</span>
               </div>
             </div>
             <div class="flex items-center gap-4 group">
               <mat-icon class="text-zinc-400 shrink-0" style="font-size:20px;width:20px;height:20px">mail_outline</mat-icon>
               <div class="flex-1 min-w-0">
-                <span class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider font-sans block">Email</span>
+                <span class="text-meta font-bold text-zinc-400 uppercase tracking-wider font-sans block">Email</span>
                 <span class="text-base font-bold text-zinc-900 font-sans truncate block">{{ view().partner.email || '—' }}</span>
               </div>
             </div>
             <div class="flex items-center gap-4 group">
               <mat-icon class="text-zinc-400 shrink-0" style="font-size:20px;width:20px;height:20px">phone_outline</mat-icon>
               <div class="flex-1">
-                <span class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider font-sans block">Phone Number</span>
+                <span class="text-meta font-bold text-zinc-400 uppercase tracking-wider font-sans block">Phone Number</span>
                 <span class="text-base font-bold text-zinc-900 font-sans">{{ view().partner.phone || '—' }}</span>
               </div>
             </div>
             <div class="flex items-start gap-4 group">
               <mat-icon class="text-zinc-400 shrink-0 mt-1" style="font-size:20px;width:20px;height:20px">hub</mat-icon>
               <div class="flex-1">
-                <span class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider font-sans block mb-1">Sources</span>
+                <span class="text-meta font-bold text-zinc-400 uppercase tracking-wider font-sans block mb-1">Sources</span>
                 <div class="flex flex-wrap gap-2">
                   @for (src of sources(); track src) {
                     <div class="w-8 h-8 rounded-full bg-zinc-100 flex items-center justify-center shadow-sm" [title]="src">
@@ -92,7 +92,7 @@ import { CrmStateService, Customer360View } from '../services/crm-state.service'
             <div class="flex items-center gap-4 group">
               <mat-icon class="text-zinc-400 shrink-0" style="font-size:20px;width:20px;height:20px">calendar_month</mat-icon>
               <div class="flex-1">
-                <span class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider font-sans block">Last Contacted</span>
+                <span class="text-meta font-bold text-zinc-400 uppercase tracking-wider font-sans block">Last Contacted</span>
                 <span class="text-base font-bold text-zinc-900 font-sans">{{ lastContacted() }}</span>
               </div>
             </div>
@@ -117,7 +117,7 @@ import { CrmStateService, Customer360View } from '../services/crm-state.service'
               <div class="p-5 rounded-[24px] flex flex-col justify-between shadow-md hover:scale-[1.02] transition-transform min-h-[140px]" [class]="dealCardClass(order.stage)">
                 <div class="flex items-start justify-between gap-2 mb-2">
                   <div>
-                    <div class="text-[11px] font-bold opacity-80 uppercase tracking-wide font-sans mb-1">
+                    <div class="text-meta font-bold opacity-80 uppercase tracking-wide font-sans mb-1">
                       {{ order.date ? (order.date | date:'MMM d') : '—' }}
                     </div>
                     <span class="font-bold text-sm font-sans leading-snug line-clamp-2" [title]="order.title">{{ order.title }}</span>
@@ -164,7 +164,7 @@ import { CrmStateService, Customer360View } from '../services/crm-state.service'
                   </div>
                   <div class="min-w-0 flex-1">
                     <span class="text-sm font-bold text-zinc-800 font-sans block truncate">{{ item.title }}</span>
-                    <span class="text-[11px] font-bold text-zinc-400 uppercase tracking-wide font-sans">{{ item.status || 'Scheduled' }}</span>
+                    <span class="text-meta font-bold text-zinc-400 uppercase tracking-wide font-sans">{{ item.status || 'Scheduled' }}</span>
                   </div>
                 </div>
               } @empty {
@@ -183,7 +183,7 @@ import { CrmStateService, Customer360View } from '../services/crm-state.service'
             </div>
             <div class="space-y-5">
               <div class="flex items-center justify-between mb-2">
-                <div class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider font-sans bg-zinc-100 px-3 py-1 rounded-full">Total in Pipeline</div>
+                <div class="text-meta font-bold text-zinc-400 uppercase tracking-wider font-sans bg-zinc-100 px-3 py-1 rounded-full">Total in Pipeline</div>
               </div>
               <div>
                 <span class="text-3xl font-extrabold font-sans text-zinc-900">{{ formatCurrencyWithoutSymbol(totalValue()) }}<span class="text-lg font-bold opacity-60">{{ currencySymbol() }}</span></span>
@@ -193,7 +193,7 @@ import { CrmStateService, Customer360View } from '../services/crm-state.service'
                 @for (item of stageBreakdown(); track item.stage) {
                   <div class="bg-white border border-zinc-200 rounded-[16px] p-3 flex items-center justify-between shadow-sm">
                     <div class="min-w-0 pr-2">
-                      <span class="text-[11px] font-bold text-zinc-500 font-sans block truncate uppercase tracking-wider mb-0.5">{{ item.stage }}</span>
+                      <span class="text-meta font-bold text-zinc-500 font-sans block truncate uppercase tracking-wider mb-0.5">{{ item.stage }}</span>
                       <span class="text-sm font-extrabold font-sans text-zinc-800">{{ formatCurrency(item.value) }}</span>
                     </div>
                     <div class="flex items-center gap-1">

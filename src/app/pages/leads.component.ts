@@ -113,6 +113,9 @@ import { ApiService } from '../services/api.service';
           <table class="min-w-full divide-y divide-slate-100">
             <thead class="bg-zinc-50/50">
               <tr>
+                <th scope="col" class="px-6 py-3 text-left">
+                  <input type="checkbox" [checked]="allLeadsSelected()" (click)="toggleSelectAllLeads($event)" class="rounded border-zinc-300 cursor-pointer">
+                </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-zinc-400 uppercase tracking-wider">Lead</th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-zinc-400 uppercase tracking-wider">Company & Job</th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-zinc-400 uppercase tracking-wider">Qualification</th>
@@ -125,6 +128,9 @@ import { ApiService } from '../services/api.service';
             <tbody class="divide-y divide-slate-200/80 bg-white">
               @for (lead of filteredLeads(); track lead.id) {
                 <tr (click)="selectLead(lead)" class="hover:bg-zinc-100/20 transition-colors cursor-pointer group">
+                  <td class="px-6 py-4 whitespace-nowrap" (click)="toggleLeadSelect(lead.id, $event)">
+                    <input type="checkbox" [checked]="isLeadSelected(lead.id)" class="rounded border-zinc-300 cursor-pointer">
+                  </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="flex items-center gap-3">
                       <div class="h-10 w-10 bg-zinc-200/80 text-zinc-950 font-bold rounded-xl flex items-center justify-center shadow-xs">
@@ -142,10 +148,10 @@ import { ApiService } from '../services/api.service';
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="flex items-center gap-1.5">
-                      <span [class]="getPriorityBadge(lead.priority)" class="px-2 py-0.5 text-[10px] font-bold uppercase rounded-md">
+                      <span [class]="getPriorityBadge(lead.priority)" class="px-2 py-0.5 text-meta font-bold uppercase rounded-md">
                         {{ lead.priority }}
                       </span>
-                      <span [class]="getTempBadge(lead.temperature)" class="px-2 py-0.5 text-[10px] font-bold uppercase rounded-md">
+                      <span [class]="getTempBadge(lead.temperature)" class="px-2 py-0.5 text-meta font-bold uppercase rounded-md">
                         {{ lead.temperature }}
                       </span>
                     </div>
@@ -160,7 +166,7 @@ import { ApiService } from '../services/api.service';
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="flex items-center gap-1.5">
-                      <span class="px-2 py-0.5 text-[11px] font-semibold rounded-md bg-zinc-100 text-zinc-700">
+                      <span class="px-2 py-0.5 text-meta font-semibold rounded-md bg-zinc-100 text-zinc-700">
                         {{ lead.origin || lead.campaigns?.[0]?.source || '—' }}
                       </span>
                     </div>
@@ -180,7 +186,7 @@ import { ApiService } from '../services/api.service';
                 </tr>
               } @empty {
                 <tr>
-                  <td colspan="7" class="px-6 py-12 text-center text-zinc-400">
+                  <td colspan="8" class="px-6 py-12 text-center text-zinc-400">
                     <mat-icon class="text-[48px]! w-12 h-12 mb-3 text-zinc-300 block mx-auto">people_alt</mat-icon>
                     <p class="font-semibold text-zinc-500">No leads found</p>
                     <p class="text-xs text-zinc-400 mt-1">Try resetting filters or adding a new lead record.</p>
@@ -191,6 +197,23 @@ import { ApiService } from '../services/api.service';
           </table>
         </div>
       </div>
+
+      @if (selectedLeadIds().size > 0) {
+        <div class="bulk-action-bar">
+          <span class="text-body font-semibold">{{ selectedLeadIds().size }} selected</span>
+          <div class="w-px h-4 bg-white/20"></div>
+          <select class="text-body bg-white/10 text-white rounded-md px-2 py-1.5 border-none outline-none cursor-pointer" (change)="bulkAssignLeadOwner($event)">
+            <option value="">Assign owner…</option>
+            @for (u of state.users(); track u.id) { <option [value]="u.name">{{u.name}}</option> }
+          </select>
+          <select class="text-body bg-white/10 text-white rounded-md px-2 py-1.5 border-none outline-none cursor-pointer" (change)="bulkChangeLeadStage($event)">
+            <option value="">Change stage…</option>
+            @for (s of leadStatusOptions; track s) { <option [value]="s">{{s}}</option> }
+          </select>
+          <button class="text-body font-semibold px-3 py-1.5 rounded-md hover:bg-white/10 transition-colors" (click)="bulkExportLeads()">Export CSV</button>
+          <button class="text-meta ml-2 opacity-70 hover:opacity-100 transition-opacity" (click)="clearLeadSelection()">Clear</button>
+        </div>
+      }
     </div>
 
     <!-- Slide-over details pane for lead -->
@@ -217,7 +240,7 @@ import { ApiService } from '../services/api.service';
                 <div class="flex items-center gap-3">
                   <!-- Change Status Quick Dropdown -->
                   <div class="flex items-center gap-1.5 bg-white border border-zinc-200 rounded-lg px-2 py-1">
-                    <span class="text-[10px] uppercase font-bold text-zinc-400">Status:</span>
+                    <span class="text-meta uppercase font-bold text-zinc-400">Status:</span>
                     <select [ngModel]="lead.status" (ngModelChange)="onStatusChange(lead.id, $event)" class="text-xs font-semibold text-zinc-700 bg-transparent border-none focus:outline-none cursor-pointer">
                       <option value="New">New</option>
                       <option value="Contacted">Contacted</option>
@@ -255,38 +278,38 @@ import { ApiService } from '../services/api.service';
                       <h3 class="text-xs font-bold text-zinc-950 uppercase tracking-wider">Basic Information</h3>
                       <div class="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                          <div class="text-[10px] uppercase font-semibold text-zinc-400">Lead Name</div>
+                          <div class="text-meta uppercase font-semibold text-zinc-400">Lead Name</div>
                           <div class="font-medium text-zinc-800 mt-0.5">{{ lead.name }}</div>
                         </div>
                         <div>
-                          <div class="text-[10px] uppercase font-semibold text-zinc-400">Company</div>
+                          <div class="text-meta uppercase font-semibold text-zinc-400">Company</div>
                           <div class="font-medium text-zinc-800 mt-0.5">{{ lead.companyName }}</div>
                         </div>
                         <div>
-                          <div class="text-[10px] uppercase font-semibold text-zinc-400">Assigned Salesperson</div>
+                          <div class="text-meta uppercase font-semibold text-zinc-400">Assigned Salesperson</div>
                           <div class="font-medium text-zinc-800 mt-0.5">{{ lead.assignedSalesperson || 'Unassigned' }}</div>
                         </div>
                         <div>
-                          <div class="text-[10px] uppercase font-semibold text-zinc-400">Sales Team</div>
+                          <div class="text-meta uppercase font-semibold text-zinc-400">Sales Team</div>
                           <div class="font-medium text-zinc-800 mt-0.5">{{ lead.salesTeam || '—' }}</div>
                         </div>
                         <div>
-                          <div class="text-[10px] uppercase font-semibold text-zinc-400">Email</div>
+                          <div class="text-meta uppercase font-semibold text-zinc-400">Email</div>
                           <a href="mailto:{{ lead.contacts?.[0]?.email }}" class="font-medium text-zinc-900 hover:underline mt-0.5 block">{{ lead.contacts?.[0]?.email || '—' }}</a>
                         </div>
                         <div>
-                          <div class="text-[10px] uppercase font-semibold text-zinc-400">Phone</div>
+                          <div class="text-meta uppercase font-semibold text-zinc-400">Phone</div>
                           <div class="font-medium text-zinc-800 mt-0.5">{{ lead.contacts?.[0]?.phone || '—' }}</div>
                         </div>
                         @if (lead.contacts?.[0]?.website; as web) {
                           <div>
-                            <div class="text-[10px] uppercase font-semibold text-zinc-400">Website</div>
+                            <div class="text-meta uppercase font-semibold text-zinc-400">Website</div>
                             <a href="http://{{web}}" target="_blank" class="font-medium text-zinc-900 hover:underline mt-0.5 block">{{ web }}</a>
                           </div>
                         }
                         @if (lead.contacts?.[0]?.linkedin; as li) {
                           <div>
-                            <div class="text-[10px] uppercase font-semibold text-zinc-400">LinkedIn</div>
+                            <div class="text-meta uppercase font-semibold text-zinc-400">LinkedIn</div>
                             <a href="http://{{li}}" target="_blank" class="font-medium text-zinc-900 hover:underline mt-0.5 block">{{ li }}</a>
                           </div>
                         }
@@ -298,23 +321,23 @@ import { ApiService } from '../services/api.service';
                       <h3 class="text-xs font-bold text-zinc-950 uppercase tracking-wider">Company Information</h3>
                       <div class="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                          <div class="text-[10px] uppercase font-semibold text-zinc-400">Industry</div>
+                          <div class="text-meta uppercase font-semibold text-zinc-400">Industry</div>
                           <div class="font-medium text-zinc-800 mt-0.5">{{ lead.company?.industry || '—' }}</div>
                         </div>
                         <div>
-                          <div class="text-[10px] uppercase font-semibold text-zinc-400">Company Size</div>
+                          <div class="text-meta uppercase font-semibold text-zinc-400">Company Size</div>
                           <div class="font-medium text-zinc-800 mt-0.5">{{ lead.company?.size || '—' }}</div>
                         </div>
                         <div>
-                          <div class="text-[10px] uppercase font-semibold text-zinc-400">Annual Revenue</div>
+                          <div class="text-meta uppercase font-semibold text-zinc-400">Annual Revenue</div>
                           <div class="font-medium text-zinc-800 mt-0.5">{{ lead.company?.annualRevenue || '—' }}</div>
                         </div>
                         <div>
-                          <div class="text-[10px] uppercase font-semibold text-zinc-400">Offices Count</div>
+                          <div class="text-meta uppercase font-semibold text-zinc-400">Offices Count</div>
                           <div class="font-medium text-zinc-800 mt-0.5">{{ lead.company?.officesCount || '—' }}</div>
                         </div>
                         <div class="col-span-2">
-                          <div class="text-[10px] uppercase font-semibold text-zinc-400">Address</div>
+                          <div class="text-meta uppercase font-semibold text-zinc-400">Address</div>
                           <div class="font-medium text-zinc-800 mt-0.5">{{ lead.company?.address || '—' }}, {{ lead.company?.city || '—' }}, {{ lead.company?.country || '—' }}</div>
                         </div>
                       </div>
@@ -325,22 +348,22 @@ import { ApiService } from '../services/api.service';
                       <h3 class="text-xs font-bold text-zinc-950 uppercase tracking-wider">Origin & Marketing Campaign</h3>
                       <div class="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                          <div class="text-[10px] uppercase font-semibold text-zinc-400">Origin</div>
+                          <div class="text-meta uppercase font-semibold text-zinc-400">Origin</div>
                           <div class="font-medium text-zinc-800 mt-0.5">{{ lead.origin || lead.campaigns?.[0]?.source || '—' }}</div>
                         </div>
                         <div>
-                          <div class="text-[10px] uppercase font-semibold text-zinc-400">Campaign</div>
+                          <div class="text-meta uppercase font-semibold text-zinc-400">Campaign</div>
                           <div class="font-medium text-zinc-800 mt-0.5">{{ lead.campaigns?.[0]?.campaign || '—' }}</div>
                         </div>
                         @if (lead.campaigns?.[0]?.referralPartner) {
                           <div>
-                            <div class="text-[10px] uppercase font-semibold text-zinc-400">Referral Partner</div>
+                            <div class="text-meta uppercase font-semibold text-zinc-400">Referral Partner</div>
                             <div class="font-medium text-zinc-800 mt-0.5">{{ lead.campaigns?.[0]?.referralPartner }}</div>
                           </div>
                         }
                         @if (lead.campaigns?.[0]?.tradeShow) {
                           <div>
-                            <div class="text-[10px] uppercase font-semibold text-zinc-400">Trade Show</div>
+                            <div class="text-meta uppercase font-semibold text-zinc-400">Trade Show</div>
                             <div class="font-medium text-zinc-800 mt-0.5">{{ lead.campaigns?.[0]?.tradeShow }}</div>
                           </div>
                         }
@@ -352,19 +375,19 @@ import { ApiService } from '../services/api.service';
                       <h3 class="text-xs font-bold text-zinc-950 uppercase tracking-wider">Key Stakeholders (B2B)</h3>
                       <div class="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                          <div class="text-[10px] uppercase font-semibold text-zinc-400">Decision Maker</div>
+                          <div class="text-meta uppercase font-semibold text-zinc-400">Decision Maker</div>
                           <div class="font-medium text-zinc-800 mt-0.5">{{ lead.decisionMaker || '—' }}</div>
                         </div>
                         <div>
-                          <div class="text-[10px] uppercase font-semibold text-zinc-400">Influencer</div>
+                          <div class="text-meta uppercase font-semibold text-zinc-400">Influencer</div>
                           <div class="font-medium text-zinc-800 mt-0.5">{{ lead.influencer || '—' }}</div>
                         </div>
                         <div>
-                          <div class="text-[10px] uppercase font-semibold text-zinc-400">Finance Contact</div>
+                          <div class="text-meta uppercase font-semibold text-zinc-400">Finance Contact</div>
                           <div class="font-medium text-zinc-800 mt-0.5">{{ lead.financeContact || '—' }}</div>
                         </div>
                         <div>
-                          <div class="text-[10px] uppercase font-semibold text-zinc-400">Technical Contact</div>
+                          <div class="text-meta uppercase font-semibold text-zinc-400">Technical Contact</div>
                           <div class="font-medium text-zinc-800 mt-0.5">{{ lead.technicalContact || '—' }}</div>
                         </div>
                       </div>
@@ -373,7 +396,7 @@ import { ApiService } from '../services/api.service';
                     <!-- Audit Trail -->
                     <div class="bg-zinc-50/50 rounded-xl p-4 border border-zinc-100 space-y-3">
                       <h3 class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Audit Trail</h3>
-                      <div class="grid grid-cols-2 gap-4 text-[11px] text-zinc-500">
+                      <div class="grid grid-cols-2 gap-4 text-meta text-zinc-500">
                         <div>
                           <div>Created Date</div>
                           <div class="font-semibold text-zinc-700 mt-0.5">{{ lead.createdDate }} by {{ lead.createdBy }}</div>
@@ -395,19 +418,19 @@ import { ApiService } from '../services/api.service';
                       <h3 class="text-xs font-bold text-zinc-950 uppercase tracking-wider">Lead Qualification & Sales Potential</h3>
                       <div class="grid grid-cols-2 gap-4">
                         <div>
-                          <div class="text-[10px] uppercase font-semibold text-zinc-400">Interested Product</div>
+                          <div class="text-meta uppercase font-semibold text-zinc-400">Interested Product</div>
                           <div class="font-semibold text-zinc-850 mt-0.5">{{ lead.productInterests?.[0]?.product || '—' }}</div>
                         </div>
                         <div>
-                          <div class="text-[10px] uppercase font-semibold text-zinc-400">Solution</div>
+                          <div class="text-meta uppercase font-semibold text-zinc-400">Solution</div>
                           <div class="font-medium text-zinc-700 mt-0.5">{{ lead.productInterests?.[0]?.solution || '—' }}</div>
                         </div>
                         <div>
-                          <div class="text-[10px] uppercase font-semibold text-zinc-400">Origin</div>
+                          <div class="text-meta uppercase font-semibold text-zinc-400">Origin</div>
                           <div class="font-bold text-zinc-950 mt-0.5">{{ lead.origin || lead.campaigns?.[0]?.source || '—' }}</div>
                         </div>
                         <div>
-                          <div class="text-[10px] uppercase font-semibold text-zinc-400">Deal Probability</div>
+                          <div class="text-meta uppercase font-semibold text-zinc-400">Deal Probability</div>
                           <div class="font-medium text-zinc-750 mt-0.5">{{ lead.probability || '0' }}%</div>
                         </div>
                       </div>
@@ -426,7 +449,7 @@ import { ApiService } from '../services/api.service';
                       <h3 class="text-xs font-bold text-zinc-700 uppercase">Log New Activity</h3>
                       <div class="grid grid-cols-2 gap-3">
                         <div>
-                          <label class="block text-[10px] uppercase font-semibold text-zinc-400 mb-1">Type</label>
+                          <label class="block text-meta uppercase font-semibold text-zinc-400 mb-1">Type</label>
                           <select [(ngModel)]="newActivity.type" class="w-full border border-zinc-200 rounded-lg p-2 text-xs bg-white focus:outline-blue-600">
                             <option value="Call">Call</option>
                             <option value="Email">Email</option>
@@ -436,16 +459,16 @@ import { ApiService } from '../services/api.service';
                           </select>
                         </div>
                         <div>
-                          <label class="block text-[10px] uppercase font-semibold text-zinc-400 mb-1">Date</label>
+                          <label class="block text-meta uppercase font-semibold text-zinc-400 mb-1">Date</label>
                           <input [(ngModel)]="newActivity.date" type="date" class="w-full border border-zinc-200 rounded-lg p-1.5 text-xs focus:outline-blue-600">
                         </div>
                       </div>
                       <div>
-                        <label class="block text-[10px] uppercase font-semibold text-zinc-400 mb-1">Summary</label>
+                        <label class="block text-meta uppercase font-semibold text-zinc-400 mb-1">Summary</label>
                         <input [(ngModel)]="newActivity.summary" type="text" placeholder="e.g. Discussed pricing options" class="w-full border border-zinc-200 rounded-lg p-2 text-xs focus:outline-blue-600">
                       </div>
                       <div>
-                        <label class="block text-[10px] uppercase font-semibold text-zinc-400 mb-1">Details (Optional)</label>
+                        <label class="block text-meta uppercase font-semibold text-zinc-400 mb-1">Details (Optional)</label>
                         <textarea [(ngModel)]="newActivity.detail" rows="2" placeholder="More detailed recap..." class="w-full border border-zinc-200 rounded-lg p-2 text-xs focus:outline-blue-600"></textarea>
                       </div>
                       <div class="flex justify-end pt-2">
@@ -467,12 +490,12 @@ import { ApiService } from '../services/api.service';
                             <div class="flex-1 space-y-1">
                               <div class="flex justify-between items-center">
                                 <span class="text-xs font-semibold text-zinc-800">{{ act.summary }}</span>
-                                <span class="text-[10px] text-zinc-400 font-medium">{{ act.date }}</span>
+                                <span class="text-meta text-zinc-400 font-medium">{{ act.date }}</span>
                               </div>
                               @if (act.detail) {
                                 <p class="text-xs text-zinc-500 leading-relaxed">{{ act.detail }}</p>
                               }
-                              <div class="text-[9px] font-semibold text-zinc-400 flex items-center gap-1">
+                              <div class="text-meta font-semibold text-zinc-400 flex items-center gap-1">
                                 <span class="px-1.5 py-0.5 rounded bg-zinc-100">{{ act.type }}</span>
                                 @if (act.assignedTo) {
                                   <span>Assigned: {{ act.assignedTo }}</span>
@@ -495,7 +518,7 @@ import { ApiService } from '../services/api.service';
                       <h3 class="text-xs font-bold text-zinc-700 uppercase">Upload Document</h3>
                       <div class="flex gap-3 items-center">
                         <input type="file" (change)="onFileSelected($event, lead.id)" class="flex-1 text-xs">
-                        @if (uploading()) { <span class="text-[10px] text-zinc-400">Uploading&hellip;</span> }
+                        @if (uploading()) { <span class="text-meta text-zinc-400">Uploading&hellip;</span> }
                       </div>
                     </div>
 
@@ -512,7 +535,7 @@ import { ApiService } from '../services/api.service';
                                     <a [href]="getDownloadUrl(file.fileId)" target="_blank" class="hover:underline">{{ file.fileName }}</a>
                                   } @else { {{ file.fileName }} }
                                 </div>
-                                <div class="text-[10px] text-zinc-400">Uploaded: {{ file.uploadedAt }} &bull; {{ file.fileSize || 'N/A' }}</div>
+                                <div class="text-meta text-zinc-400">Uploaded: {{ file.uploadedAt }} &bull; {{ file.fileSize || 'N/A' }}</div>
                               </div>
                             </div>
                             <button (click)="deleteAttachment(lead.id, file)" class="text-zinc-400 hover:text-zinc-900 transition-colors">
@@ -538,9 +561,9 @@ import { ApiService } from '../services/api.service';
                           <div class="flex-1 text-xs">
                             <div class="flex justify-between font-semibold text-zinc-800">
                               <span>Status updated to: {{ hist.status }}</span>
-                              <span class="text-[10px] text-zinc-400 font-medium">{{ hist.timestamp }}</span>
+                              <span class="text-meta text-zinc-400 font-medium">{{ hist.timestamp }}</span>
                             </div>
-                            <div class="text-[10px] text-zinc-400 font-medium mt-0.5">Changed by: {{ hist.user }}</div>
+                            <div class="text-meta text-zinc-400 font-medium mt-0.5">Changed by: {{ hist.user }}</div>
                           </div>
                         </div>
                       } @empty {
@@ -572,7 +595,7 @@ import { ApiService } from '../services/api.service';
           <div class="space-y-4 text-xs font-sans">
             <!-- Basic Section -->
             <div class="space-y-2.5">
-              <h4 class="font-bold text-zinc-950 uppercase tracking-wider text-[10px]">1. Basic Information</h4>
+              <h4 class="font-bold text-zinc-950 uppercase tracking-wider text-meta">1. Basic Information</h4>
               <div class="grid grid-cols-2 gap-3">
                 <div>
                   <label class="block font-semibold text-zinc-500 mb-1">Lead Name*</label>
@@ -595,7 +618,7 @@ import { ApiService } from '../services/api.service';
 
             <!-- Company Section -->
             <div class="space-y-2.5">
-              <h4 class="font-bold text-zinc-950 uppercase tracking-wider text-[10px]">2. Company Information</h4>
+              <h4 class="font-bold text-zinc-950 uppercase tracking-wider text-meta">2. Company Information</h4>
               <div class="grid grid-cols-2 gap-3">
                 <div>
                   <label class="block font-semibold text-zinc-500 mb-1">Industry</label>
@@ -618,7 +641,7 @@ import { ApiService } from '../services/api.service';
 
             <!-- Qualification & Source -->
             <div class="space-y-2.5">
-              <h4 class="font-bold text-zinc-950 uppercase tracking-wider text-[10px]">3. Qualification & Source</h4>
+              <h4 class="font-bold text-zinc-950 uppercase tracking-wider text-meta">3. Qualification & Source</h4>
               <div class="grid grid-cols-3 gap-3">
                 <div>
                   <label class="block font-semibold text-zinc-500 mb-1">Status</label>
@@ -714,6 +737,10 @@ export class LeadsComponent {
   activeDetailTab = signal<'info' | 'activities' | 'attachments' | 'history'>('info');
   addLeadModalOpen = signal(false);
 
+  // Bulk selection state
+  selectedLeadIds = signal<Set<string>>(new Set());
+  leadStatusOptions = ['New','Contacted','Attempted Contact','Meeting Scheduled','Qualified','Proposal Requested','Converted','Lost','Disqualified'];
+
   // Forms state
   newActivity = {
     type: 'Call' as LeadActivity['type'],
@@ -776,6 +803,81 @@ export class LeadsComponent {
     }
     return list;
   });
+
+  allLeadsSelected = computed(() => {
+    const leads = this.filteredLeads();
+    return leads.length > 0 && leads.every(l => this.selectedLeadIds().has(l.id));
+  });
+
+  // Bulk selection actions
+  toggleLeadSelect(id: string, event: Event) {
+    event.stopPropagation();
+    const current = new Set(this.selectedLeadIds());
+    if (current.has(id)) {
+      current.delete(id);
+    } else {
+      current.add(id);
+    }
+    this.selectedLeadIds.set(current);
+  }
+
+  isLeadSelected(id: string): boolean {
+    return this.selectedLeadIds().has(id);
+  }
+
+  toggleSelectAllLeads(event: Event) {
+    event.stopPropagation();
+    const leads = this.filteredLeads();
+    if (this.allLeadsSelected()) {
+      this.selectedLeadIds.set(new Set());
+    } else {
+      this.selectedLeadIds.set(new Set(leads.map(l => l.id)));
+    }
+  }
+
+  clearLeadSelection() {
+    this.selectedLeadIds.set(new Set());
+  }
+
+  bulkAssignLeadOwner(event: Event) {
+    const value = (event.target as HTMLSelectElement).value;
+    if (!value) return;
+    for (const id of this.selectedLeadIds()) {
+      this.state.updateLead(id, { assignedSalesperson: value });
+    }
+  }
+
+  bulkChangeLeadStage(event: Event) {
+    const value = (event.target as HTMLSelectElement).value;
+    if (!value) return;
+    for (const id of this.selectedLeadIds()) {
+      this.state.updateLeadStatus(id, value as Lead['status']);
+    }
+  }
+
+  bulkExportLeads() {
+    const ids = this.selectedLeadIds();
+    const leads = this.state.leadsData().filter(l => ids.has(l.id));
+    const header = ['Name', 'Company', 'Status', 'Score', 'Owner'];
+    const rows = leads.map(l => [
+      l.name,
+      l.companyName,
+      l.status,
+      String(l.score),
+      l.assignedSalesperson || 'Unassigned'
+    ]);
+    const csvEscape = (val: string) => `"${val.replace(/"/g, '""')}"`;
+    const csv = [header, ...rows].map(row => row.map(csvEscape).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'leads-export.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
 
   // Lifecycle/Selection actions
   selectLead(lead: Lead) {

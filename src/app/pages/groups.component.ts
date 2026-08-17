@@ -98,7 +98,7 @@ import { MatIconModule } from '@angular/material/icon';
             <!-- Chips -->
             <div class="flex flex-wrap gap-1.5 pt-1">
               @for (chip of selectedMemberChips(); track chip.id) {
-                <span class="inline-flex items-center gap-1 bg-zinc-100 text-zinc-950 font-semibold px-2 py-0.5 rounded-lg text-[9px] uppercase tracking-wide">
+                <span class="inline-flex items-center gap-1 bg-zinc-100 text-zinc-950 font-semibold px-2 py-0.5 rounded-lg text-meta uppercase tracking-wide">
                   {{ chip.displayName.split(' ')[0] }}
                   <button (click)="removeMemberChip(chip.id)" title="Remove" class="text-zinc-500 hover:text-zinc-950 select-none">×</button>
                 </span>
@@ -108,14 +108,14 @@ import { MatIconModule } from '@angular/material/icon';
             <div class="flex justify-end gap-2 pt-2 border-t border-white/30">
               <button
                 (click)="closeCreateGroupForm()"
-                class="px-2.5 py-1 border border-zinc-200 text-zinc-500 text-[10px] font-bold rounded-lg hover:bg-zinc-100 cursor-pointer"
+                class="px-2.5 py-1 border border-zinc-200 text-zinc-500 text-meta font-bold rounded-lg hover:bg-zinc-100 cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 (click)="saveGroup()"
                 [disabled]="!newGroupName.trim() || selectedMemberChips().length === 0"
-                class="px-2.5 py-1 bg-zinc-900 hover:bg-zinc-950 disabled:bg-zinc-200 disabled:text-zinc-400 disabled:cursor-not-allowed text-white text-[10px] font-bold rounded-lg shadow-xs transition-colors cursor-pointer font-sans"
+                class="px-2.5 py-1 bg-zinc-900 hover:bg-zinc-950 disabled:bg-zinc-200 disabled:text-zinc-400 disabled:cursor-not-allowed text-white text-meta font-bold rounded-lg shadow-xs transition-colors cursor-pointer font-sans"
               >
                 Create
               </button>
@@ -136,11 +136,11 @@ import { MatIconModule } from '@angular/material/icon';
             >
               <div class="min-w-0 flex-1 space-y-1">
                 <h4 class="text-xs font-bold text-zinc-800 truncate">{{ grp.name }}</h4>
-                <p class="text-[11px] text-zinc-400 truncate leading-relaxed">
+                <p class="text-meta text-zinc-400 truncate leading-relaxed">
                   {{ lastMsg ? lastMsg.content : 'No messages yet' }}
                 </p>
                 @if (lastMsg) {
-                  <span class="text-[9px] text-zinc-400 font-mono block">
+                  <span class="text-meta text-zinc-400 font-mono block">
                     {{ getRelativeTime(lastMsg.sentAt) }}
                   </span>
                 }
@@ -149,7 +149,7 @@ import { MatIconModule } from '@angular/material/icon';
               <!-- Unread badge -->
               @let unreadCount = getUnreadCount(grp.id);
               @if (unreadCount > 0) {
-                <span class="bg-zinc-700 text-white rounded-full text-[9px] font-bold px-1.5 py-0.5 leading-none shrink-0">
+                <span class="bg-zinc-700 text-white rounded-full text-meta font-bold px-1.5 py-0.5 leading-none shrink-0">
                   {{ unreadCount }}
                 </span>
               }
@@ -167,7 +167,7 @@ import { MatIconModule } from '@angular/material/icon';
           <div class="p-4 card border-b border-white/30 flex items-center justify-between">
             <div>
               <h2 class="text-sm font-bold text-zinc-900">{{ grp.name }}</h2>
-              <p class="text-[10px] text-zinc-400 font-medium mt-0.5">{{ grp.memberUserIds.length }} members in sync</p>
+              <p class="text-meta text-zinc-400 font-medium mt-0.5">{{ grp.memberUserIds.length }} members in sync</p>
             </div>
             
             <div class="flex items-center gap-1 bg-white border border-zinc-200 p-0.5 rounded-lg">
@@ -176,7 +176,7 @@ import { MatIconModule } from '@angular/material/icon';
                 [class.bg-white]="activeTab() === 'chat'"
                 [class.text-blue-700]="activeTab() === 'chat'"
                 [class.shadow-xs]="activeTab() === 'chat'"
-                class="px-3 py-1 rounded-md text-[10px] font-bold text-zinc-650 cursor-pointer transition-all"
+                class="px-3 py-1 rounded-md text-meta font-bold text-zinc-650 cursor-pointer transition-all"
               >
                 Chat
               </button>
@@ -185,7 +185,7 @@ import { MatIconModule } from '@angular/material/icon';
                 [class.bg-white]="activeTab() === 'meetings'"
                 [class.text-blue-700]="activeTab() === 'meetings'"
                 [class.shadow-xs]="activeTab() === 'meetings'"
-                class="px-3 py-1 rounded-md text-[10px] font-bold text-zinc-650 cursor-pointer transition-all"
+                class="px-3 py-1 rounded-md text-meta font-bold text-zinc-650 cursor-pointer transition-all"
               >
                 Meetings
               </button>
@@ -210,7 +210,7 @@ import { MatIconModule } from '@angular/material/icon';
                     [class.items-start]="!isMe"
                   >
                     <!-- Username / Avatar -->
-                    <div class="flex items-center gap-1.5 mb-1 text-[10px] text-zinc-500 font-semibold">
+                    <div class="flex items-center gap-1.5 mb-1 text-meta text-zinc-500 font-semibold">
                       @if (!isMe) {
                         <app-user-avatar [userId]="msg.senderUserId" [size]="20"></app-user-avatar>
                         <span>{{ getSenderName(msg.senderUserId) }}</span>
@@ -230,7 +230,7 @@ import { MatIconModule } from '@angular/material/icon';
                     </div>
 
                     <!-- Timestamp -->
-                    <span class="text-[9px] text-zinc-400 font-mono mt-1">
+                    <span class="text-meta text-zinc-400 font-mono mt-1">
                       {{ msg.sentAt | date: 'HH:mm' }}
                     </span>
                   </div>
@@ -283,7 +283,7 @@ import { MatIconModule } from '@angular/material/icon';
                   
                   <div class="space-y-3">
                     <div>
-                      <label class="block text-[10px] font-bold text-zinc-400 uppercase mb-1">Title *</label>
+                      <label class="block text-meta font-bold text-zinc-400 uppercase mb-1">Title *</label>
                       <input
                         [(ngModel)]="meetTitle"
                         placeholder="e.g. Post-Mortem Briefing"
@@ -292,7 +292,7 @@ import { MatIconModule } from '@angular/material/icon';
                     </div>
 
                     <div>
-                      <label class="block text-[10px] font-bold text-zinc-400 uppercase mb-1">Date & Time *</label>
+                      <label class="block text-meta font-bold text-zinc-400 uppercase mb-1">Date & Time *</label>
                       <input
                         [(ngModel)]="meetDateStr"
                         type="datetime-local"
@@ -302,7 +302,7 @@ import { MatIconModule } from '@angular/material/icon';
 
                     <div class="grid grid-cols-2 gap-3">
                       <div>
-                        <label class="block text-[10px] font-bold text-zinc-400 uppercase mb-1">Duration (minutes)</label>
+                        <label class="block text-meta font-bold text-zinc-400 uppercase mb-1">Duration (minutes)</label>
                         <select
                           [(ngModel)]="meetDuration"
                           class="w-full input-field rounded-xl px-3 py-1.5 text-xs focus:outline-blue-600 text-zinc-700 font-semibold cursor-pointer"
@@ -315,7 +315,7 @@ import { MatIconModule } from '@angular/material/icon';
                       </div>
 
                       <div>
-                        <label class="block text-[10px] font-bold text-zinc-400 uppercase mb-1">Description</label>
+                        <label class="block text-meta font-bold text-zinc-400 uppercase mb-1">Description</label>
                         <input
                           [(ngModel)]="meetDesc"
                           placeholder="Agenda details..."
@@ -326,7 +326,7 @@ import { MatIconModule } from '@angular/material/icon';
 
                     <!-- Attendees checkboxes with avatars -->
                     <div>
-                      <label class="block text-[10px] font-bold text-zinc-400 uppercase mb-2">Group Attendees</label>
+                      <label class="block text-meta font-bold text-zinc-400 uppercase mb-2">Group Attendees</label>
                       <div class="grid grid-cols-2 gap-2 max-h-36 overflow-y-auto border border-zinc-100 rounded-xl p-3 bg-zinc-50/20">
                         @for (uid of grp.memberUserIds; track uid) {
                           <label class="flex items-center gap-2 cursor-pointer p-1 rounded-lg hover:bg-zinc-50/80 select-none">
@@ -337,7 +337,7 @@ import { MatIconModule } from '@angular/material/icon';
                               class="rounded border-zinc-350 text-blue-700 h-4.5 w-4.5"
                             />
                             <app-user-avatar [userId]="uid" [size]="24"></app-user-avatar>
-                            <span class="text-[11px] font-semibold text-zinc-750 truncate">{{ getSenderName(uid) }}</span>
+                            <span class="text-meta font-semibold text-zinc-750 truncate">{{ getSenderName(uid) }}</span>
                           </label>
                         }
                       </div>
@@ -347,14 +347,14 @@ import { MatIconModule } from '@angular/material/icon';
                   <div class="flex justify-end gap-2 pt-2 border-t border-zinc-150">
                     <button
                       (click)="closeScheduleForm()"
-                      class="px-3 py-1.5 border border-zinc-200 text-zinc-500 text-[10px] font-bold rounded-lg hover:bg-zinc-100 cursor-pointer"
+                      class="px-3 py-1.5 border border-zinc-200 text-zinc-500 text-meta font-bold rounded-lg hover:bg-zinc-100 cursor-pointer"
                     >
                       Cancel
                     </button>
                     <button
                       (click)="saveMeeting(grp.id)"
                       [disabled]="!meetTitle.trim() || !meetDateStr || meetAttendeeIds().length === 0"
-                      class="px-3 py-1.5 bg-zinc-900 hover:bg-zinc-950 disabled:bg-zinc-200 disabled:text-zinc-400 disabled:cursor-not-allowed text-white text-[10px] font-bold rounded-lg shadow-xs transition-colors cursor-pointer font-sans"
+                      class="px-3 py-1.5 bg-zinc-900 hover:bg-zinc-950 disabled:bg-zinc-200 disabled:text-zinc-400 disabled:cursor-not-allowed text-white text-meta font-bold rounded-lg shadow-xs transition-colors cursor-pointer font-sans"
                     >
                       Schedule Meeting
                     </button>
@@ -371,22 +371,22 @@ import { MatIconModule } from '@angular/material/icon';
                       <div>
                         <h4 class="text-xs font-bold text-zinc-900 block font-sans">{{ meet.title }}</h4>
                         @if (meet.description) {
-                          <p class="text-[11px] text-zinc-400 mt-1 leading-normal">{{ meet.description }}</p>
+                          <p class="text-meta text-zinc-400 mt-1 leading-normal">{{ meet.description }}</p>
                         }
                       </div>
                       
                       <span
                         [class]="getMeetingStatusClass(meet.status)"
-                        class="inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold border uppercase tracking-wider"
+                        class="inline-flex px-2 py-0.5 rounded-full text-meta font-bold border uppercase tracking-wider"
                       >
                         {{ meet.status }}
                       </span>
                     </div>
 
                     <!-- Details -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-[11px] font-semibold text-zinc-500 border-t border-white/30 pt-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-meta font-semibold text-zinc-500 border-t border-white/30 pt-3">
                       <div class="space-y-1">
-                        <span class="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block">Time</span>
+                        <span class="text-meta font-bold text-zinc-400 uppercase tracking-wider block">Time</span>
                         <div class="flex items-center gap-1 text-zinc-700">
                           <mat-icon class="text-[12px] w-3 h-3 flex items-center justify-center">schedule</mat-icon>
                           <span>{{ meet.scheduledAt | date: 'dd MMM, HH:mm' }} ({{ meet.durationMinutes }} min)</span>
@@ -394,7 +394,7 @@ import { MatIconModule } from '@angular/material/icon';
                       </div>
 
                       <div class="space-y-1">
-                        <span class="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block">Organizer</span>
+                        <span class="text-meta font-bold text-zinc-400 uppercase tracking-wider block">Organizer</span>
                         <div class="flex items-center gap-1.5 text-zinc-700">
                           <app-user-avatar [userId]="meet.organizerUserId" [size]="20"></app-user-avatar>
                           <span>{{ getSenderName(meet.organizerUserId) }}</span>
@@ -404,7 +404,7 @@ import { MatIconModule } from '@angular/material/icon';
 
                     <!-- Attendee Stack -->
                     <div class="flex items-center justify-between border-t border-white/30 pt-3">
-                      <span class="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Attendees</span>
+                      <span class="text-meta text-zinc-400 font-bold uppercase tracking-wider">Attendees</span>
                       <app-avatar-stack [userIds]="meet.attendeeUserIds" [size]="24" [maxVisible]="3"></app-avatar-stack>
                     </div>
                   </div>

@@ -16,7 +16,16 @@ import { PaginatorComponent } from '../shared/paginator.component';
   imports: [MatIconModule, CommonModule, FormsModule, CreatedByBadgeComponent, UserAvatarComponent, DataStatusBannerComponent, PaginatorComponent],
   template: `
     <div class="space-y-8">
-      <app-data-status-banner [loading]="partnersService.isLoading$()" [error]="partnersService.error$()" />
+      @if (partnersService.isLoading$()) {
+        @if (activeTab() === 'Lead') {
+          <app-data-status-banner [loading]="true" [variant]="'rows'" [columns]="10" [rows]="8" />
+        } @else {
+          <app-data-status-banner [loading]="true" [variant]="'tiles'" [tiles]="6" />
+        }
+      }
+      @if (partnersService.error$()) {
+        <app-data-status-banner [error]="partnersService.error$()" />
+      }
       <div class="flex gap-5 sm:gap-6 border-b border-zinc-200">
         <button
           (click)="activeTab.set('Lead'); state.breadcrumbLabel.set('Leads')"
@@ -73,6 +82,7 @@ import { PaginatorComponent } from '../shared/paginator.component';
         }
       </div>
 
+      @if (!partnersService.isLoading$()) {
         @if (activeTab() === 'Lead') {
           <!-- Leads Management -->
           <div class="space-y-6">
@@ -160,41 +170,47 @@ import { PaginatorComponent } from '../shared/paginator.component';
                 <table class="min-w-full">
                   <thead>
                     <tr class="border-b border-white/20">
-                      <th scope="col" class="px-3 py-3 text-left text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Lead</th>
-                      <th scope="col" class="px-3 py-3 text-left text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Company</th>
-                      <th scope="col" class="px-3 py-3 text-left text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Qual.</th>
-                      <th scope="col" class="px-3 py-3 text-left text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Score</th>
-                      <th scope="col" class="px-3 py-3 text-left text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Origin</th>
-                      <th scope="col" class="px-3 py-3 text-left text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Owner</th>
-                      <th scope="col" class="px-3 py-3 text-left text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Status</th>
-                      <th scope="col" class="px-3 py-3 text-left text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Action</th>
-                      <th scope="col" class="px-3 py-3 text-center text-[10px] font-bold text-zinc-400 uppercase tracking-wider">View</th>
+                      <th scope="col" class="px-3 py-3 text-left w-8">
+                        <input type="checkbox" [checked]="paginatedLeads().length > 0 && selectedLeadIds().size === paginatedLeads().length" (change)="toggleSelectAllLeads($event)" class="w-4 h-4 rounded border-zinc-300 cursor-pointer" />
+                      </th>
+                      <th scope="col" class="px-3 py-3 text-left text-meta font-bold text-zinc-400 uppercase tracking-wider">Lead</th>
+                      <th scope="col" class="px-3 py-3 text-left text-meta font-bold text-zinc-400 uppercase tracking-wider">Company</th>
+                      <th scope="col" class="px-3 py-3 text-left text-meta font-bold text-zinc-400 uppercase tracking-wider">Qual.</th>
+                      <th scope="col" class="px-3 py-3 text-left text-meta font-bold text-zinc-400 uppercase tracking-wider">Score</th>
+                      <th scope="col" class="px-3 py-3 text-left text-meta font-bold text-zinc-400 uppercase tracking-wider">Origin</th>
+                      <th scope="col" class="px-3 py-3 text-left text-meta font-bold text-zinc-400 uppercase tracking-wider">Owner</th>
+                      <th scope="col" class="px-3 py-3 text-left text-meta font-bold text-zinc-400 uppercase tracking-wider">Status</th>
+                      <th scope="col" class="px-3 py-3 text-left text-meta font-bold text-zinc-400 uppercase tracking-wider">Action</th>
+                      <th scope="col" class="px-3 py-3 text-center text-meta font-bold text-zinc-400 uppercase tracking-wider">View</th>
                     </tr>
                   </thead>
                   <tbody>
                     @for (lead of paginatedLeads(); track lead.id) {
                       <tr (click)="selectLead(lead)" class="border-b border-white/10 hover:bg-white/30 transition-colors cursor-pointer group">
+                        <td class="px-3 py-2.5 whitespace-nowrap" (click)="$event.stopPropagation()">
+                          <input type="checkbox" [checked]="isLeadSelected(lead.id)" (change)="toggleLeadSelect(lead.id, $event)" class="w-4 h-4 rounded border-zinc-300 cursor-pointer" />
+                        </td>
                         <td class="px-3 py-2.5 whitespace-nowrap">
                           <div class="flex items-center gap-2">
-                            <div class="h-8 w-8 bg-zinc-100 text-zinc-950 font-bold rounded-lg text-[11px] flex items-center justify-center shrink-0">
+                            <div class="h-8 w-8 bg-zinc-100 text-zinc-950 font-bold rounded-lg text-meta flex items-center justify-center shrink-0">
                               {{ getInitials(lead.name) }}
                             </div>
                             <div class="min-w-0">
                               <div class="text-xs font-semibold text-zinc-900 group-hover:text-zinc-900 transition-colors truncate max-w-[120px]">{{ lead.name }}</div>
-                              <div class="text-[10px] text-zinc-400">{{ lead.id }}</div>
+                              <div class="text-meta text-zinc-400">{{ lead.id }}</div>
                             </div>
                           </div>
                         </td>
                         <td class="px-3 py-2.5 whitespace-nowrap">
                           <div class="text-xs font-semibold text-zinc-800 truncate max-w-[130px]">{{ lead.companyName }}</div>
-                          <div class="text-[10px] text-zinc-400 truncate max-w-[130px]">{{ lead.company?.city || 'No city' }}, {{ lead.company?.country || 'No country' }}</div>
+                          <div class="text-meta text-zinc-400 truncate max-w-[130px]">{{ lead.company?.city || 'No city' }}, {{ lead.company?.country || 'No country' }}</div>
                         </td>
                         <td class="px-3 py-2.5 whitespace-nowrap">
                           <div class="flex items-center gap-1">
-                            <span [class]="getPriorityBadge(lead.priority)" class="px-1.5 py-0.5 text-[9px] font-bold uppercase rounded-md badge">
+                            <span [class]="getPriorityBadge(lead.priority)" class="px-1.5 py-0.5 text-meta font-bold uppercase rounded-md badge">
                               {{ lead.priority }}
                             </span>
-                            <span [class]="getTempBadge(lead.temperature)" class="px-1.5 py-0.5 text-[9px] font-bold uppercase rounded-md badge">
+                            <span [class]="getTempBadge(lead.temperature)" class="px-1.5 py-0.5 text-meta font-bold uppercase rounded-md badge">
                               {{ lead.temperature }}
                             </span>
                           </div>
@@ -204,16 +220,16 @@ import { PaginatorComponent } from '../shared/paginator.component';
                             <div class="w-10 bg-white/30 rounded-full h-1.5 overflow-hidden">
                               <div [style.width.%]="lead.score" [class]="getScoreColor(lead.score)" class="h-full rounded-full"></div>
                             </div>
-                            <span class="text-[10px] font-bold text-zinc-700">{{ lead.score }}</span>
+                            <span class="text-meta font-bold text-zinc-700">{{ lead.score }}</span>
                           </div>
                         </td>
                         <td class="px-3 py-2.5 whitespace-nowrap">
                           <div class="flex items-center gap-1">
-                            <span class="px-1.5 py-0.5 text-[10px] font-semibold rounded-md badge text-zinc-700">
+                            <span class="px-1.5 py-0.5 text-meta font-semibold rounded-md badge text-zinc-700">
                               {{ lead.origin || lead.campaigns?.[0]?.source || '—' }}
                             </span>
                           </div>
-                          <div class="text-[10px] text-zinc-400 mt-0.5">{{ lead.campaigns?.[0]?.campaign || '—' }}</div>
+                          <div class="text-meta text-zinc-400 mt-0.5">{{ lead.campaigns?.[0]?.campaign || '—' }}</div>
                         </td>
                         <td class="px-3 py-2.5 whitespace-nowrap">
                           <div class="text-xs text-zinc-600 flex items-center gap-1 truncate max-w-[110px]">
@@ -222,13 +238,13 @@ import { PaginatorComponent } from '../shared/paginator.component';
                           </div>
                         </td>
                         <td class="px-3 py-2.5 whitespace-nowrap">
-                          <span [class]="getStatusClass(lead.status)" class="px-2 py-0.5 text-[10px] font-semibold rounded-full badge whitespace-nowrap">
+                          <span [class]="getStatusClass(lead.status)" class="px-2 py-0.5 text-meta font-semibold rounded-full badge whitespace-nowrap">
                             {{ lead.status }}
                           </span>
                         </td>
                         <td class="px-3 py-2.5 whitespace-nowrap relative">
                           @if (lead.status !== 'Converted' && canWrite()) {
-                            <button (click)="$event.stopPropagation(); toggleConvertMenu(lead.id, $event)" class="btn-secondary rounded-lg px-2 py-1 text-[10px] font-semibold text-zinc-900 transition-all flex items-center gap-1 whitespace-nowrap">
+                            <button (click)="$event.stopPropagation(); toggleConvertMenu(lead.id, $event)" class="btn-secondary rounded-lg px-2 py-1 text-meta font-semibold text-zinc-900 transition-all flex items-center gap-1 whitespace-nowrap">
                               <mat-icon class="text-[12px] w-3 h-3">arrow_forward</mat-icon>
                               Convert
                             </button>
@@ -245,7 +261,7 @@ import { PaginatorComponent } from '../shared/paginator.component';
                               </div>
                             }
                           } @else {
-                            <span class="px-2 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap">Converted</span>
+                            <span class="px-2 py-1 text-meta font-bold uppercase tracking-wider rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap">Converted</span>
                           }
                         </td>
                         <td class="px-3 py-2.5 whitespace-nowrap text-center">
@@ -256,7 +272,7 @@ import { PaginatorComponent } from '../shared/paginator.component';
                       </tr>
                     } @empty {
                       <tr>
-                        <td colspan="9" class="px-6 py-12 text-center text-zinc-400">
+                        <td colspan="10" class="px-6 py-12 text-center text-zinc-400">
                           <mat-icon class="text-[48px]! w-12 h-12 mb-3 text-zinc-300 block mx-auto">people_alt</mat-icon>
                           <p class="font-semibold text-zinc-500">No leads found</p>
                           <p class="text-xs text-zinc-400 mt-1">Try resetting filters or adding a new lead record.</p>
@@ -299,6 +315,23 @@ import { PaginatorComponent } from '../shared/paginator.component';
             </div>
           </div>
 
+          @if (selectedLeadIds().size > 0) {
+            <div class="bulk-action-bar">
+              <span class="text-body font-semibold">{{ selectedLeadIds().size }} selected</span>
+              <div class="w-px h-4 bg-white/20"></div>
+              <select class="text-body bg-white/10 text-white rounded-md px-2 py-1.5 border-none outline-none cursor-pointer" (change)="bulkAssignLeadOwner($event)">
+                <option value="">Assign owner…</option>
+                @for (u of state.users(); track u.id) { <option [value]="u.name">{{u.name}}</option> }
+              </select>
+              <select class="text-body bg-white/10 text-white rounded-md px-2 py-1.5 border-none outline-none cursor-pointer" (change)="bulkChangeLeadStage($event)">
+                <option value="">Change stage…</option>
+                @for (s of leadStatusOptions; track s) { <option [value]="s">{{s}}</option> }
+              </select>
+              <button class="text-body font-semibold px-3 py-1.5 rounded-md hover:bg-white/10 transition-colors" (click)="bulkExportLeads()">Export CSV</button>
+              <button class="text-meta ml-2 opacity-70 hover:opacity-100 transition-opacity" (click)="clearLeadSelection()">Clear</button>
+            </div>
+          }
+
           <!-- Slide-over details pane for lead -->
           @if (selectedLead(); as lead) {
             <div class="fixed inset-0 z-50 overflow-hidden" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
@@ -320,7 +353,7 @@ import { PaginatorComponent } from '../shared/paginator.component';
                       </div>
                       <div class="flex items-center gap-3">
                         <div class="flex items-center gap-1.5 badge rounded-lg px-2 py-1">
-                          <span class="text-[10px] uppercase font-bold text-zinc-400">Status:</span>
+                          <span class="text-meta uppercase font-bold text-zinc-400">Status:</span>
                           <select [ngModel]="lead.status" (ngModelChange)="onStatusChange(lead.id, $event)" class="text-xs font-semibold text-zinc-700 bg-transparent border-none focus:outline-none cursor-pointer">
                             <option value="New">New</option>
                             <option value="Contacted">Contacted</option>
@@ -358,51 +391,51 @@ import { PaginatorComponent } from '../shared/paginator.component';
                           <div class="bg-white border border-zinc-200 rounded-xl p-4 space-y-3">
                             <h3 class="text-xs font-bold text-zinc-950 uppercase tracking-wider">Basic Information</h3>
                             <div class="grid grid-cols-2 gap-4 text-sm">
-                              <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Lead Name</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.name }}</div></div>
-                              <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Company</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.companyName }}</div></div>
-                              <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Assigned Salesperson</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.assignedSalesperson || 'Unassigned' }}</div></div>
-                              <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Sales Team</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.salesTeam || '—' }}</div></div>
-                              <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Email</div><a href="mailto:{{ lead.contacts?.[0]?.email }}" class="font-semibold text-zinc-900 hover:underline mt-0.5 block">{{ lead.contacts?.[0]?.email || '—' }}</a></div>
-                              <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Phone</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.contacts?.[0]?.phone || '—' }}</div></div>
+                              <div><div class="text-meta uppercase font-semibold text-zinc-400">Lead Name</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.name }}</div></div>
+                              <div><div class="text-meta uppercase font-semibold text-zinc-400">Company</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.companyName }}</div></div>
+                              <div><div class="text-meta uppercase font-semibold text-zinc-400">Assigned Salesperson</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.assignedSalesperson || 'Unassigned' }}</div></div>
+                              <div><div class="text-meta uppercase font-semibold text-zinc-400">Sales Team</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.salesTeam || '—' }}</div></div>
+                              <div><div class="text-meta uppercase font-semibold text-zinc-400">Email</div><a href="mailto:{{ lead.contacts?.[0]?.email }}" class="font-semibold text-zinc-900 hover:underline mt-0.5 block">{{ lead.contacts?.[0]?.email || '—' }}</a></div>
+                              <div><div class="text-meta uppercase font-semibold text-zinc-400">Phone</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.contacts?.[0]?.phone || '—' }}</div></div>
                               @if (lead.contacts?.[0]?.website; as web) {
-                                <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Website</div><a href="http://{{web}}" target="_blank" class="font-semibold text-zinc-900 hover:underline mt-0.5 block">{{ web }}</a></div>
+                                <div><div class="text-meta uppercase font-semibold text-zinc-400">Website</div><a href="http://{{web}}" target="_blank" class="font-semibold text-zinc-900 hover:underline mt-0.5 block">{{ web }}</a></div>
                               }
                               @if (lead.contacts?.[0]?.linkedin; as li) {
-                                <div><div class="text-[10px] uppercase font-semibold text-zinc-400">LinkedIn</div><a href="http://{{li}}" target="_blank" class="font-semibold text-zinc-900 hover:underline mt-0.5 block">{{ li }}</a></div>
+                                <div><div class="text-meta uppercase font-semibold text-zinc-400">LinkedIn</div><a href="http://{{li}}" target="_blank" class="font-semibold text-zinc-900 hover:underline mt-0.5 block">{{ li }}</a></div>
                               }
                             </div>
                           </div>
                           <div class="bg-white border border-zinc-200 rounded-xl p-4 space-y-3">
                             <h3 class="text-xs font-bold text-zinc-950 uppercase tracking-wider">Company Information</h3>
                             <div class="grid grid-cols-2 gap-4 text-sm">
-                              <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Industry</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.company?.industry || '—' }}</div></div>
-                              <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Company Size</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.company?.size || '—' }}</div></div>
-                              <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Annual Revenue</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.company?.annualRevenue || '—' }}</div></div>
-                              <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Offices Count</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.company?.officesCount || '—' }}</div></div>
-                              <div class="col-span-2"><div class="text-[10px] uppercase font-semibold text-zinc-400">Address</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.company?.address || '—' }}, {{ lead.company?.city || '—' }}, {{ lead.company?.country || '—' }}</div></div>
+                              <div><div class="text-meta uppercase font-semibold text-zinc-400">Industry</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.company?.industry || '—' }}</div></div>
+                              <div><div class="text-meta uppercase font-semibold text-zinc-400">Company Size</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.company?.size || '—' }}</div></div>
+                              <div><div class="text-meta uppercase font-semibold text-zinc-400">Annual Revenue</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.company?.annualRevenue || '—' }}</div></div>
+                              <div><div class="text-meta uppercase font-semibold text-zinc-400">Offices Count</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.company?.officesCount || '—' }}</div></div>
+                              <div class="col-span-2"><div class="text-meta uppercase font-semibold text-zinc-400">Address</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.company?.address || '—' }}, {{ lead.company?.city || '—' }}, {{ lead.company?.country || '—' }}</div></div>
                             </div>
                           </div>
                           <div class="bg-white border border-zinc-200 rounded-xl p-4 space-y-3">
                             <h3 class="text-xs font-bold text-zinc-950 uppercase tracking-wider">Origin & Marketing Campaign</h3>
                             <div class="grid grid-cols-2 gap-4 text-sm">
-                              <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Origin</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.origin || lead.campaigns?.[0]?.source || '—' }}</div></div>
-                              <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Campaign</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.campaigns?.[0]?.campaign || '—' }}</div></div>
-                              @if (lead.campaigns?.[0]?.referralPartner) { <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Referral Partner</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.campaigns?.[0]?.referralPartner }}</div></div> }
-                              @if (lead.campaigns?.[0]?.tradeShow) { <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Trade Show</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.campaigns?.[0]?.tradeShow }}</div></div> }
+                              <div><div class="text-meta uppercase font-semibold text-zinc-400">Origin</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.origin || lead.campaigns?.[0]?.source || '—' }}</div></div>
+                              <div><div class="text-meta uppercase font-semibold text-zinc-400">Campaign</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.campaigns?.[0]?.campaign || '—' }}</div></div>
+                              @if (lead.campaigns?.[0]?.referralPartner) { <div><div class="text-meta uppercase font-semibold text-zinc-400">Referral Partner</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.campaigns?.[0]?.referralPartner }}</div></div> }
+                              @if (lead.campaigns?.[0]?.tradeShow) { <div><div class="text-meta uppercase font-semibold text-zinc-400">Trade Show</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.campaigns?.[0]?.tradeShow }}</div></div> }
                             </div>
                           </div>
                           <div class="bg-white border border-zinc-200 rounded-xl p-4 space-y-3">
                             <h3 class="text-xs font-bold text-zinc-950 uppercase tracking-wider">Key Stakeholders (B2B)</h3>
                             <div class="grid grid-cols-2 gap-4 text-sm">
-                              <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Decision Maker</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.decisionMaker || '—' }}</div></div>
-                              <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Influencer</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.influencer || '—' }}</div></div>
-                              <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Finance Contact</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.financeContact || '—' }}</div></div>
-                              <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Technical Contact</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.technicalContact || '—' }}</div></div>
+                              <div><div class="text-meta uppercase font-semibold text-zinc-400">Decision Maker</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.decisionMaker || '—' }}</div></div>
+                              <div><div class="text-meta uppercase font-semibold text-zinc-400">Influencer</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.influencer || '—' }}</div></div>
+                              <div><div class="text-meta uppercase font-semibold text-zinc-400">Finance Contact</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.financeContact || '—' }}</div></div>
+                              <div><div class="text-meta uppercase font-semibold text-zinc-400">Technical Contact</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.technicalContact || '—' }}</div></div>
                             </div>
                           </div>
                           <div class="bg-white border border-zinc-200 rounded-xl p-4 space-y-3">
                             <h3 class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Audit Trail</h3>
-                            <div class="grid grid-cols-2 gap-4 text-[11px] text-zinc-500">
+                            <div class="grid grid-cols-2 gap-4 text-meta text-zinc-500">
                               <div><div>Created By</div><div class="mt-0.5"><app-created-by-badge [createdBy]="lead.createdBy" [createdAt]="lead.createdDate" /></div></div>
                               <div><div>Modified Date</div><div class="font-semibold text-zinc-700 mt-0.5">{{ lead.modifiedDate }} by <app-user-avatar [userId]="lead.modifiedBy" [size]="20" /> {{ getUserName(lead.modifiedBy) }}</div></div>
                             </div>
@@ -415,10 +448,10 @@ import { PaginatorComponent } from '../shared/paginator.component';
                           <div class="bg-white border border-zinc-200 rounded-xl p-4 space-y-3 text-sm">
                             <h3 class="text-xs font-bold text-zinc-950 uppercase tracking-wider">Lead Qualification & Sales Potential</h3>
                             <div class="grid grid-cols-2 gap-4">
-                              <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Interested Product</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.productInterests?.[0]?.product || '—' }}</div></div>
-                              <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Solution</div><div class="font-semibold text-zinc-700 mt-0.5">{{ lead.productInterests?.[0]?.solution || '—' }}</div></div>
-                              <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Origin</div><div class="font-bold text-zinc-950 mt-0.5">{{ lead.origin || lead.campaigns?.[0]?.source || '—' }}</div></div>
-                              <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Deal Probability</div><div class="font-semibold text-zinc-700 mt-0.5">{{ lead.probability || '0' }}%</div></div>
+                              <div><div class="text-meta uppercase font-semibold text-zinc-400">Interested Product</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.productInterests?.[0]?.product || '—' }}</div></div>
+                              <div><div class="text-meta uppercase font-semibold text-zinc-400">Solution</div><div class="font-semibold text-zinc-700 mt-0.5">{{ lead.productInterests?.[0]?.solution || '—' }}</div></div>
+                              <div><div class="text-meta uppercase font-semibold text-zinc-400">Origin</div><div class="font-bold text-zinc-950 mt-0.5">{{ lead.origin || lead.campaigns?.[0]?.source || '—' }}</div></div>
+                              <div><div class="text-meta uppercase font-semibold text-zinc-400">Deal Probability</div><div class="font-semibold text-zinc-700 mt-0.5">{{ lead.probability || '0' }}%</div></div>
                             </div>
                           </div>
                           <div class="space-y-2">
@@ -430,16 +463,16 @@ import { PaginatorComponent } from '../shared/paginator.component';
                           <div class="card rounded-xl p-4 space-y-3">
                             <h3 class="text-xs font-bold text-zinc-700 uppercase">Log New Activity</h3>
                             <div class="grid grid-cols-2 gap-3">
-                              <div><label class="block text-[10px] uppercase font-semibold text-zinc-400 mb-1">Type</label>
+                              <div><label class="block text-meta uppercase font-semibold text-zinc-400 mb-1">Type</label>
                                 <select [(ngModel)]="newActivity.type" class="w-full input-field rounded-lg p-2 text-xs outline-none bg-transparent">
                                   <option value="Call">Call</option><option value="Email">Email</option><option value="Meeting">Meeting</option><option value="Note">Note</option><option value="Task">Task</option>
                                 </select></div>
-                              <div><label class="block text-[10px] uppercase font-semibold text-zinc-400 mb-1">Date</label>
+                              <div><label class="block text-meta uppercase font-semibold text-zinc-400 mb-1">Date</label>
                                 <input [(ngModel)]="newActivity.date" type="date" class="w-full input-field rounded-lg p-1.5 text-xs outline-none"></div>
                             </div>
-                            <div><label class="block text-[10px] uppercase font-semibold text-zinc-400 mb-1">Summary</label>
+                            <div><label class="block text-meta uppercase font-semibold text-zinc-400 mb-1">Summary</label>
                               <input [(ngModel)]="newActivity.summary" type="text" placeholder="e.g. Discussed pricing options" class="w-full input-field rounded-lg p-2 text-xs outline-none"></div>
-                            <div><label class="block text-[10px] uppercase font-semibold text-zinc-400 mb-1">Details (Optional)</label>
+                            <div><label class="block text-meta uppercase font-semibold text-zinc-400 mb-1">Details (Optional)</label>
                               <textarea [(ngModel)]="newActivity.detail" rows="2" placeholder="More detailed recap..." class="w-full input-field rounded-lg p-2 text-xs outline-none"></textarea></div>
                             <div class="flex justify-end pt-2">
                               <button (click)="submitActivity(lead.id)" class="bg-zinc-800/80 hover:bg-zinc-800 text-white px-3 py-1.5 rounded-lg text-xs font-semibold backdrop-blur-sm">Log Activity</button>
@@ -454,10 +487,10 @@ import { PaginatorComponent } from '../shared/paginator.component';
                                   <div class="flex-1 space-y-1">
                                     <div class="flex justify-between items-center">
                                       <span class="text-xs font-semibold text-zinc-800">{{ act.summary }}</span>
-                                      <span class="text-[10px] text-zinc-400 font-medium">{{ act.date }}</span>
+                                      <span class="text-meta text-zinc-400 font-medium">{{ act.date }}</span>
                                     </div>
                                     @if (act.detail) { <p class="text-xs text-zinc-500 leading-relaxed">{{ act.detail }}</p> }
-                                    <div class="text-[9px] font-semibold text-zinc-400 flex items-center gap-1">
+                                    <div class="text-meta font-semibold text-zinc-400 flex items-center gap-1">
                                       <span class="px-1.5 py-0.5 rounded badge">{{ act.type }}</span>
                                       @if (act.assignedTo) { <span>Assigned: {{ act.assignedTo }}</span> }
                                     </div>
@@ -475,7 +508,7 @@ import { PaginatorComponent } from '../shared/paginator.component';
                             <h3 class="text-xs font-bold text-zinc-700 uppercase">Upload Document</h3>
                             <div class="flex gap-3 items-center">
                               <input type="file" (change)="onFileSelected($event, lead.id)" class="flex-1 text-xs">
-                              @if (uploading()) { <span class="text-[10px] text-zinc-400">Uploading&hellip;</span> }
+                              @if (uploading()) { <span class="text-meta text-zinc-400">Uploading&hellip;</span> }
                             </div>
                           </div>
                           <div class="space-y-3">
@@ -491,7 +524,7 @@ import { PaginatorComponent } from '../shared/paginator.component';
                                           <a [href]="getDownloadUrl(file.fileId)" target="_blank" class="hover:underline">{{ file.fileName }}</a>
                                         } @else { {{ file.fileName }} }
                                       </div>
-                                      <div class="text-[10px] text-zinc-400">Uploaded: {{ file.uploadedAt }} &bull; {{ file.fileSize || 'N/A' }}</div>
+                                      <div class="text-meta text-zinc-400">Uploaded: {{ file.uploadedAt }} &bull; {{ file.fileSize || 'N/A' }}</div>
                                     </div>
                                   </div>
                                   <button title="Delete attachment" (click)="deleteAttachment(lead.id, file)" class="text-zinc-400 hover:text-zinc-900 transition-colors"><mat-icon class="text-[16px]! w-4 h-4">delete_outline</mat-icon></button>
@@ -512,9 +545,9 @@ import { PaginatorComponent } from '../shared/paginator.component';
                                 <div class="flex-1 text-xs">
                                   <div class="flex justify-between font-semibold text-zinc-800">
                                     <span>Status updated to: {{ hist.status }}</span>
-                                    <span class="text-[10px] text-zinc-400 font-medium">{{ hist.timestamp }}</span>
+                                    <span class="text-meta text-zinc-400 font-medium">{{ hist.timestamp }}</span>
                                   </div>
-                                  <div class="text-[10px] text-zinc-400 font-medium mt-0.5">Changed by: {{ hist.user }}</div>
+                                  <div class="text-meta text-zinc-400 font-medium mt-0.5">Changed by: {{ hist.user }}</div>
                                 </div>
                               </div>
                             } @empty { <p class="text-xs text-zinc-400 text-center py-4">No status changes logged.</p> }
@@ -540,7 +573,7 @@ import { PaginatorComponent } from '../shared/paginator.component';
                 </div>
                 <div class="space-y-4 text-xs font-sans">
                   <div class="space-y-2.5">
-                    <h4 class="font-bold text-zinc-950 uppercase tracking-wider text-[10px]">1. Basic Information</h4>
+                    <h4 class="font-bold text-zinc-950 uppercase tracking-wider text-meta">1. Basic Information</h4>
                     <div class="grid grid-cols-2 gap-3">
                       <div><label class="block font-semibold text-zinc-500 mb-1">Lead Name*</label><input [(ngModel)]="newLead.name" type="text" placeholder="e.g. John Doe" class="w-full input-field rounded-lg p-2 outline-none"></div>
                       <div><label class="block font-semibold text-zinc-500 mb-1">Company Name*</label><input [(ngModel)]="newLead.companyName" type="text" placeholder="e.g. Acmo Group" class="w-full input-field rounded-lg p-2 outline-none"></div>
@@ -549,7 +582,7 @@ import { PaginatorComponent } from '../shared/paginator.component';
                     </div>
                   </div>
                   <div class="space-y-2.5">
-                    <h4 class="font-bold text-zinc-950 uppercase tracking-wider text-[10px]">2. Company Information</h4>
+                    <h4 class="font-bold text-zinc-950 uppercase tracking-wider text-meta">2. Company Information</h4>
                     <div class="grid grid-cols-2 gap-3">
                       <div><label class="block font-semibold text-zinc-500 mb-1">Industry</label><input [(ngModel)]="newLead.industry" type="text" placeholder="e.g. Healthcare" class="w-full input-field rounded-lg p-2 outline-none"></div>
                       <div><label class="block font-semibold text-zinc-500 mb-1">Company Size</label><input [(ngModel)]="newLead.companySize" type="text" placeholder="e.g. 200 employees" class="w-full input-field rounded-lg p-2 outline-none"></div>
@@ -558,7 +591,7 @@ import { PaginatorComponent } from '../shared/paginator.component';
                     </div>
                   </div>
                   <div class="space-y-2.5">
-                    <h4 class="font-bold text-zinc-950 uppercase tracking-wider text-[10px]">3. Qualification & Source</h4>
+                    <h4 class="font-bold text-zinc-950 uppercase tracking-wider text-meta">3. Qualification & Source</h4>
                     <div class="grid grid-cols-3 gap-3">
                       <div><label class="block font-semibold text-zinc-500 mb-1">Status</label>
                         <select [(ngModel)]="newLead.status" class="w-full input-field rounded-lg p-2 outline-none bg-transparent">
@@ -610,13 +643,16 @@ import { PaginatorComponent } from '../shared/paginator.component';
           <!-- Card grid for non-Lead tabs -->
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             @for (partner of paginatedPartners(); track partner.id) {
-              <div class="card rounded-2xl p-6 flex flex-col justify-between">
+              <div class="card rounded-2xl p-6 relative flex flex-col justify-between">
+                <label class="absolute top-3 left-3 z-10" (click)="$event.stopPropagation()">
+                  <input type="checkbox" [checked]="isPartnerSelected(partner.id)" (change)="togglePartnerSelect(partner.id, $event)" class="w-4 h-4 rounded border-zinc-300 cursor-pointer" />
+                </label>
                 <div>
                   <div class="flex items-start justify-between mb-4">
                     <div class="h-12 w-12 rounded-full bg-zinc-100 flex items-center justify-center text-lg font-bold text-zinc-600">
                       {{partner.name.substring(0,2).toUpperCase()}}
                     </div>
-                    <span class="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full badge"
+                    <span class="px-2.5 py-1 text-meta font-bold uppercase tracking-wider rounded-full badge"
                       [class]="partner.type === 'Lead' ? 'text-zinc-950' : (partner.type === 'Customer' ? 'text-zinc-950' : (partner.type === 'Prospect' ? 'text-zinc-950' : 'text-zinc-950'))">
                       {{partner.type}}
                     </span>
@@ -629,17 +665,17 @@ import { PaginatorComponent } from '../shared/paginator.component';
                   @if(partner.type === 'Lead') {
                     <div class="flex gap-2 flex-wrap mb-4">
                       @if (partner.score) {
-                        <span class="px-2 py-0.5 text-[10px] font-bold rounded uppercase tracking-wider badge" [class]="partner.score > 70 ? 'text-zinc-950' : 'text-zinc-950'">
+                        <span class="px-2 py-0.5 text-meta font-bold rounded uppercase tracking-wider badge" [class]="partner.score > 70 ? 'text-zinc-950' : 'text-zinc-950'">
                           Score: {{partner.score}}
                         </span>
                       }
                       @if (partner.source) {
-                        <span class="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider badge text-zinc-900">
+                        <span class="px-2 py-0.5 text-meta font-bold uppercase tracking-wider badge text-zinc-900">
                           {{partner.source}}
                         </span>
                       }
                       @if (partner.assignedTo) {
-                        <span class="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider badge text-zinc-600 flex items-center gap-1">
+                        <span class="px-2 py-0.5 text-meta font-bold uppercase tracking-wider badge text-zinc-600 flex items-center gap-1">
                           <mat-icon class="text-[12px] w-3 h-3">person</mat-icon> {{partner.assignedTo}}
                         </span>
                       }
@@ -725,6 +761,23 @@ import { PaginatorComponent } from '../shared/paginator.component';
               [pageSize]="partnersPageSize()"
               (pageChange)="partnersPage.set($event)"
               (pageSizeChange)="partnersPageSize.set($event)" />
+          }
+
+          @if (selectedPartnerIds().size > 0) {
+            <div class="bulk-action-bar">
+              <span class="text-body font-semibold">{{ selectedPartnerIds().size }} selected</span>
+              <div class="w-px h-4 bg-white/20"></div>
+              <select class="text-body bg-white/10 text-white rounded-md px-2 py-1.5 border-none outline-none cursor-pointer" (change)="bulkAssignPartnerOwner($event)">
+                <option value="">Assign owner…</option>
+                @for (u of state.users(); track u.id) { <option [value]="u.name">{{u.name}}</option> }
+              </select>
+              <select class="text-body bg-white/10 text-white rounded-md px-2 py-1.5 border-none outline-none cursor-pointer" (change)="bulkChangePartnerStage($event)">
+                <option value="">Change stage…</option>
+                @for (s of partnerStatusOptions; track s) { <option [value]="s">{{s}}</option> }
+              </select>
+              <button class="text-body font-semibold px-3 py-1.5 rounded-md hover:bg-white/10 transition-colors" (click)="bulkExportPartners()">Export CSV</button>
+              <button class="text-meta ml-2 opacity-70 hover:opacity-100 transition-opacity" (click)="clearPartnerSelection()">Clear</button>
+            </div>
           }
 
           <!-- Create Partner Modal -->
@@ -830,6 +883,7 @@ import { PaginatorComponent } from '../shared/paginator.component';
             </div>
           }
         }
+      }
 
     </div>
   `
@@ -868,6 +922,14 @@ export class PartnersComponent {
   addLeadModalOpen = signal(false);
   pageSize = signal(10);
   currentPage = signal(1);
+
+  // Lead bulk selection
+  selectedLeadIds = signal<Set<string>>(new Set());
+  leadStatusOptions = ['New','Contacted','Attempted Contact','Meeting Scheduled','Qualified','Proposal Requested','Converted','Lost','Disqualified'];
+
+  // Partner (Customer/Prospect/Vendor) bulk selection
+  selectedPartnerIds = signal<Set<string>>(new Set());
+  partnerStatusOptions: Array<'prospect' | 'active' | 'inactive' | 'archived'> = ['prospect', 'active', 'inactive', 'archived'];
 
   newActivity = {
     type: 'Call' as LeadActivity['type'],
@@ -916,6 +978,15 @@ export class PartnersComponent {
         this.activeConvertMenuId.set(null);
       });
     }
+    effect(() => {
+      const action = this.state.pendingQuickAction();
+      if (action?.id === 'new-partner') {
+        this.state.partnersSubTab.set('Customer');
+        this.activeTab.set('Customer');
+        this.openCreateModal();
+        this.state.pendingQuickAction.set(null);
+      }
+    });
   }
 
   // Derived partner types - keep as computed derived from CrmStateService for now
@@ -973,6 +1044,76 @@ export class PartnersComponent {
     if (page >= 1 && page <= this.totalPages()) {
       this.currentPage.set(page);
     }
+  }
+
+  // Lead bulk selection
+  toggleLeadSelect(id: string, event: Event) {
+    event.stopPropagation();
+    const next = new Set(this.selectedLeadIds());
+    if (next.has(id)) {
+      next.delete(id);
+    } else {
+      next.add(id);
+    }
+    this.selectedLeadIds.set(next);
+  }
+
+  isLeadSelected(id: string): boolean {
+    return this.selectedLeadIds().has(id);
+  }
+
+  toggleSelectAllLeads(event: Event) {
+    const checked = (event.target as HTMLInputElement).checked;
+    if (checked) {
+      this.selectedLeadIds.set(new Set(this.paginatedLeads().map(l => l.id)));
+    } else {
+      this.selectedLeadIds.set(new Set());
+    }
+  }
+
+  clearLeadSelection() {
+    this.selectedLeadIds.set(new Set());
+  }
+
+  bulkAssignLeadOwner(event: Event) {
+    const value = (event.target as HTMLSelectElement).value;
+    if (!value) return;
+    const ids = this.selectedLeadIds();
+    for (const id of ids) {
+      this.state.updateLead(id, { assignedSalesperson: value });
+    }
+    (event.target as HTMLSelectElement).value = '';
+  }
+
+  bulkChangeLeadStage(event: Event) {
+    const value = (event.target as HTMLSelectElement).value as Lead['status'];
+    if (!value) return;
+    const ids = this.selectedLeadIds();
+    for (const id of ids) {
+      this.state.updateLeadStatus(id, value);
+    }
+    (event.target as HTMLSelectElement).value = '';
+  }
+
+  bulkExportLeads() {
+    const ids = this.selectedLeadIds();
+    const rows = this.state.leadsData().filter(l => ids.has(l.id));
+    const header = ['Name', 'Company', 'Status', 'Score', 'Owner'];
+    const csvRows = [header.join(',')];
+    for (const l of rows) {
+      const cells = [l.name, l.companyName, l.status, String(l.score), l.assignedSalesperson || ''];
+      csvRows.push(cells.map(c => `"${String(c).replace(/"/g, '""')}"`).join(','));
+    }
+    const csv = csvRows.join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'leads-export.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
 
   openLeadDetail(lead: Lead) {
@@ -1050,6 +1191,76 @@ export class PartnersComponent {
 
   formatCurrency(value: number) {
     return new Intl.NumberFormat('fr-MA', { style: 'currency', currency: 'MAD' }).format(value);
+  }
+
+  // Partner (Customer/Prospect/Vendor) bulk selection
+  togglePartnerSelect(id: string, event: Event) {
+    event.stopPropagation();
+    const next = new Set(this.selectedPartnerIds());
+    if (next.has(id)) {
+      next.delete(id);
+    } else {
+      next.add(id);
+    }
+    this.selectedPartnerIds.set(next);
+  }
+
+  isPartnerSelected(id: string): boolean {
+    return this.selectedPartnerIds().has(id);
+  }
+
+  toggleSelectAllPartners(event: Event) {
+    const checked = (event.target as HTMLInputElement).checked;
+    if (checked) {
+      this.selectedPartnerIds.set(new Set(this.paginatedPartners().map((p: any) => p.id)));
+    } else {
+      this.selectedPartnerIds.set(new Set());
+    }
+  }
+
+  clearPartnerSelection() {
+    this.selectedPartnerIds.set(new Set());
+  }
+
+  bulkAssignPartnerOwner(event: Event) {
+    const value = (event.target as HTMLSelectElement).value;
+    if (!value) return;
+    const ids = this.selectedPartnerIds();
+    for (const id of ids) {
+      this.partnersService.updatePartner(id, { assignedTo: value });
+    }
+    (event.target as HTMLSelectElement).value = '';
+  }
+
+  bulkChangePartnerStage(event: Event) {
+    const value = (event.target as HTMLSelectElement).value as Partner['status'];
+    if (!value) return;
+    const ids = this.selectedPartnerIds();
+    for (const id of ids) {
+      this.partnersService.updatePartner(id, { status: value });
+    }
+    (event.target as HTMLSelectElement).value = '';
+  }
+
+  bulkExportPartners() {
+    const ids = this.selectedPartnerIds();
+    const rows = this.partnersService.allPartners().filter(p => ids.has(p.id));
+    const header = ['Name', 'Type', 'Status', 'Email', 'Phone'];
+    const csvRows = [header.join(',')];
+    for (const p of rows) {
+      const cells = [p.name, p.type, p.status || '', p.email || '', p.phone || ''];
+      csvRows.push(cells.map(c => `"${String(c).replace(/"/g, '""')}"`).join(','));
+    }
+    const csv = csvRows.join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'partners-export.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
 
   savePartner() {

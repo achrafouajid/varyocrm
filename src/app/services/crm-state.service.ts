@@ -989,6 +989,10 @@ export class CrmStateService {
   taskFilter = signal<{ priority?: string } | null>(null);
   ticketFilter = signal<{ priority?: string } | null>(null);
 
+  // Command palette quick action — set before navigating so the target page can react
+  // (open a create modal, log a call, etc). Consumers read it once via an effect and clear it.
+  pendingQuickAction = signal<{ id: string; payload?: any } | null>(null);
+
   // Global currency setting — readable by all components, togglable from settings
   globalCurrency = signal<string>('MAD');
 
@@ -4728,12 +4732,23 @@ export class CrmStateService {
 
   isCustomizing = signal(false);
 
-  dashboardKpis = signal<string[]>(['totalDeals', 'marketingSpend', 'latePayers', 'newTasksWeek']);
+  /** Active KPI tile ids, in display order. Order doubles as the drag-to-rearrange order. */
+  dashboardKpis = signal<string[]>(['totalDeals', 'marketingSpend', 'openTickets', 'newTasksWeek']);
 
   toggleDashboardKpi(kpiId: string) {
     this.dashboardKpis.update(kpis =>
       kpis.includes(kpiId) ? kpis.filter(id => id !== kpiId) : [...kpis, kpiId]
     );
+  }
+
+  /** Move an active KPI tile from one position to another (drag-to-rearrange). */
+  reorderDashboardKpis(previousIndex: number, currentIndex: number) {
+    this.dashboardKpis.update(kpis => {
+      const next = [...kpis];
+      const [moved] = next.splice(previousIndex, 1);
+      next.splice(currentIndex, 0, moved);
+      return next;
+    });
   }
 
   // State transitions & helpers

@@ -2,14 +2,18 @@ import { Component, inject, signal, computed } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { CrmStateService } from '../services/crm-state.service';
 import { CampaignsService } from '../services/domains';
+import { WhatsAppCampaignsService } from '../services/domains/whatsapp-campaigns.service';
 import { CommonModule } from '@angular/common';
 import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
 import { DataStatusBannerComponent } from '../shared/data-status-banner.component';
 import { PaginatorComponent } from '../shared/paginator.component';
+import { WhatsAppCampaignModalComponent } from '../shared/whatsapp-campaign-modal.component';
+import { WhatsAppCampaignDetailComponent } from '../shared/whatsapp-campaign-detail.component';
 
 @Component({
   selector: 'app-marketing',
-  imports: [MatIconModule, CommonModule, CreatedByBadgeComponent, DataStatusBannerComponent, PaginatorComponent],
+  imports: [MatIconModule, CommonModule, CreatedByBadgeComponent, DataStatusBannerComponent, PaginatorComponent,
+            WhatsAppCampaignModalComponent, WhatsAppCampaignDetailComponent],
   template: `
     <div class="space-y-8">
       <app-data-status-banner [loading]="campaignsService.isLoading$()" [error]="campaignsService.error$()" />
@@ -42,8 +46,23 @@ import { PaginatorComponent } from '../shared/paginator.component';
           <span class="text-xs">{{ filteredByType('SMS').length }}</span>
         </button>
       </div>
-      <div class="flex justify-end">
-          <button class="bg-zinc-900 hover:bg-zinc-950 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm shadow-lg shadow-zinc-300">
+      <div class="flex justify-between items-center gap-3">
+          @if (activeTab() === 'WhatsApp' && wa.account(); as account) {
+            <div class="flex items-center gap-2 text-xs">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span class="text-zinc-600">
+                Connected: <span class="font-mono">{{ account.displayPhoneNumber }}</span>
+              </span>
+              @if (account.provider === 'MOCK') {
+                <span class="px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 font-semibold uppercase text-[10px]">Simulated</span>
+              }
+            </div>
+          } @else {
+            <span></span>
+          }
+
+          <button (click)="onNewCampaign()"
+                  class="bg-zinc-900 hover:bg-zinc-950 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm shadow-lg shadow-zinc-300">
             <mat-icon class="w-5 h-5 text-[20px]! leading-none! flex items-center justify-center">add</mat-icon>
             New Campaign
           </button>
@@ -52,16 +71,16 @@ import { PaginatorComponent } from '../shared/paginator.component';
         <!-- Overview Stats -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div class="card rounded-xl p-4 lg:p-5 text-center">
-            <div class="text-xl sm:text-2xl lg:text-3xl font-semibold text-zinc-900 mb-1 truncate">3</div>
+            <div class="text-xl sm:text-2xl lg:text-3xl font-semibold text-zinc-900 mb-1 truncate">{{ activeCount() }}</div>
             <div class="text-xs font-bold tracking-wider text-zinc-500 uppercase">Active Campaigns</div>
           </div>
           <div class="card rounded-xl p-4 lg:p-5 text-center">
-            <div class="text-xl sm:text-2xl lg:text-3xl font-semibold text-zinc-900 mb-1 truncate">165</div>
+            <div class="text-xl sm:text-2xl lg:text-3xl font-semibold text-zinc-900 mb-1 truncate">{{ messagesSent() }}</div>
             <div class="text-xs font-bold tracking-wider text-zinc-500 uppercase">Messages Sent</div>
           </div>
           <div class="card rounded-xl p-4 lg:p-5 text-center">
-            <div class="text-xl sm:text-2xl lg:text-3xl font-semibold text-zinc-900 mb-1 truncate">12%</div>
-            <div class="text-xs font-bold tracking-wider text-zinc-500 uppercase">Conversion Target</div>
+            <div class="text-xl sm:text-2xl lg:text-3xl font-semibold text-zinc-900 mb-1 truncate">{{ campaignCount() }}</div>
+            <div class="text-xs font-bold tracking-wider text-zinc-500 uppercase">{{ activeTab() }} Campaigns</div>
           </div>
         </div>
 
@@ -78,12 +97,19 @@ import { PaginatorComponent } from '../shared/paginator.component';
           </thead>
           <tbody class="bg-white divide-y divide-slate-200">
             @for (campaign of paginatedCampaigns(); track campaign.id) {
-              <tr class="hover:bg-zinc-50 transition-colors">
+              <tr class="hover:bg-zinc-50 transition-colors"
+                  [class.cursor-pointer]="isWhatsApp(campaign)"
+                  (click)="openDetail(campaign)">
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm font-medium text-zinc-900">{{campaign.title}}</div>
+                  <div class="text-sm font-medium text-zinc-900 flex items-center gap-2">
+                    {{campaign.title}}
+                    @if (isWhatsApp(campaign)) {
+                      <mat-icon class="text-zinc-300 text-[16px]! w-4 h-4 leading-none!">chevron_right</mat-icon>
+                    }
+                  </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-zinc-500">{{campaign.targetAudience}}</div>
+                  <div class="text-sm text-zinc-500">{{ audienceLabel(campaign) }}</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-zinc-600">
                   {{campaign.sentCount}}
@@ -113,11 +139,27 @@ import { PaginatorComponent } from '../shared/paginator.component';
             (pageSizeChange)="campaignsPageSize.set($event)" />
         }
       </div>
+
+      <app-whatsapp-campaign-modal
+        [open]="showComposer()"
+        (close)="showComposer.set(false)"
+        (created)="onCampaignCreated($event)" />
+
+      <app-whatsapp-campaign-detail
+        [campaignId]="detailCampaignId()"
+        [campaignTitle]="detailCampaignTitle()"
+        (close)="onDetailClosed()" />
+    </div>
     `})
 export class MarketingComponent {
   state = inject(CrmStateService);
   campaignsService = inject(CampaignsService);
+  wa = inject(WhatsAppCampaignsService);
   activeTab = signal<'Email' | 'WhatsApp' | 'SMS'>('Email');
+
+  showComposer = signal(false);
+  detailCampaignId = signal<string | null>(null);
+  detailCampaignTitle = signal<string>('Campaign');
 
   campaignsPage = signal(1);
   campaignsPageSize = signal(10);
@@ -129,6 +171,7 @@ export class MarketingComponent {
 
   constructor() {
     this.campaignsService.load();
+    this.wa.loadAccount();
     const tab = this.state.navigateTab();
     if (tab) {
       this.activeTab.set(tab as 'Email' | 'WhatsApp' | 'SMS');
@@ -137,14 +180,82 @@ export class MarketingComponent {
     this.state.breadcrumbLabel.set(this.activeTab());
   }
 
-  filteredCampaigns = () => this.campaignsService.allCampaigns().filter((c: any) => c.type === this.activeTab());
+  /**
+   * The API returns `channel: 'WHATSAPP'` while older seeded records carry
+   * `type: 'WhatsApp'`. Matching on both keeps real and legacy rows visible in the
+   * same table.
+   */
+  private channelOf = (c: any): string => {
+    const raw = c.channel ?? c.type ?? '';
+    switch (String(raw).toUpperCase()) {
+      case 'WHATSAPP': return 'WhatsApp';
+      case 'EMAIL': return 'Email';
+      case 'SMS': return 'SMS';
+      default: return String(raw);
+    }
+  };
 
-  filteredByType = (type: string) => this.campaignsService.allCampaigns().filter((c: any) => c.type === type);
+  filteredCampaigns = () =>
+    this.campaignsService.allCampaigns().filter((c: any) => this.channelOf(c) === this.activeTab());
+
+  filteredByType = (type: string) =>
+    this.campaignsService.allCampaigns().filter((c: any) => this.channelOf(c) === type);
+
+  isWhatsApp = (c: any) => this.channelOf(c) === 'WhatsApp';
+
+  audienceLabel = (c: any) =>
+    c.targetAudience ?? (this.isWhatsApp(c) ? 'Selected contacts' : '—');
+
+  activeCount = computed(() =>
+    this.filteredCampaigns().filter((c: any) =>
+      ['ACTIVE', 'SENDING', 'Active'].includes(String(c.status))).length);
+
+  messagesSent = computed(() =>
+    this.filteredCampaigns().reduce((sum: number, c: any) => sum + Number(c.sentCount ?? 0), 0));
+
+  campaignCount = computed(() => this.filteredCampaigns().length);
+
+  onNewCampaign(): void {
+    if (this.activeTab() !== 'WhatsApp') {
+      this.activeTab.set('WhatsApp');
+      this.state.breadcrumbLabel.set('WhatsApp');
+    }
+    this.showComposer.set(true);
+  }
+
+  onCampaignCreated(campaignId: string): void {
+    this.refreshCampaigns();
+    this.detailCampaignTitle.set('Campaign');
+    this.detailCampaignId.set(campaignId);
+  }
+
+  /**
+   * Reload on close as well as on create. Dispatch runs server-side and finishes
+   * after the create call returns, so the list fetched at creation time still shows
+   * a sent count of zero.
+   */
+  onDetailClosed(): void {
+    this.detailCampaignId.set(null);
+    this.refreshCampaigns();
+  }
+
+  private refreshCampaigns(): void {
+    this.campaignsService.isLoaded.set(false);
+    this.campaignsService.load();
+  }
+
+  openDetail(campaign: any): void {
+    if (!this.isWhatsApp(campaign)) return;
+    this.detailCampaignTitle.set(campaign.title);
+    this.detailCampaignId.set(campaign.id);
+  }
 
   getStatusColor(status: string) {
-    switch(status) {
-      case 'Active': return 'bg-emerald-50 text-emerald-700';
-      case 'Draft': return 'bg-zinc-100 text-zinc-800';
+    switch(String(status).toUpperCase()) {
+      case 'ACTIVE': return 'bg-emerald-50 text-emerald-700';
+      case 'SENDING': return 'bg-sky-50 text-sky-700';
+      case 'COMPLETED': return 'bg-zinc-100 text-zinc-700';
+      case 'DRAFT': return 'bg-zinc-100 text-zinc-800';
       default: return 'bg-sky-50 text-sky-700';
     }
   }

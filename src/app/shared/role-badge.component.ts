@@ -9,7 +9,7 @@ import { RoleId, CRM_ROLES } from '../services/crm-state.service';
   template: `
     <span
       [class]="getBadgeClass()"
-      class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase border font-sans"
+      class="inline-flex items-center px-2.5 py-0.5 rounded-full text-meta font-bold tracking-wide uppercase border font-sans"
     >
       {{ getRoleLabel() }}
     </span>

@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, effect } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { Partner, Proposal, Deal, PurchaseOrder, Task } from '../services/crm-state.service';
 import { CommonModule } from '@angular/common';
@@ -22,7 +22,9 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
   imports: [MatIconModule, CommonModule, FormsModule, RouterLink, CreatedByBadgeComponent, DataStatusBannerComponent, PaginatorComponent, SalesPipelineBoardComponent],
   template: `
     <div class="space-y-8">
-      <app-data-status-banner [loading]="activeTabLoading()" [error]="activeTabError()" />
+      @if (activeTab() !== 'deals') {
+        <app-data-status-banner [loading]="activeTabLoading()" [error]="activeTabError()" />
+      }
       <div class="flex gap-5 sm:gap-6 border-b border-zinc-200">
         <button
           (click)="activeTab.set('deals'); breadcrumbLabel.set('Deals')"
@@ -96,9 +98,15 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
 
       @if (activeTab() === 'deals' && dealsView() === 'table') {
         <div class="card rounded-2xl overflow-x-auto">
+          @if (activeTabLoading()) {
+            <app-data-status-banner [loading]="true" [variant]="'rows'" [columns]="9" [rows]="8" />
+          } @else {
           <table class="min-w-full divide-y divide-slate-200">
             <thead class="bg-zinc-50">
               <tr>
+                <th scope="col" class="px-6 py-3 text-left">
+                  <input type="checkbox" [checked]="paginatedDeals().length > 0 && paginatedDeals().every(d => isDealSelected(d.id))" (click)="toggleSelectAllDeals($event)" (change)="$event.stopPropagation()" class="cursor-pointer" />
+                </th>
                 <th scope="col" class="px-6 py-3 text-left font-semibold text-zinc-500 uppercase tracking-wider text-xs">Deal Title</th>
                 <th scope="col" class="px-6 py-3 text-left font-semibold text-zinc-500 uppercase tracking-wider text-xs">Client</th>
                 <th scope="col" class="px-6 py-3 text-left font-semibold text-zinc-500 uppercase tracking-wider text-xs">Amount</th>
@@ -112,10 +120,13 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
             <tbody class="bg-white divide-y divide-slate-100">
               @for (deal of paginatedDeals(); track deal.id) {
                 <tr (click)="openDealDrawer(deal)" class="hover:bg-zinc-50/80 cursor-pointer transition-colors">
+                  <td class="px-6 py-4 whitespace-nowrap" (click)="$event.stopPropagation()">
+                    <input type="checkbox" [checked]="isDealSelected(deal.id)" (click)="toggleDealSelect(deal.id, $event)" class="cursor-pointer" />
+                  </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm font-semibold text-zinc-900">{{deal.title}}</div>
                     @if (deal.dealNumber) {
-                      <div class="text-[10px] text-zinc-400 font-sans font-medium">{{deal.dealNumber}}</div>
+                      <div class="text-meta text-zinc-400 font-sans font-medium">{{deal.dealNumber}}</div>
                     }
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
@@ -124,7 +135,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm text-zinc-900 font-sans font-bold">{{formatCurrency(deal.amount)}}</div>
                     @if (deal.discount) {
-                      <div class="text-[10px] text-zinc-900 font-semibold">-{{deal.discount}}%</div>
+                      <div class="text-meta text-zinc-900 font-semibold">-{{deal.discount}}%</div>
                     }
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
@@ -136,7 +147,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                     {{deal.estimatedDeliveryDate || 'N/A'}}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
-                    <span class="inline-flex px-2 py-0.5 rounded text-[10px] font-semibold bg-zinc-100 text-zinc-700 border border-zinc-200">
+                    <span class="inline-flex px-2 py-0.5 rounded text-meta font-semibold bg-zinc-100 text-zinc-700 border border-zinc-200">
                       {{deal.orderStatus || 'N/A'}}
                     </span>
                   </td>
@@ -151,11 +162,12 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                 </tr>
               } @empty {
                 <tr>
-                  <td colspan="8" class="px-6 py-8 text-center text-zinc-500 text-sm">No deals found. Create a confirmed proposal to start.</td>
+                  <td colspan="9" class="px-6 py-8 text-center text-zinc-500 text-sm">No deals found. Create a confirmed proposal to start.</td>
                 </tr>
               }
             </tbody>
           </table>
+          }
           @if (dealsService.allDeals().length > 0) {
             <app-paginator
               [currentPage]="dealsPage()"
@@ -164,7 +176,26 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
               (pageChange)="dealsPage.set($event)"
               (pageSizeChange)="dealsPageSize.set($event)" />
           }
+          @if (activeTabError()) {
+            <app-data-status-banner [error]="activeTabError()" [variant]="'none'" />
+          }
         </div>
+        @if (selectedDealIds().size > 0) {
+          <div class="bulk-action-bar">
+            <span class="text-body font-semibold">{{ selectedDealIds().size }} selected</span>
+            <div class="w-px h-4 bg-white/20"></div>
+            <select class="text-body bg-white/10 text-white rounded-md px-2 py-1.5 border-none outline-none cursor-pointer" (change)="bulkAssignDealOwner($event)">
+              <option value="">Assign owner…</option>
+              @for (u of state.users(); track u.id) { <option [value]="u.name">{{u.name}}</option> }
+            </select>
+            <select class="text-body bg-white/10 text-white rounded-md px-2 py-1.5 border-none outline-none cursor-pointer" (change)="bulkChangeDealStage($event)">
+              <option value="">Change stage…</option>
+              @for (s of dealStageOptions; track s) { <option [value]="s">{{s}}</option> }
+            </select>
+            <button class="text-body font-semibold px-3 py-1.5 rounded-md hover:bg-white/10 transition-colors" (click)="bulkExportDeals()">Export CSV</button>
+            <button class="text-meta ml-2 opacity-70 hover:opacity-100 transition-opacity" (click)="clearDealSelection()">Clear</button>
+          </div>
+        }
       }
 
       <!-- Proposals View -->
@@ -174,7 +205,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
             <div class="card rounded-2xl p-5 flex flex-col justify-between hover:shadow-md transition-all">
               <div class="space-y-3">
                 <div class="flex justify-between items-start">
-                  <span class="px-2 py-0.5 text-[10px] font-bold rounded-full uppercase"
+                  <span class="px-2 py-0.5 text-meta font-bold rounded-full uppercase"
                     [class]="prop.status === 'Confirmed' ? 'bg-emerald-50 text-emerald-700' : (prop.status === 'Sent' ? 'bg-sky-50 text-sky-700' : 'bg-zinc-100 text-zinc-800')">
                     {{prop.status}}
                   </span>
@@ -188,7 +219,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
 
                 <!-- Lines -->
                 <div class="bg-zinc-50 rounded-xl p-3 border border-zinc-100 space-y-2">
-                  <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Lines & Pricing</span>
+                  <span class="text-meta font-bold text-zinc-400 uppercase tracking-wider block">Lines & Pricing</span>
                   @for (line of prop.lines; track $index) {
                     <div class="flex justify-between text-xs text-zinc-700">
                       <span>{{line.qty}}x {{line.product}}</span>
@@ -203,14 +234,14 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
 
                 <!-- Sales Intelligence / Funnel Metadata -->
                 <div class="border-t border-zinc-100 pt-3">
-                  <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block mb-2">Sales Intelligence</span>
+                  <span class="text-meta font-bold text-zinc-400 uppercase tracking-wider block mb-2">Sales Intelligence</span>
                   <div class="grid grid-cols-2 gap-3 bg-white border border-zinc-200 p-3 rounded-xl border border-zinc-150/60 text-xs">
                     <div>
-                      <span class="text-zinc-400 block text-[10px] font-medium">Opportunity Value</span>
+                      <span class="text-zinc-400 block text-meta font-medium">Opportunity Value</span>
                       <span class="font-bold text-zinc-900 font-sans">{{ formatCurrency(prop.opportunityValue || 0) }}</span>
                     </div>
                     <div>
-                      <span class="text-zinc-400 block text-[10px] font-medium">Probability</span>
+                      <span class="text-zinc-400 block text-meta font-medium">Probability</span>
                       <div class="flex items-center gap-1.5 mt-0.5">
                         <div class="w-full bg-zinc-200 rounded-full h-1.5 max-w-[60px]">
                           <div class="bg-zinc-900 h-1.5 rounded-full" [style.width.%]="prop.closingProbability || 0"></div>
@@ -219,21 +250,21 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                       </div>
                     </div>
                     <div>
-                      <span class="text-zinc-400 block text-[10px] font-medium">Expected Close</span>
+                      <span class="text-zinc-400 block text-meta font-medium">Expected Close</span>
                       <span class="font-semibold text-zinc-700 font-sans">{{ prop.expectedClosingDate || 'TBD' }}</span>
                     </div>
                     <div>
-                      <span class="text-zinc-400 block text-[10px] font-medium">Sales Stage</span>
-                      <span class="inline-block px-2 py-0.5 text-[10px] font-bold rounded border uppercase mt-0.5" [class]="getStageBadgeClass(prop.stage)">
+                      <span class="text-zinc-400 block text-meta font-medium">Sales Stage</span>
+                      <span class="inline-block px-2 py-0.5 text-meta font-bold rounded border uppercase mt-0.5" [class]="getStageBadgeClass(prop.stage)">
                         {{ prop.stage || 'New Lead' }}
                       </span>
                     </div>
                     <div class="col-span-2">
-                      <span class="text-zinc-400 block text-[10px] font-medium">Competitors</span>
+                      <span class="text-zinc-400 block text-meta font-medium">Competitors</span>
                       @if (prop.competitors && prop.competitors.length > 0) {
                         <div class="flex flex-wrap gap-1 mt-1">
                           @for (comp of prop.competitors; track comp) {
-                            <span class="bg-zinc-100 text-zinc-600 border border-zinc-200 px-1.5 py-0.5 rounded text-[10px] font-medium">{{comp}}</span>
+                            <span class="bg-zinc-100 text-zinc-600 border border-zinc-200 px-1.5 py-0.5 rounded text-meta font-medium">{{comp}}</span>
                           }
                         </div>
                       } @else {
@@ -246,9 +277,9 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                 <!-- Confirmation Info (if confirmed) -->
                 @if (prop.status === 'Confirmed' && prop.confirmationMethod) {
                   <div class="border-t border-zinc-100 pt-3 mt-3">
-                    <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block mb-1.5">Confirmation Proof</span>
+                    <span class="text-meta font-bold text-zinc-400 uppercase tracking-wider block mb-1.5">Confirmation Proof</span>
                     <div class="bg-zinc-100/40 border border-zinc-200 rounded-xl p-3 text-xs text-zinc-950 space-y-2">
-                      <div class="flex items-center gap-1.5 font-semibold text-zinc-950 text-[11px]">
+                      <div class="flex items-center gap-1.5 font-semibold text-zinc-950 text-meta">
                         @if (prop.confirmationMethod === 'Email') {
                           <mat-icon class="text-sm w-4 h-4 flex items-center justify-center">email</mat-icon>
                           <span>Email confirmation</span>
@@ -260,12 +291,12 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                           <span>Call Summary</span>
                         }
                         @if (prop.confirmedAt) {
-                          <span class="text-[10px] text-zinc-900 font-normal ml-auto font-sans">{{ prop.confirmedAt }}</span>
+                          <span class="text-meta text-zinc-900 font-normal ml-auto font-sans">{{ prop.confirmedAt }}</span>
                         }
                       </div>
 
                       @if (prop.confirmationAttachmentName) {
-                        <div class="flex items-center gap-1.5 bg-white border border-zinc-300/60 p-2 rounded-lg text-zinc-950 font-sans text-[10px] truncate">
+                        <div class="flex items-center gap-1.5 bg-white border border-zinc-300/60 p-2 rounded-lg text-zinc-950 font-sans text-meta truncate">
                           <mat-icon class="text-[14px] w-3.5 h-3.5 text-zinc-900">attach_file</mat-icon>
                           <span class="truncate flex-1">{{ prop.confirmationAttachmentName }}</span>
                           @if (prop.confirmationAttachmentData) {
@@ -276,7 +307,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                       }
 
                       @if (prop.confirmationNote) {
-                        <p class="text-[11px] text-zinc-650 leading-relaxed bg-white border border-emerald-150 p-2 rounded-lg italic">
+                        <p class="text-meta text-zinc-650 leading-relaxed bg-white border border-emerald-150 p-2 rounded-lg italic">
                           "{{ prop.confirmationNote }}"
                         </p>
                       }
@@ -349,7 +380,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm font-semibold text-zinc-900 font-sans">#{{po.id}}</div>
                     @if (po.sentVia) {
-                      <span class="text-[10px] text-zinc-400 font-medium">Sent: {{po.sentVia}}</span>
+                      <span class="text-meta text-zinc-400 font-medium">Sent: {{po.sentVia}}</span>
                     }
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
@@ -365,7 +396,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                     <div class="text-sm text-zinc-600 font-sans">{{po.deliveryDate || 'Pending Conf.'}}</div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
-                    <span class="px-2.5 py-1 text-[10px] font-bold uppercase rounded-full"
+                    <span class="px-2.5 py-1 text-meta font-bold uppercase rounded-full"
                       [class]="po.status === 'Delivered' ? 'bg-emerald-50 text-emerald-700' : (po.status === 'Sent' ? 'bg-sky-50 text-sky-700' : 'bg-zinc-100 text-zinc-800')">
                       {{po.status}}
                     </span>
@@ -419,7 +450,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
 
           <!-- Target Organization -->
           <div class="bg-zinc-100 border border-zinc-200 rounded-xl p-3">
-            <span class="text-[10px] text-zinc-500 font-bold uppercase tracking-wider block mb-0.5">Target Organization</span>
+            <span class="text-meta text-zinc-500 font-bold uppercase tracking-wider block mb-0.5">Target Organization</span>
             <span class="text-sm font-bold text-zinc-950">{{ currentProposalPartnerName() }}</span>
           </div>
 
@@ -434,7 +465,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                 <mat-icon class="text-3xl w-8 h-8 flex items-center justify-center">email</mat-icon>
                 <span class="text-sm font-semibold">Email</span>
                 @if (isChannelSelected('email')) {
-                  <span class="text-[10px] bg-zinc-900 text-white px-2 py-0.5 rounded-full font-bold">Selected</span>
+                  <span class="text-meta bg-zinc-900 text-white px-2 py-0.5 rounded-full font-bold">Selected</span>
                 }
               </button>
               <button type="button" (click)="toggleChannel('whatsapp')"
@@ -444,7 +475,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                 <mat-icon class="text-3xl w-8 h-8 flex items-center justify-center">chat</mat-icon>
                 <span class="text-sm font-semibold">WhatsApp</span>
                 @if (isChannelSelected('whatsapp')) {
-                  <span class="text-[10px] bg-zinc-900 text-white px-2 py-0.5 rounded-full font-bold">Selected</span>
+                  <span class="text-meta bg-zinc-900 text-white px-2 py-0.5 rounded-full font-bold">Selected</span>
                 }
               </button>
             </div>
@@ -850,7 +881,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                   </h4>
                   <div>
                     <label class="block text-xs font-semibold text-zinc-500 mb-1">Email Exchange logs & Confirmations</label>
-                    <textarea [(ngModel)]="newDeal.emailExchange" rows="3" placeholder="Paste copy of signed email confirmations..." class="w-full input-field rounded-lg p-2 text-[11px] font-sans focus:outline-blue-600"></textarea>
+                    <textarea [(ngModel)]="newDeal.emailExchange" rows="3" placeholder="Paste copy of signed email confirmations..." class="w-full input-field rounded-lg p-2 text-meta font-sans focus:outline-blue-600"></textarea>
                   </div>
                   <div>
                     <label class="block text-xs font-semibold text-zinc-500 mb-1">Customer Comments</label>
@@ -948,7 +979,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
             <div>
               <div class="flex justify-between items-center mb-1">
                 <label class="block text-xs font-semibold text-zinc-500 uppercase">Vendor</label>
-                <button (click)="showNewVendorForm.set(!showNewVendorForm())" class="text-zinc-900 hover:text-zinc-950 text-[10px] font-bold uppercase">
+                <button (click)="showNewVendorForm.set(!showNewVendorForm())" class="text-zinc-900 hover:text-zinc-950 text-meta font-bold uppercase">
                   {{ showNewVendorForm() ? 'Select Existing' : '+ Create New Vendor Inline' }}
                 </button>
               </div>
@@ -982,7 +1013,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                   <div class="bg-white border border-zinc-200 hover:bg-zinc-50 border border-zinc-150 rounded-xl p-3.5 space-y-2.5 relative transition-all">
                     <!-- Line Header -->
                     <div class="flex justify-between items-center">
-                      <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Line #{{ i + 1 }}</span>
+                      <span class="text-meta font-bold text-zinc-400 uppercase tracking-wider">Line #{{ i + 1 }}</span>
                       @if (poLines().length > 1) {
                         <button type="button" (click)="removePoLine(i)" class="text-zinc-700 hover:text-zinc-900 hover:bg-zinc-100 p-1.5 rounded-lg transition-colors flex items-center justify-center" title="Remove Line">
                           <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">delete</mat-icon>
@@ -994,13 +1025,13 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                     <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
                       <!-- Item Name -->
                       <div class="md:col-span-4">
-                        <label class="block text-[10px] font-semibold text-zinc-400 mb-1">Item Name</label>
+                        <label class="block text-meta font-semibold text-zinc-400 mb-1">Item Name</label>
                         <input [(ngModel)]="line.item" type="text" placeholder="e.g. Dell PowerEdge Server" class="w-full input-field rounded-lg p-1.5 text-xs bg-white focus:outline-blue-600">
                       </div>
 
                       <!-- Description -->
                       <div class="md:col-span-8">
-                        <label class="block text-[10px] font-semibold text-zinc-400 mb-1">Description (Optional)</label>
+                        <label class="block text-meta font-semibold text-zinc-400 mb-1">Description (Optional)</label>
                         <input [(ngModel)]="line.description" type="text" placeholder="e.g. Core i7, 32GB RAM" class="w-full input-field rounded-lg p-1.5 text-xs bg-white focus:outline-blue-600">
                       </div>
                     </div>
@@ -1008,19 +1039,19 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                     <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
                       <!-- Quantity -->
                       <div class="md:col-span-3">
-                        <label class="block text-[10px] font-semibold text-zinc-400 mb-1">Quantity</label>
+                        <label class="block text-meta font-semibold text-zinc-400 mb-1">Quantity</label>
                         <input [(ngModel)]="line.qty" type="number" min="1" class="w-full input-field rounded-lg p-1.5 text-xs bg-white text-center font-semibold focus:outline-blue-600 font-sans">
                       </div>
 
                       <!-- Unit Price -->
                       <div class="md:col-span-5">
-                        <label class="block text-[10px] font-semibold text-zinc-400 mb-1">Unit Price (MAD)</label>
+                        <label class="block text-meta font-semibold text-zinc-400 mb-1">Unit Price (MAD)</label>
                         <input [(ngModel)]="line.unitPrice" type="number" class="w-full input-field rounded-lg p-1.5 text-xs bg-white font-sans text-right focus:outline-blue-600">
                       </div>
 
                       <!-- Item Type -->
                       <div class="md:col-span-4">
-                        <label class="block text-[10px] font-semibold text-zinc-400 mb-1">Item Type</label>
+                        <label class="block text-meta font-semibold text-zinc-400 mb-1">Item Type</label>
                         <select [(ngModel)]="line.type" class="w-full input-field rounded-lg p-1.5 text-xs bg-white focus:outline-blue-600">
                           <option value="software">Software</option>
                           <option value="hardware">Hardware</option>
@@ -1321,7 +1352,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                     class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
                   <mat-icon class="text-zinc-400 text-3xl w-8 h-8 mb-1">cloud_upload</mat-icon>
                   <span class="text-xs text-zinc-500 font-semibold">Click or drag image screenshot / document here</span>
-                  <span class="text-[10px] text-zinc-400 mt-0.5">Supports PNG, JPG, PDF</span>
+                  <span class="text-meta text-zinc-400 mt-0.5">Supports PNG, JPG, PDF</span>
                 </div>
 
                 @if (confirmAttachmentName()) {
@@ -1444,7 +1475,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
           </div>
 
           <div class="bg-zinc-100 border border-zinc-200 rounded-xl p-3">
-            <span class="text-[10px] text-zinc-500 font-bold uppercase tracking-wider block mb-0.5">Related to</span>
+            <span class="text-meta text-zinc-500 font-bold uppercase tracking-wider block mb-0.5">Related to</span>
             <span class="text-sm font-bold text-zinc-950">{{ ctx.entityTitle }}</span>
           </div>
 
@@ -1517,7 +1548,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
 
             <div class="flex-1 overflow-y-auto p-6 space-y-6">
               <div class="bg-zinc-50 rounded-xl p-4 border border-zinc-100 space-y-3">
-                <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Lines & Pricing</span>
+                <span class="text-meta font-bold text-zinc-400 uppercase tracking-wider block">Lines & Pricing</span>
                 @for (line of prop.lines; track $index) {
                   <div class="flex justify-between text-xs text-zinc-700">
                     <span>{{line.qty}}x {{line.product}}</span>
@@ -1531,14 +1562,14 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
               </div>
 
               <div class="border-t border-zinc-100 pt-3">
-                <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block mb-2">Sales Intelligence</span>
+                <span class="text-meta font-bold text-zinc-400 uppercase tracking-wider block mb-2">Sales Intelligence</span>
                 <div class="grid grid-cols-2 gap-3 bg-white border border-zinc-200 p-3 rounded-xl border border-zinc-150/60 text-xs">
                   <div>
-                    <span class="text-zinc-400 block text-[10px] font-medium">Opportunity Value</span>
+                    <span class="text-zinc-400 block text-meta font-medium">Opportunity Value</span>
                     <span class="font-bold text-zinc-900 font-sans">{{ formatCurrency(prop.opportunityValue || 0) }}</span>
                   </div>
                   <div>
-                    <span class="text-zinc-400 block text-[10px] font-medium">Probability</span>
+                    <span class="text-zinc-400 block text-meta font-medium">Probability</span>
                     <div class="flex items-center gap-1.5 mt-0.5">
                       <div class="w-full bg-zinc-200 rounded-full h-1.5 max-w-[60px]">
                         <div class="bg-zinc-900 h-1.5 rounded-full" [style.width.%]="prop.closingProbability || 0"></div>
@@ -1547,21 +1578,21 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                     </div>
                   </div>
                   <div>
-                    <span class="text-zinc-400 block text-[10px] font-medium">Expected Close</span>
+                    <span class="text-zinc-400 block text-meta font-medium">Expected Close</span>
                     <span class="font-semibold text-zinc-700 font-sans">{{ prop.expectedClosingDate || 'TBD' }}</span>
                   </div>
                   <div>
-                    <span class="text-zinc-400 block text-[10px] font-medium">Stage</span>
-                    <span class="inline-block px-2 py-0.5 text-[10px] font-bold rounded border uppercase mt-0.5" [class]="getStageBadgeClass(prop.stage)">
+                    <span class="text-zinc-400 block text-meta font-medium">Stage</span>
+                    <span class="inline-block px-2 py-0.5 text-meta font-bold rounded border uppercase mt-0.5" [class]="getStageBadgeClass(prop.stage)">
                       {{ prop.stage || 'New Lead' }}
                     </span>
                   </div>
                   @if (prop.competitors && prop.competitors.length > 0) {
                     <div class="col-span-2">
-                      <span class="text-zinc-400 block text-[10px] font-medium">Competitors</span>
+                      <span class="text-zinc-400 block text-meta font-medium">Competitors</span>
                       <div class="flex flex-wrap gap-1 mt-1">
                         @for (comp of prop.competitors; track comp) {
-                          <span class="bg-zinc-100 text-zinc-600 border border-zinc-200 px-1.5 py-0.5 rounded text-[10px] font-medium">{{comp}}</span>
+                          <span class="bg-zinc-100 text-zinc-600 border border-zinc-200 px-1.5 py-0.5 rounded text-meta font-medium">{{comp}}</span>
                         }
                       </div>
                     </div>
@@ -1571,9 +1602,9 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
 
               @if (prop.status === 'Confirmed' && prop.confirmationMethod) {
                 <div class="border-t border-zinc-100 pt-3">
-                  <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block mb-1.5">Confirmation Proof</span>
+                  <span class="text-meta font-bold text-zinc-400 uppercase tracking-wider block mb-1.5">Confirmation Proof</span>
                   <div class="bg-zinc-100/40 border border-zinc-200 rounded-xl p-3 text-xs text-zinc-950 space-y-2">
-                    <div class="flex items-center gap-1.5 font-semibold text-zinc-950 text-[11px]">
+                    <div class="flex items-center gap-1.5 font-semibold text-zinc-950 text-meta">
                       @if (prop.confirmationMethod === 'Email') {
                         <mat-icon class="text-sm w-4 h-4 flex items-center justify-center">email</mat-icon>
                         <span>Email confirmation</span>
@@ -1585,11 +1616,11 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                         <span>Call Summary</span>
                       }
                       @if (prop.confirmedAt) {
-                        <span class="text-[10px] text-zinc-900 font-normal ml-auto font-sans">{{ prop.confirmedAt }}</span>
+                        <span class="text-meta text-zinc-900 font-normal ml-auto font-sans">{{ prop.confirmedAt }}</span>
                       }
                     </div>
                     @if (prop.confirmationAttachmentName) {
-                      <div class="flex items-center gap-1.5 bg-white border border-zinc-300/60 p-2 rounded-lg text-zinc-950 font-sans text-[10px] truncate">
+                      <div class="flex items-center gap-1.5 bg-white border border-zinc-300/60 p-2 rounded-lg text-zinc-950 font-sans text-meta truncate">
                         <mat-icon class="text-[14px] w-3.5 h-3.5 text-zinc-900">attach_file</mat-icon>
                         <span class="truncate flex-1">{{ prop.confirmationAttachmentName }}</span>
                         @if (prop.confirmationAttachmentData) {
@@ -1599,7 +1630,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                       </div>
                     }
                     @if (prop.confirmationNote) {
-                      <p class="text-[11px] text-zinc-650 leading-relaxed bg-white border border-emerald-150 p-2 rounded-lg italic">
+                      <p class="text-meta text-zinc-650 leading-relaxed bg-white border border-emerald-150 p-2 rounded-lg italic">
                         "{{ prop.confirmationNote }}"
                       </p>
                     }
@@ -1664,33 +1695,33 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
             <div class="flex-1 overflow-y-auto p-6 space-y-6">
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-zinc-50 p-4 rounded-xl border border-zinc-100 text-xs">
                 <div>
-                  <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block mb-1">PO Reference</span>
+                  <span class="text-meta font-bold text-zinc-400 uppercase tracking-wider block mb-1">PO Reference</span>
                   <span class="font-sans text-zinc-900 font-bold text-sm">#{{po.id}}</span>
                 </div>
                 <div>
-                  <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block mb-1">Delivery Date</span>
+                  <span class="text-meta font-bold text-zinc-400 uppercase tracking-wider block mb-1">Delivery Date</span>
                   <span class="text-zinc-900 font-sans">{{po.deliveryDate || 'Pending Conf.'}}</span>
                 </div>
                 <div>
-                  <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block mb-1">Sent Via</span>
+                  <span class="text-meta font-bold text-zinc-400 uppercase tracking-wider block mb-1">Sent Via</span>
                   <span class="text-zinc-900">{{po.sentVia || 'N/A'}}</span>
                 </div>
                 <div>
-                  <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block mb-1">Total Amount</span>
+                  <span class="text-meta font-bold text-zinc-400 uppercase tracking-wider block mb-1">Total Amount</span>
                   <span class="font-sans text-zinc-900 font-bold">{{formatCurrency(po.amount)}}</span>
                 </div>
               </div>
 
               <div>
-                <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block mb-2">Order Lines</span>
+                <span class="text-meta font-bold text-zinc-400 uppercase tracking-wider block mb-2">Order Lines</span>
                 <div class="border border-zinc-200 rounded-xl overflow-x-auto">
                   <table class="min-w-full divide-y divide-slate-200">
                     <thead class="bg-zinc-50">
                       <tr>
-                        <th class="px-3 py-2 text-left text-[10px] font-semibold text-zinc-500 uppercase">Item</th>
-                        <th class="px-3 py-2 text-right text-[10px] font-semibold text-zinc-500 uppercase">Qty</th>
-                        <th class="px-3 py-2 text-right text-[10px] font-semibold text-zinc-500 uppercase">Unit Cost</th>
-                        <th class="px-3 py-2 text-right text-[10px] font-semibold text-zinc-500 uppercase">Total</th>
+                        <th class="px-3 py-2 text-left text-meta font-semibold text-zinc-500 uppercase">Item</th>
+                        <th class="px-3 py-2 text-right text-meta font-semibold text-zinc-500 uppercase">Qty</th>
+                        <th class="px-3 py-2 text-right text-meta font-semibold text-zinc-500 uppercase">Unit Cost</th>
+                        <th class="px-3 py-2 text-right text-meta font-semibold text-zinc-500 uppercase">Total</th>
                       </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-slate-100">
@@ -1794,7 +1825,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
               <!-- Identification & Dates -->
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-zinc-50 p-4 rounded-xl border border-zinc-100 text-xs">
                 <div class="space-y-2">
-                  <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block border-b border-zinc-200/60 pb-1">1. Identification & Dates</span>
+                  <span class="text-meta font-bold text-zinc-400 uppercase tracking-wider block border-b border-zinc-200/60 pb-1">1. Identification & Dates</span>
                   <div class="grid grid-cols-2 gap-y-1.5 text-zinc-600 font-sans">
                     <span class="font-medium">Order Number:</span> <span class="font-sans text-zinc-900 font-semibold">{{ deal.orderNumber || 'N/A' }}</span>
                     <span class="font-medium">Deal Number:</span> <span class="font-sans text-zinc-900 font-semibold">{{ deal.dealNumber || 'N/A' }}</span>
@@ -1802,7 +1833,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                     <span class="font-medium">Req. Delivery:</span> <span class="text-zinc-900 font-sans">{{ deal.requestedDeliveryDate || 'N/A' }}</span>
                     <span class="font-medium">Order Status:</span> 
                     <span>
-                      <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-zinc-100 text-zinc-950 border border-zinc-200">
+                      <span class="px-1.5 py-0.5 rounded text-meta font-semibold bg-zinc-100 text-zinc-950 border border-zinc-200">
                         {{ deal.orderStatus || 'N/A' }}
                       </span>
                     </span>
@@ -1811,14 +1842,14 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
 
                 <!-- Customer & Delivery -->
                 <div class="space-y-2">
-                  <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block border-b border-zinc-200/60 pb-1">2. Customer & Delivery</span>
+                  <span class="text-meta font-bold text-zinc-400 uppercase tracking-wider block border-b border-zinc-200/60 pb-1">2. Customer & Delivery</span>
                   <div class="grid grid-cols-3 gap-y-1.5 text-zinc-600 font-sans">
                     <span class="font-medium col-span-1">Account:</span> <span class="col-span-2 text-zinc-900 font-sans">{{ deal.customerAccount || 'N/A' }}</span>
                     <span class="font-medium col-span-1">Contact:</span> <span class="col-span-2 text-zinc-900 font-medium">{{ deal.contactPerson || 'N/A' }}</span>
                     <span class="font-medium col-span-1">Email:</span> <span class="col-span-2 text-zinc-900 font-sans truncate" [title]="deal.contactEmail">{{ deal.contactEmail || 'N/A' }}</span>
                     <span class="font-medium col-span-1">Phone:</span> <span class="col-span-2 text-zinc-900 font-sans">{{ deal.contactPhone || 'N/A' }}</span>
                   </div>
-                  <div class="mt-1.5 pt-1.5 border-t border-zinc-200/60 text-[11px] text-zinc-600 space-y-1">
+                  <div class="mt-1.5 pt-1.5 border-t border-zinc-200/60 text-meta text-zinc-600 space-y-1">
                     <div><strong class="text-zinc-700">Billing:</strong> {{ deal.billingAddress || 'N/A' }}</div>
                     <div><strong class="text-zinc-700">Delivery:</strong> {{ deal.deliveryAddress || 'N/A' }}</div>
                   </div>
@@ -1826,7 +1857,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
 
                 <!-- Sales & Commercial -->
                 <div class="space-y-2">
-                  <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block border-b border-zinc-200/60 pb-1">3. Sales & Commercial</span>
+                  <span class="text-meta font-bold text-zinc-400 uppercase tracking-wider block border-b border-zinc-200/60 pb-1">3. Sales & Commercial</span>
                   <div class="grid grid-cols-2 gap-y-1.5 text-zinc-600 font-sans">
                     <span class="font-medium">Sales Person:</span> <span class="text-zinc-900 font-medium">{{ deal.salesPerson || 'N/A' }}</span>
                     <span class="font-medium">Region:</span> <span class="text-zinc-900">{{ deal.salesRegion || 'N/A' }}</span>
@@ -1838,7 +1869,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
 
                 <!-- Vendor & Logistics -->
                 <div class="space-y-2">
-                  <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block border-b border-zinc-200/60 pb-1">4. Vendor & Logistics</span>
+                  <span class="text-meta font-bold text-zinc-400 uppercase tracking-wider block border-b border-zinc-200/60 pb-1">4. Vendor & Logistics</span>
                   <div class="grid grid-cols-2 gap-y-1.5 text-zinc-600 font-sans">
                     <span class="font-medium">Vendor Account:</span> <span class="font-sans text-zinc-900 font-semibold">{{ deal.vendorAccount || 'N/A' }}</span>
                     <span class="font-medium">PO Reference:</span> <span class="font-sans text-zinc-900 font-semibold">{{ deal.purchaseOrderRef || 'N/A' }}</span>
@@ -1854,7 +1885,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                   <div class="text-zinc-400 font-sans font-bold flex items-center gap-1 mb-1">
                     <mat-icon class="text-[14px] w-3.5 h-3.5 leading-none">email</mat-icon> Email Exchange & Confirmation Logs
                   </div>
-                  <pre class="whitespace-pre-wrap text-[10px] text-zinc-700 leading-relaxed font-sans">{{deal.emailExchange}}</pre>
+                  <pre class="whitespace-pre-wrap text-meta text-zinc-700 leading-relaxed font-sans">{{deal.emailExchange}}</pre>
                 </div>
               }
 
@@ -1871,42 +1902,42 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                     class="px-3 py-1.5 rounded-md text-xs font-medium border transition-all flex items-center gap-1.5">
                     <mat-icon class="text-[14px] w-3.5 h-3.5 leading-none flex items-center justify-center">call</mat-icon>
                     Calls
-                    <span class="bg-zinc-100 text-zinc-900 px-1 py-0.2 rounded-full text-[9px] font-semibold">{{ deal.activityLog?.calls?.length || 0 }}</span>
+                    <span class="bg-zinc-100 text-zinc-900 px-1 py-0.2 rounded-full text-meta font-semibold">{{ deal.activityLog?.calls?.length || 0 }}</span>
                   </button>
                   <button type="button" (click)="setDealTab(deal.id, 'emails')"
                     [class]="getDealTab(deal.id) === 'emails' ? 'bg-white text-zinc-900 shadow-xs border-zinc-200' : 'text-zinc-600 border-transparent hover:text-zinc-900 hover:bg-zinc-100'"
                     class="px-3 py-1.5 rounded-md text-xs font-medium border transition-all flex items-center gap-1.5">
                     <mat-icon class="text-[14px] w-3.5 h-3.5 leading-none flex items-center justify-center">email</mat-icon>
                     Emails
-                    <span class="bg-zinc-100 text-zinc-900 px-1 py-0.2 rounded-full text-[9px] font-semibold">{{ deal.activityLog?.emails?.length || 0 }}</span>
+                    <span class="bg-zinc-100 text-zinc-900 px-1 py-0.2 rounded-full text-meta font-semibold">{{ deal.activityLog?.emails?.length || 0 }}</span>
                   </button>
                   <button type="button" (click)="setDealTab(deal.id, 'meetings')"
                     [class]="getDealTab(deal.id) === 'meetings' ? 'bg-white text-zinc-900 shadow-xs border-zinc-200' : 'text-zinc-600 border-transparent hover:text-zinc-900 hover:bg-zinc-100'"
                     class="px-3 py-1.5 rounded-md text-xs font-medium border transition-all flex items-center gap-1.5">
                     <mat-icon class="text-[14px] w-3.5 h-3.5 leading-none flex items-center justify-center">groups</mat-icon>
                     Meetings
-                    <span class="bg-zinc-100 text-zinc-900 px-1 py-0.2 rounded-full text-[9px] font-semibold">{{ deal.activityLog?.meetings?.length || 0 }}</span>
+                    <span class="bg-zinc-100 text-zinc-900 px-1 py-0.2 rounded-full text-meta font-semibold">{{ deal.activityLog?.meetings?.length || 0 }}</span>
                   </button>
                   <button type="button" (click)="setDealTab(deal.id, 'recordings')"
                     [class]="getDealTab(deal.id) === 'recordings' ? 'bg-white text-zinc-900 shadow-xs border-zinc-200' : 'text-zinc-600 border-transparent hover:text-zinc-900 hover:bg-zinc-100'"
                     class="px-3 py-1.5 rounded-md text-xs font-medium border transition-all flex items-center gap-1.5">
                     <mat-icon class="text-[14px] w-3.5 h-3.5 leading-none flex items-center justify-center">videocam</mat-icon>
                     Recordings
-                    <span class="bg-zinc-100 text-zinc-900 px-1 py-0.2 rounded-full text-[9px] font-semibold">{{ deal.activityLog?.recordings?.length || 0 }}</span>
+                    <span class="bg-zinc-100 text-zinc-900 px-1 py-0.2 rounded-full text-meta font-semibold">{{ deal.activityLog?.recordings?.length || 0 }}</span>
                   </button>
                   <button type="button" (click)="setDealTab(deal.id, 'notes')"
                     [class]="getDealTab(deal.id) === 'notes' ? 'bg-white text-zinc-900 shadow-xs border-zinc-200' : 'text-zinc-600 border-transparent hover:text-zinc-900 hover:bg-zinc-100'"
                     class="px-3 py-1.5 rounded-md text-xs font-medium border transition-all flex items-center gap-1.5">
                     <mat-icon class="text-[14px] w-3.5 h-3.5 leading-none flex items-center justify-center">note_alt</mat-icon>
                     Notes
-                    <span class="bg-zinc-100 text-zinc-900 px-1 py-0.2 rounded-full text-[9px] font-semibold">{{ deal.activityLog?.notes?.length || 0 }}</span>
+                    <span class="bg-zinc-100 text-zinc-900 px-1 py-0.2 rounded-full text-meta font-semibold">{{ deal.activityLog?.notes?.length || 0 }}</span>
                   </button>
                   <button type="button" (click)="setDealTab(deal.id, 'followups')"
                     [class]="getDealTab(deal.id) === 'followups' ? 'bg-white text-zinc-900 shadow-xs border-zinc-200' : 'text-zinc-600 border-transparent hover:text-zinc-900 hover:bg-zinc-100'"
                     class="px-3 py-1.5 rounded-md text-xs font-medium border transition-all flex items-center gap-1.5">
                     <mat-icon class="text-[14px] w-3.5 h-3.5 leading-none flex items-center justify-center">notification_important</mat-icon>
                     Follow-ups
-                    <span class="bg-zinc-100 text-zinc-900 px-1 py-0.2 rounded-full text-[9px] font-semibold">{{ deal.activityLog?.followUps?.length || 0 }}</span>
+                    <span class="bg-zinc-100 text-zinc-900 px-1 py-0.2 rounded-full text-meta font-semibold">{{ deal.activityLog?.followUps?.length || 0 }}</span>
                   </button>
                   <button type="button" (click)="setDealTab(deal.id, 'calendar')"
                     [class]="getDealTab(deal.id) === 'calendar' ? 'bg-white text-zinc-900 shadow-xs border-zinc-200' : 'text-zinc-600 border-transparent hover:text-zinc-900 hover:bg-zinc-100'"
@@ -1923,7 +1954,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                   @if (getDealTab(deal.id) === 'calls') {
                     <div class="space-y-4">
                       <div class="flex justify-between items-center">
-                        <span class="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">Phone Calls History</span>
+                        <span class="text-meta font-semibold text-zinc-500 uppercase tracking-wider">Phone Calls History</span>
                         <button type="button" (click)="openAddActivityModal(deal.id, 'calls')" class="text-zinc-900 hover:text-zinc-950 text-xs font-semibold flex items-center gap-0.5">
                           <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">add</mat-icon> Log Call
                         </button>
@@ -1935,16 +1966,16 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                             <div class="flex justify-between items-start">
                               <div class="flex items-center gap-2">
                                 <span class="font-bold text-zinc-800">{{ call.callerName }}</span>
-                                <span class="text-zinc-400 font-sans text-[10px]">{{ call.date }} ({{ call.duration }} min)</span>
+                                <span class="text-zinc-400 font-sans text-meta">{{ call.date }} ({{ call.duration }} min)</span>
                               </div>
                               <span [class]="call.outcome === 'Interested' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
                                              call.outcome === 'Follow-up' ? 'bg-amber-50 text-amber-700 border-amber-200' :
                                              'bg-zinc-100 text-zinc-600 border-zinc-200'"
-                                    class="px-2 py-0.5 rounded text-[10px] font-semibold border">
+                                    class="px-2 py-0.5 rounded text-meta font-semibold border">
                                 {{ call.outcome }}
                               </span>
                             </div>
-                            <p class="text-[11px] text-zinc-600 font-sans leading-relaxed">{{ call.summary }}</p>
+                            <p class="text-meta text-zinc-600 font-sans leading-relaxed">{{ call.summary }}</p>
                           </div>
                         } @empty {
                           <div class="text-center py-6 text-zinc-400 text-xs">No calls logged yet.</div>
@@ -1957,7 +1988,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                   @if (getDealTab(deal.id) === 'emails') {
                     <div class="space-y-4">
                       <div class="flex justify-between items-center">
-                        <span class="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">Email Correspondence Thread</span>
+                        <span class="text-meta font-semibold text-zinc-500 uppercase tracking-wider">Email Correspondence Thread</span>
                         <button type="button" (click)="openAddActivityModal(deal.id, 'emails')" class="text-zinc-900 hover:text-zinc-950 text-xs font-semibold flex items-center gap-0.5">
                           <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">add</mat-icon> Log Email
                         </button>
@@ -1970,23 +2001,23 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                             <div class="flex justify-between items-start">
                               <div>
                                 <span class="font-bold text-zinc-800 text-xs">{{ email.subject }}</span>
-                                <div class="text-[10px] text-zinc-400 font-sans mt-0.5">
+                                <div class="text-meta text-zinc-400 font-sans mt-0.5">
                                   From: {{ email.from }} | To: {{ email.to }}
                                 </div>
                               </div>
-                              <span class="text-[10px] font-sans text-zinc-400">{{ email.date }}</span>
+                              <span class="text-meta font-sans text-zinc-400">{{ email.date }}</span>
                             </div>
-                            <p class="text-[11px] text-zinc-600 leading-relaxed font-sans whitespace-pre-wrap">{{ email.body }}</p>
+                            <p class="text-meta text-zinc-600 leading-relaxed font-sans whitespace-pre-wrap">{{ email.body }}</p>
                           </div>
                         }
                         
                         <!-- Legacy emails text snippet fallback -->
                         @if (deal.emailExchange && (!deal.activityLog || deal.activityLog.emails.length === 0)) {
-                          <div class="bg-white border border-zinc-150 rounded-lg p-3 shadow-xs font-sans text-[11px] text-zinc-700 leading-relaxed">
+                          <div class="bg-white border border-zinc-150 rounded-lg p-3 shadow-xs font-sans text-meta text-zinc-700 leading-relaxed">
                             <div class="text-zinc-400 font-sans font-bold flex items-center gap-1 mb-2">
                               <mat-icon class="text-[14px] w-3.5 h-3.5 leading-none">history</mat-icon> Imported Exchange Logs
                             </div>
-                            <pre class="whitespace-pre-wrap text-[10px] font-sans leading-relaxed">{{ deal.emailExchange }}</pre>
+                            <pre class="whitespace-pre-wrap text-meta font-sans leading-relaxed">{{ deal.emailExchange }}</pre>
                           </div>
                         }
                         
@@ -2001,7 +2032,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                   @if (getDealTab(deal.id) === 'meetings') {
                     <div class="space-y-4">
                       <div class="flex justify-between items-center">
-                        <span class="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">Meetings & Technical Demos</span>
+                        <span class="text-meta font-semibold text-zinc-500 uppercase tracking-wider">Meetings & Technical Demos</span>
                         <button type="button" (click)="openAddActivityModal(deal.id, 'meetings')" class="text-zinc-900 hover:text-zinc-950 text-xs font-semibold flex items-center gap-0.5">
                           <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">add</mat-icon> Log Meeting
                         </button>
@@ -2016,21 +2047,21 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                                 <span [class]="meeting.type === 'teams' ? 'bg-zinc-100 text-zinc-950 border-zinc-200' : 
                                                meeting.type === 'demo' ? 'bg-zinc-100 text-zinc-950 border-zinc-200' : 
                                                'bg-zinc-50 text-zinc-700 border-zinc-200'"
-                                      class="px-1.5 py-0.2 rounded text-[9px] font-semibold border uppercase">
+                                      class="px-1.5 py-0.2 rounded text-meta font-semibold border uppercase">
                                   {{ meeting.type }}
                                 </span>
                               </div>
-                              <span class="text-[10px] text-zinc-400 font-sans">{{ meeting.date }} à {{ meeting.time }}</span>
+                              <span class="text-meta text-zinc-400 font-sans">{{ meeting.date }} à {{ meeting.time }}</span>
                             </div>
                             
-                            <div class="text-[10px] text-zinc-500">
+                            <div class="text-meta text-zinc-500">
                               <strong>Location:</strong> {{ meeting.location }} | 
                               <strong>Attendees:</strong> 
                               @for (att of meeting.attendees; track $index) {
                                 <span class="inline-block bg-zinc-100 text-zinc-600 px-1.5 py-0.2 rounded-full mx-0.5">{{ att }}</span>
                               }
                             </div>
-                            <p class="text-[11px] text-zinc-600 font-sans leading-relaxed border-t border-zinc-50 pt-1.5">{{ meeting.summary }}</p>
+                            <p class="text-meta text-zinc-600 font-sans leading-relaxed border-t border-zinc-50 pt-1.5">{{ meeting.summary }}</p>
                           </div>
                         } @empty {
                           <div class="text-center py-6 text-zinc-400 text-xs">No meetings logged yet.</div>
@@ -2043,7 +2074,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                   @if (getDealTab(deal.id) === 'recordings') {
                     <div class="space-y-4">
                       <div class="flex justify-between items-center">
-                        <span class="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">Teams Meeting Records</span>
+                        <span class="text-meta font-semibold text-zinc-500 uppercase tracking-wider">Teams Meeting Records</span>
                         <button type="button" (click)="openAddActivityModal(deal.id, 'recordings')" class="text-zinc-900 hover:text-zinc-950 text-xs font-semibold flex items-center gap-0.5">
                           <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">add</mat-icon> Add Link
                         </button>
@@ -2058,15 +2089,15 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                               </div>
                               <div>
                                 <span class="font-bold text-zinc-800 text-xs block">{{ rec.title }}</span>
-                                <span class="text-[10px] text-zinc-400 font-sans">{{ rec.date }} | Duration: {{ rec.duration }}</span>
+                                <span class="text-meta text-zinc-400 font-sans">{{ rec.date }} | Duration: {{ rec.duration }}</span>
                               </div>
                             </div>
                             
                             <div class="flex gap-2">
-                              <a [href]="rec.meetingLink" target="_blank" class="px-2.5 py-1 text-[10px] font-semibold rounded bg-zinc-100 text-zinc-600 border border-zinc-200 hover:bg-zinc-200 flex items-center gap-0.5">
+                              <a [href]="rec.meetingLink" target="_blank" class="px-2.5 py-1 text-meta font-semibold rounded bg-zinc-100 text-zinc-600 border border-zinc-200 hover:bg-zinc-200 flex items-center gap-0.5">
                                 <mat-icon class="text-[12px] w-3 h-3">link</mat-icon> Teams
                               </a>
-                              <a [href]="rec.recordingLink" target="_blank" class="px-2.5 py-1 text-[10px] font-semibold rounded bg-zinc-100 text-zinc-950 border border-zinc-300 hover:bg-zinc-200 flex items-center gap-0.5">
+                              <a [href]="rec.recordingLink" target="_blank" class="px-2.5 py-1 text-meta font-semibold rounded bg-zinc-100 text-zinc-950 border border-zinc-300 hover:bg-zinc-200 flex items-center gap-0.5">
                                 <mat-icon class="text-[12px] w-3 h-3 flex items-center justify-center">play_arrow</mat-icon> Record
                               </a>
                             </div>
@@ -2082,7 +2113,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                   @if (getDealTab(deal.id) === 'notes') {
                     <div class="space-y-4">
                       <div class="flex justify-between items-center">
-                        <span class="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">Sales Notes & Comments</span>
+                        <span class="text-meta font-semibold text-zinc-500 uppercase tracking-wider">Sales Notes & Comments</span>
                         <button type="button" (click)="openAddActivityModal(deal.id, 'notes')" class="text-zinc-900 hover:text-zinc-950 text-xs font-semibold flex items-center gap-0.5">
                           <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">add</mat-icon> Add Note
                         </button>
@@ -2092,11 +2123,11 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                         @for (note of deal.activityLog?.notes; track note.id) {
                           <div class="bg-zinc-100/50 border border-zinc-200 rounded-lg p-3 shadow-xs space-y-1.5 relative overflow-hidden font-sans">
                             <div class="absolute top-0 left-0 w-1 h-full bg-zinc-500"></div>
-                            <div class="flex justify-between items-center text-[10px] text-zinc-400 font-sans">
+                            <div class="flex justify-between items-center text-meta text-zinc-400 font-sans">
                               <span>By: {{ note.author }}</span>
                               <span>{{ note.date }}</span>
                             </div>
-                            <p class="text-[11px] text-zinc-700 leading-relaxed font-sans">{{ note.content }}</p>
+                            <p class="text-meta text-zinc-700 leading-relaxed font-sans">{{ note.content }}</p>
                           </div>
                         } @empty {
                           <div class="col-span-2 text-center py-6 text-zinc-400 text-xs">No notes added yet.</div>
@@ -2109,7 +2140,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                   @if (getDealTab(deal.id) === 'followups') {
                     <div class="space-y-4">
                       <div class="flex justify-between items-center">
-                        <span class="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider font-sans">Upcoming Alerts & Action Reminders</span>
+                        <span class="text-meta font-semibold text-zinc-500 uppercase tracking-wider font-sans">Upcoming Alerts & Action Reminders</span>
                         <button type="button" (click)="openAddActivityModal(deal.id, 'followups')" class="text-zinc-900 hover:text-zinc-950 text-xs font-semibold flex items-center gap-0.5">
                           <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">add</mat-icon> Add Follow-up
                         </button>
@@ -2124,11 +2155,11 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                               </button>
                               <div>
                                 <span [class.line-through]="f.status === 'done'" [class.text-zinc-400]="f.status === 'done'" class="font-bold text-zinc-800 text-xs block font-sans">{{ f.title }}</span>
-                                <span class="text-[10px] text-zinc-400 font-sans">Due date: {{ f.dueDate }} | Owner: {{ f.assignedTo }}</span>
+                                <span class="text-meta text-zinc-400 font-sans">Due date: {{ f.dueDate }} | Owner: {{ f.assignedTo }}</span>
                               </div>
                             </div>
                             
-                            <span [class]="f.status === 'done' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'" class="px-2 py-0.5 border text-[9px] font-bold uppercase rounded font-sans">
+                            <span [class]="f.status === 'done' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'" class="px-2 py-0.5 border text-meta font-bold uppercase rounded font-sans">
                               {{ f.status === 'done' ? 'Completed' : 'Pending' }}
                             </span>
                           </div>
@@ -2144,15 +2175,15 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <div class="flex justify-between items-center mb-2 px-1">
-                          <span class="text-[11px] font-bold text-zinc-700 uppercase">Juin 2026</span>
-                          <span class="text-[9px] text-zinc-400 flex items-center gap-0.5 font-semibold">
+                          <span class="text-meta font-bold text-zinc-700 uppercase">Juin 2026</span>
+                          <span class="text-meta text-zinc-400 flex items-center gap-0.5 font-semibold">
                             <span class="w-1.5 h-1.5 bg-zinc-900 rounded-full inline-block"></span> Outlook Sync TBD
                           </span>
                         </div>
 
                         <!-- Calendar Grid -->
                         <div class="bg-white border border-zinc-200 rounded-xl p-2.5 shadow-xs">
-                          <div class="grid grid-cols-7 gap-1 text-center font-bold text-[9px] text-zinc-400 mb-1 border-b border-zinc-50 pb-1">
+                          <div class="grid grid-cols-7 gap-1 text-center font-bold text-meta text-zinc-400 mb-1 border-b border-zinc-50 pb-1">
                             @for (h of calendarHeaders; track h) {
                               <div>{{ h }}</div>
                             }
@@ -2163,7 +2194,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                                       [class]="isSelectedCalendarDay(deal.id, day) ? 'bg-zinc-900 text-white font-bold' : 
                                                hasEventsOnDay(deal, day) ? 'bg-zinc-100 text-zinc-950 font-bold border-zinc-300' : 
                                                'bg-zinc-50 text-zinc-700 hover:bg-zinc-100 border-zinc-105 border-zinc-100'"
-                                      class="w-full aspect-square rounded-lg text-[10px] font-semibold border flex flex-col items-center justify-center relative transition-all">
+                                      class="w-full aspect-square rounded-lg text-meta font-semibold border flex flex-col items-center justify-center relative transition-all">
                                 {{ day }}
                                 @if (hasEventsOnDay(deal, day) && !isSelectedCalendarDay(deal.id, day)) {
                                   <span class="absolute bottom-1 w-1.5 h-1.5 bg-zinc-900 rounded-full"></span>
@@ -2177,7 +2208,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                       <!-- Selected Day Details -->
                       <div class="flex flex-col justify-between">
                         <div class="space-y-2">
-                          <span class="text-[11px] font-bold text-zinc-700 block mb-2 uppercase">
+                          <span class="text-meta font-bold text-zinc-700 block mb-2 uppercase">
                             Events: {{ getSelectedCalendarDay(deal.id) ? 'Day ' + getSelectedCalendarDay(deal.id) + ' June' : 'Select a day' }}
                           </span>
 
@@ -2186,22 +2217,22 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                               <div class="bg-white border border-zinc-200 rounded-lg p-2.5 shadow-xs">
                                 <div class="flex justify-between items-center mb-1">
                                   <span class="font-bold text-zinc-900 text-xs">{{ m.title }}</span>
-                                  <span class="text-[9px] text-zinc-400 font-sans">{{ m.time }}</span>
+                                  <span class="text-meta text-zinc-400 font-sans">{{ m.time }}</span>
                                 </div>
-                                <div class="text-[9px] text-zinc-500 uppercase tracking-wider mb-1 font-sans">
+                                <div class="text-meta text-zinc-500 uppercase tracking-wider mb-1 font-sans">
                                   Type: {{ m.type }} | Location: {{ m.location }}
                                 </div>
-                                <p class="text-[10px] text-zinc-600 line-clamp-2 leading-relaxed font-sans">{{ m.summary }}</p>
+                                <p class="text-meta text-zinc-600 line-clamp-2 leading-relaxed font-sans">{{ m.summary }}</p>
                               </div>
                             } @empty {
-                              <div class="text-center py-8 text-zinc-400 text-[11px] bg-white border border-zinc-150 rounded-xl font-sans">
+                              <div class="text-center py-8 text-zinc-400 text-meta bg-white border border-zinc-150 rounded-xl font-sans">
                                 No meetings scheduled on this day.
                               </div>
                             }
                           </div>
                         </div>
 
-                        <div class="text-[10px] badge text-zinc-500 rounded-lg p-2.5 border border-zinc-150 mt-4 leading-relaxed font-sans">
+                        <div class="text-meta badge text-zinc-500 rounded-lg p-2.5 border border-zinc-150 mt-4 leading-relaxed font-sans">
                           💡 <strong>Tip:</strong> Meetings logged in the <strong>Meetings</strong> tab automatically populate this calendar view.
                         </div>
                       </div>
@@ -2284,6 +2315,53 @@ export class SalesComponent {
     return this.dealsService.allDeals().slice(start, start + this.dealsPageSize());
   });
 
+  // Bulk actions state
+  selectedDealIds = signal<Set<string>>(new Set());
+  dealStageOptions = ['New', 'Proposal sent', 'Confirmed', 'Awaiting Invoicing', 'Invoiced', 'Closed Won', 'Closed Lost'];
+
+  toggleDealSelect(id: string, event: Event) {
+    event.stopPropagation();
+    this.selectedDealIds.update(s => {
+      const next = new Set(s);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+  isDealSelected(id: string) { return this.selectedDealIds().has(id); }
+  toggleSelectAllDeals(event: Event) {
+    event.stopPropagation();
+    const all = this.paginatedDeals();
+    const allSelected = all.every(d => this.selectedDealIds().has(d.id));
+    this.selectedDealIds.set(allSelected ? new Set() : new Set(all.map(d => d.id)));
+  }
+  clearDealSelection() { this.selectedDealIds.set(new Set()); }
+  bulkAssignDealOwner(event: Event) {
+    const owner = (event.target as HTMLSelectElement).value;
+    if (!owner) return;
+    this.selectedDealIds().forEach(id => this.dealsService.updateDeal(id, { salesPerson: owner }));
+    (event.target as HTMLSelectElement).value = '';
+  }
+  bulkChangeDealStage(event: Event) {
+    const stage = (event.target as HTMLSelectElement).value;
+    if (!stage) return;
+    this.selectedDealIds().forEach(id => this.dealsService.updateDeal(id, { stage: stage as any }));
+    (event.target as HTMLSelectElement).value = '';
+  }
+  bulkExportDeals() {
+    const ids = this.selectedDealIds();
+    const rows = this.dealsService.allDeals().filter(d => ids.has(d.id));
+    const header = ['Deal', 'Client', 'Amount', 'Stage', 'Created By'];
+    const csvRows = rows.map(d => [d.title, d.partnerId, d.amount, d.stage, d.createdBy || ''].map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(','));
+    const csv = [header.join(','), ...csvRows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `deals-export-${Date.now()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   proposalsPage = signal(1);
   proposalsPageSize = signal(10);
   proposalsTotalPages = computed(() => Math.max(1, Math.ceil(this.proposalsService.allProposals().length / this.proposalsPageSize())));
@@ -2323,6 +2401,19 @@ export class SalesComponent {
     this.purchaseOrdersService.load();
     this.partnersService.load();
     this.state.loadProposalTemplates();
+
+    effect(() => {
+      const action = this.state.pendingQuickAction();
+      if (!action) return;
+      if (action.id === 'new-deal') {
+        this.openCreateDealModal();
+        this.state.pendingQuickAction.set(null);
+      } else if (action.id === 'log-call') {
+        const mostRecent = [...this.dealsService.allDeals()].sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''))[0];
+        if (mostRecent) this.openAddActivityModal(mostRecent.id, 'calls');
+        this.state.pendingQuickAction.set(null);
+      }
+    });
   }
 
   // Convert Proposal to Deal & Customer Modal State

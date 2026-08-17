@@ -17,7 +17,7 @@ interface CalendarDay {
   template: `
     <div class="card rounded-2xl p-4">
       <div class="flex items-center justify-between mb-2">
-        <h3 class="text-[11px] font-bold text-zinc-700 uppercase tracking-wide">Partner Schedule</h3>
+        <h3 class="text-meta font-bold text-zinc-700 uppercase tracking-wide">Partner Schedule</h3>
         <div class="flex items-center gap-0.5">
           <button
             (click)="prevMonth()"
@@ -39,7 +39,7 @@ interface CalendarDay {
 
       <div class="grid grid-cols-7 gap-1 mb-1">
         @for (h of dayHeaders; track h) {
-          <div class="text-center text-[9px] font-bold text-zinc-400 uppercase tracking-wider py-0.5">{{ h }}</div>
+          <div class="text-center text-meta font-bold text-zinc-400 uppercase tracking-wider py-0.5">{{ h }}</div>
         }
       </div>
 
@@ -72,7 +72,7 @@ interface CalendarDay {
                   </span>
                 }
               </div>
-              <div class="text-[10px] font-bold" [class]="cell.isToday ? 'text-zinc-950' : cell.isPast ? 'text-zinc-700' : 'text-zinc-400'">
+              <div class="text-meta font-bold" [class]="cell.isToday ? 'text-zinc-950' : cell.isPast ? 'text-zinc-700' : 'text-zinc-400'">
                 {{ cell.day }}
               </div>
             </div>

@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, effect } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { CrmStateService, Ticket, TicketStatus, TicketPriority } from '../services/crm-state.service';
 import { TicketsService } from '../services/domains';
@@ -14,7 +14,6 @@ import { PaginatorComponent } from '../shared/paginator.component';
   imports: [MatIconModule, CommonModule, FormsModule, CreatedByBadgeComponent, RouterModule, DataStatusBannerComponent, PaginatorComponent],
   template: `
     <div class="space-y-8">
-      <app-data-status-banner [loading]="ticketsService.isLoading$()" [error]="ticketsService.error$()" />
       @if (canCreate()) {
       <div class="flex justify-end">
         <button (click)="openNewTicketModal()" class="bg-zinc-900 hover:bg-zinc-950 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm shadow-lg shadow-zinc-300">
@@ -58,10 +57,16 @@ import { PaginatorComponent } from '../shared/paginator.component';
         <span class="text-xs text-zinc-400 font-medium ml-auto">{{ filteredTickets().length }} ticket{{ filteredTickets().length !== 1 ? 's' : '' }}</span>
       </div>
 
+      @if (ticketsService.isLoading$()) {
+        <app-data-status-banner [loading]="true" [variant]="'rows'" [columns]="9" [rows]="8" />
+      } @else {
       <div class="card rounded-2xl overflow-x-auto">
         <table class="min-w-full divide-y divide-slate-200">
           <thead class="bg-white border border-zinc-200">
             <tr>
+              <th scope="col" class="px-6 py-3 text-left font-medium text-zinc-500 uppercase tracking-wider text-xs">
+                <input type="checkbox" [checked]="allTicketsOnPageSelected()" (change)="toggleSelectAllTickets($event)" class="cursor-pointer" />
+              </th>
               <th scope="col" class="px-6 py-3 text-left font-medium text-zinc-500 uppercase tracking-wider text-xs">Priority</th>
               <th scope="col" class="px-6 py-3 text-left font-medium text-zinc-500 uppercase tracking-wider text-xs">Subject / Title</th>
               <th scope="col" class="px-6 py-3 text-left font-medium text-zinc-500 uppercase tracking-wider text-xs">Type</th>
@@ -75,20 +80,23 @@ import { PaginatorComponent } from '../shared/paginator.component';
           <tbody class="bg-white divide-y divide-slate-200">
             @for (ticket of paginatedTickets(); track ticket.id) {
               <tr class="hover:bg-zinc-50 transition-colors">
+                <td (click)="toggleTicketSelect(ticket.id, $event); $event.stopPropagation()" class="px-6 py-4 whitespace-nowrap">
+                  <input type="checkbox" [checked]="isTicketSelected(ticket.id)" (click)="$event.stopPropagation()" (change)="toggleTicketSelect(ticket.id, $event)" class="cursor-pointer" />
+                </td>
                 <td (click)="openEditTicketModal(ticket)" class="px-6 py-4 whitespace-nowrap cursor-pointer">
                   <div class="flex items-center">
                     <mat-icon [class]="getPriorityColor(ticket.priority)" class="text-[18px] w-5 h-5">flag</mat-icon>
-                    <span [class]="getPriorityColor(ticket.priority)" class="ml-1.5 text-xs font-semibold">{{ getPriorityLabel(ticket.priority) }}</span>
+                    <span [class]="getPriorityColor(ticket.priority)" class="ml-1.5 text-meta font-semibold">{{ getPriorityLabel(ticket.priority) }}</span>
                   </div>
                 </td>
                 <td (click)="openEditTicketModal(ticket)" class="px-6 py-4 cursor-pointer">
                   <div class="text-sm font-medium text-zinc-900">{{ticket.title}}</div>
                   @if (ticket.description) {
-                    <div class="text-[11px] text-zinc-500 font-medium mt-0.5 truncate max-w-xs" [title]="ticket.description">{{ticket.description}}</div>
+                    <div class="text-meta text-zinc-500 font-medium mt-0.5 truncate max-w-xs" [title]="ticket.description">{{ticket.description}}</div>
                   }
                 </td>
                 <td (click)="openEditTicketModal(ticket)" class="px-6 py-4 whitespace-nowrap cursor-pointer text-sm text-zinc-600">
-                  <span class="px-2 py-0.5 text-xs bg-zinc-100 text-zinc-700 rounded-md border border-zinc-200 font-medium">
+                  <span class="px-2 py-0.5 text-body bg-zinc-100 text-zinc-700 rounded-md border border-zinc-200 font-medium">
                     {{ticket.type || 'N/A'}}
                   </span>
                 </td>
@@ -97,14 +105,14 @@ import { PaginatorComponent } from '../shared/paginator.component';
                 </td>
                 <td (click)="openEditTicketModal(ticket)" class="px-6 py-4 whitespace-nowrap cursor-pointer text-sm text-zinc-600">
                   <div class="flex items-center gap-2">
-                    <div class="h-5 w-5 bg-zinc-100 border border-zinc-200 rounded-full flex items-center justify-center text-[9px] font-bold text-zinc-900 uppercase">
+                    <div class="h-5 w-5 bg-zinc-100 border border-zinc-200 rounded-full flex items-center justify-center text-meta font-bold text-zinc-900 uppercase">
                       {{getAssigneeInitials(ticket.assignedToUserId)}}
                     </div>
                     {{getAssigneeDisplayName(ticket.assignedToUserId)}}
                   </div>
                 </td>
                 <td (click)="openEditTicketModal(ticket)" class="px-6 py-4 whitespace-nowrap cursor-pointer">
-                  <span [class]="getStatusColor(ticket.status)" class="px-2.5 py-1 text-xs font-semibold rounded-full border">
+                  <span [class]="getStatusColor(ticket.status)" class="px-2.5 py-1 text-body font-semibold rounded-full border">
                     {{ getStatusLabel(ticket.status) }}
                   </span>
                 </td>
@@ -121,7 +129,7 @@ import { PaginatorComponent } from '../shared/paginator.component';
               </tr>
             } @empty {
               <tr>
-                <td colspan="8" class="px-6 py-12 text-center text-zinc-400 text-sm">
+                <td colspan="9" class="px-6 py-12 text-center text-zinc-400 text-sm">
                   <mat-icon class="text-[40px]! w-10 h-10 mb-2 text-zinc-300 block mx-auto">support_agent</mat-icon>
                   No tickets found. Create one to get started.
                 </td>
@@ -138,6 +146,26 @@ import { PaginatorComponent } from '../shared/paginator.component';
             (pageSizeChange)="ticketsPageSize.set($event)" />
         }
       </div>
+      }
+      @if (ticketsService.error$()) {
+        <app-data-status-banner [error]="ticketsService.error$()" />
+      }
+      @if (selectedTicketIds().size > 0) {
+        <div class="bulk-action-bar">
+          <span class="text-body font-semibold">{{ selectedTicketIds().size }} selected</span>
+          <div class="w-px h-4 bg-white/20"></div>
+          <select class="text-body bg-white/10 text-white rounded-md px-2 py-1.5 border-none outline-none cursor-pointer" (change)="bulkAssignTicketOwner($event)">
+            <option value="">Assign owner…</option>
+            @for (u of state.users(); track u.id) { <option [value]="u.name">{{u.name}}</option> }
+          </select>
+          <select class="text-body bg-white/10 text-white rounded-md px-2 py-1.5 border-none outline-none cursor-pointer" (change)="bulkChangeTicketStatus($event)">
+            <option value="">Change stage…</option>
+            @for (s of ticketStatusOptions; track s) { <option [value]="s">{{s}}</option> }
+          </select>
+          <button class="text-body font-semibold px-3 py-1.5 rounded-md hover:bg-white/10 transition-colors" (click)="bulkExportTickets()">Export CSV</button>
+          <button class="text-meta ml-2 opacity-70 hover:opacity-100 transition-opacity" (click)="clearTicketSelection()">Clear</button>
+        </div>
+      }
     </div>
 
     <!-- Ticket Modal (Create / Edit) -->
@@ -254,7 +282,7 @@ import { PaginatorComponent } from '../shared/paginator.component';
           <div class="bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3">
             <div class="text-sm font-semibold text-zinc-900">{{ ticketToDelete()?.title }}</div>
             @if (ticketToDelete()?.id) {
-              <div class="text-[11px] text-zinc-400 font-mono mt-0.5">#{{ ticketToDelete()?.id }}</div>
+              <div class="text-meta text-zinc-400 font-mono mt-0.5">#{{ ticketToDelete()?.id }}</div>
             }
           </div>
           <div class="flex justify-end gap-2 pt-2 border-t border-white/30">
@@ -299,6 +327,90 @@ export class TicketsComponent {
 
   hasActiveFilters = computed(() => !!this.priorityFilter() || !!this.statusFilter() || !!this.typeFilter());
 
+  ticketStatusOptions = ['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED'];
+  selectedTicketIds = signal<Set<string>>(new Set());
+
+  allTicketsOnPageSelected = computed(() => {
+    const page = this.paginatedTickets();
+    if (page.length === 0) return false;
+    const selected = this.selectedTicketIds();
+    return page.every(t => selected.has(t.id));
+  });
+
+  toggleTicketSelect(id: string, event: Event) {
+    event.stopPropagation();
+    const current = new Set(this.selectedTicketIds());
+    if (current.has(id)) {
+      current.delete(id);
+    } else {
+      current.add(id);
+    }
+    this.selectedTicketIds.set(current);
+  }
+
+  isTicketSelected(id: string): boolean {
+    return this.selectedTicketIds().has(id);
+  }
+
+  toggleSelectAllTickets(event: Event) {
+    const checked = (event.target as HTMLInputElement).checked;
+    const current = new Set(this.selectedTicketIds());
+    for (const ticket of this.paginatedTickets()) {
+      if (checked) {
+        current.add(ticket.id);
+      } else {
+        current.delete(ticket.id);
+      }
+    }
+    this.selectedTicketIds.set(current);
+  }
+
+  clearTicketSelection() {
+    this.selectedTicketIds.set(new Set());
+  }
+
+  bulkAssignTicketOwner(event: Event) {
+    const value = (event.target as HTMLSelectElement).value;
+    if (!value) return;
+    const ids = this.selectedTicketIds();
+    for (const id of ids) {
+      this.ticketsService.updateTicket(id, { assignedTo: value });
+    }
+  }
+
+  bulkChangeTicketStatus(event: Event) {
+    const value = (event.target as HTMLSelectElement).value;
+    if (!value) return;
+    const ids = this.selectedTicketIds();
+    for (const id of ids) {
+      this.ticketsService.updateTicket(id, { status: value as TicketStatus });
+    }
+  }
+
+  bulkExportTickets() {
+    const ids = this.selectedTicketIds();
+    const tickets = this.ticketsService.allTickets().filter(t => ids.has(t.id));
+    const header = ['Title', 'Type', 'Priority', 'Status', 'Assignee'];
+    const escapeCsv = (val: string) => `"${(val ?? '').replace(/"/g, '""')}"`;
+    const rows = tickets.map(t => [
+      escapeCsv(t.title),
+      escapeCsv(t.type || ''),
+      escapeCsv(t.priority),
+      escapeCsv(t.status),
+      escapeCsv(this.getAssigneeDisplayName(t.assignedToUserId))
+    ].join(','));
+    const csv = [header.join(','), ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'tickets-export.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
   ticketsPage = signal(1);
   ticketsPageSize = signal(10);
   ticketsTotalPages = computed(() => Math.max(1, Math.ceil(this.filteredTickets().length / this.ticketsPageSize())));
@@ -320,6 +432,23 @@ export class TicketsComponent {
       this.priorityFilter.set(filter.priority as TicketPriority);
       this.state.ticketFilter.set(null);
     }
+
+    effect(() => {
+      const action = this.state.pendingQuickAction();
+      if (!action) return;
+      if (action.id === 'new-ticket') {
+        this.openNewTicketModal();
+        this.state.pendingQuickAction.set(null);
+      } else if (action.id === 'open-ticket' && action.payload) {
+        const ticket = this.ticketsService.allTickets().find(t => t.id === action.payload);
+        if (ticket) {
+          this.openEditTicketModal(ticket);
+          this.state.pendingQuickAction.set(null);
+        }
+        // if not found yet (tickets still loading), leave the signal set so this effect re-runs
+        // once ticketsService.allTickets() updates and the ticket becomes findable.
+      }
+    });
   }
 
   // Delete confirmation

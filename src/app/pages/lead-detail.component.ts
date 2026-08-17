@@ -31,14 +31,14 @@ import { ApiService } from '../services/api.service';
                 <p class="text-sm text-zinc-500 font-semibold mt-0.5">{{ lead.id }} &bull; {{ lead.companyName }}</p>
                 <div class="flex items-center gap-2 mt-2">
                   <span [class]="getStatusClass(lead.status)" class="px-2.5 py-1 text-xs font-semibold rounded-full badge">{{ lead.status }}</span>
-                  <span [class]="getPriorityBadge(lead.priority)" class="px-2 py-0.5 text-[10px] font-bold uppercase rounded-md badge">{{ lead.priority }}</span>
-                  <span [class]="getTempBadge(lead.temperature)" class="px-2 py-0.5 text-[10px] font-bold uppercase rounded-md badge">{{ lead.temperature }}</span>
+                  <span [class]="getPriorityBadge(lead.priority)" class="px-2 py-0.5 text-meta font-bold uppercase rounded-md badge">{{ lead.priority }}</span>
+                  <span [class]="getTempBadge(lead.temperature)" class="px-2 py-0.5 text-meta font-bold uppercase rounded-md badge">{{ lead.temperature }}</span>
                 </div>
               </div>
             </div>
             <div class="flex items-center gap-2">
               <div class="flex items-center gap-1.5 badge rounded-lg px-2 py-1">
-                <span class="text-[10px] uppercase font-bold text-zinc-400">Status:</span>
+                <span class="text-meta uppercase font-bold text-zinc-400">Status:</span>
                 <select [ngModel]="lead.status" (ngModelChange)="onStatusChange(lead.id, $event)" class="text-xs font-semibold text-zinc-700 bg-transparent border-none focus:outline-none cursor-pointer">
                   <option value="New">New</option>
                   <option value="Contacted">Contacted</option>
@@ -82,7 +82,7 @@ import { ApiService } from '../services/api.service';
         <!-- KPI Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
           <div class="card rounded-2xl p-4">
-            <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Lead Score</span>
+            <span class="text-meta font-bold text-zinc-400 uppercase tracking-wider">Lead Score</span>
             <div class="flex items-center gap-2 mt-1">
               <div class="flex-1 bg-white/30 rounded-full h-2 overflow-hidden">
                 <div [style.width.%]="lead.score" [class]="getScoreColor(lead.score)" class="h-full rounded-full"></div>
@@ -91,15 +91,15 @@ import { ApiService } from '../services/api.service';
             </div>
           </div>
           <div class="card rounded-2xl p-4">
-            <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Origin</span>
+            <span class="text-meta font-bold text-zinc-400 uppercase tracking-wider">Origin</span>
             <div class="text-lg font-bold text-zinc-900 mt-1">{{ lead.origin || lead.campaigns?.[0]?.source || '—' }}</div>
           </div>
           <div class="card rounded-2xl p-4">
-            <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Probability</span>
+            <span class="text-meta font-bold text-zinc-400 uppercase tracking-wider">Probability</span>
             <div class="text-lg font-bold text-zinc-900 mt-1">{{ lead.probability || '0' }}%</div>
           </div>
           <div class="card rounded-2xl p-4">
-            <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Expected Close</span>
+            <span class="text-meta font-bold text-zinc-400 uppercase tracking-wider">Expected Close</span>
             <div class="text-lg font-bold text-zinc-900 mt-1">{{ lead.expectedCloseDate || '—' }}</div>
           </div>
         </div>
@@ -121,17 +121,17 @@ import { ApiService } from '../services/api.service';
                   <div class="bg-white border border-zinc-200 rounded-xl p-5 space-y-3">
                     <h3 class="text-xs font-bold text-zinc-950 uppercase tracking-wider">Basic Information</h3>
                     <div class="grid grid-cols-2 gap-4 text-sm">
-                      <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Lead Name</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.name }}</div></div>
-                      <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Company</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.companyName }}</div></div>
-                      <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Assigned Salesperson</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.assignedSalesperson || 'Unassigned' }}</div></div>
-                      <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Sales Team</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.salesTeam || '—' }}</div></div>
-                      <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Email</div><a href="mailto:{{ lead.contacts?.[0]?.email }}" class="font-semibold text-zinc-900 hover:underline mt-0.5 block truncate">{{ lead.contacts?.[0]?.email || '—' }}</a></div>
-                      <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Phone</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.contacts?.[0]?.phone || '—' }}</div></div>
+                      <div><div class="text-meta uppercase font-semibold text-zinc-400">Lead Name</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.name }}</div></div>
+                      <div><div class="text-meta uppercase font-semibold text-zinc-400">Company</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.companyName }}</div></div>
+                      <div><div class="text-meta uppercase font-semibold text-zinc-400">Assigned Salesperson</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.assignedSalesperson || 'Unassigned' }}</div></div>
+                      <div><div class="text-meta uppercase font-semibold text-zinc-400">Sales Team</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.salesTeam || '—' }}</div></div>
+                      <div><div class="text-meta uppercase font-semibold text-zinc-400">Email</div><a href="mailto:{{ lead.contacts?.[0]?.email }}" class="font-semibold text-zinc-900 hover:underline mt-0.5 block truncate">{{ lead.contacts?.[0]?.email || '—' }}</a></div>
+                      <div><div class="text-meta uppercase font-semibold text-zinc-400">Phone</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.contacts?.[0]?.phone || '—' }}</div></div>
                       @if (lead.contacts?.[0]?.website; as web) {
-                        <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Website</div><a href="http://{{web}}" target="_blank" class="font-semibold text-zinc-900 hover:underline mt-0.5 block truncate">{{ web }}</a></div>
+                        <div><div class="text-meta uppercase font-semibold text-zinc-400">Website</div><a href="http://{{web}}" target="_blank" class="font-semibold text-zinc-900 hover:underline mt-0.5 block truncate">{{ web }}</a></div>
                       }
                       @if (lead.contacts?.[0]?.linkedin; as li) {
-                        <div><div class="text-[10px] uppercase font-semibold text-zinc-400">LinkedIn</div><a href="http://{{li}}" target="_blank" class="font-semibold text-zinc-900 hover:underline mt-0.5 block truncate">{{ li }}</a></div>
+                        <div><div class="text-meta uppercase font-semibold text-zinc-400">LinkedIn</div><a href="http://{{li}}" target="_blank" class="font-semibold text-zinc-900 hover:underline mt-0.5 block truncate">{{ li }}</a></div>
                       }
                     </div>
                   </div>
@@ -140,11 +140,11 @@ import { ApiService } from '../services/api.service';
                   <div class="bg-white border border-zinc-200 rounded-xl p-5 space-y-3">
                     <h3 class="text-xs font-bold text-zinc-950 uppercase tracking-wider">Company Information</h3>
                     <div class="grid grid-cols-2 gap-4 text-sm">
-                      <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Industry</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.company?.industry || '—' }}</div></div>
-                      <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Company Size</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.company?.size || '—' }}</div></div>
-                      <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Annual Revenue</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.company?.annualRevenue || '—' }}</div></div>
-                      <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Offices Count</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.company?.officesCount || '—' }}</div></div>
-                      <div class="col-span-2"><div class="text-[10px] uppercase font-semibold text-zinc-400">Address</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.company?.address || '—' }}, {{ lead.company?.city || '—' }}, {{ lead.company?.country || '—' }}</div></div>
+                      <div><div class="text-meta uppercase font-semibold text-zinc-400">Industry</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.company?.industry || '—' }}</div></div>
+                      <div><div class="text-meta uppercase font-semibold text-zinc-400">Company Size</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.company?.size || '—' }}</div></div>
+                      <div><div class="text-meta uppercase font-semibold text-zinc-400">Annual Revenue</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.company?.annualRevenue || '—' }}</div></div>
+                      <div><div class="text-meta uppercase font-semibold text-zinc-400">Offices Count</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.company?.officesCount || '—' }}</div></div>
+                      <div class="col-span-2"><div class="text-meta uppercase font-semibold text-zinc-400">Address</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.company?.address || '—' }}, {{ lead.company?.city || '—' }}, {{ lead.company?.country || '—' }}</div></div>
                     </div>
                   </div>
 
@@ -152,10 +152,10 @@ import { ApiService } from '../services/api.service';
                   <div class="bg-white border border-zinc-200 rounded-xl p-5 space-y-3">
                     <h3 class="text-xs font-bold text-zinc-950 uppercase tracking-wider">Origin & Marketing Campaign</h3>
                     <div class="grid grid-cols-2 gap-4 text-sm">
-                      <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Origin</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.origin || lead.campaigns?.[0]?.source || '—' }}</div></div>
-                      <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Campaign</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.campaigns?.[0]?.campaign || '—' }}</div></div>
-                      @if (lead.campaigns?.[0]?.referralPartner) { <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Referral Partner</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.campaigns?.[0]?.referralPartner }}</div></div> }
-                      @if (lead.campaigns?.[0]?.tradeShow) { <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Trade Show</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.campaigns?.[0]?.tradeShow }}</div></div> }
+                      <div><div class="text-meta uppercase font-semibold text-zinc-400">Origin</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.origin || lead.campaigns?.[0]?.source || '—' }}</div></div>
+                      <div><div class="text-meta uppercase font-semibold text-zinc-400">Campaign</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.campaigns?.[0]?.campaign || '—' }}</div></div>
+                      @if (lead.campaigns?.[0]?.referralPartner) { <div><div class="text-meta uppercase font-semibold text-zinc-400">Referral Partner</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.campaigns?.[0]?.referralPartner }}</div></div> }
+                      @if (lead.campaigns?.[0]?.tradeShow) { <div><div class="text-meta uppercase font-semibold text-zinc-400">Trade Show</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.campaigns?.[0]?.tradeShow }}</div></div> }
                     </div>
                   </div>
 
@@ -163,10 +163,10 @@ import { ApiService } from '../services/api.service';
                   <div class="bg-white border border-zinc-200 rounded-xl p-5 space-y-3">
                     <h3 class="text-xs font-bold text-zinc-950 uppercase tracking-wider">Key Stakeholders</h3>
                     <div class="grid grid-cols-2 gap-4 text-sm">
-                      <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Decision Maker</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.decisionMaker || '—' }}</div></div>
-                      <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Influencer</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.influencer || '—' }}</div></div>
-                      <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Finance Contact</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.financeContact || '—' }}</div></div>
-                      <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Technical Contact</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.technicalContact || '—' }}</div></div>
+                      <div><div class="text-meta uppercase font-semibold text-zinc-400">Decision Maker</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.decisionMaker || '—' }}</div></div>
+                      <div><div class="text-meta uppercase font-semibold text-zinc-400">Influencer</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.influencer || '—' }}</div></div>
+                      <div><div class="text-meta uppercase font-semibold text-zinc-400">Finance Contact</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.financeContact || '—' }}</div></div>
+                      <div><div class="text-meta uppercase font-semibold text-zinc-400">Technical Contact</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.technicalContact || '—' }}</div></div>
                     </div>
                   </div>
                 </div>
@@ -187,10 +187,10 @@ import { ApiService } from '../services/api.service';
                 <div class="bg-white border border-zinc-200 rounded-xl p-5 text-sm">
                   <h3 class="text-xs font-bold text-zinc-950 uppercase tracking-wider">Lead Qualification & Sales Potential</h3>
                   <div class="grid grid-cols-2 gap-4 mt-3">
-                    <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Interested Product</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.productInterests?.[0]?.product || '—' }}</div></div>
-                    <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Solution</div><div class="font-semibold text-zinc-700 mt-0.5">{{ lead.productInterests?.[0]?.solution || '—' }}</div></div>
-                    <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Origin</div><div class="font-bold text-zinc-950 mt-0.5">{{ lead.origin || lead.campaigns?.[0]?.source || '—' }}</div></div>
-                    <div><div class="text-[10px] uppercase font-semibold text-zinc-400">Deal Probability</div><div class="font-semibold text-zinc-700 mt-0.5">{{ lead.probability || '0' }}%</div></div>
+                    <div><div class="text-meta uppercase font-semibold text-zinc-400">Interested Product</div><div class="font-semibold text-zinc-800 mt-0.5">{{ lead.productInterests?.[0]?.product || '—' }}</div></div>
+                    <div><div class="text-meta uppercase font-semibold text-zinc-400">Solution</div><div class="font-semibold text-zinc-700 mt-0.5">{{ lead.productInterests?.[0]?.solution || '—' }}</div></div>
+                    <div><div class="text-meta uppercase font-semibold text-zinc-400">Origin</div><div class="font-bold text-zinc-950 mt-0.5">{{ lead.origin || lead.campaigns?.[0]?.source || '—' }}</div></div>
+                    <div><div class="text-meta uppercase font-semibold text-zinc-400">Deal Probability</div><div class="font-semibold text-zinc-700 mt-0.5">{{ lead.probability || '0' }}%</div></div>
                   </div>
                 </div>
 
@@ -202,16 +202,16 @@ import { ApiService } from '../services/api.service';
                 <div class="card rounded-xl p-5 space-y-3">
                   <h3 class="text-xs font-bold text-zinc-700 uppercase">Log New Activity</h3>
                   <div class="grid grid-cols-2 gap-3">
-                    <div><label class="block text-[10px] uppercase font-semibold text-zinc-400 mb-1">Type</label>
+                    <div><label class="block text-meta uppercase font-semibold text-zinc-400 mb-1">Type</label>
                       <select [(ngModel)]="newActivity.type" class="w-full input-field rounded-lg p-2 text-xs outline-none bg-transparent">
                         <option value="Call">Call</option><option value="Email">Email</option><option value="Meeting">Meeting</option><option value="Note">Note</option><option value="Task">Task</option>
                       </select></div>
-                    <div><label class="block text-[10px] uppercase font-semibold text-zinc-400 mb-1">Date</label>
+                    <div><label class="block text-meta uppercase font-semibold text-zinc-400 mb-1">Date</label>
                       <input [(ngModel)]="newActivity.date" type="date" class="w-full input-field rounded-lg p-1.5 text-xs outline-none"></div>
                   </div>
-                  <div><label class="block text-[10px] uppercase font-semibold text-zinc-400 mb-1">Summary</label>
+                  <div><label class="block text-meta uppercase font-semibold text-zinc-400 mb-1">Summary</label>
                     <input [(ngModel)]="newActivity.summary" type="text" placeholder="e.g. Discussed pricing options" class="w-full input-field rounded-lg p-2 text-xs outline-none"></div>
-                  <div><label class="block text-[10px] uppercase font-semibold text-zinc-400 mb-1">Details</label>
+                  <div><label class="block text-meta uppercase font-semibold text-zinc-400 mb-1">Details</label>
                     <textarea [(ngModel)]="newActivity.detail" rows="2" placeholder="More detailed recap..." class="w-full input-field rounded-lg p-2 text-xs outline-none"></textarea></div>
                   <div class="flex justify-end pt-2">
                     <button (click)="submitActivity(lead.id)" class="bg-zinc-800/80 hover:bg-zinc-800 text-white px-3 py-1.5 rounded-lg text-xs font-semibold">Log Activity</button>
@@ -227,10 +227,10 @@ import { ApiService } from '../services/api.service';
                         <div class="flex-1 space-y-1">
                           <div class="flex justify-between items-center">
                             <span class="text-xs font-semibold text-zinc-800">{{ act.summary }}</span>
-                            <span class="text-[10px] text-zinc-400 font-medium">{{ act.date }}</span>
+                            <span class="text-meta text-zinc-400 font-medium">{{ act.date }}</span>
                           </div>
                           @if (act.detail) { <p class="text-xs text-zinc-500 leading-relaxed">{{ act.detail }}</p> }
-                          <div class="text-[9px] font-semibold text-zinc-400 flex items-center gap-1">
+                          <div class="text-meta font-semibold text-zinc-400 flex items-center gap-1">
                             <span class="px-1.5 py-0.5 rounded badge">{{ act.type }}</span>
                             @if (act.assignedTo) { <span>Assigned: {{ act.assignedTo }}</span> }
                           </div>
@@ -248,7 +248,7 @@ import { ApiService } from '../services/api.service';
                   <h3 class="text-xs font-bold text-zinc-700 uppercase">Upload Document</h3>
                   <div class="flex gap-3 items-center">
                     <input #fileInput type="file" (change)="onFileSelected($event, lead.id)" class="flex-1 text-xs">
-                    @if (uploading()) { <span class="text-[10px] text-zinc-400">Uploading&hellip;</span> }
+                    @if (uploading()) { <span class="text-meta text-zinc-400">Uploading&hellip;</span> }
                   </div>
                 </div>
                 <div class="space-y-3">
@@ -264,7 +264,7 @@ import { ApiService } from '../services/api.service';
                                 <a [href]="getDownloadUrl(file.fileId)" target="_blank" class="hover:underline">{{ file.fileName }}</a>
                               } @else { {{ file.fileName }} }
                             </div>
-                            <div class="text-[10px] text-zinc-400">Uploaded: {{ file.uploadedAt }} &bull; {{ file.fileSize || 'N/A' }}</div>
+                            <div class="text-meta text-zinc-400">Uploaded: {{ file.uploadedAt }} &bull; {{ file.fileSize || 'N/A' }}</div>
                           </div>
                         </div>
                         <button title="Delete attachment" (click)="deleteAttachment(lead.id, file)" class="text-zinc-400 hover:text-zinc-900 transition-colors"><mat-icon class="text-[16px]! w-4 h-4">delete_outline</mat-icon></button>
@@ -285,9 +285,9 @@ import { ApiService } from '../services/api.service';
                       <div class="flex-1 text-xs">
                         <div class="flex justify-between font-semibold text-zinc-800">
                           <span>Status updated to: {{ hist.status }}</span>
-                          <span class="text-[10px] text-zinc-400 font-medium">{{ hist.timestamp }}</span>
+                          <span class="text-meta text-zinc-400 font-medium">{{ hist.timestamp }}</span>
                         </div>
-                        <div class="text-[10px] text-zinc-400 font-medium mt-0.5">Changed by: {{ hist.user }}</div>
+                        <div class="text-meta text-zinc-400 font-medium mt-0.5">Changed by: {{ hist.user }}</div>
                       </div>
                     </div>
                   } @empty { <p class="text-xs text-zinc-400 text-center py-4">No status changes logged.</p> }

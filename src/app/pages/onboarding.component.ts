@@ -47,7 +47,7 @@ const LOGO_COLORS = ['#7F77DD', '#2563EB', '#059669', '#DC2626', '#D97706', '#7C
         @if (step() === 1) {
           <div class="text-center mb-6">
             <h1 class="text-lg font-bold text-zinc-950">Create your account</h1>
-            <p class="text-[13px] text-zinc-500 mt-1">Let's start with who you are</p>
+            <p class="text-body text-zinc-500 mt-1">Let's start with who you are</p>
           </div>
 
           <form (ngSubmit)="goToStep2()" class="space-y-4">
@@ -60,7 +60,7 @@ const LOGO_COLORS = ['#7F77DD', '#2563EB', '#059669', '#DC2626', '#D97706', '#7C
                 placeholder="Jane Doe"
                 autocomplete="name"
                 required
-                class="w-full px-3 py-2.5 bg-zinc-50 border border-zinc-200 rounded-lg text-[13px] text-zinc-950 outline-none focus:bg-white focus:border-blue-600 focus:ring-3 focus:ring-blue-600/15 transition-all"
+                class="w-full px-3 py-2.5 bg-zinc-50 border border-zinc-200 rounded-lg text-body text-zinc-950 outline-none focus:bg-white focus:border-blue-600 focus:ring-3 focus:ring-blue-600/15 transition-all"
               />
             </div>
 
@@ -73,7 +73,7 @@ const LOGO_COLORS = ['#7F77DD', '#2563EB', '#059669', '#DC2626', '#D97706', '#7C
                 placeholder="you@company.com"
                 autocomplete="email"
                 required
-                class="w-full px-3 py-2.5 bg-zinc-50 border border-zinc-200 rounded-lg text-[13px] text-zinc-950 outline-none focus:bg-white focus:border-blue-600 focus:ring-3 focus:ring-blue-600/15 transition-all"
+                class="w-full px-3 py-2.5 bg-zinc-50 border border-zinc-200 rounded-lg text-body text-zinc-950 outline-none focus:bg-white focus:border-blue-600 focus:ring-3 focus:ring-blue-600/15 transition-all"
               />
             </div>
 
@@ -87,7 +87,7 @@ const LOGO_COLORS = ['#7F77DD', '#2563EB', '#059669', '#DC2626', '#D97706', '#7C
                 autocomplete="new-password"
                 required
                 minlength="8"
-                class="w-full px-3 py-2.5 bg-zinc-50 border border-zinc-200 rounded-lg text-[13px] text-zinc-950 outline-none focus:bg-white focus:border-blue-600 focus:ring-3 focus:ring-blue-600/15 transition-all"
+                class="w-full px-3 py-2.5 bg-zinc-50 border border-zinc-200 rounded-lg text-body text-zinc-950 outline-none focus:bg-white focus:border-blue-600 focus:ring-3 focus:ring-blue-600/15 transition-all"
               />
             </div>
 
@@ -100,13 +100,13 @@ const LOGO_COLORS = ['#7F77DD', '#2563EB', '#059669', '#DC2626', '#D97706', '#7C
                 placeholder="Re-enter your password"
                 autocomplete="new-password"
                 required
-                class="w-full px-3 py-2.5 bg-zinc-50 border border-zinc-200 rounded-lg text-[13px] text-zinc-950 outline-none focus:bg-white focus:border-blue-600 focus:ring-3 focus:ring-blue-600/15 transition-all"
+                class="w-full px-3 py-2.5 bg-zinc-50 border border-zinc-200 rounded-lg text-body text-zinc-950 outline-none focus:bg-white focus:border-blue-600 focus:ring-3 focus:ring-blue-600/15 transition-all"
               />
             </div>
 
             <button
               type="submit"
-              class="w-full py-2.5 mt-2 bg-blue-600 hover:bg-blue-700 text-white text-[13px] font-semibold rounded-lg transition-colors cursor-pointer"
+              class="w-full py-2.5 mt-2 bg-blue-600 hover:bg-blue-700 text-white text-body font-semibold rounded-lg transition-colors cursor-pointer"
             >
               Continue
             </button>
@@ -117,7 +117,7 @@ const LOGO_COLORS = ['#7F77DD', '#2563EB', '#059669', '#DC2626', '#D97706', '#7C
         @if (step() === 2) {
           <div class="text-center mb-6">
             <h1 class="text-lg font-bold text-zinc-950">Set up your organization</h1>
-            <p class="text-[13px] text-zinc-500 mt-1">Tell us a bit about your company</p>
+            <p class="text-body text-zinc-500 mt-1">Tell us a bit about your company</p>
           </div>
 
           <form (ngSubmit)="submit()" class="space-y-4">
@@ -130,7 +130,7 @@ const LOGO_COLORS = ['#7F77DD', '#2563EB', '#059669', '#DC2626', '#D97706', '#7C
                 placeholder="Acme Inc."
                 autocomplete="organization"
                 required
-                class="w-full px-3 py-2.5 bg-zinc-50 border border-zinc-200 rounded-lg text-[13px] text-zinc-950 outline-none focus:bg-white focus:border-blue-600 focus:ring-3 focus:ring-blue-600/15 transition-all"
+                class="w-full px-3 py-2.5 bg-zinc-50 border border-zinc-200 rounded-lg text-body text-zinc-950 outline-none focus:bg-white focus:border-blue-600 focus:ring-3 focus:ring-blue-600/15 transition-all"
               />
             </div>
 
@@ -139,7 +139,7 @@ const LOGO_COLORS = ['#7F77DD', '#2563EB', '#059669', '#DC2626', '#D97706', '#7C
               <select
                 [(ngModel)]="orgIndustry"
                 name="orgIndustry"
-                class="w-full px-3 py-2.5 bg-zinc-50 border border-zinc-200 rounded-lg text-[13px] text-zinc-950 outline-none focus:bg-white focus:border-blue-600 cursor-pointer"
+                class="w-full px-3 py-2.5 bg-zinc-50 border border-zinc-200 rounded-lg text-body text-zinc-950 outline-none focus:bg-white focus:border-blue-600 cursor-pointer"
               >
                 @for (i of industries; track i) {
                   <option [value]="i">{{ i }}</option>
@@ -155,7 +155,7 @@ const LOGO_COLORS = ['#7F77DD', '#2563EB', '#059669', '#DC2626', '#D97706', '#7C
                   name="orgTimezone"
                   type="text"
                   placeholder="e.g. Africa/Casablanca"
-                  class="w-full px-3 py-2.5 bg-zinc-50 border border-zinc-200 rounded-lg text-[13px] text-zinc-950 outline-none focus:bg-white focus:border-blue-600 focus:ring-3 focus:ring-blue-600/15 transition-all"
+                  class="w-full px-3 py-2.5 bg-zinc-50 border border-zinc-200 rounded-lg text-body text-zinc-950 outline-none focus:bg-white focus:border-blue-600 focus:ring-3 focus:ring-blue-600/15 transition-all"
                 />
               </div>
               <div>
@@ -163,7 +163,7 @@ const LOGO_COLORS = ['#7F77DD', '#2563EB', '#059669', '#DC2626', '#D97706', '#7C
                 <select
                   [(ngModel)]="orgCurrency"
                   name="orgCurrency"
-                  class="w-full px-3 py-2.5 bg-zinc-50 border border-zinc-200 rounded-lg text-[13px] text-zinc-950 outline-none focus:bg-white focus:border-blue-600 cursor-pointer"
+                  class="w-full px-3 py-2.5 bg-zinc-50 border border-zinc-200 rounded-lg text-body text-zinc-950 outline-none focus:bg-white focus:border-blue-600 cursor-pointer"
                 >
                   @for (c of currencies; track c) {
                     <option [value]="c">{{ c }}</option>
@@ -177,14 +177,14 @@ const LOGO_COLORS = ['#7F77DD', '#2563EB', '#059669', '#DC2626', '#D97706', '#7C
                 type="button"
                 (click)="step.set(1)"
                 [disabled]="loading()"
-                class="flex-1 py-2.5 bg-white border border-zinc-200 hover:bg-zinc-50 text-zinc-700 text-[13px] font-semibold rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                class="flex-1 py-2.5 bg-white border border-zinc-200 hover:bg-zinc-50 text-zinc-700 text-body font-semibold rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Back
               </button>
               <button
                 type="submit"
                 [disabled]="loading()"
-                class="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-[13px] font-semibold rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                class="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-body font-semibold rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {{ loading() ? 'Creating workspace...' : 'Create workspace' }}
               </button>
@@ -192,7 +192,7 @@ const LOGO_COLORS = ['#7F77DD', '#2563EB', '#059669', '#DC2626', '#D97706', '#7C
           </form>
         }
 
-        <p class="text-center text-[12px] text-zinc-400 mt-6">
+        <p class="text-center text-body text-zinc-400 mt-6">
           Already have an account?
           <a routerLink="/" class="text-zinc-700 font-semibold hover:text-zinc-900 cursor-pointer">Sign in</a>
         </p>

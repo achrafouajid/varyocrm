@@ -10,6 +10,10 @@ import { NotificationInboxDrawerComponent } from './shared/notification-inbox-dr
 import { ToastContainerComponent } from './shared/toast.component';
 import { LoginComponent } from './pages/login.component';
 import { filter } from 'rxjs/operators';
+import { DealsService } from './services/domains/deals.service';
+import { PartnersService } from './services/domains/partners.service';
+import { InvoicesService } from './services/domains/invoices.service';
+import { TicketsService } from './services/domains/tickets.service';
 
 interface NavItem {
   label: string;
@@ -74,6 +78,37 @@ interface SearchItem {
   keywords: string;
 }
 
+/** Unified shape every command-palette row renders as, whatever it came from. */
+interface SearchResult {
+  kind: 'page' | 'deal' | 'partner' | 'lead' | 'ticket' | 'invoice' | 'action';
+  groupLabel: string;
+  icon: string;
+  breadcrumb: string;
+  title: string;
+  description: string;
+  route?: string;
+  tab?: string;
+  entityId?: string;
+  actionId?: string;
+}
+
+interface QuickAction {
+  actionId: string;
+  label: string;
+  icon: string;
+  description: string;
+  route: string;
+  tab?: string;
+  keywords: string;
+}
+
+const QUICK_ACTIONS: QuickAction[] = [
+  { actionId: 'new-deal', label: 'New deal', icon: 'add_circle', description: 'Create a new deal in the sales pipeline', route: '/sales', tab: 'deals', keywords: 'new deal create sale opportunity' },
+  { actionId: 'log-call', label: 'Log call', icon: 'call', description: 'Log a call against your most recent deal', route: '/sales', tab: 'deals', keywords: 'log call phone activity' },
+  { actionId: 'new-ticket', label: 'New ticket', icon: 'confirmation_number', description: 'Open a new support ticket', route: '/tickets', keywords: 'new ticket support request' },
+  { actionId: 'new-partner', label: 'New partner', icon: 'person_add', description: 'Add a new customer, prospect, or vendor', route: '/partners', tab: 'Customer', keywords: 'new partner customer prospect vendor add' },
+];
+
 const SEARCH_ITEMS: SearchItem[] = [
   { mainMenu: 'Dashboard', mainIcon: 'home', mainRoute: '/', action: 'View your customizable daily summary and KPIs', keywords: 'dashboard home kpi summary' },
   { mainMenu: 'Sales', mainIcon: 'monetization_on', mainRoute: '/sales', submenu: 'Deals', subIcon: 'monetization_on', tab: 'deals', action: 'Manage deals and sales pipeline', keywords: 'sales deals pipeline opportunities' },
@@ -123,8 +158,8 @@ const SEARCH_ITEMS: SearchItem[] = [
       width: 224px;
       min-width: 224px;
       height: 100vh;
-      background: #FFFFFF;
-      border-right: 1px solid #E5E7EB;
+      background: var(--color-surface);
+      border-right: 1px solid var(--color-border);
       display: flex;
       flex-direction: column;
       overflow: hidden;
@@ -195,7 +230,7 @@ const SEARCH_ITEMS: SearchItem[] = [
       justify-content: center;
       background: transparent;
       border: none;
-      color: #9CA3AF;
+      color: var(--color-text-tertiary);
       cursor: pointer;
       transition: all 150ms ease;
       flex-shrink: 0;
@@ -203,8 +238,8 @@ const SEARCH_ITEMS: SearchItem[] = [
     }
 
     .sidebar-collapse-btn:hover {
-      background: #F3F4F6;
-      color: #111827;
+      background: var(--color-surface-hover);
+      color: var(--color-text-heading);
     }
 
     .sidebar-collapse-btn mat-icon {
@@ -232,7 +267,7 @@ const SEARCH_ITEMS: SearchItem[] = [
       font-weight: 700;
       font-size: 16px;
       letter-spacing: -0.02em;
-      color: #111827;
+      color: var(--color-text-heading);
       max-width: 100px;
       opacity: 1;
       overflow: hidden;
@@ -252,7 +287,7 @@ const SEARCH_ITEMS: SearchItem[] = [
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.06em;
-      color: #9CA3AF;
+      color: var(--color-text-tertiary);
       padding: 18px 12px 6px;
       max-height: 40px;
       opacity: 1;
@@ -272,7 +307,7 @@ const SEARCH_ITEMS: SearchItem[] = [
       border-radius: 6px;
       font-size: 13px;
       font-weight: 500;
-      color: #6B7280;
+      color: var(--color-text-secondary);
       cursor: pointer;
       transition: all 200ms ease;
       text-decoration: none;
@@ -280,8 +315,8 @@ const SEARCH_ITEMS: SearchItem[] = [
     }
 
     .sidebar-link:hover {
-      background: #F3F4F6;
-      color: #111827;
+      background: var(--color-surface-hover);
+      color: var(--color-text-heading);
     }
 
     .sidebar-link.active {
@@ -291,7 +326,7 @@ const SEARCH_ITEMS: SearchItem[] = [
     }
 
     .sidebar-link.active mat-icon {
-      color: #3B82F6;
+      color: var(--color-accent);
     }
 
     .sidebar-link mat-icon {
@@ -313,7 +348,7 @@ const SEARCH_ITEMS: SearchItem[] = [
 
     .sidebar-bottom {
       flex-shrink: 0;
-      border-top: 1px solid #E5E7EB;
+      border-top: 1px solid var(--color-border);
       padding: 8px 10px;
     }
 
@@ -325,7 +360,7 @@ const SEARCH_ITEMS: SearchItem[] = [
       border-radius: 6px;
       font-size: 13px;
       font-weight: 500;
-      color: #6B7280;
+      color: var(--color-text-secondary);
       cursor: pointer;
       transition: all 200ms ease;
       text-decoration: none;
@@ -336,8 +371,8 @@ const SEARCH_ITEMS: SearchItem[] = [
     }
 
     .sidebar-bottom-link:hover {
-      background: #F3F4F6;
-      color: #111827;
+      background: var(--color-surface-hover);
+      color: var(--color-text-heading);
     }
 
     .sidebar-bottom-link.active {
@@ -347,7 +382,7 @@ const SEARCH_ITEMS: SearchItem[] = [
     }
 
     .sidebar-bottom-link.active mat-icon {
-      color: #3B82F6;
+      color: var(--color-accent);
     }
 
     .sidebar-user {
@@ -355,7 +390,7 @@ const SEARCH_ITEMS: SearchItem[] = [
       align-items: center;
       gap: 10px;
       padding: 10px 12px;
-      border-top: 1px solid #F3F4F6;
+      border-top: 1px solid var(--color-surface-hover);
       margin-top: 4px;
       cursor: pointer;
       border-radius: 6px;
@@ -364,21 +399,21 @@ const SEARCH_ITEMS: SearchItem[] = [
     }
 
     .sidebar-user:hover {
-      background: #F3F4F6;
+      background: var(--color-surface-hover);
     }
 
     .sidebar-user-chevron {
       font-size: 16px;
       width: 16px;
       height: 16px;
-      color: #9CA3AF;
+      color: var(--color-text-tertiary);
       flex-shrink: 0;
       transition: transform 200ms ease;
     }
 
     .sidebar-profile-wrapper {
       position: relative;
-      border-top: 1px solid #F3F4F6;
+      border-top: 1px solid var(--color-surface-hover);
       margin-top: 4px;
     }
 
@@ -399,8 +434,8 @@ const SEARCH_ITEMS: SearchItem[] = [
       bottom: calc(100% + 4px);
       left: 0;
       right: 0;
-      background: #FFFFFF;
-      border: 1px solid #E5E7EB;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
       border-radius: 10px;
       box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
       padding: 4px;
@@ -423,7 +458,7 @@ const SEARCH_ITEMS: SearchItem[] = [
       border-radius: 6px;
       font-size: 13px;
       font-weight: 500;
-      color: #6B7280;
+      color: var(--color-text-secondary);
       cursor: pointer;
       transition: all 150ms ease;
       text-decoration: none;
@@ -435,8 +470,8 @@ const SEARCH_ITEMS: SearchItem[] = [
     }
 
     .profile-menu-item:hover {
-      background: #F3F4F6;
-      color: #111827;
+      background: var(--color-surface-hover);
+      color: var(--color-text-heading);
     }
 
     .profile-menu-item mat-icon {
@@ -459,7 +494,7 @@ const SEARCH_ITEMS: SearchItem[] = [
     .sidebar-user-name {
       font-size: 13px;
       font-weight: 600;
-      color: #111827;
+      color: var(--color-text-heading);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -467,7 +502,7 @@ const SEARCH_ITEMS: SearchItem[] = [
 
     .sidebar-user-role {
       font-size: 11px;
-      color: #9CA3AF;
+      color: var(--color-text-tertiary);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -488,8 +523,8 @@ const SEARCH_ITEMS: SearchItem[] = [
       justify-content: space-between;
       gap: 16px;
       padding: 12px 24px;
-      background: #FFFFFF;
-      border-bottom: 1px solid #E5E7EB;
+      background: var(--color-surface);
+      border-bottom: 1px solid var(--color-border);
       flex-shrink: 0;
       z-index: 30;
     }
@@ -503,17 +538,17 @@ const SEARCH_ITEMS: SearchItem[] = [
     .topbar-search input {
       width: 100%;
       padding: 7px 12px 7px 36px;
-      background: #F9FAFB;
-      border: 1px solid #E5E7EB;
+      background: var(--color-bg);
+      border: 1px solid var(--color-border);
       border-radius: 8px;
       font-size: 13px;
-      color: #111827;
+      color: var(--color-text-heading);
       outline: none;
       transition: all 150ms ease;
     }
 
     .topbar-search input::placeholder {
-      color: #9CA3AF;
+      color: var(--color-text-tertiary);
     }
 
     .topbar-search input:focus {
@@ -530,7 +565,7 @@ const SEARCH_ITEMS: SearchItem[] = [
       font-size: 18px;
       width: 18px;
       height: 18px;
-      color: #9CA3AF;
+      color: var(--color-text-tertiary);
       pointer-events: none;
     }
 
@@ -541,7 +576,7 @@ const SEARCH_ITEMS: SearchItem[] = [
       transform: translateY(-50%);
       background: none;
       border: none;
-      color: #9CA3AF;
+      color: var(--color-text-tertiary);
       cursor: pointer;
       padding: 0;
       display: flex;
@@ -549,7 +584,7 @@ const SEARCH_ITEMS: SearchItem[] = [
     }
 
     .topbar-search .clear-btn:hover {
-      color: #6B7280;
+      color: var(--color-text-secondary);
     }
 
     .topbar-actions {
@@ -568,16 +603,16 @@ const SEARCH_ITEMS: SearchItem[] = [
       justify-content: center;
       background: transparent;
       border: 1px solid transparent;
-      color: #6B7280;
+      color: var(--color-text-secondary);
       cursor: pointer;
       transition: all 150ms ease;
       position: relative;
     }
 
     .topbar-icon-btn:hover {
-      background: #F3F4F6;
-      color: #111827;
-      border-color: #E5E7EB;
+      background: var(--color-surface-hover);
+      color: var(--color-text-heading);
+      border-color: var(--color-border);
     }
 
     .topbar-icon-btn mat-icon {
@@ -592,8 +627,8 @@ const SEARCH_ITEMS: SearchItem[] = [
       right: 4px;
       width: 16px;
       height: 16px;
-      background: #3B82F6;
-      border: 2px solid #FFFFFF;
+      background: var(--color-accent);
+      border: 2px solid var(--color-surface);
       border-radius: 9999px;
       display: flex;
       align-items: center;
@@ -614,8 +649,8 @@ const SEARCH_ITEMS: SearchItem[] = [
       left: 0;
       right: 0;
       top: calc(100% + 6px);
-      background: #FFFFFF;
-      border: 1px solid #E5E7EB;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
       border-radius: 12px;
       box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
       max-height: 320px;
@@ -623,12 +658,22 @@ const SEARCH_ITEMS: SearchItem[] = [
       z-index: 50;
     }
 
+    .search-group-label {
+      padding: 8px 16px 4px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-text-tertiary);
+      background: var(--color-bg);
+    }
+
     .search-result-item {
       display: flex;
       align-items: flex-start;
       gap: 10px;
       padding: 10px 16px;
-      border-bottom: 1px solid #F3F4F6;
+      border-bottom: 1px solid var(--color-surface-hover);
       cursor: pointer;
       transition: background 150ms ease;
     }
@@ -639,14 +684,14 @@ const SEARCH_ITEMS: SearchItem[] = [
 
     .search-result-item:hover,
     .search-result-item.selected {
-      background: #F9FAFB;
+      background: var(--color-bg);
     }
 
     .search-result-item mat-icon {
       font-size: 18px;
       width: 18px;
       height: 18px;
-      color: #9CA3AF;
+      color: var(--color-text-tertiary);
       margin-top: 2px;
       flex-shrink: 0;
     }
@@ -661,19 +706,19 @@ const SEARCH_ITEMS: SearchItem[] = [
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      color: #9CA3AF;
+      color: var(--color-text-tertiary);
     }
 
     .search-result-title {
       font-size: 13px;
       font-weight: 600;
-      color: #111827;
+      color: var(--color-text-heading);
       margin-left: 8px;
     }
 
     .search-result-desc {
       font-size: 11px;
-      color: #6B7280;
+      color: var(--color-text-secondary);
       margin-top: 2px;
       line-height: 1.3;
     }
@@ -688,23 +733,23 @@ const SEARCH_ITEMS: SearchItem[] = [
     }
 
     .breadcrumb-link {
-      color: #6B7280;
+      color: var(--color-text-secondary);
       font-weight: 500;
       text-decoration: none;
       transition: color 150ms ease;
     }
 
     .breadcrumb-link:hover {
-      color: #111827;
+      color: var(--color-text-heading);
     }
 
     .breadcrumb-current {
-      color: #111827;
+      color: var(--color-text-heading);
       font-weight: 600;
     }
 
     .breadcrumb-sep {
-      color: #D1D5DB;
+      color: var(--color-border-strong);
     }
 
     /* ── Main content ── */
@@ -757,7 +802,7 @@ const SEARCH_ITEMS: SearchItem[] = [
       width: 40px;
       height: 40px;
       border-radius: 12px;
-      background: #FFFFFF;
+      background: var(--color-surface);
       border: 1px solid var(--color-accent);
       color: var(--color-accent);
       display: flex;
@@ -769,7 +814,7 @@ const SEARCH_ITEMS: SearchItem[] = [
 
     .fab-btn:hover {
       background: var(--color-accent);
-      color: #FFFFFF;
+      color: var(--color-surface);
     }
 
     .fab-btn mat-icon {
@@ -789,8 +834,8 @@ const SEARCH_ITEMS: SearchItem[] = [
       position: absolute;
       bottom: calc(100% + 12px);
       right: 0;
-      background: #FFFFFF;
-      border: 1px solid #E4E4E7;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
       border-radius: 12px;
       box-shadow: 0 10px 25px -5px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.04);
       padding: 6px;
@@ -805,14 +850,14 @@ const SEARCH_ITEMS: SearchItem[] = [
       padding: 8px 12px;
       border-radius: 8px;
       text-decoration: none;
-      color: #09090B;
+      color: var(--color-text-primary);
       font-size: 13px;
       font-weight: 600;
       transition: background 150ms ease;
     }
 
     .fab-item:hover {
-      background: #F4F4F5;
+      background: var(--color-surface-hover);
     }
 
     .fab-item-icon {
@@ -967,7 +1012,7 @@ const SEARCH_ITEMS: SearchItem[] = [
                 #searchInput
                 [ngModel]="searchQuery()"
                 (ngModelChange)="onSearchInput($event)"
-                (focus)="showSearchResults.set(true)"
+                (focus)="onSearchFocus()"
                 (keydown)="onSearchKeydown($event)"
                 type="text"
                 placeholder="Search menus and pages...  (Ctrl+K)"
@@ -982,19 +1027,22 @@ const SEARCH_ITEMS: SearchItem[] = [
               @if (showSearchResults() && searchQuery().length >= 1 && filteredSearchItems().length > 0) {
                 <div class="search-dropdown">
                   @for (item of filteredSearchItems(); track $index) {
+                    @if ($first || filteredSearchItems()[$index - 1].groupLabel !== item.groupLabel) {
+                      <div class="search-group-label">{{ item.groupLabel }}</div>
+                    }
                     <div
                       class="search-result-item"
                       [class.selected]="selectedSearchIndex() === $index"
                       (click)="navigateToSearchItem(item)"
                       (mouseenter)="selectedSearchIndex.set($index)"
                     >
-                      <mat-icon>{{ item.subIcon || item.mainIcon }}</mat-icon>
+                      <mat-icon>{{ item.icon }}</mat-icon>
                       <div class="search-result-info">
                         <div class="flex items-baseline gap-2">
-                          <span class="search-result-breadcrumb">{{ item.mainMenu }}</span>
-                          <span class="search-result-title">{{ item.submenu || item.mainMenu }}</span>
+                          <span class="search-result-breadcrumb">{{ item.breadcrumb }}</span>
+                          <span class="search-result-title">{{ item.title }}</span>
                         </div>
-                        <p class="search-result-desc">{{ item.action }}</p>
+                        <p class="search-result-desc">{{ item.description }}</p>
                       </div>
                     </div>
                   }
@@ -1002,7 +1050,7 @@ const SEARCH_ITEMS: SearchItem[] = [
               }
               @if (showSearchResults() && searchQuery().length >= 1 && filteredSearchItems().length === 0) {
                 <div class="search-dropdown" style="padding: 20px; text-align: center;">
-                  <p class="text-sm text-zinc-500">No results found for "{{ searchQuery() }}"</p>
+                  <p class="text-body text-zinc-500">No results found for "{{ searchQuery() }}"</p>
                 </div>
               }
             </div>
@@ -1126,6 +1174,10 @@ const SEARCH_ITEMS: SearchItem[] = [
 export class App implements OnInit, OnDestroy {
   state = inject(CrmStateService);
   private router = inject(Router);
+  private dealsService = inject(DealsService);
+  private partnersService = inject(PartnersService);
+  private invoicesService = inject(InvoicesService);
+  private ticketsService = inject(TicketsService);
 
   @ViewChild(SupportModalComponent) supportModal!: SupportModalComponent;
 
@@ -1217,16 +1269,113 @@ export class App implements OnInit, OnDestroy {
     this.drawerOpen.set(false);
   }
 
-  filteredSearchItems = computed(() => {
+  filteredSearchItems = computed<SearchResult[]>(() => {
     const q = this.searchQuery().toLowerCase().trim();
     if (!q) return [];
-    return SEARCH_ITEMS.filter(item =>
+
+    const pages: SearchResult[] = SEARCH_ITEMS.filter(item =>
       item.mainMenu.toLowerCase().includes(q) ||
       item.action.toLowerCase().includes(q) ||
       item.keywords.toLowerCase().includes(q) ||
       (item.submenu && item.submenu.toLowerCase().includes(q))
-    ).slice(0, 12);
+    ).slice(0, 6).map(item => ({
+      kind: 'page' as const,
+      groupLabel: 'Pages',
+      icon: item.subIcon || item.mainIcon,
+      breadcrumb: item.mainMenu,
+      title: item.submenu || item.mainMenu,
+      description: item.action,
+      route: item.mainRoute,
+      tab: item.tab,
+    }));
+
+    const actions: SearchResult[] = QUICK_ACTIONS.filter(a =>
+      a.label.toLowerCase().includes(q) || a.keywords.toLowerCase().includes(q)
+    ).slice(0, 4).map(a => ({
+      kind: 'action' as const,
+      groupLabel: 'Actions',
+      icon: a.icon,
+      breadcrumb: '>',
+      title: a.label,
+      description: a.description,
+      route: a.route,
+      tab: a.tab,
+      actionId: a.actionId,
+    }));
+
+    const deals: SearchResult[] = this.dealsService.allDeals()
+      .filter(d => d.title?.toLowerCase().includes(q) || d.dealNumber?.toLowerCase().includes(q))
+      .slice(0, 5)
+      .map(d => ({
+        kind: 'deal' as const,
+        groupLabel: 'Deals',
+        icon: 'monetization_on',
+        breadcrumb: 'Sales',
+        title: d.title,
+        description: `${this.formatSearchCurrency(d.amount)} · ${d.stage}`,
+        entityId: d.id,
+      }));
+
+    const partners: SearchResult[] = this.partnersService.allPartners()
+      .filter(p => p.name?.toLowerCase().includes(q))
+      .slice(0, 5)
+      .map(p => ({
+        kind: 'partner' as const,
+        groupLabel: 'Partners',
+        icon: p.type === 'Vendor' ? 'store' : p.type === 'Prospect' ? 'person_search' : 'people',
+        breadcrumb: p.type || 'Partner',
+        title: p.name,
+        description: p.email || p.phone || 'No contact info',
+        tab: p.type,
+        entityId: p.id,
+      }));
+
+    const leads: SearchResult[] = this.state.leadsData()
+      .filter(l => l.name?.toLowerCase().includes(q) || l.companyName?.toLowerCase().includes(q))
+      .slice(0, 5)
+      .map(l => ({
+        kind: 'lead' as const,
+        groupLabel: 'Leads',
+        icon: 'filter_alt',
+        breadcrumb: l.companyName || 'Lead',
+        title: l.name,
+        description: `${l.status} · Score ${l.score}`,
+        entityId: l.id,
+      }));
+
+    const tickets: SearchResult[] = this.ticketsService.allTickets()
+      .filter(t => t.title?.toLowerCase().includes(q))
+      .slice(0, 5)
+      .map(t => ({
+        kind: 'ticket' as const,
+        groupLabel: 'Tickets',
+        icon: 'support_agent',
+        breadcrumb: t.priority,
+        title: t.title,
+        description: t.status,
+        entityId: t.id,
+      }));
+
+    const invoices: SearchResult[] = this.invoicesService.allInvoices()
+      .filter(i => i.invoiceNumber?.toLowerCase().includes(q) || i.customerName?.toLowerCase().includes(q))
+      .slice(0, 5)
+      .map(i => ({
+        kind: 'invoice' as const,
+        groupLabel: 'Invoices',
+        icon: 'receipt',
+        breadcrumb: i.type,
+        title: i.invoiceNumber || i.customerName || 'Invoice',
+        description: `${this.formatSearchCurrency(i.amount)} · ${i.status}`,
+        tab: i.type,
+        entityId: i.id,
+      }));
+
+    return [...pages, ...actions, ...deals, ...partners, ...leads, ...tickets, ...invoices].slice(0, 24);
   });
+
+  private formatSearchCurrency(amount: number): string {
+    return new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(amount || 0) + ' MAD';
+  }
 
   @HostListener('document:keydown.control.k', ['$event'])
   @HostListener('document:keydown.meta.k', ['$event'])
@@ -1248,7 +1397,19 @@ export class App implements OnInit, OnDestroy {
 
   openSearch() {
     this.showSearchResults.set(true);
+    this.dealsService.load();
+    this.partnersService.load();
+    this.ticketsService.load();
+    this.invoicesService.load();
     setTimeout(() => this.searchInput()?.nativeElement.focus(), 50);
+  }
+
+  onSearchFocus() {
+    this.showSearchResults.set(true);
+    this.dealsService.load();
+    this.partnersService.load();
+    this.ticketsService.load();
+    this.invoicesService.load();
   }
 
   onSearchInput(value: string) {
@@ -1283,13 +1444,46 @@ export class App implements OnInit, OnDestroy {
     }
   }
 
-  navigateToSearchItem(item: SearchItem) {
+  navigateToSearchItem(item: SearchResult) {
     this.showSearchResults.set(false);
     this.searchQuery.set('');
-    if (item.tab) {
-      this.state.navigateTab.set(item.tab);
+
+    switch (item.kind) {
+      case 'page': {
+        if (item.tab) this.state.navigateTab.set(item.tab);
+        this.router.navigate([item.route]);
+        return;
+      }
+      case 'action': {
+        if (item.tab) this.state.navigateTab.set(item.tab);
+        this.state.pendingQuickAction.set({ id: item.actionId! });
+        this.router.navigate([item.route]);
+        return;
+      }
+      case 'deal': {
+        this.router.navigate(['/sales/deals', item.entityId]);
+        return;
+      }
+      case 'lead': {
+        this.router.navigate(['/partners/lead', item.entityId]);
+        return;
+      }
+      case 'partner': {
+        if (item.tab) this.state.partnersSubTab.set(item.tab as any);
+        this.router.navigate(['/partners']);
+        return;
+      }
+      case 'ticket': {
+        this.state.pendingQuickAction.set({ id: 'open-ticket', payload: item.entityId });
+        this.router.navigate(['/tickets']);
+        return;
+      }
+      case 'invoice': {
+        if (item.tab) this.state.financeSubTab.set(item.tab as any);
+        this.router.navigate(['/finance']);
+        return;
+      }
     }
-    this.router.navigate([item.mainRoute]);
   }
 
   clearSearch() {

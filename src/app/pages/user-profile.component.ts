@@ -77,7 +77,7 @@ import { MatIconModule } from '@angular/material/icon';
             <!-- Active / Inactive Badge -->
             <span
               [class]="u.isActive ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-zinc-100 text-zinc-500 border-zinc-200'"
-              class="inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold border uppercase tracking-wider"
+              class="inline-flex px-2.5 py-0.5 rounded-full text-meta font-bold border uppercase tracking-wider"
             >
               {{ u.isActive ? 'Active' : 'Inactive' }}
             </span>
@@ -86,12 +86,12 @@ import { MatIconModule } from '@angular/material/icon';
           <!-- Email & Phone info grid -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-zinc-100">
             <div>
-              <span class="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-0.5">Email (Immutable)</span>
+              <span class="block text-meta font-bold text-zinc-400 uppercase tracking-wider mb-0.5">Email (Immutable)</span>
               <span class="text-sm font-semibold text-zinc-800 font-sans">{{ u.email }}</span>
             </div>
             <div>
               <div class="flex items-center gap-1.5 mb-0.5">
-                <span class="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Phone</span>
+                <span class="block text-meta font-bold text-zinc-400 uppercase tracking-wider">Phone</span>
                 @if (canEdit()) {
                   <button
                     (click)="toggleEditPhone()"
@@ -154,7 +154,7 @@ import { MatIconModule } from '@angular/material/icon';
                     <option value="viewer">Viewer</option>
                   </select>
                   @if (roleError()) {
-                    <p class="text-[10px] text-zinc-900 font-semibold mt-1">{{ roleError() }}</p>
+                    <p class="text-meta text-zinc-900 font-semibold mt-1">{{ roleError() }}</p>
                   }
                 </div>
               } @else {
@@ -195,7 +195,7 @@ import { MatIconModule } from '@angular/material/icon';
             <label class="flex items-center justify-between p-2.5 rounded-xl border border-zinc-100 hover:bg-zinc-50/50 cursor-pointer select-none transition-colors">
               <div>
                 <span class="text-xs font-bold text-zinc-800 block">Notify on lead assignment</span>
-                <span class="text-[10px] text-zinc-400 block mt-0.5">Send alerts when a lead is assigned to you</span>
+                <span class="text-meta text-zinc-400 block mt-0.5">Send alerts when a lead is assigned to you</span>
               </div>
               <input
                 type="checkbox"
@@ -209,7 +209,7 @@ import { MatIconModule } from '@angular/material/icon';
             <label class="flex items-center justify-between p-2.5 rounded-xl border border-zinc-100 hover:bg-zinc-50/50 cursor-pointer select-none transition-colors">
               <div>
                 <span class="text-xs font-bold text-zinc-800 block">Notify on deal updates</span>
-                <span class="text-[10px] text-zinc-400 block mt-0.5">Receive updates when status/stage changes on your deals</span>
+                <span class="text-meta text-zinc-400 block mt-0.5">Receive updates when status/stage changes on your deals</span>
               </div>
               <input
                 type="checkbox"
@@ -223,7 +223,7 @@ import { MatIconModule } from '@angular/material/icon';
             <label class="flex items-center justify-between p-2.5 rounded-xl border border-zinc-100 hover:bg-zinc-50/50 cursor-pointer select-none transition-colors">
               <div>
                 <span class="text-xs font-bold text-zinc-800 block">Notify on mentions</span>
-                <span class="text-[10px] text-zinc-400 block mt-0.5">Get notified immediately when mentioned in group chats</span>
+                <span class="text-meta text-zinc-400 block mt-0.5">Get notified immediately when mentioned in group chats</span>
               </div>
               <input
                 type="checkbox"
@@ -255,7 +255,7 @@ import { MatIconModule } from '@angular/material/icon';
         <div class="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-xs space-y-4">
           <div class="flex items-center gap-2">
             <h3 class="font-bold text-zinc-800 text-sm">Collaboration Groups</h3>
-            <span class="bg-zinc-100 text-zinc-600 text-[10px] font-bold px-2 py-0.5 rounded-full">
+            <span class="bg-zinc-100 text-zinc-600 text-meta font-bold px-2 py-0.5 rounded-full">
               {{ getUserGroups(u.id).length }}
             </span>
           </div>
@@ -282,11 +282,11 @@ import { MatIconModule } from '@angular/material/icon';
           <h3 class="font-bold text-zinc-800 text-sm">Activity Details</h3>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-semibold text-zinc-600">
             <div>
-              <span class="text-[10px] font-bold text-zinc-400 uppercase block mb-0.5">Member since</span>
+              <span class="text-meta font-bold text-zinc-400 uppercase block mb-0.5">Member since</span>
               <span>{{ u.createdAt | date: 'dd MMMM yyyy, HH:mm' }}</span>
             </div>
             <div>
-              <span class="text-[10px] font-bold text-zinc-400 uppercase block mb-0.5">Last active</span>
+              <span class="text-meta font-bold text-zinc-400 uppercase block mb-0.5">Last active</span>
               <span>{{ getRelativeTime(u.lastActiveAt) }}</span>
             </div>
           </div>
@@ -317,7 +317,7 @@ import { MatIconModule } from '@angular/material/icon';
                     Confirm Deactivation
                   </button>
                   @if (deactivateError()) {
-                    <span class="text-[10px] text-zinc-950 font-bold ml-2">{{ deactivateError() }}</span>
+                    <span class="text-meta text-zinc-950 font-bold ml-2">{{ deactivateError() }}</span>
                   }
                 </div>
               </div>

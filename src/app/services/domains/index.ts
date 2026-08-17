@@ -6,4 +6,5 @@ export * from './invoices.service';
 export * from './proposals.service';
 export * from './purchase-orders.service';
 export * from './campaigns.service';
+export * from './whatsapp-campaigns.service';
 export * from './automation-rules.service';

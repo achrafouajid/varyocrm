@@ -22,7 +22,6 @@ type InvoiceLine = {
   imports: [MatIconModule, CommonModule, FormsModule, CreatedByBadgeComponent, DataStatusBannerComponent, PaginatorComponent],
   template: `
     <div class="space-y-8">
-      <app-data-status-banner [loading]="invoicesService.isLoading$()" [error]="invoicesService.error$()" />
       <div class="flex gap-5 sm:gap-6 border-b border-zinc-200">
         <button
           (click)="activeTab.set('Customer'); state.breadcrumbLabel.set('Customer Invoices'); invoicesPage.set(1)"
@@ -67,6 +66,9 @@ type InvoiceLine = {
         <!-- Invoices View -->
         @if (activeTab() !== 'Recovery') {
           <div class="card rounded-2xl overflow-x-auto">
+          @if (invoicesService.isLoading$()) {
+            <app-data-status-banner [loading]="true" [variant]="'rows'" [columns]="7" [rows]="8" />
+          } @else {
             <table class="min-w-full divide-y divide-slate-200">
               <thead class="bg-white border border-zinc-200">
                 <tr>
@@ -129,7 +131,11 @@ type InvoiceLine = {
                 (pageChange)="invoicesPage.set($event)"
                 (pageSizeChange)="invoicesPageSize.set($event)" />
             }
+          }
           </div>
+        }
+        @if (invoicesService.error$()) {
+          <app-data-status-banner [error]="invoicesService.error$()" />
         }
 
         <!-- Recovery View (Late Payers Reminders) -->
@@ -166,7 +172,7 @@ type InvoiceLine = {
                         </p>
                       </div>
                     </div>
-                    <span class="bg-red-50 text-red-700 text-[10px] font-bold px-2 py-0.5 rounded border border-red-200 uppercase">Overdue</span>
+                    <span class="bg-red-50 text-red-700 text-meta font-bold px-2 py-0.5 rounded border border-red-200 uppercase">Overdue</span>
                   </div>
                 } @empty {
                   <div class="card rounded-xl p-8 text-center text-zinc-500">
@@ -257,7 +263,7 @@ type InvoiceLine = {
               </div>
               <div>
                 <h3 class="text-base font-bold text-zinc-950 leading-tight">Create New Invoice</h3>
-                <p class="text-[11px] text-zinc-400 mt-0.5">Only verified Customers are eligible for invoicing.</p>
+                <p class="text-meta text-zinc-400 mt-0.5">Only verified Customers are eligible for invoicing.</p>
               </div>
             </div>
             <button (click)="invoiceModalOpen.set(false)" class="p-1.5 rounded-lg hover:bg-zinc-100 text-zinc-400 hover:text-zinc-600 transition-colors">
@@ -270,7 +276,7 @@ type InvoiceLine = {
 
             <!-- ① Invoice Modality Toggle -->
             <div>
-              <label class="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-2">Invoice Pathway</label>
+              <label class="block text-meta font-bold text-zinc-400 uppercase tracking-widest mb-2">Invoice Pathway</label>
               <div class="grid grid-cols-2 gap-2">
                 <button type="button" id="invoice-type-manual"
                   (click)="setInvoiceType('Manual')"
@@ -281,7 +287,7 @@ type InvoiceLine = {
                   <mat-icon class="text-[22px] shrink-0">edit_note</mat-icon>
                   <span class="text-left">
                     <span class="block">Manual Invoice</span>
-                    <span class="text-[10px] font-normal opacity-70">Free-form, no deal link</span>
+                    <span class="text-meta font-normal opacity-70">Free-form, no deal link</span>
                   </span>
                 </button>
                 <button type="button" id="invoice-type-deal"
@@ -293,7 +299,7 @@ type InvoiceLine = {
                   <mat-icon class="text-[22px] shrink-0">handshake</mat-icon>
                   <span class="text-left">
                     <span class="block">Deal Invoice</span>
-                    <span class="text-[10px] font-normal opacity-70">Inherits lines from deal</span>
+                    <span class="text-meta font-normal opacity-70">Inherits lines from deal</span>
                   </span>
                 </button>
               </div>
@@ -305,7 +311,7 @@ type InvoiceLine = {
                 <div class="flex items-center gap-2">
                   <mat-icon class="text-zinc-900 text-[18px] w-[18px] h-[18px]">link</mat-icon>
                   <span class="text-xs font-bold text-zinc-950 uppercase tracking-wide">Deal Association</span>
-                  <span class="ml-auto text-[10px] bg-zinc-300 text-zinc-950 px-2 py-0.5 rounded-full font-bold">Lines auto-inherited</span>
+                  <span class="ml-auto text-meta bg-zinc-300 text-zinc-950 px-2 py-0.5 rounded-full font-bold">Lines auto-inherited</span>
                 </div>
                 <div>
                   <label for="deal-select" class="block text-xs font-semibold text-zinc-500 uppercase mb-1">
@@ -344,10 +350,10 @@ type InvoiceLine = {
                 <label for="partner-select" class="block text-xs font-semibold text-zinc-500 uppercase mb-1">
                   Select Customer
                   @if (invoiceType() === 'Deal') {
-                    <span class="ml-1 text-[10px] bg-zinc-200 text-zinc-950 border border-zinc-300 px-1.5 py-0.5 rounded-full font-bold">🔒 Locked by Deal</span>
+                    <span class="ml-1 text-meta bg-zinc-200 text-zinc-950 border border-zinc-300 px-1.5 py-0.5 rounded-full font-bold">🔒 Locked by Deal</span>
                   }
                   @if (invoiceType() === 'Manual' && newInvoiceData.type === 'Customer') {
-                    <span class="ml-1 text-[10px] bg-zinc-200 text-zinc-950 border border-zinc-300 px-1.5 py-0.5 rounded-full font-bold">Fields auto-fill on selection</span>
+                    <span class="ml-1 text-meta bg-zinc-200 text-zinc-950 border border-zinc-300 px-1.5 py-0.5 rounded-full font-bold">Fields auto-fill on selection</span>
                   }
                 </label>
                 <select id="partner-select"
@@ -386,7 +392,7 @@ type InvoiceLine = {
                 <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">
                   VAT Number
                   @if (autoFilledFields().has('vatNumber')) {
-                    <span class="ml-1 text-[10px] bg-zinc-200 text-zinc-950 border border-zinc-300 px-1.5 py-0.5 rounded-full font-bold">Auto-filled</span>
+                    <span class="ml-1 text-meta bg-zinc-200 text-zinc-950 border border-zinc-300 px-1.5 py-0.5 rounded-full font-bold">Auto-filled</span>
                   }
                 </label>
                 <input [(ngModel)]="newInvoiceData.vatNumber" type="text"
@@ -400,7 +406,7 @@ type InvoiceLine = {
                 <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">
                   Customer Account
                   @if (invoiceType() === 'Deal' || autoFilledFields().has('customerAccount')) {
-                    <span class="ml-1 text-[10px] bg-zinc-200 text-zinc-950 border border-zinc-300 px-1.5 py-0.5 rounded-full font-bold">Auto-filled</span>
+                    <span class="ml-1 text-meta bg-zinc-200 text-zinc-950 border border-zinc-300 px-1.5 py-0.5 rounded-full font-bold">Auto-filled</span>
                   }
                 </label>
                 <input [(ngModel)]="newInvoiceData.customerAccount"
@@ -416,7 +422,7 @@ type InvoiceLine = {
                 <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">
                   Customer Name
                   @if (invoiceType() === 'Deal' || autoFilledFields().has('customerName')) {
-                    <span class="ml-1 text-[10px] bg-zinc-200 text-zinc-950 border border-zinc-300 px-1.5 py-0.5 rounded-full font-bold">Auto-filled</span>
+                    <span class="ml-1 text-meta bg-zinc-200 text-zinc-950 border border-zinc-300 px-1.5 py-0.5 rounded-full font-bold">Auto-filled</span>
                   }
                 </label>
                 <input [(ngModel)]="newInvoiceData.customerName"
@@ -432,7 +438,7 @@ type InvoiceLine = {
                 <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">
                   Billing Address
                   @if (invoiceType() === 'Deal' || autoFilledFields().has('billingAddress')) {
-                    <span class="ml-1 text-[10px] bg-zinc-200 text-zinc-950 border border-zinc-300 px-1.5 py-0.5 rounded-full font-bold">Auto-filled</span>
+                    <span class="ml-1 text-meta bg-zinc-200 text-zinc-950 border border-zinc-300 px-1.5 py-0.5 rounded-full font-bold">Auto-filled</span>
                   }
                 </label>
                 <input [(ngModel)]="newInvoiceData.billingAddress"
@@ -448,7 +454,7 @@ type InvoiceLine = {
                 <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">
                   Delivery Address
                   @if (invoiceType() === 'Deal' || autoFilledFields().has('deliveryAddress')) {
-                    <span class="ml-1 text-[10px] bg-zinc-200 text-zinc-950 border border-zinc-300 px-1.5 py-0.5 rounded-full font-bold">Auto-filled</span>
+                    <span class="ml-1 text-meta bg-zinc-200 text-zinc-950 border border-zinc-300 px-1.5 py-0.5 rounded-full font-bold">Auto-filled</span>
                   }
                 </label>
                 <input [(ngModel)]="newInvoiceData.deliveryAddress"
@@ -471,7 +477,7 @@ type InvoiceLine = {
                 <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">
                   Total Amount (MAD)
                   @if (invoiceLines().length > 0) {
-                    <span class="ml-1 text-[10px] bg-zinc-200 text-zinc-950 border border-zinc-300 px-1.5 py-0.5 rounded-full font-bold">Computed from lines</span>
+                    <span class="ml-1 text-meta bg-zinc-200 text-zinc-950 border border-zinc-300 px-1.5 py-0.5 rounded-full font-bold">Computed from lines</span>
                   }
                 </label>
                 <input [value]="computedTotal()" readonly type="text"
@@ -486,7 +492,7 @@ type InvoiceLine = {
                   <mat-icon class="text-zinc-400 text-[18px] w-[18px] h-[18px]">format_list_bulleted</mat-icon>
                   <span class="text-xs font-bold text-zinc-600 uppercase tracking-wide">Line Items</span>
                   @if (invoiceType() === 'Deal' && invoiceLines().length > 0) {
-                    <span class="text-[10px] bg-zinc-200 text-zinc-950 border border-zinc-300 px-2 py-0.5 rounded-full font-bold">
+                    <span class="text-meta bg-zinc-200 text-zinc-950 border border-zinc-300 px-2 py-0.5 rounded-full font-bold">
                       {{ invoiceLines().length }} inherited from deal
                     </span>
                   }
@@ -500,11 +506,11 @@ type InvoiceLine = {
                   <!-- Table header -->
                   <div class="grid bg-white border border-zinc-200 border-b border-zinc-200 px-3 py-2 min-w-[520px]"
                        style="grid-template-columns: 1fr 1.4fr 60px 90px 90px 32px">
-                    <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wide">Item</span>
-                    <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wide">Description</span>
-                    <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wide">Qty</span>
-                    <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wide">Unit Price</span>
-                    <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wide">Total</span>
+                    <span class="text-meta font-bold text-zinc-400 uppercase tracking-wide">Item</span>
+                    <span class="text-meta font-bold text-zinc-400 uppercase tracking-wide">Description</span>
+                    <span class="text-meta font-bold text-zinc-400 uppercase tracking-wide">Qty</span>
+                    <span class="text-meta font-bold text-zinc-400 uppercase tracking-wide">Unit Price</span>
+                    <span class="text-meta font-bold text-zinc-400 uppercase tracking-wide">Total</span>
                     <span></span>
                   </div>
 

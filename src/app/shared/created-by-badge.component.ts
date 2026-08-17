@@ -12,7 +12,7 @@ import { UserAvatarComponent } from './user-avatar.component';
       <app-user-avatar [userId]="createdBy" [size]="size" />
       <div class="flex flex-col">
         <span class="font-semibold text-zinc-700" [class.text-xs]="size <= 28" [class.text-sm]="size > 28">{{ userName() }}</span>
-        <span class="text-[10px] text-zinc-400 font-medium">{{ createdAt | date:'mediumDate' }}</span>
+        <span class="text-meta text-zinc-400 font-medium">{{ createdAt | date:'mediumDate' }}</span>
       </div>
     </div>
   `

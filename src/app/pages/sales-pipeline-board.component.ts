@@ -59,7 +59,7 @@ const AVATAR_COLORS = ['#0ea5e9', '#8b5cf6', '#f59e0b', '#10b981', '#ef4444', '#
                   <div class="flex items-center gap-2 min-w-0">
                     <div
                       [style.background-color]="avatarColor(getPartnerName(deal.partnerId))"
-                      class="w-7 h-7 rounded-full text-white font-semibold text-[11px] uppercase flex items-center justify-center shrink-0 shadow-xs">
+                      class="w-7 h-7 rounded-full text-white font-semibold text-meta uppercase flex items-center justify-center shrink-0 shadow-xs">
                       {{ initials(getPartnerName(deal.partnerId)) }}
                     </div>
                     <span class="text-sm font-semibold text-zinc-900 truncate">{{ getPartnerName(deal.partnerId) }}</span>
@@ -77,7 +77,7 @@ const AVATAR_COLORS = ['#0ea5e9', '#8b5cf6', '#f59e0b', '#10b981', '#ef4444', '#
                   <span class="text-sm font-sans font-bold text-zinc-900 tabular-nums">{{ formatCurrency(deal.amount) }}</span>
                   <div
                     [style.background-color]="avatarColor(deal.salesPerson || 'Unassigned')"
-                    class="w-6 h-6 rounded-full text-white font-semibold text-[10px] uppercase flex items-center justify-center shrink-0 shadow-xs"
+                    class="w-6 h-6 rounded-full text-white font-semibold text-meta uppercase flex items-center justify-center shrink-0 shadow-xs"
                     [title]="deal.salesPerson || 'Unassigned'">
                     {{ initials(deal.salesPerson || '?') }}
                   </div>
@@ -90,7 +90,7 @@ const AVATAR_COLORS = ['#0ea5e9', '#8b5cf6', '#f59e0b', '#10b981', '#ef4444', '#
 
           <!-- Column Footer: weighted forecast -->
           <div class="mt-3 pt-3 border-t border-zinc-100 px-1">
-            <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Weighted Forecast</span>
+            <span class="text-meta font-bold text-zinc-400 uppercase tracking-wider block">Weighted Forecast</span>
             <span class="text-sm font-sans font-bold text-zinc-700 tabular-nums">{{ formatCurrency(col.weightedForecast) }}</span>
           </div>
         </div>

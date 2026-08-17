@@ -398,6 +398,48 @@ export class ApiService extends BaseApiService {
     return this.delete(`/campaigns/${id}`);
   }
 
+  // WhatsApp campaigns
+  createWhatsAppCampaign(payload: any): Observable<any> {
+    return this.post(`/campaigns/whatsapp`, payload);
+  }
+
+  launchCampaign(id: string): Observable<any> {
+    return this.post(`/campaigns/${id}/launch`, {});
+  }
+
+  getCampaignRecipients(id: string): Observable<any[]> {
+    return this.get<any[]>(`/campaigns/${id}/recipients`);
+  }
+
+  getCampaignStats(id: string): Observable<any> {
+    return this.get(`/campaigns/${id}/stats`);
+  }
+
+  addCampaignRecipients(id: string, partnerIds: string[]): Observable<any[]> {
+    return this.post<any[]>(`/campaigns/${id}/recipients`, { partnerIds });
+  }
+
+  cancelCampaignFollowups(id: string): Observable<any> {
+    return this.post(`/campaigns/${id}/cancel-followups`, {});
+  }
+
+  // WhatsApp account
+  getWhatsAppAccount(): Observable<any> {
+    return this.get(`/whatsapp/account`);
+  }
+
+  connectWhatsAppAccount(payload: any): Observable<any> {
+    return this.post(`/whatsapp/account`, payload);
+  }
+
+  connectMockWhatsAppAccount(): Observable<any> {
+    return this.post(`/whatsapp/account/mock`, {});
+  }
+
+  simulateWhatsAppReply(phone: string, text: string): Observable<any> {
+    return this.post(`/whatsapp/simulate/reply`, { phone, text });
+  }
+
   // Automation Rules
   getAutomationRules(): Observable<any[]> {
     return this.get<PageResponse<any>>(`/automation-rules`).pipe(

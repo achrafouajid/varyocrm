@@ -220,7 +220,7 @@ import { PaginatorComponent } from '../shared/paginator.component';
                       <a [routerLink]="['/settings/users', user.id]" class="font-bold text-xs text-zinc-800 hover:text-zinc-900 block transition-colors">
                         {{ user.displayName }}
                       </a>
-                      <span class="text-[10px] text-zinc-400 block font-medium mt-0.5">{{ user.jobTitle || 'No title' }}</span>
+                      <span class="text-meta text-zinc-400 block font-medium mt-0.5">{{ user.jobTitle || 'No title' }}</span>
                     </div>
                   </div>
                 </td>
@@ -249,7 +249,7 @@ import { PaginatorComponent } from '../shared/paginator.component';
                         <option value="viewer">Viewer</option>
                       </select>
                       @if (roleErrorUserId() === user.id) {
-                        <p class="text-[10px] text-zinc-900 leading-tight font-medium">{{ roleErrorMessage() }}</p>
+                        <p class="text-meta text-zinc-900 leading-tight font-medium">{{ roleErrorMessage() }}</p>
                       }
                     </div>
                   } @else {
@@ -266,7 +266,7 @@ import { PaginatorComponent } from '../shared/paginator.component';
                 <td class="px-6 py-4 whitespace-nowrap text-xs">
                   <span
                     [class]="user.isActive ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-zinc-100 text-zinc-500 border-zinc-200'"
-                    class="inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold border"
+                    class="inline-flex px-2 py-0.5 rounded-full text-meta font-bold border"
                   >
                     {{ user.isActive ? 'Active' : 'Inactive' }}
                   </span>
@@ -325,17 +325,17 @@ import { PaginatorComponent } from '../shared/paginator.component';
                       </div>
                       <div class="flex items-center gap-2">
                         @if (deactivateErrorMessage()) {
-                          <span class="text-[10px] text-zinc-950 font-bold mr-2">{{ deactivateErrorMessage() }}</span>
+                          <span class="text-meta text-zinc-950 font-bold mr-2">{{ deactivateErrorMessage() }}</span>
                         }
                         <button
                           (click)="cancelDeactivate()"
-                          class="bg-white border border-zinc-200 text-zinc-600 px-3 py-1 rounded-lg text-[10px] font-bold hover:bg-zinc-50 cursor-pointer"
+                          class="bg-white border border-zinc-200 text-zinc-600 px-3 py-1 rounded-lg text-meta font-bold hover:bg-zinc-50 cursor-pointer"
                         >
                           Cancel
                         </button>
                         <button
                           (click)="executeDeactivate(user.id)"
-                          class="bg-zinc-900 text-white px-3 py-1 rounded-lg text-[10px] font-bold hover:bg-rose-750 cursor-pointer shadow-xs"
+                          class="bg-zinc-900 text-white px-3 py-1 rounded-lg text-meta font-bold hover:bg-rose-750 cursor-pointer shadow-xs"
                         >
                           Confirm Deactivation
                         </button>
@@ -353,10 +353,10 @@ import { PaginatorComponent } from '../shared/paginator.component';
                       <i class="ti ti-users-off text-2xl leading-none"></i>
                     </div>
                     <p class="text-xs font-bold text-zinc-800 font-sans">No users match your filters</p>
-                    <p class="text-[10px] text-zinc-500">Try adjusting your filters, query string or toggle settings to locate the user.</p>
+                    <p class="text-meta text-zinc-500">Try adjusting your filters, query string or toggle settings to locate the user.</p>
                     <button
                       (click)="clearFilters()"
-                      class="bg-zinc-100 text-zinc-950 hover:bg-zinc-200 border border-zinc-200/50 px-3 py-1.5 rounded-lg text-[10px] font-bold tracking-wide transition-colors cursor-pointer"
+                      class="bg-zinc-100 text-zinc-950 hover:bg-zinc-200 border border-zinc-200/50 px-3 py-1.5 rounded-lg text-meta font-bold tracking-wide transition-colors cursor-pointer"
                     >
                       Clear Filters
                     </button>

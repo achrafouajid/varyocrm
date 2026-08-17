@@ -25,7 +25,7 @@ import { CrmStateService, Notification, InboxMessage } from '../services/crm-sta
               >
                 <mat-icon class="text-[20px] w-5 h-5">notifications</mat-icon>
                 @if (notifUnreadCount() > 0) {
-                  <span class="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] bg-zinc-700 border-2 border-white rounded-full flex items-center justify-center text-[9px] font-bold text-white px-0.5">
+                  <span class="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] bg-zinc-700 border-2 border-white rounded-full flex items-center justify-center text-meta font-bold text-white px-0.5">
                     {{ notifUnreadCount() > 9 ? '9+' : notifUnreadCount() }}
                   </span>
                 }
@@ -40,7 +40,7 @@ import { CrmStateService, Notification, InboxMessage } from '../services/crm-sta
               >
                 <mat-icon class="text-[20px] w-5 h-5">mail</mat-icon>
                 @if (inboxUnreadCount() > 0) {
-                  <span class="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] bg-zinc-700 border-2 border-white rounded-full flex items-center justify-center text-[9px] font-bold text-white px-0.5">
+                  <span class="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] bg-zinc-700 border-2 border-white rounded-full flex items-center justify-center text-meta font-bold text-white px-0.5">
                     {{ inboxUnreadCount() > 9 ? '9+' : inboxUnreadCount() }}
                   </span>
                 }
@@ -54,7 +54,7 @@ import { CrmStateService, Notification, InboxMessage } from '../services/crm-sta
                   {{ drawerType() === 'notifications' ? 'Notifications' : 'Inbox' }}
                 </h2>
                 @if (unreadCount() > 0) {
-                  <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-zinc-100 text-zinc-950 border border-zinc-200">{{ unreadCount() }} new</span>
+                  <span class="px-2 py-0.5 text-meta font-bold rounded-full bg-zinc-100 text-zinc-950 border border-zinc-200">{{ unreadCount() }} new</span>
                 }
               </div>
               <div class="flex items-center gap-1">
@@ -87,7 +87,7 @@ import { CrmStateService, Notification, InboxMessage } from '../services/crm-sta
                     <div class="min-w-0 flex-1">
                       <div class="flex items-center justify-between gap-2">
                         <span class="text-sm font-semibold" [class.text-zinc-900]="!notif.read" [class.text-zinc-700]="notif.read">{{ notif.title }}</span>
-                        <span class="text-[10px] text-zinc-400 shrink-0 font-medium">{{ formatTime(notif.timestamp) }}</span>
+                        <span class="text-meta text-zinc-400 shrink-0 font-medium">{{ formatTime(notif.timestamp) }}</span>
                       </div>
                       <p class="text-xs mt-0.5 leading-relaxed" [class.text-zinc-700]="!notif.read" [class.text-zinc-500]="notif.read">{{ notif.message }}</p>
                     </div>
@@ -117,16 +117,16 @@ import { CrmStateService, Notification, InboxMessage } from '../services/crm-sta
                     <div class="min-w-0 flex-1">
                       <div class="flex items-center justify-between gap-2">
                         <span class="text-sm font-semibold truncate" [class.text-zinc-900]="!msg.read" [class.text-zinc-600]="msg.read">{{ msg.sender }}</span>
-                        <span class="text-[10px] text-zinc-400 shrink-0 font-medium">{{ formatTime(msg.timestamp) }}</span>
+                        <span class="text-meta text-zinc-400 shrink-0 font-medium">{{ formatTime(msg.timestamp) }}</span>
                       </div>
                       <p class="text-xs font-medium mt-0.5 truncate" [class.text-zinc-800]="!msg.read" [class.text-zinc-500]="msg.read">{{ msg.subject }}</p>
                       <p class="text-xs mt-0.5 leading-relaxed text-zinc-500 truncate max-w-full">{{ msg.preview }}</p>
                       <div class="flex items-center gap-2 mt-1.5">
                         @if (!msg.read) {
-                          <span class="text-[10px] font-semibold text-zinc-900">New</span>
+                          <span class="text-meta font-semibold text-zinc-900">New</span>
                         }
                         @if (msg.hasAttachments) {
-                          <span class="text-[10px] text-zinc-400 flex items-center gap-0.5">
+                          <span class="text-meta text-zinc-400 flex items-center gap-0.5">
                             <mat-icon class="text-[10px] w-2.5 h-2.5">attach_file</mat-icon> Attachment
                           </span>
                         }

@@ -5,9 +5,19 @@
 @source "./app/**/*.ts";
 @source "./app/**/*.html";
 
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  /* Type scale: 13px body / 11px meta / 20px tabular-mono numerals — no other sizes */
+  --text-body: 13px;
+  --text-body--line-height: 1.45;
+  --text-meta: 11px;
+  --text-meta--line-height: 1.35;
+  --text-numeral: 20px;
+  --text-numeral--line-height: 1.2;
 }
 
 /* ═══════════════════════════════════════════
@@ -86,6 +96,123 @@
   /* Transitions */
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Extra grays (used by sidebar/topbar chrome) */
+  --color-text-heading: #18181B;
+  --color-border-strong: #D4D4D8;
+}
+
+/* ═══════════════════════════════════════════
+   Dark Theme
+   ═══════════════════════════════════════════ */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-bg: #09090B;
+    --color-surface: #18181B;
+    --color-surface-hover: #27272A;
+    --color-surface-active: #3F3F46;
+
+    --color-border: #27272A;
+    --color-border-light: #1F1F23;
+    --color-border-strong: #52525B;
+
+    --color-text-primary: #FAFAFA;
+    --color-text-heading: #FAFAFA;
+    --color-text-secondary: #A1A1AA;
+    --color-text-tertiary: #71717A;
+    --color-text-placeholder: #52525B;
+
+    --color-accent: #3B82F6;
+    --color-accent-hover: #60A5FA;
+    --color-accent-light: rgba(59, 130, 246, 0.16);
+    --color-accent-text: #60A5FA;
+
+    --color-success: #34D399;
+    --color-success-light: rgba(52, 211, 153, 0.14);
+    --color-warning: #FBBF24;
+    --color-warning-light: rgba(251, 191, 36, 0.14);
+    --color-danger: #F87171;
+    --color-danger-light: rgba(248, 113, 113, 0.14);
+    --color-info: #60A5FA;
+    --color-info-light: rgba(96, 165, 250, 0.14);
+
+    --stage-new: #94A3B8;
+    --stage-new-light: rgba(148, 163, 184, 0.14);
+    --stage-contacted: #38BDF8;
+    --stage-contacted-light: rgba(56, 189, 248, 0.14);
+    --stage-meeting: #818CF8;
+    --stage-meeting-light: rgba(129, 140, 248, 0.14);
+    --stage-qualified: #A78BFA;
+    --stage-qualified-light: rgba(167, 139, 250, 0.14);
+    --stage-proposal: #C084FC;
+    --stage-proposal-light: rgba(192, 132, 252, 0.14);
+    --stage-negotiation: #FBBF24;
+    --stage-negotiation-light: rgba(251, 191, 36, 0.14);
+    --stage-won: #34D399;
+    --stage-won-light: rgba(52, 211, 153, 0.14);
+    --stage-lost: #F87171;
+    --stage-lost-light: rgba(248, 113, 113, 0.14);
+
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
+    --shadow-overlay: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+  }
+}
+
+:root[data-theme="dark"] {
+  --color-bg: #09090B;
+  --color-surface: #18181B;
+  --color-surface-hover: #27272A;
+  --color-surface-active: #3F3F46;
+
+  --color-border: #27272A;
+  --color-border-light: #1F1F23;
+  --color-border-strong: #52525B;
+
+  --color-text-primary: #FAFAFA;
+  --color-text-heading: #FAFAFA;
+  --color-text-secondary: #A1A1AA;
+  --color-text-tertiary: #71717A;
+  --color-text-placeholder: #52525B;
+
+  --color-accent: #3B82F6;
+  --color-accent-hover: #60A5FA;
+  --color-accent-light: rgba(59, 130, 246, 0.16);
+  --color-accent-text: #60A5FA;
+
+  --color-success: #34D399;
+  --color-success-light: rgba(52, 211, 153, 0.14);
+  --color-warning: #FBBF24;
+  --color-warning-light: rgba(251, 191, 36, 0.14);
+  --color-danger: #F87171;
+  --color-danger-light: rgba(248, 113, 113, 0.14);
+  --color-info: #60A5FA;
+  --color-info-light: rgba(96, 165, 250, 0.14);
+
+  --stage-new: #94A3B8;
+  --stage-new-light: rgba(148, 163, 184, 0.14);
+  --stage-contacted: #38BDF8;
+  --stage-contacted-light: rgba(56, 189, 248, 0.14);
+  --stage-meeting: #818CF8;
+  --stage-meeting-light: rgba(129, 140, 248, 0.14);
+  --stage-qualified: #A78BFA;
+  --stage-qualified-light: rgba(167, 139, 250, 0.14);
+  --stage-proposal: #C084FC;
+  --stage-proposal-light: rgba(192, 132, 252, 0.14);
+  --stage-negotiation: #FBBF24;
+  --stage-negotiation-light: rgba(251, 191, 36, 0.14);
+  --stage-won: #34D399;
+  --stage-won-light: rgba(52, 211, 153, 0.14);
+  --stage-lost: #F87171;
+  --stage-lost-light: rgba(248, 113, 113, 0.14);
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
+  --shadow-overlay: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
 }
 
 /* ═══════════════════════════════════════════
@@ -578,5 +705,47 @@ body {
 
 .animate-fade-in {
   animation: fadeIn 200ms ease-out;
+}
+
+/* ═══════════════════════════════════════════
+   Skeleton Loading (in-place, non-layout-shifting)
+   ═══════════════════════════════════════════ */
+@keyframes skeletonShimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-hover) 25%,
+    var(--color-surface-active) 37%,
+    var(--color-surface-hover) 63%
+  );
+  background-size: 400% 100%;
+  animation: skeletonShimmer 1.4s ease infinite;
+  border-radius: var(--radius-sm);
+  color: transparent;
+}
+
+/* ═══════════════════════════════════════════
+   Bulk Action Bar (sticky, appears when rows selected)
+   ═══════════════════════════════════════════ */
+.bulk-action-bar {
+  position: sticky;
+  bottom: 16px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--color-text-heading);
+  color: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: 10px 16px;
+  box-shadow: var(--shadow-overlay);
+  margin: 12px auto 0;
+  width: fit-content;
+  max-width: calc(100% - 32px);
+  animation: fadeIn 150ms ease-out;
 }
 

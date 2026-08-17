@@ -44,58 +44,58 @@ declare var Chart: any;
           <!-- Card 1: New Deals -->
           <div class="card rounded-2xl p-4 lg:p-6 flex flex-col justify-between hover:shadow-md transition-all">
             <div class="flex items-center justify-between mb-4">
-              <h3 class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider font-sans">New Deals</h3>
+              <h3 class="text-meta font-bold text-zinc-400 uppercase tracking-wider font-sans">New Deals</h3>
               <div class="h-9 w-9 bg-zinc-100 text-zinc-900 rounded-xl flex items-center justify-center border border-zinc-200">
                 <mat-icon class="text-base" style="width:18px;height:18px;font-size:18px;display:flex;align-items:center">handshake</mat-icon>
               </div>
             </div>
             <div class="text-base sm:text-lg lg:text-xl font-bold text-zinc-900 font-sans truncate">{{ newDealsKPI().count }} <span class="text-sm font-semibold text-zinc-400 font-sans">deals</span></div>
             <div class="mt-2 pt-2 border-t border-zinc-100 flex items-center justify-between">
-              <div class="text-[10px] text-zinc-900 font-bold flex items-center gap-0.5 font-sans">
+              <div class="text-meta text-zinc-900 font-bold flex items-center gap-0.5 font-sans">
                 <mat-icon class="text-[12px]" style="width:12px;height:12px;font-size:12px;display:flex;align-items:center">trending_up</mat-icon> This month's profit
               </div>
-              <span class="text-[11px] font-bold font-sans text-zinc-700">{{ newDealsKPI().profit | number:'1.0-0' }} <span class="text-zinc-400 font-normal">{{ state.globalCurrency() }}</span></span>
+              <span class="text-meta font-bold font-sans text-zinc-700">{{ newDealsKPI().profit | number:'1.0-0' }} <span class="text-zinc-400 font-normal">{{ state.globalCurrency() }}</span></span>
             </div>
           </div>
 
           <!-- Card 2: New Prospects -->
           <div class="card rounded-2xl p-4 lg:p-6 flex flex-col justify-between hover:shadow-md transition-all">
             <div class="flex items-center justify-between mb-4">
-              <h3 class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider font-sans">New Prospects</h3>
+              <h3 class="text-meta font-bold text-zinc-400 uppercase tracking-wider font-sans">New Prospects</h3>
               <div class="h-9 w-9 bg-zinc-100 text-zinc-900 rounded-xl flex items-center justify-center border border-zinc-200">
                 <mat-icon class="text-base" style="width:18px;height:18px;font-size:18px;display:flex;align-items:center">group_add</mat-icon>
               </div>
             </div>
             <div class="text-base sm:text-lg lg:text-xl font-bold text-zinc-900 font-sans truncate">{{ newProspectsKPI().count }} <span class="text-sm font-semibold text-zinc-400 font-sans">prospects</span></div>
             <div class="mt-2 pt-2 border-t border-zinc-100 flex items-center justify-between">
-              <div class="text-[10px] text-zinc-900 font-bold flex items-center gap-0.5 font-sans">
+              <div class="text-meta text-zinc-900 font-bold flex items-center gap-0.5 font-sans">
                 <mat-icon class="text-[12px]" style="width:12px;height:12px;font-size:12px;display:flex;align-items:center">insights</mat-icon> Pipeline potential
               </div>
-              <span class="text-[11px] font-bold font-sans text-zinc-700">{{ newProspectsKPI().potential | number:'1.0-0' }} <span class="text-zinc-400 font-normal">{{ state.globalCurrency() }}</span></span>
+              <span class="text-meta font-bold font-sans text-zinc-700">{{ newProspectsKPI().potential | number:'1.0-0' }} <span class="text-zinc-400 font-normal">{{ state.globalCurrency() }}</span></span>
             </div>
           </div>
 
           <!-- Card 3: Lost Prospects -->
           <div class="card rounded-2xl p-4 lg:p-6 flex flex-col justify-between hover:shadow-md transition-all">
             <div class="flex items-center justify-between mb-4">
-              <h3 class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider font-sans">Lost Prospects</h3>
+              <h3 class="text-meta font-bold text-zinc-400 uppercase tracking-wider font-sans">Lost Prospects</h3>
               <div class="h-9 w-9 bg-zinc-100 text-zinc-700 rounded-xl flex items-center justify-center border border-zinc-200">
                 <mat-icon class="text-base" style="width:18px;height:18px;font-size:18px;display:flex;align-items:center">do_not_disturb_on</mat-icon>
               </div>
             </div>
             <div class="text-base sm:text-lg lg:text-xl font-bold text-zinc-900 font-sans truncate">{{ lostProspectsKPI().count }} <span class="text-sm font-semibold text-zinc-400 font-sans">closed lost</span></div>
             <div class="mt-2 pt-2 border-t border-zinc-100 flex items-center justify-between">
-              <div class="text-[10px] text-zinc-700 font-bold flex items-center gap-0.5 font-sans">
+              <div class="text-meta text-zinc-700 font-bold flex items-center gap-0.5 font-sans">
                 <mat-icon class="text-[12px]" style="width:12px;height:12px;font-size:12px;display:flex;align-items:center">trending_down</mat-icon> Value lost
               </div>
-              <span class="text-[11px] font-bold font-sans text-zinc-700">{{ lostProspectsKPI().potentialLost | number:'1.0-0' }} <span class="text-zinc-400 font-normal">{{ state.globalCurrency() }}</span></span>
+              <span class="text-meta font-bold font-sans text-zinc-700">{{ lostProspectsKPI().potentialLost | number:'1.0-0' }} <span class="text-zinc-400 font-normal">{{ state.globalCurrency() }}</span></span>
             </div>
           </div>
 
           <!-- Card 4: Today's Deal -->
           <div class="card rounded-2xl p-4 lg:p-6 flex flex-col justify-between hover:shadow-md transition-all">
             <div class="flex items-center justify-between mb-4">
-              <h3 class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider font-sans">Today's Deal</h3>
+              <h3 class="text-meta font-bold text-zinc-400 uppercase tracking-wider font-sans">Today's Deal</h3>
               <div class="h-9 w-9 bg-zinc-100 text-zinc-900 rounded-xl flex items-center justify-center border border-zinc-200">
                 <mat-icon class="text-base" style="width:18px;height:18px;font-size:18px;display:flex;align-items:center">star</mat-icon>
               </div>
@@ -103,15 +103,15 @@ declare var Chart: any;
             @if (todaysDealKPI(); as deal) {
               <div class="text-base font-bold text-zinc-900 font-sans truncate" [title]="deal.name">{{ deal.name }}</div>
               <div class="mt-2 pt-2 border-t border-zinc-100 flex items-center justify-between">
-                <div class="text-[10px] text-zinc-900 font-bold flex items-center gap-0.5 font-sans">
+                <div class="text-meta text-zinc-900 font-bold flex items-center gap-0.5 font-sans">
                   <mat-icon class="text-[12px]" style="width:12px;height:12px;font-size:12px;display:flex;align-items:center">bolt</mat-icon> Deal value
                 </div>
-                <span class="text-[11px] font-bold font-sans text-zinc-700">{{ deal.profit | number:'1.0-0' }} <span class="text-zinc-400 font-normal">{{ state.globalCurrency() }}</span></span>
+                <span class="text-meta font-bold font-sans text-zinc-700">{{ deal.profit | number:'1.0-0' }} <span class="text-zinc-400 font-normal">{{ state.globalCurrency() }}</span></span>
               </div>
             } @else {
               <div class="text-sm font-semibold text-zinc-400 font-sans">No transactions today</div>
               <div class="mt-2 pt-2 border-t border-zinc-100">
-                <div class="text-[10px] text-zinc-300 font-bold flex items-center gap-0.5 font-sans">
+                <div class="text-meta text-zinc-300 font-bold flex items-center gap-0.5 font-sans">
                   <mat-icon class="text-[12px]" style="width:12px;height:12px;font-size:12px;display:flex;align-items:center">bolt</mat-icon> Check back later
                 </div>
               </div>
@@ -122,7 +122,7 @@ declare var Chart: any;
 
         <!-- Currency Toggle — matches tab switcher style -->
         <div class="flex items-center gap-2">
-          <span class="text-[10px] text-zinc-400 font-sans uppercase tracking-wider mr-1">Currency</span>
+          <span class="text-meta text-zinc-400 font-sans uppercase tracking-wider mr-1">Currency</span>
           <div class="flex gap-1 bg-white border border-zinc-200 p-1 rounded-xl">
             @for (cur of ['MAD', 'USD', 'EUR']; track cur) {
               <button
@@ -131,7 +131,7 @@ declare var Chart: any;
                 [class]="state.globalCurrency() === cur
                   ? 'bg-white text-zinc-950 shadow-sm border border-zinc-200'
                   : 'text-zinc-500 hover:text-zinc-700'"
-                class="px-3 py-1.5 rounded-lg text-[11px] font-bold font-sans transition-all duration-150 cursor-pointer focus:outline-none"
+                class="px-3 py-1.5 rounded-lg text-meta font-bold font-sans transition-all duration-150 cursor-pointer focus:outline-none"
               >{{ cur }}</button>
             }
           </div>
@@ -143,13 +143,13 @@ declare var Chart: any;
           <!-- Sales This Month -->
           <div class="card rounded-2xl p-4 lg:p-6 flex flex-col justify-between hover:shadow-md transition-all">
             <div class="flex items-center justify-between mb-4">
-              <h3 class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider font-sans">Sales This Month</h3>
+              <h3 class="text-meta font-bold text-zinc-400 uppercase tracking-wider font-sans">Sales This Month</h3>
               <div class="h-9 w-9 bg-zinc-100 text-zinc-900 rounded-xl flex items-center justify-center border border-zinc-200">
                 <mat-icon class="text-base w-4.5 h-4.5 flex items-center justify-center">paid</mat-icon>
               </div>
             </div>
             <div class="text-base sm:text-lg lg:text-xl font-bold text-zinc-900 font-sans truncate">{{ formatCurrency(state.salesThisMonth()) }}</div>
-            <div class="text-[10px] text-zinc-900 font-bold mt-2 flex items-center gap-0.5 font-sans">
+            <div class="text-meta text-zinc-900 font-bold mt-2 flex items-center gap-0.5 font-sans">
               <mat-icon class="text-[12px] w-3 h-3 flex items-center justify-center">trending_up</mat-icon> Current month won/confirmed
             </div>
           </div>
@@ -157,13 +157,13 @@ declare var Chart: any;
           <!-- Conversion Rate -->
           <div class="card rounded-2xl p-4 lg:p-6 flex flex-col justify-between hover:shadow-md transition-all">
             <div class="flex items-center justify-between mb-4">
-              <h3 class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider font-sans">Conversion Rate</h3>
+              <h3 class="text-meta font-bold text-zinc-400 uppercase tracking-wider font-sans">Conversion Rate</h3>
               <div class="h-9 w-9 bg-zinc-100 text-zinc-900 rounded-xl flex items-center justify-center border border-zinc-200">
                 <mat-icon class="text-base w-4.5 h-4.5 flex items-center justify-center">query_stats</mat-icon>
               </div>
             </div>
             <div class="text-base sm:text-lg lg:text-xl font-bold text-zinc-900 font-sans truncate">{{ state.conversionRate() }}%</div>
-            <div class="text-[10px] text-zinc-900 font-bold mt-2 flex items-center gap-0.5 font-sans">
+            <div class="text-meta text-zinc-900 font-bold mt-2 flex items-center gap-0.5 font-sans">
               <mat-icon class="text-[12px] w-3 h-3 flex items-center justify-center">insights</mat-icon> Active vs Total pipeline
             </div>
           </div>
@@ -171,13 +171,13 @@ declare var Chart: any;
           <!-- Win Rate -->
           <div class="card rounded-2xl p-4 lg:p-6 flex flex-col justify-between hover:shadow-md transition-all">
             <div class="flex items-center justify-between mb-4">
-              <h3 class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider font-sans">Win Rate</h3>
+              <h3 class="text-meta font-bold text-zinc-400 uppercase tracking-wider font-sans">Win Rate</h3>
               <div class="h-9 w-9 bg-zinc-100 text-zinc-900 rounded-xl flex items-center justify-center border border-zinc-200">
                 <mat-icon class="text-base w-4.5 h-4.5 flex items-center justify-center">emoji_events</mat-icon>
               </div>
             </div>
             <div class="text-base sm:text-lg lg:text-xl font-bold text-zinc-900 font-sans truncate">{{ state.winRate() }}%</div>
-            <div class="text-[10px] text-zinc-900 font-bold mt-2 flex items-center gap-0.5 font-sans">
+            <div class="text-meta text-zinc-900 font-bold mt-2 flex items-center gap-0.5 font-sans">
               <mat-icon class="text-[12px] w-3 h-3 flex items-center justify-center">check_circle</mat-icon> Won vs Lost deals
             </div>
           </div>
@@ -185,13 +185,13 @@ declare var Chart: any;
           <!-- Average Deal Size -->
           <div class="card rounded-2xl p-4 lg:p-6 flex flex-col justify-between hover:shadow-md transition-all">
             <div class="flex items-center justify-between mb-4">
-              <h3 class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider font-sans">Avg Deal Size</h3>
+              <h3 class="text-meta font-bold text-zinc-400 uppercase tracking-wider font-sans">Avg Deal Size</h3>
               <div class="h-9 w-9 bg-zinc-100 text-zinc-900 rounded-xl flex items-center justify-center border border-zinc-200">
                 <mat-icon class="text-base w-4.5 h-4.5 flex items-center justify-center">monetization_on</mat-icon>
               </div>
             </div>
             <div class="text-base sm:text-lg lg:text-xl font-bold text-zinc-900 font-sans truncate">{{ formatCurrency(state.avgDealSize()) }}</div>
-            <div class="text-[10px] text-zinc-900 font-bold mt-2 flex items-center gap-0.5 font-sans">
+            <div class="text-meta text-zinc-900 font-bold mt-2 flex items-center gap-0.5 font-sans">
               <mat-icon class="text-[12px] w-3 h-3 flex items-center justify-center">analytics</mat-icon> Excludes lost opportunities
             </div>
           </div>
@@ -239,7 +239,7 @@ declare var Chart: any;
                     </div>
                     <div>
                       <span class="font-bold text-xs text-zinc-800 block font-sans">{{ cust.name }}</span>
-                      <span class="text-[10px] text-zinc-400 font-semibold font-sans">{{ cust.dealCount }} won deals</span>
+                      <span class="text-meta text-zinc-400 font-semibold font-sans">{{ cust.dealCount }} won deals</span>
                     </div>
                   </div>
                   <span class="font-bold font-sans text-xs text-zinc-900 shrink-0">{{ formatCurrency(cust.totalValue) }}</span>
@@ -260,9 +260,9 @@ declare var Chart: any;
               <table class="min-w-full divide-y divide-slate-200">
                 <thead class="bg-white border border-zinc-200">
                   <tr>
-                    <th scope="col" class="px-4 py-2.5 text-left font-bold text-[10px] text-zinc-500 uppercase tracking-wider font-sans">Opportunity</th>
-                    <th scope="col" class="px-4 py-2.5 text-left font-bold text-[10px] text-zinc-500 uppercase tracking-wider font-sans">Owner</th>
-                    <th scope="col" class="px-4 py-2.5 text-right font-bold text-[10px] text-zinc-500 uppercase tracking-wider font-sans">Value</th>
+                    <th scope="col" class="px-4 py-2.5 text-left font-bold text-meta text-zinc-500 uppercase tracking-wider font-sans">Opportunity</th>
+                    <th scope="col" class="px-4 py-2.5 text-left font-bold text-meta text-zinc-500 uppercase tracking-wider font-sans">Owner</th>
+                    <th scope="col" class="px-4 py-2.5 text-right font-bold text-meta text-zinc-500 uppercase tracking-wider font-sans">Value</th>
                   </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-slate-200 text-xs">
@@ -270,7 +270,7 @@ declare var Chart: any;
                     <tr class="hover:bg-zinc-50 transition-colors">
                       <td class="px-4 py-2.5">
                         <span class="font-bold text-zinc-800 block truncate max-w-[160px] font-sans">{{ lost.title }}</span>
-                        <span class="text-[9px] text-zinc-400 font-sans">{{ getPartnerName(lost.partnerId) }}</span>
+                        <span class="text-meta text-zinc-400 font-sans">{{ getPartnerName(lost.partnerId) }}</span>
                       </td>
                       <td class="px-4 py-2.5 text-zinc-500 font-medium font-sans">
                         {{ lost.salesPerson || 'Unassigned' }}

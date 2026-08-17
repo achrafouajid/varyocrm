@@ -61,7 +61,6 @@ const SUB_MODULE_LABELS: Record<string, string> = {
   `],
   template: `
     <div class="space-y-8">
-      <app-data-status-banner [loading]="tasksService.isLoading$()" [error]="tasksService.error$()" />
       @if (canCreate()) {
       <div class="flex justify-end">
         <button (click)="openCreateTaskModal()" class="bg-zinc-900 hover:bg-zinc-950 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm shadow-lg shadow-zinc-300">
@@ -106,6 +105,10 @@ const SUB_MODULE_LABELS: Record<string, string> = {
         </button>
       </div>
 
+      @if (tasksService.isLoading$()) {
+        <app-data-status-banner [loading]="true" [variant]="'tiles'" [tiles]="6" />
+      } @else {
+
       <!-- List View -->
       @if (activeView() === 'list') {
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -114,11 +117,11 @@ const SUB_MODULE_LABELS: Record<string, string> = {
               <div>
                 <div class="flex justify-between items-start mb-3">
                   <div class="flex items-center gap-1.5">
-                    <span [class]="getStatusColor(task.status)" class="px-2.5 py-1 text-[10px] font-bold uppercase rounded-full">
+                    <span [class]="getStatusColor(task.status)" class="px-2.5 py-1 text-meta font-bold uppercase rounded-full">
                       {{task.status}}
                     </span>
                     @if (task.priority) {
-                      <span [class]="getPriorityColor(task.priority)" class="text-[9px] font-bold px-1.5 py-0.5 rounded-full">{{task.priority}}</span>
+                      <span [class]="getPriorityColor(task.priority)" class="text-meta font-bold px-1.5 py-0.5 rounded-full">{{task.priority}}</span>
                     }
                   </div>
                   <span class="text-xs text-zinc-400 font-sans">#{{task.id}}</span>
@@ -212,29 +215,29 @@ const SUB_MODULE_LABELS: Record<string, string> = {
               @for (task of pendingTasks(); track task.id) {
                 <div cdkDrag [cdkDragData]="task" class="kanban-card card rounded-xl p-4 cursor-grab active:cursor-grabbing hover:shadow-md">
                   <div class="flex items-start justify-between mb-2">
-                    <span class="text-[10px] font-sans text-zinc-400">#{{task.id}}</span>
+                    <span class="text-meta font-sans text-zinc-400">#{{task.id}}</span>
                     <div class="flex items-center gap-1">
                       @if (task.priority) {
-                        <span [class]="getPriorityColor(task.priority)" class="text-[9px] font-bold px-1.5 py-0.5 rounded-full">{{task.priority}}</span>
+                        <span [class]="getPriorityColor(task.priority)" class="text-meta font-bold px-1.5 py-0.5 rounded-full">{{task.priority}}</span>
                       }
-                      <span [class]="getStatusColor(task.status)" class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full">{{task.status}}</span>
+                      <span [class]="getStatusColor(task.status)" class="text-meta font-bold uppercase px-1.5 py-0.5 rounded-full">{{task.status}}</span>
                     </div>
                   </div>
                   <h4 class="text-sm font-semibold text-zinc-900 mb-2 leading-snug">{{task.title}}</h4>
                   @if (task.relatedTo) {
-                    <div class="text-[11px] text-zinc-900 bg-zinc-100 border border-zinc-200 rounded-lg px-2 py-1 mb-2 inline-flex items-center gap-1 font-medium">
+                    <div class="text-meta text-zinc-900 bg-zinc-100 border border-zinc-200 rounded-lg px-2 py-1 mb-2 inline-flex items-center gap-1 font-medium">
                       <mat-icon class="text-[12px] w-3 h-3 leading-none">link</mat-icon>
                       <span class="truncate max-w-[180px]">{{task.relatedTo}}</span>
                     </div>
                   }
-                  <div class="flex items-center gap-2 text-[11px] text-zinc-500 pt-2 border-t border-zinc-100">
+                  <div class="flex items-center gap-2 text-meta text-zinc-500 pt-2 border-t border-zinc-100">
                     <mat-icon class="text-[14px] w-3.5 h-3.5">person</mat-icon>
                     <span class="font-medium truncate">{{task.assignedTo || 'Unassigned'}}</span>
                     @if (task.assignedTeam) {
-                      <span class="ml-auto text-[10px] font-semibold text-zinc-400 bg-zinc-100 px-1.5 py-0.5 rounded">{{task.assignedTeam}}</span>
+                      <span class="ml-auto text-meta font-semibold text-zinc-400 bg-zinc-100 px-1.5 py-0.5 rounded">{{task.assignedTeam}}</span>
                     }
                   </div>
-                  <div class="mt-2 pt-2 border-t border-zinc-50 flex items-center gap-2 text-[10px] text-zinc-400">
+                  <div class="mt-2 pt-2 border-t border-zinc-50 flex items-center gap-2 text-meta text-zinc-400">
                     <app-created-by-badge [createdBy]="task.createdBy" [createdAt]="task.createdAt" [size]="20" />
                   </div>
                 </div>
@@ -261,29 +264,29 @@ const SUB_MODULE_LABELS: Record<string, string> = {
               @for (task of inProgressTasks(); track task.id) {
                 <div cdkDrag [cdkDragData]="task" class="kanban-card card rounded-xl p-4 cursor-grab active:cursor-grabbing hover:shadow-md">
                   <div class="flex items-start justify-between mb-2">
-                    <span class="text-[10px] font-sans text-zinc-400">#{{task.id}}</span>
+                    <span class="text-meta font-sans text-zinc-400">#{{task.id}}</span>
                     <div class="flex items-center gap-1">
                       @if (task.priority) {
-                        <span [class]="getPriorityColor(task.priority)" class="text-[9px] font-bold px-1.5 py-0.5 rounded-full">{{task.priority}}</span>
+                        <span [class]="getPriorityColor(task.priority)" class="text-meta font-bold px-1.5 py-0.5 rounded-full">{{task.priority}}</span>
                       }
-                      <span [class]="getStatusColor(task.status)" class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full">{{task.status}}</span>
+                      <span [class]="getStatusColor(task.status)" class="text-meta font-bold uppercase px-1.5 py-0.5 rounded-full">{{task.status}}</span>
                     </div>
                   </div>
                   <h4 class="text-sm font-semibold text-zinc-900 mb-2 leading-snug">{{task.title}}</h4>
                   @if (task.relatedTo) {
-                    <div class="text-[11px] text-zinc-900 bg-zinc-100 border border-zinc-200 rounded-lg px-2 py-1 mb-2 inline-flex items-center gap-1 font-medium">
+                    <div class="text-meta text-zinc-900 bg-zinc-100 border border-zinc-200 rounded-lg px-2 py-1 mb-2 inline-flex items-center gap-1 font-medium">
                       <mat-icon class="text-[12px] w-3 h-3 leading-none">link</mat-icon>
                       <span class="truncate max-w-[180px]">{{task.relatedTo}}</span>
                     </div>
                   }
-                  <div class="flex items-center gap-2 text-[11px] text-zinc-500 pt-2 border-t border-zinc-100">
+                  <div class="flex items-center gap-2 text-meta text-zinc-500 pt-2 border-t border-zinc-100">
                     <mat-icon class="text-[14px] w-3.5 h-3.5">person</mat-icon>
                     <span class="font-medium truncate">{{task.assignedTo || 'Unassigned'}}</span>
                     @if (task.assignedTeam) {
-                      <span class="ml-auto text-[10px] font-semibold text-zinc-400 bg-zinc-100 px-1.5 py-0.5 rounded">{{task.assignedTeam}}</span>
+                      <span class="ml-auto text-meta font-semibold text-zinc-400 bg-zinc-100 px-1.5 py-0.5 rounded">{{task.assignedTeam}}</span>
                     }
                   </div>
-                  <div class="mt-2 pt-2 border-t border-zinc-50 flex items-center gap-2 text-[10px] text-zinc-400">
+                  <div class="mt-2 pt-2 border-t border-zinc-50 flex items-center gap-2 text-meta text-zinc-400">
                     <app-created-by-badge [createdBy]="task.createdBy" [createdAt]="task.createdAt" [size]="20" />
                   </div>
                 </div>
@@ -310,29 +313,29 @@ const SUB_MODULE_LABELS: Record<string, string> = {
               @for (task of completedTasks(); track task.id) {
                 <div cdkDrag [cdkDragData]="task" class="kanban-card card rounded-xl p-4 cursor-grab active:cursor-grabbing hover:shadow-md">
                   <div class="flex items-start justify-between mb-2">
-                    <span class="text-[10px] font-sans text-zinc-400">#{{task.id}}</span>
+                    <span class="text-meta font-sans text-zinc-400">#{{task.id}}</span>
                     <div class="flex items-center gap-1">
                       @if (task.priority) {
-                        <span [class]="getPriorityColor(task.priority)" class="text-[9px] font-bold px-1.5 py-0.5 rounded-full">{{task.priority}}</span>
+                        <span [class]="getPriorityColor(task.priority)" class="text-meta font-bold px-1.5 py-0.5 rounded-full">{{task.priority}}</span>
                       }
-                      <span [class]="getStatusColor(task.status)" class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full">{{task.status}}</span>
+                      <span [class]="getStatusColor(task.status)" class="text-meta font-bold uppercase px-1.5 py-0.5 rounded-full">{{task.status}}</span>
                     </div>
                   </div>
                   <h4 class="text-sm font-semibold text-zinc-900 mb-2 leading-snug">{{task.title}}</h4>
                   @if (task.relatedTo) {
-                    <div class="text-[11px] text-zinc-900 bg-zinc-100 border border-zinc-200 rounded-lg px-2 py-1 mb-2 inline-flex items-center gap-1 font-medium">
+                    <div class="text-meta text-zinc-900 bg-zinc-100 border border-zinc-200 rounded-lg px-2 py-1 mb-2 inline-flex items-center gap-1 font-medium">
                       <mat-icon class="text-[12px] w-3 h-3 leading-none">link</mat-icon>
                       <span class="truncate max-w-[180px]">{{task.relatedTo}}</span>
                     </div>
                   }
-                  <div class="flex items-center gap-2 text-[11px] text-zinc-500 pt-2 border-t border-zinc-100">
+                  <div class="flex items-center gap-2 text-meta text-zinc-500 pt-2 border-t border-zinc-100">
                     <mat-icon class="text-[14px] w-3.5 h-3.5">person</mat-icon>
                     <span class="font-medium truncate">{{task.assignedTo || 'Unassigned'}}</span>
                     @if (task.assignedTeam) {
-                      <span class="ml-auto text-[10px] font-semibold text-zinc-400 bg-zinc-100 px-1.5 py-0.5 rounded">{{task.assignedTeam}}</span>
+                      <span class="ml-auto text-meta font-semibold text-zinc-400 bg-zinc-100 px-1.5 py-0.5 rounded">{{task.assignedTeam}}</span>
                     }
                   </div>
-                  <div class="mt-2 pt-2 border-t border-zinc-50 flex items-center gap-2 text-[10px] text-zinc-400">
+                  <div class="mt-2 pt-2 border-t border-zinc-50 flex items-center gap-2 text-meta text-zinc-400">
                     <app-created-by-badge [createdBy]="task.createdBy" [createdAt]="task.createdAt" [size]="20" />
                   </div>
                 </div>
@@ -342,6 +345,10 @@ const SUB_MODULE_LABELS: Record<string, string> = {
             </div>
           </div>
         </div>
+      }
+      }
+      @if (tasksService.error$()) {
+        <app-data-status-banner [error]="tasksService.error$()" />
       }
     </div>
 

@@ -105,14 +105,14 @@ const SEARCH_ITEMS: SearchItem[] = [
                         <mat-icon class="text-zinc-400 text-[18px] w-[18px] h-[18px] mt-0.5 shrink-0">{{ item.subIcon || item.mainIcon }}</mat-icon>
                         <div class="min-w-0 flex-1">
                           <div class="flex items-baseline gap-2">
-                            <span class="text-[11px] font-medium text-zinc-400 shrink-0">{{ item.mainMenu }}</span>
+                            <span class="text-meta font-medium text-zinc-400 shrink-0">{{ item.mainMenu }}</span>
                             @if (item.submenu) {
                               <span class="text-xs font-semibold text-zinc-800 truncate">{{ item.submenu }}</span>
                             } @else {
                               <span class="text-xs font-semibold text-zinc-800 truncate">{{ item.mainMenu }}</span>
                             }
                           </div>
-                          <p class="text-[11px] text-zinc-500 mt-0.5 leading-tight">{{ item.action }}</p>
+                          <p class="text-meta text-zinc-500 mt-0.5 leading-tight">{{ item.action }}</p>
                         </div>
                       </button>
                     }
