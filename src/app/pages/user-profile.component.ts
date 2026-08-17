@@ -376,7 +376,8 @@ export class UserProfileComponent {
 
   constructor() {
     this.route.paramMap.subscribe(params => {
-      this.userId.set(params.get('userId'));
+      // The /profile route has no :userId param — it always shows the logged-in user.
+      this.userId.set(params.get('userId') || this.state.currentUserId());
       const u = this.user();
       if (u) {
         this.editName = u.displayName;

@@ -729,6 +729,273 @@ body {
 }
 
 /* ═══════════════════════════════════════════
+   Bento Grid
+   A single modular grid: every widget is a tile spanning `--w` columns and `--h` rows.
+   `dense` auto-flow backfills holes, so removing or resizing a tile never leaves a gap.
+   ═══════════════════════════════════════════ */
+:root {
+  --bento-row: 68px;
+  --bento-gap: 12px;
+  --bento-cols: 12;
+}
+
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--bento-cols), minmax(0, 1fr));
+  grid-auto-rows: var(--bento-row);
+  grid-auto-flow: row dense;
+  gap: var(--bento-gap);
+  align-items: stretch;
+}
+
+.bento-tile {
+  --w: 2;
+  --h: 2;
+  grid-column: span var(--w);
+  grid-row: span var(--h);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xs);
+  contain: layout paint;
+  transition:
+    box-shadow var(--transition-base),
+    border-color var(--transition-base);
+}
+
+.bento-tile:hover {
+  box-shadow: var(--shadow-sm);
+}
+
+@media (max-width: 1279px) {
+  :root { --bento-cols: 8; }
+}
+
+@media (max-width: 959px) {
+  :root { --bento-cols: 4; }
+  .bento-tile {
+    grid-column: span var(--w-md, var(--w));
+    grid-row: span var(--h-md, var(--h));
+  }
+}
+
+@media (max-width: 639px) {
+  :root { --bento-cols: 2; --bento-row: 64px; }
+  .bento-tile {
+    grid-column: span 2;
+    grid-row: span var(--h-sm, var(--h-md, var(--h)));
+  }
+}
+
+/* ── Tile chrome ── */
+.bento-tile__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px 0;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.bento-tile__title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bento-tile__body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 8px 14px 12px;
+}
+
+.bento-tile__scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* Tone: one accent hue per tile, so the board reads as a set rather than a wall of blue. */
+.bento-tile { --tile: var(--color-text-secondary); --tile-soft: var(--color-surface-hover); }
+.bento-tile[data-tone='slate']   { --tile: #475569; --tile-soft: #F1F5F9; }
+.bento-tile[data-tone='blue']    { --tile: #2563EB; --tile-soft: #EFF6FF; }
+.bento-tile[data-tone='sky']     { --tile: #0284C7; --tile-soft: #F0F9FF; }
+.bento-tile[data-tone='violet']  { --tile: #7C3AED; --tile-soft: #F5F3FF; }
+.bento-tile[data-tone='emerald'] { --tile: #059669; --tile-soft: #ECFDF5; }
+.bento-tile[data-tone='amber']   { --tile: #B45309; --tile-soft: #FFFBEB; }
+.bento-tile[data-tone='rose']    { --tile: #E11D48; --tile-soft: #FFF1F2; }
+
+:root[data-theme='dark'] .bento-tile[data-tone='slate'],
+:root[data-theme='dark'] .bento-tile[data-tone='blue'],
+:root[data-theme='dark'] .bento-tile[data-tone='sky'],
+:root[data-theme='dark'] .bento-tile[data-tone='violet'],
+:root[data-theme='dark'] .bento-tile[data-tone='emerald'],
+:root[data-theme='dark'] .bento-tile[data-tone='amber'],
+:root[data-theme='dark'] .bento-tile[data-tone='rose'] {
+  --tile-soft: color-mix(in srgb, var(--tile) 18%, transparent);
+}
+:root[data-theme='dark'] .bento-tile[data-tone='slate']   { --tile: #94A3B8; }
+:root[data-theme='dark'] .bento-tile[data-tone='blue']    { --tile: #60A5FA; }
+:root[data-theme='dark'] .bento-tile[data-tone='sky']     { --tile: #38BDF8; }
+:root[data-theme='dark'] .bento-tile[data-tone='violet']  { --tile: #A78BFA; }
+:root[data-theme='dark'] .bento-tile[data-tone='emerald'] { --tile: #34D399; }
+:root[data-theme='dark'] .bento-tile[data-tone='amber']   { --tile: #FBBF24; }
+:root[data-theme='dark'] .bento-tile[data-tone='rose']    { --tile: #FB7185; }
+
+.bento-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--tile-soft);
+  color: var(--tile);
+}
+
+.bento-icon .mat-icon,
+.bento-icon mat-icon {
+  font-size: 15px;
+  width: 15px;
+  height: 15px;
+  line-height: 15px;
+  color: inherit;
+}
+
+/* ── Drag affordance ── */
+/* Absolute, so a long tile title gets the full header width instead of reserving room for it. */
+.bento-grip {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 6;
+  width: 22px;
+  height: 22px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  color: var(--color-text-placeholder);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  opacity: 0;
+  flex-shrink: 0;
+  touch-action: none;
+  transition:
+    opacity var(--transition-fast),
+    background var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.bento-tile:hover .bento-grip,
+.bento-tile:focus-within .bento-grip,
+.bento-grid.is-editing .bento-grip {
+  opacity: 1;
+}
+
+.bento-grip:hover {
+  background: var(--color-surface-active);
+  color: var(--color-text-secondary);
+}
+
+/* In edit mode the whole tile drags and the remove button owns the corner. */
+.bento-grid.is-editing .bento-grip {
+  display: none;
+}
+
+.bento-grip:focus-visible {
+  opacity: 1;
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+}
+
+.bento-grip:active {
+  cursor: grabbing;
+}
+
+/* Lifted tile: raised, tilted a hair, and never intercepting the pointer. */
+.bento-tile.is-dragging {
+  z-index: 40;
+  cursor: grabbing;
+  pointer-events: none;
+  box-shadow: 0 22px 45px -12px rgba(0, 0, 0, 0.28), 0 8px 16px -8px rgba(0, 0, 0, 0.16);
+  border-color: var(--tile);
+  will-change: transform;
+}
+
+.bento-tile.is-landing {
+  z-index: 39;
+  box-shadow: var(--shadow-sm);
+}
+
+.bento-tile.is-kb-grabbed {
+  z-index: 40;
+  outline: 2px solid var(--tile);
+  outline-offset: 2px;
+  box-shadow: var(--shadow-lg);
+}
+
+/* While a tile is in the air, the rest of the board recedes so the drop target reads clearly. */
+.bento-grid.is-dragging-active .bento-tile:not(.is-dragging) {
+  opacity: 0.72;
+}
+
+.bento-grid.is-editing .bento-tile {
+  cursor: grab;
+  border-style: dashed;
+  border-color: var(--color-border-strong);
+}
+
+body.bento-dragging {
+  cursor: grabbing;
+  user-select: none;
+}
+
+.bento-remove {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 5;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-tertiary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-xs);
+}
+
+.bento-remove:hover {
+  background: var(--color-danger-light);
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bento-tile { transition: none !important; }
+}
+
+/* ═══════════════════════════════════════════
    Bulk Action Bar (sticky, appears when rows selected)
    ═══════════════════════════════════════════ */
 .bulk-action-bar {

@@ -33,6 +33,7 @@ export const routes: Routes = [
   },
   { path: 'groups', canActivate: [authGuard], loadComponent: () => import('./pages/groups.component').then(m => m.GroupsComponent) },
   { path: 'settings/organization', canActivate: [authGuard], loadComponent: () => import('./pages/org-settings.component').then(m => m.OrgSettingsComponent) },
+  { path: 'profile', canActivate: [authGuard], loadComponent: () => import('./pages/user-profile.component').then(m => m.UserProfileComponent) },
   { path: 'settings/users/:userId', canActivate: [authGuard], loadComponent: () => import('./pages/user-profile.component').then(m => m.UserProfileComponent) }
 ];
 

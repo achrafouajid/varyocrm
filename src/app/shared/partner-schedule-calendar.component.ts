@@ -1,5 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, signal, computed, input, ChangeDetectionStrategy } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { CrmStateService } from '../services/crm-state.service';
 
@@ -13,79 +12,135 @@ interface CalendarDay {
 
 @Component({
   selector: 'app-partner-schedule-calendar',
-  imports: [CommonModule, MatIconModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [MatIconModule],
   template: `
-    <div class="card rounded-2xl p-4">
-      <div class="flex items-center justify-between mb-2">
-        <h3 class="text-meta font-bold text-zinc-700 uppercase tracking-wide">Partner Schedule</h3>
-        <div class="flex items-center gap-0.5">
-          <button
-            (click)="prevMonth()"
-            class="w-7 h-7 rounded-full btn-secondary flex items-center justify-center text-zinc-500 hover:text-zinc-900 transition-all border-0"
-          >
-            <mat-icon class="text-[16px] w-[16px] h-[16px] leading-none">chevron_left</mat-icon>
-          </button>
-          <span class="text-xs font-bold text-zinc-800 min-w-[110px] text-center select-none">
-            {{ monthNames[currentMonth()] }} {{ currentYear() }}
-          </span>
-          <button
-            (click)="nextMonth()"
-            class="w-7 h-7 rounded-full btn-secondary flex items-center justify-center text-zinc-500 hover:text-zinc-900 transition-all border-0"
-          >
-            <mat-icon class="text-[16px] w-[16px] h-[16px] leading-none">chevron_right</mat-icon>
-          </button>
-        </div>
-      </div>
+    <div class="cal" [class.cal--card]="!bare()">
+      @if (!bare()) {
+        <h3 class="cal__heading">Partner Schedule</h3>
+      }
 
-      <div class="grid grid-cols-7 gap-1 mb-1">
-        @for (h of dayHeaders; track h) {
-          <div class="text-center text-meta font-bold text-zinc-400 uppercase tracking-wider py-0.5">{{ h }}</div>
+      <div class="cal__nav">
+        <button class="cal__nav-btn" (click)="prevMonth()" aria-label="Previous month">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <span class="cal__month">{{ monthNames[currentMonth()] }} {{ currentYear() }}</span>
+        <button class="cal__nav-btn" (click)="nextMonth()" aria-label="Next month">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+        @if (bare()) {
+          <button class="cal__today" (click)="goToday()">Today</button>
         }
       </div>
 
-      <div class="grid grid-cols-7 gap-1">
-        @for (cell of calendarDays(); track cell ? cell.dateStr : $index) {
+      <div class="cal__dow">
+        @for (h of dayHeaders; track h) {
+          <span>{{ h }}</span>
+        }
+      </div>
+
+      <div class="cal__grid">
+        @for (cell of calendarDays(); track cell ? cell.dateStr : 'pad-' + $index) {
           @if (cell) {
             <div
-              [class]="
-                cell.isToday
-                  ? 'ring-2 ring-zinc-700 bg-zinc-100/80'
-                  : cell.isPast
-                    ? 'bg-white/80'
-                    : 'bg-white/30'
-              "
-              class="rounded-xl p-1 min-h-[48px] flex flex-col justify-between transition-all border border-white/40"
+              class="cal__cell"
+              [class.is-today]="cell.isToday"
+              [class.is-past]="cell.isPast"
+              [class.has-people]="cell.teamMembers.length > 0"
             >
-              <div class="flex flex-wrap gap-0.5">
-                @for (member of cell.teamMembers.slice(0, 4); track member) {
-                  <span
-                    class="w-4 h-4 rounded-full flex items-center justify-center text-[7px] font-bold text-white shrink-0"
-                    [style.background-color]="getUserColor(member)"
-                    [title]="member"
-                  >
-                    {{ getInitials(member) }}
-                  </span>
-                }
-                @if (cell.teamMembers.length > 4) {
-                  <span class="w-4 h-4 rounded-full flex items-center justify-center text-[7px] font-bold text-zinc-500 bg-zinc-200 shrink-0">
-                    +{{ cell.teamMembers.length - 4 }}
-                  </span>
-                }
-              </div>
-              <div class="text-meta font-bold" [class]="cell.isToday ? 'text-zinc-950' : cell.isPast ? 'text-zinc-700' : 'text-zinc-400'">
-                {{ cell.day }}
-              </div>
+              <span class="cal__day">{{ cell.day }}</span>
+              @if (cell.teamMembers.length) {
+                <div class="cal__people">
+                  @for (member of cell.teamMembers.slice(0, 3); track member) {
+                    <span class="cal__avatar" [style.background-color]="getUserColor(member)" [title]="member">
+                      {{ getInitials(member) }}
+                    </span>
+                  }
+                  @if (cell.teamMembers.length > 3) {
+                    <span class="cal__avatar cal__avatar--more">+{{ cell.teamMembers.length - 3 }}</span>
+                  }
+                </div>
+              }
             </div>
           } @else {
-            <div class="min-h-[48px]"></div>
+            <div class="cal__cell cal__cell--pad"></div>
           }
         }
       </div>
     </div>
-  `
+  `,
+  styles: [`
+    :host { display: block; flex: 1; min-height: 0; }
+    .cal { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+    .cal--card {
+      background: var(--color-surface); border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg); padding: 14px;
+    }
+    .cal__heading {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.045em; text-transform: uppercase;
+      color: var(--color-text-secondary); margin-bottom: 8px;
+    }
+    .cal__nav { display: flex; align-items: center; gap: 2px; margin-bottom: 6px; }
+    .cal__nav-btn {
+      width: 22px; height: 22px; border-radius: 6px; border: none; cursor: pointer;
+      background: transparent; color: var(--color-text-tertiary);
+      display: inline-flex; align-items: center; justify-content: center;
+      transition: all var(--transition-fast);
+    }
+    .cal__nav-btn:hover { background: var(--color-surface-active); color: var(--color-text-primary); }
+    .cal__nav-btn .mat-icon { font-size: 16px; width: 16px; height: 16px; line-height: 16px; }
+    .cal__month { font-size: 11.5px; font-weight: 700; color: var(--color-text-primary); user-select: none; }
+    .cal__today {
+      margin-left: auto; font-size: 10px; font-weight: 700; padding: 3px 8px;
+      border-radius: 999px; cursor: pointer;
+      border: 1px solid var(--color-border); background: var(--color-surface);
+      color: var(--color-text-secondary); transition: all var(--transition-fast);
+    }
+    .cal__today:hover { border-color: var(--color-text-tertiary); color: var(--color-text-primary); }
+
+    .cal__dow { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; margin-bottom: 3px; }
+    .cal__dow span {
+      text-align: center; font-size: 9px; font-weight: 700; letter-spacing: 0.05em;
+      text-transform: uppercase; color: var(--color-text-placeholder);
+    }
+
+    /* 1fr rows make the weeks divide whatever height the tile gives us — no dead strip. */
+    .cal__grid {
+      flex: 1; min-height: 0; display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      grid-auto-rows: minmax(0, 1fr); gap: 3px;
+    }
+    .cal__cell {
+      position: relative; min-height: 0; min-width: 0; overflow: hidden;
+      border-radius: var(--radius-sm); padding: 3px;
+      display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+      border: 1px solid var(--color-border-light); background: var(--color-surface);
+    }
+    .cal__cell--pad { border-color: transparent; background: transparent; }
+    .cal__cell.is-past { background: var(--color-bg); }
+    .cal__cell.has-people { border-color: var(--color-border-strong); }
+    .cal__cell.is-today {
+      background: var(--tile-soft, var(--color-accent-light));
+      border-color: var(--tile, var(--color-accent));
+      box-shadow: inset 0 0 0 1px var(--tile, var(--color-accent));
+    }
+    .cal__day { font-size: 10px; font-weight: 600; color: var(--color-text-tertiary); line-height: 1.1; }
+    .cal__cell.is-today .cal__day { color: var(--tile, var(--color-accent)); font-weight: 800; }
+    .cal__cell.has-people .cal__day { color: var(--color-text-primary); }
+    .cal__people { display: flex; flex-wrap: wrap; gap: 1px; }
+    .cal__avatar {
+      width: 14px; height: 14px; border-radius: 999px; flex-shrink: 0;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 7px; font-weight: 700; color: #fff; line-height: 1;
+    }
+    .cal__avatar--more { background: var(--color-surface-active); color: var(--color-text-secondary); }
+  `]
 })
 export class PartnerScheduleCalendarComponent {
   state = inject(CrmStateService);
+
+  /** Rendered inside a bento tile, which already supplies the card surface and title. */
+  readonly bare = input(false);
 
   currentMonth = signal(new Date().getMonth());
   currentYear = signal(new Date().getFullYear());
@@ -166,6 +221,12 @@ export class PartnerScheduleCalendarComponent {
     } else {
       this.currentMonth.update(m => m + 1);
     }
+  }
+
+  goToday() {
+    const now = new Date();
+    this.currentMonth.set(now.getMonth());
+    this.currentYear.set(now.getFullYear());
   }
 
   getInitials(name: string): string {

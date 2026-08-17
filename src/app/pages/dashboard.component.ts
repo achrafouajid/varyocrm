@@ -1,627 +1,570 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { CommonModule } from '@angular/common';
-import { DragDropModule, CdkDragDrop } from '@angular/cdk/drag-drop';
-import { CrmStateService, Task, Ticket, TaskStatus } from '../services/crm-state.service';
 import { Router } from '@angular/router';
+import { CrmStateService, Task, Ticket, TaskStatus } from '../services/crm-state.service';
 import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-calendar.component';
+import { BentoGrid, BentoTile } from '../shared/bento-grid';
 
-interface KpiTile {
+type Tone = 'slate' | 'blue' | 'sky' | 'violet' | 'emerald' | 'amber' | 'rose';
+type TileKind = 'today' | 'pipeline' | 'late' | 'donut' | 'schedule' | 'queue' | 'kpi';
+
+interface TileDef {
   id: string;
+  kind: TileKind;
+  title: string;
+  icon: string;
+  tone: Tone;
+  /** Column span (of 12) and row span. `hSm` overrides the row span on narrow screens. */
+  w: number;
+  h: number;
+  hSm?: number;
+}
+
+interface Delta {
+  pct: number;
+  direction: 'up' | 'down' | 'flat';
+  /** True when "up" is bad news (overdue invoices, lost deals). */
+  inverted?: boolean;
+}
+
+interface Spark {
+  line: string;
+  area: string;
+}
+
+interface KpiData {
   label: string;
   icon: string;
   value: string;
-  delta: { pct: number; direction: 'up' | 'down' | 'flat' } | null;
-  deltaLabel: string;
-  sparkline: number[];
+  hint: string;
+  delta: Delta | null;
+  spark: Spark;
 }
 
 interface TodayItem {
   kind: 'task' | 'deal' | 'ticket';
   id: string;
   icon: string;
+  tone: Tone;
   title: string;
   meta: string;
   actionLabel: string;
   action: () => void;
 }
 
+interface QueueRow {
+  id: string;
+  title: string;
+  sub: string;
+  deadline: string;
+  overdue: boolean;
+}
+
+interface QueueSection {
+  key: string;
+  label: string;
+  tone: Tone;
+  rows: QueueRow[];
+}
+
+interface Slice {
+  label: string;
+  count: number;
+  pct: number;
+  dasharray: string;
+  dashoffset: number;
+  opacity: number;
+}
+
+/**
+ * Every tile the dashboard can show, in a stable order. The rendered order lives in
+ * `state.dashboardLayout()` and is applied by the bento grid via CSS `order`, so this
+ * array — and therefore the DOM — never changes when tiles are rearranged.
+ *
+ * Row spans are always 2 or 4 so the tiles tile: a 4-row panel is exactly two stacked 2-row
+ * tiles, which lets `dense` auto-flow backfill every hole. An odd span would leave a one-row
+ * sliver nothing else can fit into.
+ */
+const CATALOG: TileDef[] = [
+  { id: 'today', kind: 'today', title: 'Focus Today', icon: 'bolt', tone: 'slate', w: 4, h: 4 },
+  { id: 'pipeline', kind: 'pipeline', title: 'Pipeline Value', icon: 'trending_up', tone: 'violet', w: 4, h: 4 },
+  { id: 'tasks-queue', kind: 'queue', title: 'Pending Tasks', icon: 'checklist', tone: 'amber', w: 4, h: 4, hSm: 5 },
+  { id: 'schedule', kind: 'schedule', title: 'Partner Schedule', icon: 'calendar_month', tone: 'blue', w: 4, h: 4, hSm: 6 },
+  { id: 'tickets-queue', kind: 'queue', title: 'Pending Tickets', icon: 'support_agent', tone: 'sky', w: 4, h: 4, hSm: 5 },
+  { id: 'partner-mix', kind: 'donut', title: 'Partner Mix', icon: 'groups', tone: 'blue', w: 2, h: 4 },
+  { id: 'task-status', kind: 'donut', title: 'Task Status', icon: 'donut_small', tone: 'emerald', w: 2, h: 4 },
+  { id: 'late-payers', kind: 'late', title: 'Late Payers', icon: 'running_with_errors', tone: 'rose', w: 2, h: 2 },
+  { id: 'kpi:totalDeals', kind: 'kpi', title: 'Deal Value', icon: 'payments', tone: 'emerald', w: 2, h: 2 },
+  { id: 'kpi:newDeals', kind: 'kpi', title: 'New Deals', icon: 'handshake', tone: 'violet', w: 2, h: 2 },
+  { id: 'kpi:totalProspects', kind: 'kpi', title: 'Prospects', icon: 'person_search', tone: 'blue', w: 2, h: 2 },
+  { id: 'kpi:openTickets', kind: 'kpi', title: 'Open Tickets', icon: 'confirmation_number', tone: 'amber', w: 2, h: 2 },
+  { id: 'kpi:activeCampaigns', kind: 'kpi', title: 'Campaigns', icon: 'campaign', tone: 'sky', w: 2, h: 2 },
+  { id: 'kpi:marketingSpend', kind: 'kpi', title: 'Reach', icon: 'send', tone: 'violet', w: 2, h: 2 },
+  { id: 'kpi:newTasksWeek', kind: 'kpi', title: 'New Tasks', icon: 'assignment_add', tone: 'emerald', w: 2, h: 2 },
+  { id: 'kpi:newProspects', kind: 'kpi', title: 'New Prospects', icon: 'group_add', tone: 'sky', w: 2, h: 2 },
+  { id: 'kpi:lostProspects', kind: 'kpi', title: 'Lost Deals', icon: 'trending_down', tone: 'rose', w: 2, h: 2 },
+  { id: 'kpi:todaysDeal', kind: 'kpi', title: 'Best Today', icon: 'star', tone: 'amber', w: 2, h: 2 }
+];
+
 @Component({
   selector: 'app-dashboard',
-  imports: [MatIconModule, CommonModule, DragDropModule, PartnerScheduleCalendarComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [MatIconModule, PartnerScheduleCalendarComponent, BentoGrid, BentoTile],
   template: `
-    <div class="space-y-3 mb-6">
-
-      <!-- Bento Grid: hero, pipeline, late payers, schedule, distribution charts -->
-      <div class="bento-grid">
-        <!-- Hero: Today -->
-        <div class="tile-hero card p-4 flex flex-col">
-          <div class="flex items-center gap-2 mb-3">
-            <div class="h-7 w-7 bg-zinc-900 text-white rounded-lg flex items-center justify-center">
-              <mat-icon class="text-[15px]">wb_sunny</mat-icon>
-            </div>
-            <h3 class="text-sm font-bold text-zinc-900">Today</h3>
+    <div class="dash">
+      <!-- Customise tray -->
+      @if (state.isCustomizing()) {
+        <div class="dash-tray">
+          <div class="dash-tray__hint">
+            <mat-icon class="dash-tray__hint-icon">drag_indicator</mat-icon>
+            <span>Drag any tile to rearrange. Tiles reflow to fill every gap.</span>
           </div>
-          <div class="flex-1 space-y-2">
-            @for (item of todayItems(); track item.kind + item.id) {
-              <div class="flex items-start gap-2.5 bg-zinc-50 border border-zinc-200 rounded-xl p-2.5">
-                <mat-icon class="text-[16px] w-4 h-4 mt-0.5 shrink-0 text-zinc-500">{{ item.icon }}</mat-icon>
-                <div class="flex-1 min-w-0">
-                  <div class="text-xs font-semibold text-zinc-800 truncate">{{ item.title }}</div>
-                  <div class="text-meta text-zinc-400 font-medium truncate">{{ item.meta }}</div>
-                </div>
-                <button (click)="item.action()" class="shrink-0 text-meta font-bold text-zinc-900 bg-white border border-zinc-300 hover:bg-zinc-900 hover:text-white transition-colors rounded-lg px-2 py-1">
-                  {{ item.actionLabel }}
-                </button>
-              </div>
+          <div class="dash-tray__chips">
+            @for (tile of hiddenTiles(); track tile.id) {
+              <button class="dash-chip" [attr.data-tone]="tile.tone" (click)="toggle(tile.id)">
+                <mat-icon class="dash-chip__icon">add</mat-icon>{{ tile.title }}
+              </button>
             } @empty {
-              <div class="h-full flex flex-col items-center justify-center text-center py-6">
-                <mat-icon class="text-[24px] w-6 h-6 text-zinc-300 mb-1">task_alt</mat-icon>
-                <div class="text-xs text-zinc-400 font-medium">Nothing urgent — you're caught up.</div>
-              </div>
+              <span class="dash-tray__empty">Every tile is on the board.</span>
             }
           </div>
+          <button class="dash-reset" (click)="reset()">
+            <mat-icon class="dash-chip__icon">restart_alt</mat-icon>Reset layout
+          </button>
         </div>
+      }
 
-        <!-- Pipeline: wide tile with area chart -->
-        <div class="tile-pipeline card p-4 flex flex-col">
-          <div class="flex items-center justify-between mb-1">
-            <h3 class="text-meta font-bold text-zinc-700 uppercase tracking-wide">Pipeline Value</h3>
-            @if (pipelineDelta(); as d) {
-              <span class="text-meta font-bold flex items-center gap-0.5" [class]="d.direction === 'up' ? 'text-emerald-600' : d.direction === 'down' ? 'text-red-500' : 'text-zinc-400'">
-                <mat-icon class="text-[12px] w-3 h-3">{{ d.direction === 'up' ? 'trending_up' : d.direction === 'down' ? 'trending_down' : 'trending_flat' }}</mat-icon>
-                {{ d.pct > 0 ? '+' : '' }}{{ d.pct }}% vs last month
-              </span>
-            }
-          </div>
-          <div class="text-xl font-bold text-zinc-900">{{ formatCurrency(totalPipelineValue()) }}</div>
-
-          <svg viewBox="0 0 280 70" class="w-full h-16 mt-1" preserveAspectRatio="none">
-            <defs>
-              <linearGradient id="pipelineFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="currentColor" stop-opacity="0.25" class="text-blue-500" />
-                <stop offset="100%" stop-color="currentColor" stop-opacity="0" class="text-blue-500" />
-              </linearGradient>
-            </defs>
-            <path [attr.d]="pipelineAreaPath()" fill="url(#pipelineFill)"></path>
-            <polyline [attr.points]="sparklinePoints(pipelineSeries(), 280, 70)" fill="none" class="text-blue-500" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></polyline>
-          </svg>
-
-          <div class="text-meta font-bold text-zinc-400 uppercase tracking-wider mt-2 mb-1.5">Top Deals</div>
-          <div class="space-y-1.5">
-            @for (deal of topPipelineDeals(); track deal.id; let i = $index) {
-              <div class="flex items-center gap-2 bg-zinc-50 border border-zinc-200 rounded-xl p-1.5">
-                <div class="w-5 h-5 rounded-full flex items-center justify-center text-meta font-bold shrink-0 bg-zinc-200 text-zinc-950">
-                  {{ i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉' }}
-                </div>
-                <div class="flex-1 min-w-0">
-                  <div class="text-meta font-semibold text-zinc-800 truncate">{{ getPartnerName(deal.partnerId) }}</div>
-                </div>
-                <div class="text-meta font-bold font-sans text-zinc-900 shrink-0">{{ formatCurrency(deal.amount) }}</div>
-              </div>
-            } @empty {
-              <div class="text-center py-3 text-meta text-zinc-400">No active deals in pipeline</div>
-            }
-          </div>
-        </div>
-
-        <!-- Late Payers: compact red-accented tile -->
-        <div class="tile-late card p-4 flex flex-col bg-red-50/40 border-red-200!">
-          <div class="flex items-center justify-between mb-1.5">
-            <h3 class="text-meta font-bold text-red-700 uppercase tracking-wide">Late Payers</h3>
-            <div class="h-6 w-6 bg-red-100 text-red-600 rounded-lg flex items-center justify-center">
-              <mat-icon class="text-[13px]">warning</mat-icon>
-            </div>
-          </div>
-          <div class="text-xl font-bold text-red-700">{{ latePayersCount() }}</div>
-          @if (latePayersDelta(); as d) {
-            <div class="text-meta font-bold mt-0.5 flex items-center gap-0.5" [class]="d.direction === 'up' ? 'text-red-600' : d.direction === 'down' ? 'text-emerald-600' : 'text-zinc-400'">
-              <mat-icon class="text-[11px] w-3 h-3">{{ d.direction === 'up' ? 'trending_up' : d.direction === 'down' ? 'trending_down' : 'trending_flat' }}</mat-icon>
-              {{ d.pct > 0 ? '+' : '' }}{{ d.pct }}% vs last month
-            </div>
-          }
-          <svg viewBox="0 0 100 24" class="w-full h-6 mt-auto pt-2" preserveAspectRatio="none">
-            <polyline [attr.points]="sparklinePoints(latePayersSeries(), 100, 24)" fill="none" class="text-red-400" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></polyline>
-          </svg>
-        </div>
-
-        <!-- Partner Directory donut -->
-        <div class="tile-partners card p-4">
-          <h3 class="text-meta font-bold text-zinc-700 uppercase tracking-wide mb-3">Partner Directory</h3>
-          <div class="flex items-center">
-            <div class="relative w-20 h-20 shrink-0">
-              <svg viewBox="0 0 36 36" class="w-full h-full transform -rotate-90">
-                <circle cx="18" cy="18" r="15.9155" class="text-white/30" stroke-width="4" stroke="currentColor" fill="none"></circle>
-                @for (slice of partnerSlices(); track slice.label) {
-                  <circle
-                    cx="18" cy="18" r="15.9155"
-                    [class]="slice.stroke" stroke-width="4"
-                    [attr.stroke-dasharray]="slice.dasharray"
-                    [attr.stroke-dashoffset]="slice.dashoffset"
-                    stroke="currentColor" fill="none">
-                  </circle>
-                }
-              </svg>
-            </div>
-            <div class="ml-3 w-full space-y-1">
-              @for (slice of partnerSlices(); track slice.label) {
-                <div class="flex items-center justify-between text-meta">
-                  <div class="flex items-center">
-                    <span class="w-2.5 h-2.5 rounded-full mr-1.5" [class]="slice.color"></span>
-                    <span class="text-zinc-600 font-semibold">{{slice.label}}</span>
-                  </div>
-                  <span class="text-zinc-900 font-bold">{{slice.count}}</span>
-                </div>
-              }
-            </div>
-          </div>
-        </div>
-
-        <!-- Today's Schedule: tall tile -->
-        <div class="tile-schedule">
-          <app-partner-schedule-calendar />
-        </div>
-
-        <!-- Tasks Status donut -->
-        <div class="tile-tasks card p-4">
-          <h3 class="text-meta font-bold text-zinc-700 uppercase tracking-wide mb-3">Tasks Status</h3>
-          <div class="flex items-center">
-            <div class="relative w-20 h-20 shrink-0">
-              <svg viewBox="0 0 36 36" class="w-full h-full transform -rotate-90">
-                <circle cx="18" cy="18" r="15.9155" class="text-white/30" stroke-width="4" stroke="currentColor" fill="none"></circle>
-                @for (slice of taskSlices(); track slice.label) {
-                  <circle
-                    cx="18" cy="18" r="15.9155"
-                    [class]="slice.stroke" stroke-width="4"
-                    [attr.stroke-dasharray]="slice.dasharray"
-                    [attr.stroke-dashoffset]="slice.dashoffset"
-                    stroke="currentColor" fill="none">
-                  </circle>
-                }
-              </svg>
-            </div>
-            <div class="ml-3 w-full space-y-1">
-              @for (slice of taskSlices(); track slice.label) {
-                <div class="flex items-center justify-between text-meta">
-                  <div class="flex items-center">
-                    <span class="w-2.5 h-2.5 rounded-full mr-1.5" [class]="slice.color"></span>
-                    <span class="text-zinc-600 font-semibold">{{slice.label}}</span>
-                  </div>
-                  <span class="text-zinc-900 font-bold">{{slice.count}}</span>
-                </div>
-              }
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Main Content + Right Sidebar -->
-      <div class="flex gap-4">
-        <!-- Left: draggable KPI tiles -->
-        <div class="flex-1 min-w-0 space-y-3">
-          @if (state.isCustomizing() && hiddenKpis().length > 0) {
-            <div class="card p-3">
-              <h4 class="text-meta font-bold text-zinc-400 uppercase tracking-wider mb-2">Add a KPI</h4>
-              <div class="flex flex-wrap gap-1.5">
-                @for (kpi of hiddenKpis(); track kpi.id) {
-                  <button (click)="toggleKpi(kpi.id)" class="btn-secondary text-zinc-500 text-xs">
-                    <mat-icon class="text-[13px] w-3.5 h-3.5">add</mat-icon>
-                    {{ kpi.name }}
-                  </button>
-                }
-              </div>
-            </div>
-          }
-
-          <div
-            cdkDropList
-            (cdkDropListDropped)="onKpiDrop($event)"
-            class="grid grid-cols-2 md:grid-cols-4 gap-3"
+      <div
+        [bentoGrid]="layout()"
+        [bentoEditing]="state.isCustomizing()"
+        (bentoReorder)="onReorder($event)"
+        [class.is-editing]="state.isCustomizing()"
+      >
+        @for (tile of tiles(); track tile.id) {
+          <section
+            [bentoTile]="tile.id"
+            [attr.data-tone]="tile.tone"
+            [style]="varsFor(tile)"
+            [attr.aria-label]="tile.title"
           >
-            @for (tile of kpiTiles(); track tile.id) {
-              <div
-                cdkDrag
-                [cdkDragDisabled]="!state.isCustomizing()"
-                class="stat-card flex flex-col relative"
-                [class.cursor-move]="state.isCustomizing()"
-              >
-                @if (state.isCustomizing()) {
-                  <button (click)="toggleKpi(tile.id)" class="absolute top-1.5 right-1.5 h-5 w-5 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-500 flex items-center justify-center z-10">
-                    <mat-icon class="text-[12px] w-3 h-3">close</mat-icon>
-                  </button>
-                }
-                <div class="flex items-center justify-between mb-1.5">
-                  <h3 class="section-label !px-0">{{ tile.label }}</h3>
-                  <div class="h-7 w-7 bg-zinc-100 text-zinc-900 rounded-lg flex items-center justify-center">
-                    <mat-icon class="text-[14px]">{{ tile.icon }}</mat-icon>
-                  </div>
-                </div>
-                <div class="text-sm lg:text-base font-bold text-zinc-900 truncate">{{ tile.value }}</div>
-                <div class="mt-1.5 pt-1.5 border-t border-zinc-100 flex items-center justify-between gap-2">
-                  @if (tile.delta; as d) {
-                    <span class="text-meta font-bold flex items-center gap-0.5 shrink-0" [class]="d.direction === 'up' ? 'text-emerald-600' : d.direction === 'down' ? 'text-red-500' : 'text-zinc-400'">
-                      <mat-icon class="text-[11px]! leading-none! w-3 h-3">{{ d.direction === 'up' ? 'trending_up' : d.direction === 'down' ? 'trending_down' : 'trending_flat' }}</mat-icon>
-                      {{ d.pct > 0 ? '+' : '' }}{{ d.pct }}%
-                    </span>
-                  } @else {
-                    <span></span>
-                  }
-                  <svg viewBox="0 0 64 20" class="w-14 h-5 shrink-0" preserveAspectRatio="none">
-                    <polyline [attr.points]="sparklinePoints(tile.sparkline, 64, 20)" fill="none" class="text-zinc-300" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></polyline>
-                  </svg>
-                </div>
-              </div>
-            } @empty {
-              <div class="col-span-full text-center py-6 text-xs text-zinc-400">No KPIs selected — enable customizing to add some.</div>
+            @if (state.isCustomizing()) {
+              <button class="bento-remove" (click)="toggle(tile.id)" [attr.aria-label]="'Remove ' + tile.title">
+                <mat-icon class="dash-chip__icon">close</mat-icon>
+              </button>
             }
-          </div>
-        </div>
 
-        <!-- Right Sidebar: Pending Tasks + Pending Tickets -->
-        <div class="w-80 shrink-0 sticky top-0 self-start">
-          <!-- Pending Tasks Card -->
-          <div class="card p-4 mb-3">
-            <div class="flex items-center justify-between mb-2">
-              <div class="flex items-center gap-2">
-                <mat-icon class="text-[16px] w-4 h-4">task_alt</mat-icon>
-                <h3 class="text-xs font-bold text-zinc-800">Pending Tasks</h3>
-                <span class="text-meta font-medium text-white bg-zinc-700 px-1.5 py-0.5 rounded-full min-w-[20px] text-center">{{ pendingTasksCount() }}</span>
-              </div>
+            <!-- ── Shared tile header ── -->
+            <header class="bento-tile__head">
+              <span class="bento-icon"><mat-icon>{{ tile.icon }}</mat-icon></span>
+              <h3 class="bento-tile__title">{{ tile.title }}</h3>
+              @switch (tile.kind) {
+                @case ('today') {
+                  @if (todayItems().length) { <span class="dash-count">{{ todayItems().length }}</span> }
+                }
+                @case ('queue') {
+                  <span class="dash-count">{{ queue(tile.id).total }}</span>
+                }
+              }
+              <button
+                class="bento-grip"
+                data-bento-handle
+                type="button"
+                [attr.aria-label]="'Reorder ' + tile.title + '. Press space to pick up, arrow keys to move.'"
+              >
+                <mat-icon class="dash-chip__icon">drag_indicator</mat-icon>
+              </button>
+            </header>
+
+            <div class="bento-tile__body">
+              @switch (tile.kind) {
+
+                <!-- ── Focus Today ── -->
+                @case ('today') {
+                  <div class="bento-tile__scroll dash-stack">
+                    @for (item of todayItems(); track item.kind + item.id) {
+                      <div class="focus-row" [attr.data-tone]="item.tone">
+                        <span class="focus-row__icon"><mat-icon>{{ item.icon }}</mat-icon></span>
+                        <div class="focus-row__text">
+                          <div class="focus-row__title">{{ item.title }}</div>
+                          <div class="focus-row__meta">{{ item.meta }}</div>
+                        </div>
+                        <button class="focus-row__action" data-no-drag (click)="item.action()">
+                          {{ item.actionLabel }}
+                        </button>
+                      </div>
+                    } @empty {
+                      <div class="dash-empty">
+                        <mat-icon class="dash-empty__icon">verified</mat-icon>
+                        <div class="dash-empty__title">Nothing needs you right now</div>
+                        <div class="dash-empty__sub">No overdue tasks, stale deals or unassigned tickets.</div>
+                      </div>
+                    }
+                  </div>
+                }
+
+                <!-- ── Pipeline ── -->
+                @case ('pipeline') {
+                  <div class="dash-figure">
+                    <span class="dash-value">{{ pipelineValue() }}</span>
+                    @if (pipelineDelta(); as d) {
+                      <span class="dash-delta" [attr.data-dir]="dirOf(d)">
+                        <mat-icon class="dash-delta__icon">{{ arrow(d) }}</mat-icon>{{ pctLabel(d) }}
+                      </span>
+                    }
+                  </div>
+                  <div class="dash-caption">across {{ openDealCount() }} open deals</div>
+
+                  <svg class="dash-area" viewBox="0 0 300 62" preserveAspectRatio="none" aria-hidden="true">
+                    <defs>
+                      <linearGradient id="grad-pipeline" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="var(--tile)" stop-opacity="0.28" />
+                        <stop offset="100%" stop-color="var(--tile)" stop-opacity="0" />
+                      </linearGradient>
+                    </defs>
+                    <path [attr.d]="pipelineSpark().area" fill="url(#grad-pipeline)" />
+                    <path [attr.d]="pipelineSpark().line" fill="none" stroke="var(--tile)" stroke-width="2"
+                          stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" />
+                  </svg>
+
+                  <div class="dash-sublabel">Top open deals</div>
+                  <div class="dash-stack">
+                    @for (deal of topDeals(); track deal.id; let i = $index) {
+                      <button class="deal-row" data-no-drag (click)="openDeal(deal.id)">
+                        <span class="deal-row__rank">{{ i + 1 }}</span>
+                        <span class="deal-row__name">{{ deal.partner }}</span>
+                        <span class="deal-row__amount">{{ deal.amount }}</span>
+                      </button>
+                    } @empty {
+                      <div class="dash-note">No open deals in the pipeline.</div>
+                    }
+                  </div>
+                }
+
+                <!-- ── Late payers ── -->
+                @case ('late') {
+                  <div class="dash-figure">
+                    <span class="dash-value">{{ latePayers().count }}</span>
+                    @if (latePayers().delta; as d) {
+                      <span class="dash-delta" [attr.data-dir]="dirOf(d)">
+                        <mat-icon class="dash-delta__icon">{{ arrow(d) }}</mat-icon>{{ pctLabel(d) }}
+                      </span>
+                    }
+                  </div>
+                  <dl class="dash-facts">
+                    <div><dt>At risk</dt><dd>{{ latePayers().atRisk }}</dd></div>
+                    <div><dt>Oldest</dt><dd>{{ latePayers().oldest }}</dd></div>
+                  </dl>
+                }
+
+                <!-- ── Donuts ── -->
+                @case ('donut') {
+                  @let d = donut(tile.id);
+                  <div class="donut">
+                    <svg viewBox="0 0 36 36" class="donut__svg" aria-hidden="true">
+                      <circle cx="18" cy="18" r="15.9155" class="donut__track" stroke-width="4.2" fill="none" />
+                      @for (s of d.slices; track s.label) {
+                        <circle
+                          cx="18" cy="18" r="15.9155" fill="none"
+                          stroke="var(--tile)" stroke-width="4.2"
+                          [attr.stroke-opacity]="s.opacity"
+                          [attr.stroke-dasharray]="s.dasharray"
+                          [attr.stroke-dashoffset]="s.dashoffset"
+                        />
+                      }
+                    </svg>
+                    <div class="donut__center">
+                      <span class="donut__total">{{ d.total }}</span>
+                      <span class="donut__unit">{{ d.unit }}</span>
+                    </div>
+                  </div>
+                  <ul class="legend">
+                    @for (s of d.slices; track s.label) {
+                      <li class="legend__row">
+                        <span class="legend__dot" [style.opacity]="s.opacity"></span>
+                        <span class="legend__label">{{ s.label }}</span>
+                        <span class="legend__pct">{{ s.pct }}%</span>
+                        <span class="legend__count">{{ s.count }}</span>
+                      </li>
+                    } @empty {
+                      <li class="dash-note">Nothing to chart yet.</li>
+                    }
+                  </ul>
+                }
+
+                <!-- ── Schedule ── -->
+                @case ('schedule') {
+                  <app-partner-schedule-calendar [bare]="true" />
+                }
+
+                <!-- ── Task / ticket queues ── -->
+                @case ('queue') {
+                  @let q = queue(tile.id);
+                  <div class="bento-tile__scroll">
+                    @for (section of q.sections; track section.key) {
+                      <button class="queue-head" data-no-drag [attr.data-tone]="section.tone" (click)="q.filter(section.key)">
+                        <span class="queue-head__dot"></span>
+                        <span>{{ section.label }}</span>
+                        <span class="queue-head__count">{{ section.rows.length }}</span>
+                      </button>
+                      @for (row of section.rows; track row.id) {
+                        <button class="queue-row" data-no-drag (click)="q.open()">
+                          <span class="queue-row__title">{{ row.title }}</span>
+                          <span class="queue-row__sub">{{ row.sub }}</span>
+                          @if (row.deadline) {
+                            <span class="queue-row__date" [class.is-overdue]="row.overdue">{{ row.deadline }}</span>
+                          }
+                        </button>
+                      }
+                    } @empty {
+                      <div class="dash-empty">
+                        <mat-icon class="dash-empty__icon">inbox</mat-icon>
+                        <div class="dash-empty__title">{{ q.emptyText }}</div>
+                      </div>
+                    }
+                  </div>
+                }
+
+                <!-- ── KPI ── -->
+                @case ('kpi') {
+                  @let k = kpi(tile.id);
+                  <div class="kpi">
+                    <span class="dash-value dash-value--kpi">{{ k.value }}</span>
+                    <span class="kpi__hint">{{ k.hint }}</span>
+                  </div>
+                  <div class="kpi__foot">
+                    @if (k.delta; as delta) {
+                      <span class="dash-delta" [attr.data-dir]="dirOf(delta)">
+                        <mat-icon class="dash-delta__icon">{{ arrow(delta) }}</mat-icon>{{ pctLabel(delta) }}
+                      </span>
+                    } @else {
+                      <span class="dash-delta" data-dir="flat">—</span>
+                    }
+                    <svg class="kpi__spark" viewBox="0 0 90 26" preserveAspectRatio="none" aria-hidden="true">
+                      <path [attr.d]="k.spark.line" fill="none" stroke="var(--tile)" stroke-width="1.75"
+                            stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" />
+                    </svg>
+                  </div>
+                }
+              }
             </div>
-
-            <div class="max-h-[260px] overflow-y-auto space-y-1 -mr-2 pr-2">
-              <!-- Urgent tasks -->
-                @let urgentTasks = groupedPendingTasks().urgent;
-                @if (urgentTasks.length > 0) {
-                  <div>
-                    <button (click)="navigateToFilteredTasks('Urgent')" class="flex items-center gap-1.5 text-meta font-bold text-zinc-900 uppercase tracking-wider mb-1 px-1 hover:text-zinc-950 hover:underline transition-colors">
-                      <mat-icon class="text-[14px] w-3.5 h-3.5">flag</mat-icon>
-                      Urgent
-                      <span class="text-meta text-zinc-500 font-semibold ml-auto">{{ urgentTasks.length }}</span>
-                    </button>
-                    @for (task of urgentTasks; track task.id) {
-                      <div
-                        class="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-zinc-100/60 transition-colors group"
-                        [class.bg-zinc-100/60]="selectedTaskIds().has(task.id)"
-                      >
-                        <mat-icon
-                          (click)="$event.stopPropagation(); toggleTaskSelection(task.id)"
-                          class="text-[16px] w-4 h-4 shrink-0 transition-colors cursor-pointer"
-                          [class.text-zinc-700]="selectedTaskIds().has(task.id)"
-                          [class.text-zinc-300]="!selectedTaskIds().has(task.id)"
-                        >
-                          {{ selectedTaskIds().has(task.id) ? 'check_circle' : 'radio_button_unchecked' }}
-                        </mat-icon>
-                        <div (click)="navigateToTasks()" class="flex-1 min-w-0 flex items-center gap-2 cursor-pointer">
-                          <span class="text-xs font-medium text-zinc-700 truncate flex-1 hover:underline">{{ task.title }}</span>
-                          <div class="flex flex-col items-end gap-0.5 shrink-0">
-                            @if (task.deadline) {
-                              <span class="text-meta font-sans leading-tight" [class]="deadlineClass(task.deadline)">{{ formatDate(task.deadline) }}</span>
-                            }
-                            <span class="text-meta text-red-600 px-1.5 py-0.5 rounded">Urgent</span>
-                          </div>
-                        </div>
-                      </div>
-                    }
-                  </div>
-                }
-
-                <!-- Medium tasks -->
-                @let mediumTasks = groupedPendingTasks().medium;
-                @if (mediumTasks.length > 0) {
-                  <div>
-                    <button (click)="navigateToFilteredTasks('Medium')" class="flex items-center gap-1.5 text-meta font-bold text-zinc-900 uppercase tracking-wider mb-1 px-1 hover:text-zinc-950 hover:underline transition-colors">
-                      <mat-icon class="text-[14px] w-3.5 h-3.5">flag</mat-icon>
-                      Medium
-                      <span class="text-meta text-zinc-500 font-semibold ml-auto">{{ mediumTasks.length }}</span>
-                    </button>
-                    @for (task of mediumTasks; track task.id) {
-                      <div
-                        class="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-zinc-100/60 transition-colors group"
-                        [class.bg-zinc-100/60]="selectedTaskIds().has(task.id)"
-                      >
-                        <mat-icon
-                          (click)="$event.stopPropagation(); toggleTaskSelection(task.id)"
-                          class="text-[16px] w-4 h-4 shrink-0 transition-colors cursor-pointer"
-                          [class.text-zinc-700]="selectedTaskIds().has(task.id)"
-                          [class.text-zinc-300]="!selectedTaskIds().has(task.id)"
-                        >
-                          {{ selectedTaskIds().has(task.id) ? 'check_circle' : 'radio_button_unchecked' }}
-                        </mat-icon>
-                        <div (click)="navigateToTasks()" class="flex-1 min-w-0 flex items-center gap-2 cursor-pointer">
-                          <span class="text-xs font-medium text-zinc-700 truncate flex-1 hover:underline">{{ task.title }}</span>
-                          <div class="flex flex-col items-end gap-0.5 shrink-0">
-                            @if (task.deadline) {
-                              <span class="text-meta font-sans leading-tight" [class]="deadlineClass(task.deadline)">{{ formatDate(task.deadline) }}</span>
-                            }
-                            <span class="text-meta text-amber-600 px-1.5 py-0.5 rounded">Medium</span>
-                          </div>
-                        </div>
-                      </div>
-                    }
-                  </div>
-                }
-
-                <!-- Low tasks -->
-                @let lowTasks = groupedPendingTasks().low;
-                @if (lowTasks.length > 0) {
-                  <div>
-                    <button (click)="navigateToFilteredTasks('Low')" class="flex items-center gap-1.5 text-meta font-bold text-zinc-500 uppercase tracking-wider mb-1 px-1 hover:text-zinc-700 hover:underline transition-colors">
-                      <mat-icon class="text-[14px] w-3.5 h-3.5">flag</mat-icon>
-                      Low
-                      <span class="text-meta text-zinc-400 font-semibold ml-auto">{{ lowTasks.length }}</span>
-                    </button>
-                    @for (task of lowTasks; track task.id) {
-                      <div
-                        class="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-zinc-50/60 transition-colors group"
-                        [class.bg-zinc-50/60]="selectedTaskIds().has(task.id)"
-                      >
-                        <mat-icon
-                          (click)="$event.stopPropagation(); toggleTaskSelection(task.id)"
-                          class="text-[16px] w-4 h-4 shrink-0 transition-colors cursor-pointer"
-                          [class.text-zinc-700]="selectedTaskIds().has(task.id)"
-                          [class.text-zinc-300]="!selectedTaskIds().has(task.id)"
-                        >
-                          {{ selectedTaskIds().has(task.id) ? 'check_circle' : 'radio_button_unchecked' }}
-                        </mat-icon>
-                        <div (click)="navigateToTasks()" class="flex-1 min-w-0 flex items-center gap-2 cursor-pointer">
-                          <span class="text-xs font-medium text-zinc-700 truncate flex-1 hover:underline">{{ task.title }}</span>
-                          <div class="flex flex-col items-end gap-0.5 shrink-0">
-                            @if (task.deadline) {
-                              <span class="text-meta font-sans leading-tight" [class]="deadlineClass(task.deadline)">{{ formatDate(task.deadline) }}</span>
-                            }
-                            <span class="text-meta text-emerald-600 px-1.5 py-0.5 rounded">Low</span>
-                          </div>
-                        </div>
-                      </div>
-                    }
-                  </div>
-                }
-
-                @if (urgentTasks.length === 0 && mediumTasks.length === 0 && lowTasks.length === 0) {
-                  <div class="text-center py-4 text-xs text-zinc-400">No pending tasks</div>
-                }
-              </div>
-          </div>
-
-          <!-- Pending Tickets Card -->
-          <div class="card p-4">
-            <div class="flex items-center justify-between mb-2">
-              <div class="flex items-center gap-2">
-                <mat-icon class="text-[16px] w-4 h-4">support_agent</mat-icon>
-                <h3 class="text-xs font-bold text-zinc-800">Pending Tickets</h3>
-                <span class="text-meta font-medium text-white bg-zinc-700 px-1.5 py-0.5 rounded-full min-w-[20px] text-center">{{ pendingTicketsCount() }}</span>
-              </div>
-            </div>
-
-            <div class="max-h-[260px] overflow-y-auto space-y-1 -mr-2 pr-2">
-              <!-- High priority -->
-                @let highTickets = groupedPendingTickets().high;
-                @if (highTickets.length > 0) {
-                  <div>
-                    <button (click)="navigateToFilteredTickets('High')" class="flex items-center gap-1.5 text-meta font-bold text-zinc-900 uppercase tracking-wider mb-1 px-1 hover:text-zinc-950 hover:underline transition-colors">
-                      <mat-icon class="text-[14px] w-3.5 h-3.5">flag</mat-icon>
-                      High
-                      <span class="text-meta text-zinc-500 font-semibold ml-auto">{{ highTickets.length }}</span>
-                    </button>
-                    @for (ticket of highTickets; track ticket.id) {
-                      <div
-                        class="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-zinc-100/60 transition-colors group"
-                        [class.bg-zinc-100/60]="selectedTicketIds().has(ticket.id)"
-                      >
-                        <mat-icon
-                          (click)="$event.stopPropagation(); toggleTicketSelection(ticket.id)"
-                          class="text-[16px] w-4 h-4 shrink-0 transition-colors cursor-pointer"
-                          [class.text-zinc-700]="selectedTicketIds().has(ticket.id)"
-                          [class.text-zinc-300]="!selectedTicketIds().has(ticket.id)"
-                        >
-                          {{ selectedTicketIds().has(ticket.id) ? 'check_circle' : 'radio_button_unchecked' }}
-                        </mat-icon>
-                        <div (click)="navigateToTickets()" class="flex-1 min-w-0 cursor-pointer">
-                          <div class="flex items-center gap-1.5">
-                            <span class="text-xs font-medium text-zinc-700 truncate hover:underline">{{ ticket.title }}</span>
-                            @if (ticket.deadline) {
-                              <span class="text-meta font-sans shrink-0 leading-tight ml-auto" [class]="deadlineClass(ticket.deadline)">{{ formatDate(ticket.deadline) }}</span>
-                            }
-                          </div>
-                          <div class="flex items-center justify-between">
-                            <span class="text-meta text-zinc-400 font-sans">#{{ ticket.id }}</span>
-                            <span class="text-meta text-red-600 px-1.5 py-0.5 rounded">High</span>
-                          </div>
-                        </div>
-                      </div>
-                    }
-                  </div>
-                }
-
-                <!-- Medium priority -->
-                @let mediumTickets = groupedPendingTickets().medium;
-                @if (mediumTickets.length > 0) {
-                  <div>
-                    <button (click)="navigateToFilteredTickets('Medium')" class="flex items-center gap-1.5 text-meta font-bold text-zinc-900 uppercase tracking-wider mb-1 px-1 hover:text-zinc-950 hover:underline transition-colors">
-                      <mat-icon class="text-[14px] w-3.5 h-3.5">flag</mat-icon>
-                      Medium
-                      <span class="text-meta text-zinc-500 font-semibold ml-auto">{{ mediumTickets.length }}</span>
-                    </button>
-                    @for (ticket of mediumTickets; track ticket.id) {
-                      <div
-                        class="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-zinc-100/60 transition-colors group"
-                        [class.bg-zinc-100/60]="selectedTicketIds().has(ticket.id)"
-                      >
-                        <mat-icon
-                          (click)="$event.stopPropagation(); toggleTicketSelection(ticket.id)"
-                          class="text-[16px] w-4 h-4 shrink-0 transition-colors cursor-pointer"
-                          [class.text-zinc-700]="selectedTicketIds().has(ticket.id)"
-                          [class.text-zinc-300]="!selectedTicketIds().has(ticket.id)"
-                        >
-                          {{ selectedTicketIds().has(ticket.id) ? 'check_circle' : 'radio_button_unchecked' }}
-                        </mat-icon>
-                        <div (click)="navigateToTickets()" class="flex-1 min-w-0 cursor-pointer">
-                          <div class="flex items-center gap-1.5">
-                            <span class="text-xs font-medium text-zinc-700 truncate hover:underline">{{ ticket.title }}</span>
-                            @if (ticket.deadline) {
-                              <span class="text-meta font-sans shrink-0 leading-tight ml-auto" [class]="deadlineClass(ticket.deadline)">{{ formatDate(ticket.deadline) }}</span>
-                            }
-                          </div>
-                          <div class="flex items-center justify-between">
-                            <span class="text-meta text-zinc-400 font-sans">#{{ ticket.id }}</span>
-                            <span class="text-meta text-amber-600 px-1.5 py-0.5 rounded">Medium</span>
-                          </div>
-                        </div>
-                      </div>
-                    }
-                  </div>
-                }
-
-                <!-- Low priority -->
-                @let lowTickets = groupedPendingTickets().low;
-                @if (lowTickets.length > 0) {
-                  <div>
-                    <button (click)="navigateToFilteredTickets('Low')" class="flex items-center gap-1.5 text-meta font-bold text-zinc-500 uppercase tracking-wider mb-1 px-1 hover:text-zinc-700 hover:underline transition-colors">
-                      <mat-icon class="text-[14px] w-3.5 h-3.5">flag</mat-icon>
-                      Low
-                      <span class="text-meta text-zinc-400 font-semibold ml-auto">{{ lowTickets.length }}</span>
-                    </button>
-                    @for (ticket of lowTickets; track ticket.id) {
-                      <div
-                        class="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-zinc-50/60 transition-colors group"
-                        [class.bg-zinc-50/60]="selectedTicketIds().has(ticket.id)"
-                      >
-                        <mat-icon
-                          (click)="$event.stopPropagation(); toggleTicketSelection(ticket.id)"
-                          class="text-[16px] w-4 h-4 shrink-0 transition-colors cursor-pointer"
-                          [class.text-zinc-700]="selectedTicketIds().has(ticket.id)"
-                          [class.text-zinc-300]="!selectedTicketIds().has(ticket.id)"
-                        >
-                          {{ selectedTicketIds().has(ticket.id) ? 'check_circle' : 'radio_button_unchecked' }}
-                        </mat-icon>
-                        <div (click)="navigateToTickets()" class="flex-1 min-w-0 cursor-pointer">
-                          <div class="flex items-center gap-1.5">
-                            <span class="text-xs font-medium text-zinc-700 truncate hover:underline">{{ ticket.title }}</span>
-                            @if (ticket.deadline) {
-                              <span class="text-meta font-sans shrink-0 leading-tight ml-auto" [class]="deadlineClass(ticket.deadline)">{{ formatDate(ticket.deadline) }}</span>
-                            }
-                          </div>
-                          <div class="flex items-center justify-between">
-                            <span class="text-meta text-zinc-400 font-sans">#{{ ticket.id }}</span>
-                            <span class="text-meta text-emerald-600 px-1.5 py-0.5 rounded">Low</span>
-                          </div>
-                        </div>
-                      </div>
-                    }
-                  </div>
-                }
-
-                @if (highTickets.length === 0 && mediumTickets.length === 0 && lowTickets.length === 0) {
-                  <div class="text-center py-4 text-xs text-zinc-400">No pending tickets</div>
-                }
-              </div>
-          </div>
-        </div>
+          </section>
+        }
       </div>
-
     </div>
-
   `,
   styles: [`
-    mat-icon {
-      color: #3B82F6;
-    }
+    :host { display: block; }
+    .dash { padding-bottom: 24px; }
 
-    .bento-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      grid-template-areas:
-        "hero hero pipeline pipeline"
-        "hero hero pipeline pipeline"
-        "schedule late partners tasks"
-        "schedule . . .";
-      gap: 12px;
-    }
-
-    .tile-hero { grid-area: hero; min-height: 260px; }
-    .tile-pipeline { grid-area: pipeline; }
-    .tile-late { grid-area: late; }
-    .tile-partners { grid-area: partners; }
-    .tile-schedule { grid-area: schedule; }
-    .tile-tasks { grid-area: tasks; }
-
-    @media (max-width: 1024px) {
-      .bento-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        grid-template-areas:
-          "hero hero"
-          "hero hero"
-          "pipeline pipeline"
-          "late partners"
-          "schedule tasks";
-      }
-    }
-
-    @media (max-width: 640px) {
-      .bento-grid {
-        grid-template-columns: 1fr;
-        grid-template-areas:
-          "hero"
-          "pipeline"
-          "late"
-          "partners"
-          "schedule"
-          "tasks";
-      }
-    }
-
-    .cdk-drag-preview {
-      box-shadow: var(--shadow-lg);
+    /* ── Customise tray ── */
+    .dash-tray {
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+      padding: 10px 14px; margin-bottom: 12px;
+      background: var(--color-surface); border: 1px dashed var(--color-border-strong);
       border-radius: var(--radius-lg);
     }
-
-    .cdk-drag-placeholder {
-      opacity: 0.3;
+    .dash-tray__hint { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--color-text-secondary); }
+    .dash-tray__hint-icon { font-size: 16px; width: 16px; height: 16px; color: var(--color-text-tertiary); }
+    .dash-tray__chips { display: flex; flex-wrap: wrap; gap: 6px; flex: 1; min-width: 0; }
+    .dash-tray__empty { font-size: 12px; color: var(--color-text-tertiary); }
+    .dash-chip, .dash-reset {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 11px; font-weight: 600; padding: 4px 10px 4px 6px;
+      border-radius: 999px; border: 1px solid var(--color-border);
+      background: var(--color-surface); color: var(--color-text-secondary);
+      cursor: pointer; transition: all var(--transition-fast); white-space: nowrap;
     }
+    .dash-chip:hover { border-color: var(--color-text-tertiary); color: var(--color-text-primary); }
+    .dash-reset { padding: 4px 10px; }
+    .dash-chip__icon { font-size: 14px; width: 14px; height: 14px; line-height: 14px; }
 
-    .cdk-drag-animating {
-      transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+    /* ── Shared atoms ── */
+    .dash-count {
+      font-size: 10px; font-weight: 700; line-height: 1;
+      padding: 3px 6px; border-radius: 999px;
+      background: var(--tile-soft); color: var(--tile);
     }
+    .dash-stack { display: flex; flex-direction: column; gap: 5px; }
+    .dash-figure { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+    .dash-value {
+      font-size: 24px; font-weight: 700; line-height: 1.1; letter-spacing: -0.02em;
+      color: var(--color-text-primary); font-variant-numeric: tabular-nums;
+    }
+    .dash-value--kpi { font-size: 20px; }
+    .dash-caption { font-size: 11px; font-weight: 500; color: var(--color-text-tertiary); margin-top: 2px; }
+    .dash-sublabel {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+      color: var(--color-text-tertiary); margin: 10px 0 5px;
+    }
+    .dash-note { font-size: 11px; color: var(--color-text-tertiary); padding: 6px 0; }
+
+    .dash-delta {
+      display: inline-flex; align-items: center; gap: 1px;
+      font-size: 11px; font-weight: 700; line-height: 1;
+      padding: 3px 7px 3px 4px; border-radius: 999px;
+      font-variant-numeric: tabular-nums; white-space: nowrap;
+    }
+    .dash-delta[data-dir='good'] { background: var(--color-success-light); color: var(--color-success); }
+    .dash-delta[data-dir='bad']  { background: var(--color-danger-light);  color: var(--color-danger); }
+    .dash-delta[data-dir='flat'] { background: var(--color-surface-hover); color: var(--color-text-tertiary); padding: 3px 7px; }
+    .dash-delta__icon { font-size: 13px; width: 13px; height: 13px; line-height: 13px; }
+
+    .dash-empty {
+      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; gap: 3px; padding: 12px 8px;
+    }
+    .dash-empty__icon { font-size: 22px; width: 22px; height: 22px; color: var(--tile); opacity: 0.5; }
+    .dash-empty__title { font-size: 12px; font-weight: 600; color: var(--color-text-secondary); }
+    .dash-empty__sub { font-size: 11px; color: var(--color-text-tertiary); max-width: 24ch; }
+
+    /* Charts bleed to the tile edges — the bento look, and it buys chart width back. */
+    .dash-area { display: block; width: calc(100% + 28px); margin: 6px -14px 0; height: 58px; }
+    .dash-area--bleed { margin-top: auto; margin-bottom: -12px; height: 34px; }
+
+    /* ── Focus rows ── */
+    .focus-row {
+      display: flex; align-items: center; gap: 9px;
+      padding: 8px 9px; border-radius: var(--radius-md);
+      background: var(--color-surface-hover); border: 1px solid var(--color-border-light);
+    }
+    .focus-row__icon {
+      width: 24px; height: 24px; border-radius: 7px; flex-shrink: 0;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: var(--color-surface); border: 1px solid var(--color-border);
+      color: var(--color-text-secondary);
+    }
+    .focus-row[data-tone='rose'] .focus-row__icon { color: var(--color-danger); }
+    .focus-row[data-tone='amber'] .focus-row__icon { color: var(--color-warning); }
+    .focus-row[data-tone='sky'] .focus-row__icon { color: var(--color-info); }
+    .focus-row__icon .mat-icon { font-size: 14px; width: 14px; height: 14px; line-height: 14px; }
+    .focus-row__text { flex: 1; min-width: 0; }
+    .focus-row__title { font-size: 12px; font-weight: 600; color: var(--color-text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .focus-row__meta { font-size: 10.5px; color: var(--color-text-tertiary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .focus-row__action {
+      flex-shrink: 0; font-size: 11px; font-weight: 700; padding: 4px 9px;
+      border-radius: var(--radius-sm); cursor: pointer;
+      background: var(--color-surface); color: var(--color-text-primary);
+      border: 1px solid var(--color-border-strong);
+      transition: all var(--transition-fast);
+    }
+    .focus-row__action:hover { background: var(--color-text-primary); color: var(--color-surface); border-color: var(--color-text-primary); }
+
+    /* ── Deal rows ── */
+    .deal-row {
+      display: flex; align-items: center; gap: 8px; width: 100%;
+      padding: 5px 8px; border-radius: var(--radius-sm); cursor: pointer;
+      background: var(--color-surface-hover); border: 1px solid transparent;
+      text-align: left; transition: all var(--transition-fast);
+    }
+    .deal-row:hover { border-color: var(--tile); background: var(--tile-soft); }
+    .deal-row__rank {
+      width: 17px; height: 17px; border-radius: 5px; flex-shrink: 0;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 700; background: var(--tile-soft); color: var(--tile);
+    }
+    .deal-row__name { flex: 1; min-width: 0; font-size: 11.5px; font-weight: 600; color: var(--color-text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .deal-row__amount { font-size: 11.5px; font-weight: 700; color: var(--color-text-primary); font-variant-numeric: tabular-nums; flex-shrink: 0; }
+
+    /* ── Facts (late payers) ── */
+    .dash-facts { display: flex; gap: 8px; margin-top: 10px; }
+    .dash-facts > div { flex: 1; min-width: 0; padding: 6px 8px; border-radius: var(--radius-sm); background: var(--color-surface-hover); }
+    .dash-facts dt { font-size: 9.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--color-text-tertiary); }
+    .dash-facts dd { font-size: 12px; font-weight: 700; color: var(--color-text-primary); font-variant-numeric: tabular-nums; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* ── Donut ── */
+    /* margin-block: auto centres the ring in whatever height is left above the legend. */
+    .donut { position: relative; width: 104px; height: 104px; margin: auto auto 10px; flex-shrink: 0; }
+    .donut__svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .donut__track { stroke: var(--color-border); }
+    .donut__center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .donut__total { font-size: 19px; font-weight: 700; line-height: 1; color: var(--color-text-primary); font-variant-numeric: tabular-nums; }
+    .donut__unit { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-tertiary); }
+    .legend { display: flex; flex-direction: column; gap: 3px; margin: 0; padding: 0; list-style: none; }
+    .legend__row { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+    .legend__dot { width: 8px; height: 8px; border-radius: 3px; background: var(--tile); flex-shrink: 0; }
+    .legend__label { color: var(--color-text-secondary); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .legend__pct { margin-left: auto; color: var(--color-text-tertiary); font-variant-numeric: tabular-nums; }
+    .legend__count { min-width: 20px; text-align: right; font-weight: 700; color: var(--color-text-primary); font-variant-numeric: tabular-nums; }
+
+    /* ── Queues ── */
+    .queue-head {
+      display: flex; align-items: center; gap: 6px; width: 100%;
+      padding: 7px 2px 4px; background: none; border: none; cursor: pointer;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+      color: var(--color-text-tertiary); position: sticky; top: 0; z-index: 1;
+      background: var(--color-surface);
+    }
+    .queue-head:hover { color: var(--color-text-primary); }
+    .queue-head__dot { width: 6px; height: 6px; border-radius: 999px; flex-shrink: 0; background: var(--color-text-tertiary); }
+    .queue-head[data-tone='rose'] .queue-head__dot { background: var(--color-danger); }
+    .queue-head[data-tone='amber'] .queue-head__dot { background: var(--color-warning); }
+    .queue-head[data-tone='slate'] .queue-head__dot { background: var(--color-text-tertiary); }
+    .queue-head__count { margin-left: auto; font-variant-numeric: tabular-nums; }
+    .queue-row {
+      display: grid; grid-template-columns: 1fr auto; align-items: baseline; column-gap: 8px; width: 100%;
+      padding: 5px 8px; border-radius: var(--radius-sm); cursor: pointer; text-align: left;
+      border: 1px solid transparent; background: none; transition: background var(--transition-fast);
+    }
+    .queue-row:hover { background: var(--color-surface-hover); }
+    .queue-row__title { font-size: 12px; font-weight: 500; color: var(--color-text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .queue-row__sub { grid-column: 1; font-size: 10px; color: var(--color-text-tertiary); font-variant-numeric: tabular-nums; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .queue-row__date { grid-row: 1; grid-column: 2; font-size: 10px; font-weight: 600; color: var(--color-text-tertiary); font-variant-numeric: tabular-nums; }
+    .queue-row__date.is-overdue { color: var(--color-danger); }
+
+    /* ── KPI ── */
+    .kpi { display: flex; flex-direction: column; justify-content: center; flex: 1; min-height: 0; }
+    .kpi__hint { font-size: 10.5px; color: var(--color-text-tertiary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .kpi__foot { display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; margin-top: 4px; }
+    .kpi__spark { width: 72px; height: 24px; flex-shrink: 0; opacity: 0.85; }
   `]
 })
 export class DashboardComponent {
   state = inject(CrmStateService);
   private router = inject(Router);
 
-  // Selection states
-  selectedTaskIds = signal<Set<string>>(new Set());
-  selectedTicketIds = signal<Set<string>>(new Set());
+  // ────────────────────────────────────────────────────────
+  // Layout
+  // ────────────────────────────────────────────────────────
 
-  /** Catalog of all KPI tiles that can be toggled on/off the dashboard */
-  availableKpis = [
-    { id: 'totalDeals', name: 'Total Deals', icon: 'monetization_on' },
-    { id: 'marketingSpend', name: 'Campaign Reach', icon: 'campaign' },
-    { id: 'activeCampaigns', name: 'Active Campaigns', icon: 'email' },
-    { id: 'openTickets', name: 'Open Tickets', icon: 'support_agent' },
-    { id: 'totalProspects', name: 'Total Prospects', icon: 'person_search' },
-    { id: 'newDeals', name: 'New Deals', icon: 'handshake' },
-    { id: 'newProspects', name: 'New Prospects', icon: 'group_add' },
-    { id: 'lostProspects', name: 'Lost Prospects', icon: 'do_not_disturb_on' },
-    { id: 'todaysDeal', name: "Today's Deal", icon: 'star' },
-    { id: 'newTasksWeek', name: 'New Tasks (Week)', icon: 'assignment_add' }
-  ];
-
-  hiddenKpis = computed(() => {
-    const active = new Set(this.state.dashboardKpis());
-    return this.availableKpis.filter(k => !active.has(k.id));
+  /** Only ids the catalog actually knows about, so a stale saved layout can't blank the page. */
+  layout = computed(() => {
+    const known = new Set(CATALOG.map(t => t.id));
+    return this.state.dashboardLayout().filter(id => known.has(id));
   });
 
-  latePayersCount = () => this.state.overdueInvoices().length;
-  activeCampaignsCount = () => this.state.campaigns().filter(c => c.status === 'Active').length;
-  openTicketsCount = () => this.state.tickets().filter(c => c.status === 'OPEN' || c.status === 'IN_PROGRESS').length;
-  prospectsCount = () => this.state.prospects().length;
+  /** Catalog order, filtered to what's on the board — the DOM order, which never changes. */
+  tiles = computed(() => {
+    const visible = new Set(this.layout());
+    return CATALOG.filter(t => visible.has(t.id));
+  });
+
+  hiddenTiles = computed(() => {
+    const visible = new Set(this.layout());
+    return CATALOG.filter(t => !visible.has(t.id));
+  });
+
+  varsFor(tile: TileDef): string {
+    return `--w:${tile.w};--h:${tile.h};--h-sm:${tile.hSm ?? tile.h}`;
+  }
+
+  onReorder(order: string[]) {
+    this.state.setDashboardLayout(order);
+  }
+
+  toggle(id: string) {
+    this.state.toggleDashboardTile(id);
+  }
+
+  reset() {
+    this.state.resetDashboardLayout();
+  }
 
   // ────────────────────────────────────────────────────────
-  // "Today" hero tile — overdue tasks + stale deals + unanswered tickets
+  // Focus Today — overdue tasks, stale deals, unassigned tickets
   // ────────────────────────────────────────────────────────
+
   todayItems = computed((): TodayItem[] => {
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = this.isoToday();
     const staleCutoff = new Date();
     staleCutoff.setDate(staleCutoff.getDate() - 14);
 
@@ -629,294 +572,402 @@ export class DashboardComponent {
       .filter(t => t.status !== 'Completed' && t.deadline && t.deadline < todayStr)
       .sort((a, b) => (a.deadline || '').localeCompare(b.deadline || ''))
       .map(t => ({
-        kind: 'task',
+        kind: 'task' as const,
         id: t.id,
         icon: 'assignment_late',
+        tone: 'rose' as Tone,
         title: t.title,
         meta: `Overdue since ${this.formatDate(t.deadline)}`,
-        actionLabel: 'Mark done',
+        actionLabel: 'Done',
         action: () => this.state.updateTaskStatus(t.id, 'Completed' as TaskStatus)
       }));
 
     const staleDeals: TodayItem[] = this.state.deals()
-      .filter(d => d.stage !== 'Closed Won' && d.stage !== 'Closed Lost' && new Date(d.createdAt) < staleCutoff)
+      .filter(d => !this.isClosed(d.stage) && new Date(d.createdAt) < staleCutoff)
       .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
       .map(d => ({
-        kind: 'deal',
+        kind: 'deal' as const,
         id: d.id,
         icon: 'hourglass_bottom',
+        tone: 'amber' as Tone,
         title: d.title,
-        meta: `No movement since ${this.formatDate(d.createdAt)}`,
+        meta: `Idle since ${this.formatDate(d.createdAt)}`,
         actionLabel: 'Review',
-        action: () => this.router.navigate(['/sales/deals', d.id])
+        action: () => this.openDeal(d.id)
       }));
 
-    const unansweredTickets: TodayItem[] = this.state.tickets()
+    const unassignedTickets: TodayItem[] = this.state.tickets()
       .filter(t => t.status === 'OPEN' && !t.assignedToUserId)
       .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
       .map(t => ({
-        kind: 'ticket',
+        kind: 'ticket' as const,
         id: t.id,
         icon: 'support_agent',
+        tone: 'sky' as Tone,
         title: t.title,
         meta: `Unassigned · opened ${this.formatDate(t.createdAt)}`,
         actionLabel: 'Take it',
-        action: () => this.state.updateTicket(t.id, { status: 'IN_PROGRESS', assignedToUserId: this.state.currentUserId() })
+        action: () =>
+          this.state.updateTicket(t.id, {
+            status: 'IN_PROGRESS',
+            assignedToUserId: this.state.currentUserId()
+          })
       }));
 
+    // One of each kind first, then backfill by urgency so the tile is always full.
     const picks: TodayItem[] = [];
-    if (overdueTasks[0]) picks.push(overdueTasks[0]);
-    if (staleDeals[0]) picks.push(staleDeals[0]);
-    if (unansweredTickets[0]) picks.push(unansweredTickets[0]);
-
-    const leftovers = [...overdueTasks.slice(1), ...staleDeals.slice(1), ...unansweredTickets.slice(1)];
-    while (picks.length < 3 && leftovers.length) picks.push(leftovers.shift()!);
-
-    return picks.slice(0, 3);
+    for (const list of [overdueTasks, staleDeals, unassignedTickets]) {
+      if (list[0]) picks.push(list[0]);
+    }
+    const rest = [...overdueTasks.slice(1), ...staleDeals.slice(1), ...unassignedTickets.slice(1)];
+    while (picks.length < 4 && rest.length) picks.push(rest.shift()!);
+    return picks.slice(0, 4);
   });
 
-  /** All pending (non-completed) tasks */
-  private pendingTasks = computed(() => this.state.tasks().filter(t => t.status === 'Pending'));
+  // ────────────────────────────────────────────────────────
+  // Pipeline
+  // ────────────────────────────────────────────────────────
 
-  /** Count of pending tasks */
-  pendingTasksCount = computed(() => this.pendingTasks().length);
+  private openDeals = computed(() => this.state.deals().filter(d => !this.isClosed(d.stage)));
 
-  /** Group pending tasks by priority, sorted by urgency (deadline) within each group */
-  groupedPendingTasks = computed(() => {
-    const tasks = this.pendingTasks();
-    const sortByDeadline = (a: Task, b: Task) => {
-      if (!a.deadline) return 1;
-      if (!b.deadline) return -1;
-      return a.deadline.localeCompare(b.deadline);
-    };
-    return {
-      urgent: tasks.filter(t => t.priority === 'Urgent').sort(sortByDeadline),
-      medium: tasks.filter(t => t.priority === 'Medium' || !t.priority).sort(sortByDeadline),
-      low: tasks.filter(t => t.priority === 'Low').sort(sortByDeadline)
-    };
-  });
+  openDealCount = computed(() => this.openDeals().length);
 
-  /** All open/in-progress tickets */
-  private pendingTickets = computed(() =>
-    this.state.tickets().filter(t => t.status === 'OPEN' || t.status === 'IN_PROGRESS')
+  pipelineValue = computed(() =>
+    this.money(this.openDeals().reduce((sum, d) => sum + d.amount, 0))
   );
 
-  /** Count of pending tickets */
-  pendingTicketsCount = computed(() => this.pendingTickets().length);
+  private pipelineSeries = computed(() =>
+    this.monthlySeries(this.openDeals().map(d => ({ date: d.orderDate || d.createdAt, value: d.amount })))
+  );
 
-  /** Group pending tickets by priority, sorted by urgency (deadline) within each group */
-  groupedPendingTickets = computed(() => {
-    const tickets = this.pendingTickets();
-    const sortByDeadline = (a: Ticket, b: Ticket) => {
-      if (!a.deadline) return 1;
-      if (!b.deadline) return -1;
-      return a.deadline.localeCompare(b.deadline);
-    };
-    return {
-      high: tickets.filter(t => t.priority === 'URGENT').sort(sortByDeadline),
-      medium: tickets.filter(t => t.priority === 'MEDIUM').sort(sortByDeadline),
-      low: tickets.filter(t => t.priority === 'LOW').sort(sortByDeadline)
-    };
-  });
+  pipelineDelta = computed(() => this.delta(this.pipelineSeries()));
 
-  /** Deals still in active pipeline (not Closed Won/Lost), sorted by amount descending, top 3 */
-  topPipelineDeals = computed(() => {
-    return this.state.deals()
-      .filter(d => d.stage !== 'Closed Won' && d.stage !== 'Closed Lost')
+  pipelineSpark = computed(() => this.spark(this.pipelineSeries(), 300, 62));
+
+  topDeals = computed(() =>
+    this.openDeals()
+      .slice()
       .sort((a, b) => b.amount - a.amount)
-      .slice(0, 3);
+      .slice(0, 3)
+      .map(d => ({ id: d.id, partner: this.partnerName(d.partnerId), amount: this.moneyCompact(d.amount) }))
+  );
+
+  // ────────────────────────────────────────────────────────
+  // Late payers
+  // ────────────────────────────────────────────────────────
+
+  latePayers = computed(() => {
+    const invoices = this.state.overdueInvoices();
+    const series = this.monthlySeries(invoices.map(i => ({ date: i.dueDate, value: 1 })));
+    const oldest = invoices
+      .map(i => i.dueDate)
+      .filter(Boolean)
+      .sort()[0];
+
+    return {
+      count: invoices.length,
+      atRisk: this.compact(invoices.reduce((sum, i) => sum + i.amount, 0)),
+      oldest: oldest ? `${this.daysSince(oldest)}d` : '—',
+      delta: this.delta(series, true),
+      spark: this.spark(series, 160, 34)
+    };
   });
 
-  /** Sum of all pipeline deal amounts */
-  totalPipelineValue = computed(() => {
-    return this.state.deals()
-      .filter(d => d.stage !== 'Closed Won' && d.stage !== 'Closed Lost')
-      .reduce((sum, d) => sum + d.amount, 0);
-  });
+  // ────────────────────────────────────────────────────────
+  // Donuts
+  // ────────────────────────────────────────────────────────
 
-  /** Monthly (12-pt) pipeline value additions, most recent last */
-  pipelineSeries = computed(() => this.monthlySeries(
-    this.state.deals()
-      .filter(d => d.stage !== 'Closed Won' && d.stage !== 'Closed Lost')
-      .map(d => ({ date: d.orderDate || d.createdAt, value: d.amount }))
-  ));
+  private partnerDonut = computed(() =>
+    this.buildDonut('partners', [
+      { label: 'Customers', count: this.state.customers().length },
+      { label: 'Prospects', count: this.state.prospects().length },
+      { label: 'Vendors', count: this.state.vendors().length }
+    ])
+  );
 
-  pipelineDelta = computed(() => this.deltaFromSeries(this.pipelineSeries()));
-
-  pipelineAreaPath = computed(() => this.areaPath(this.pipelineSeries(), 280, 70));
-
-  /** Monthly (12-pt) count of invoices that became overdue, most recent last */
-  latePayersSeries = computed(() => this.monthlySeries(
-    this.state.overdueInvoices().map(i => ({ date: i.dueDate, value: 1 }))
-  ));
-
-  latePayersDelta = computed(() => this.deltaFromSeries(this.latePayersSeries()));
-
-  partnerSlices = computed(() => {
-    const customers = this.state.customers().length;
-    const prospects = this.state.prospects().length;
-    const vendors = this.state.vendors().length;
-    const total = customers + prospects + vendors || 1;
-
-    const slices = [
-      { label: 'Customers', count: customers, color: 'bg-blue-700', stroke: 'text-blue-700' },
-      { label: 'Prospects', count: prospects, color: 'bg-blue-500', stroke: 'text-blue-500' },
-      { label: 'Vendors', count: vendors, color: 'bg-blue-400', stroke: 'text-blue-400' }
-    ].filter(s => s.count > 0);
-
-    let cumulativePercent = 0;
-    return slices.map(s => {
-      const percent = (s.count / total) * 100;
-      const slice = {
-        ...s,
-        dasharray: `${percent} ${100 - percent}`,
-        dashoffset: cumulativePercent === 0 ? 0 : -(cumulativePercent)
-      };
-      cumulativePercent += percent;
-      return slice;
-    });
-  });
-
-  taskSlices = computed(() => {
+  private taskDonut = computed(() => {
     const tasks = this.state.tasks();
-    const completed = tasks.filter(t => t.status === 'Completed').length;
-    const pending = tasks.filter(t => t.status === 'Pending').length;
-    const inProgress = tasks.filter(t => t.status === 'In Progress').length;
-    const total = tasks.length || 1;
+    return this.buildDonut('tasks', [
+      { label: 'Completed', count: tasks.filter(t => t.status === 'Completed').length },
+      { label: 'In Progress', count: tasks.filter(t => t.status === 'In Progress').length },
+      { label: 'Pending', count: tasks.filter(t => t.status === 'Pending').length }
+    ]);
+  });
 
-    const slices = [
-      { label: 'Completed', count: completed, color: 'bg-blue-700', stroke: 'text-blue-700' },
-      { label: 'In Progress', count: inProgress, color: 'bg-blue-500', stroke: 'text-blue-500' },
-      { label: 'Pending', count: pending, color: 'bg-blue-300', stroke: 'text-blue-300' }
-    ].filter(s => s.count > 0);
+  donut(id: string) {
+    return id === 'partner-mix' ? this.partnerDonut() : this.taskDonut();
+  }
 
-    let cumulativePercent = 0;
-    return slices.map(s => {
-      const percent = (s.count / total) * 100;
-      const slice = {
-        ...s,
-        dasharray: `${percent} ${100 - percent}`,
-        dashoffset: cumulativePercent === 0 ? 0 : -(cumulativePercent)
+  private buildDonut(unit: string, input: { label: string; count: number }[]) {
+    const present = input.filter(s => s.count > 0);
+    const total = present.reduce((sum, s) => sum + s.count, 0);
+    // One hue per tile, stepped down in opacity — distinguishable without a rainbow.
+    const opacities = [1, 0.62, 0.34, 0.2];
+
+    let cumulative = 0;
+    const slices: Slice[] = present.map((s, i) => {
+      const pct = (s.count / (total || 1)) * 100;
+      const slice: Slice = {
+        label: s.label,
+        count: s.count,
+        pct: Math.round(pct),
+        dasharray: `${pct.toFixed(2)} ${(100 - pct).toFixed(2)}`,
+        dashoffset: -cumulative,
+        opacity: opacities[i] ?? 0.2
       };
-      cumulativePercent += percent;
+      cumulative += pct;
       return slice;
     });
-  });
 
-  // ────────────────────────────────────────────────────────
-  // KPI tiles: value + delta vs previous period + 12-pt sparkline
-  // ────────────────────────────────────────────────────────
-  kpiTiles = computed((): KpiTile[] => {
-    return this.state.dashboardKpis()
-      .map(id => this.buildKpiTile(id))
-      .filter((t): t is KpiTile => t !== null);
-  });
-
-  private buildKpiTile(id: string): KpiTile | null {
-    switch (id) {
-      case 'totalDeals': {
-        const monthly = this.monthlySeries(this.state.deals().map(d => ({ date: d.orderDate || d.createdAt, value: d.amount })));
-        const series = this.cumulative(monthly);
-        return {
-          id, label: 'Total Deals Value', icon: 'monetization_on',
-          value: this.formatCurrency(series[series.length - 1] || 0),
-          delta: this.deltaFromSeries(series), deltaLabel: 'vs last month', sparkline: series
-        };
-      }
-      case 'marketingSpend': {
-        const monthly = this.monthlySeries(this.state.campaigns().map(c => ({ date: c.createdAt, value: c.sentCount })));
-        return {
-          id, label: 'Campaign Reach', icon: 'campaign',
-          value: `${this.formatNumber(monthly[monthly.length - 1] || 0)} sent`,
-          delta: this.deltaFromSeries(monthly), deltaLabel: 'vs last month', sparkline: monthly
-        };
-      }
-      case 'activeCampaigns': {
-        const monthly = this.monthlySeries(this.state.campaigns().filter(c => c.status === 'Active').map(c => ({ date: c.createdAt, value: 1 })));
-        return {
-          id, label: 'Active Campaigns', icon: 'email',
-          value: `${this.activeCampaignsCount()}`,
-          delta: this.deltaFromSeries(monthly), deltaLabel: 'vs last month', sparkline: monthly
-        };
-      }
-      case 'openTickets': {
-        const monthly = this.monthlySeries(this.state.tickets().map(t => ({ date: t.createdAt, value: 1 })));
-        return {
-          id, label: 'Open Tickets', icon: 'support_agent',
-          value: `${this.openTicketsCount()}`,
-          delta: this.deltaFromSeries(monthly), deltaLabel: 'vs last month', sparkline: monthly
-        };
-      }
-      case 'totalProspects': {
-        const monthly = this.monthlySeries(this.state.partners().filter(p => p.type === 'Prospect').map(p => ({ date: p.createdAt, value: 1 })));
-        return {
-          id, label: 'Total Prospects', icon: 'person_search',
-          value: `${this.prospectsCount()}`,
-          delta: this.deltaFromSeries(monthly), deltaLabel: 'vs last month', sparkline: monthly
-        };
-      }
-      case 'newDeals': {
-        const monthly = this.monthlySeries(this.state.deals().map(d => ({ date: d.orderDate || d.createdAt, value: 1 })));
-        return {
-          id, label: 'New Deals', icon: 'handshake',
-          value: `${monthly[monthly.length - 1] || 0} deals`,
-          delta: this.deltaFromSeries(monthly), deltaLabel: 'vs last month', sparkline: monthly
-        };
-      }
-      case 'newProspects': {
-        const monthly = this.monthlySeries(this.state.partners().filter(p => p.type === 'Prospect').map(p => ({ date: p.createdAt, value: 1 })));
-        return {
-          id, label: 'New Prospects', icon: 'group_add',
-          value: `${monthly[monthly.length - 1] || 0} prospects`,
-          delta: this.deltaFromSeries(monthly), deltaLabel: 'vs last month', sparkline: monthly
-        };
-      }
-      case 'lostProspects': {
-        const monthly = this.monthlySeries(this.state.deals().filter(d => d.stage === 'Closed Lost').map(d => ({ date: d.orderDate || d.createdAt, value: d.amount })));
-        return {
-          id, label: 'Lost Prospects', icon: 'do_not_disturb_on',
-          value: this.formatCurrency(monthly[monthly.length - 1] || 0),
-          delta: this.deltaFromSeries(monthly), deltaLabel: 'vs last month', sparkline: monthly
-        };
-      }
-      case 'todaysDeal': {
-        const today = new Date().toISOString().split('T')[0];
-        const todays = this.state.deals().filter(d => d.orderDate === today).sort((a, b) => b.amount - a.amount);
-        const daily = this.dailySeries(this.state.deals().map(d => ({ date: d.orderDate, value: 1 })), 12);
-        return {
-          id, label: "Today's Deal", icon: 'star',
-          value: todays[0] ? this.formatCurrency(todays[0].amount) : 'No deal yet',
-          delta: null, deltaLabel: '', sparkline: daily
-        };
-      }
-      case 'newTasksWeek': {
-        const weekly = this.weeklySeries(this.state.tasks().map(t => ({ date: t.createdAt, value: 1 })));
-        return {
-          id, label: 'New Tasks (Week)', icon: 'assignment_add',
-          value: `${weekly[weekly.length - 1] || 0} tasks`,
-          delta: this.deltaFromSeries(weekly), deltaLabel: 'vs last week', sparkline: weekly
-        };
-      }
-      default:
-        return null;
-    }
-  }
-
-  onKpiDrop(event: CdkDragDrop<string[]>) {
-    if (event.previousIndex === event.currentIndex) return;
-    this.state.reorderDashboardKpis(event.previousIndex, event.currentIndex);
+    return { slices, total, unit };
   }
 
   // ────────────────────────────────────────────────────────
-  // Time-series helpers: bucket real records into periods, compute deltas
+  // Queues
   // ────────────────────────────────────────────────────────
+
+  private taskQueue = computed(() => {
+    const pending = this.state.tasks().filter(t => t.status === 'Pending');
+    const byDeadline = (a: Task, b: Task) =>
+      !a.deadline ? 1 : !b.deadline ? -1 : a.deadline.localeCompare(b.deadline);
+
+    const sections: QueueSection[] = ([
+      ['Urgent', 'Urgent', 'rose'],
+      ['Medium', 'Medium', 'amber'],
+      ['Low', 'Low', 'slate']
+    ] as const)
+      .map(([key, label, tone]) => ({
+        key,
+        label,
+        tone: tone as Tone,
+        rows: pending
+          .filter(t => (t.priority ?? 'Medium') === key)
+          .sort(byDeadline)
+          .map(t => this.queueRow(t.id, t.title, t.assignedTo || 'Unassigned', t.deadline))
+      }))
+      .filter(s => s.rows.length > 0);
+
+    return {
+      total: pending.length,
+      sections,
+      emptyText: 'No pending tasks',
+      open: () => this.router.navigate(['/tasks']),
+      filter: (priority: string) => {
+        this.state.taskFilter.set({ priority });
+        this.router.navigate(['/tasks']);
+      }
+    };
+  });
+
+  private ticketQueue = computed(() => {
+    const pending = this.state.tickets().filter(t => t.status === 'OPEN' || t.status === 'IN_PROGRESS');
+    const byDeadline = (a: Ticket, b: Ticket) =>
+      !a.deadline ? 1 : !b.deadline ? -1 : a.deadline.localeCompare(b.deadline);
+
+    const sections: QueueSection[] = ([
+      ['URGENT', 'High', 'rose'],
+      ['MEDIUM', 'Medium', 'amber'],
+      ['LOW', 'Low', 'slate']
+    ] as const)
+      .map(([key, label, tone]) => ({
+        key,
+        label,
+        tone: tone as Tone,
+        rows: pending
+          .filter(t => t.priority === key)
+          .sort(byDeadline)
+          .map(t => this.queueRow(t.id, t.title, `#${t.id}`, t.deadline))
+      }))
+      .filter(s => s.rows.length > 0);
+
+    return {
+      total: pending.length,
+      sections,
+      emptyText: 'No open tickets',
+      open: () => this.router.navigate(['/tickets']),
+      filter: (key: string) => {
+        this.state.ticketFilter.set({ priority: key === 'URGENT' ? 'High' : key === 'MEDIUM' ? 'Medium' : 'Low' });
+        this.router.navigate(['/tickets']);
+      }
+    };
+  });
+
+  queue(id: string) {
+    return id === 'tasks-queue' ? this.taskQueue() : this.ticketQueue();
+  }
+
+  private queueRow(id: string, title: string, sub: string, deadline?: string): QueueRow {
+    return {
+      id,
+      title,
+      sub,
+      deadline: this.formatDate(deadline),
+      overdue: !!deadline && deadline < this.isoToday()
+    };
+  }
+
+  // ────────────────────────────────────────────────────────
+  // KPIs
+  // ────────────────────────────────────────────────────────
+
+  private kpiData = computed((): Record<string, KpiData> => {
+    const deals = this.state.deals();
+    const campaigns = this.state.campaigns();
+    const tickets = this.state.tickets();
+    const prospects = this.state.partners().filter(p => p.type === 'Prospect');
+
+    const dealValue = this.cumulative(
+      this.monthlySeries(deals.map(d => ({ date: d.orderDate || d.createdAt, value: d.amount })))
+    );
+    const newDeals = this.monthlySeries(deals.map(d => ({ date: d.orderDate || d.createdAt, value: 1 })));
+    const prospectSeries = this.monthlySeries(prospects.map(p => ({ date: p.createdAt, value: 1 })));
+    const ticketSeries = this.monthlySeries(tickets.map(t => ({ date: t.createdAt, value: 1 })));
+    const campaignSeries = this.monthlySeries(
+      campaigns.filter(c => c.status === 'Active').map(c => ({ date: c.createdAt, value: 1 }))
+    );
+    const reachSeries = this.monthlySeries(campaigns.map(c => ({ date: c.createdAt, value: c.sentCount })));
+    const taskSeries = this.weeklySeries(this.state.tasks().map(t => ({ date: t.createdAt, value: 1 })));
+    const lostSeries = this.monthlySeries(
+      deals.filter(d => d.stage === 'Closed Lost').map(d => ({ date: d.orderDate || d.createdAt, value: d.amount }))
+    );
+    const todaysDeals = deals
+      .filter(d => d.orderDate === this.isoToday())
+      .sort((a, b) => b.amount - a.amount);
+    const dailyDeals = this.dailySeries(deals.map(d => ({ date: d.orderDate, value: 1 })), 14);
+
+    const openTickets = tickets.filter(t => t.status === 'OPEN' || t.status === 'IN_PROGRESS').length;
+    const activeCampaigns = campaigns.filter(c => c.status === 'Active').length;
+
+    const make = (
+      label: string,
+      icon: string,
+      value: string,
+      hint: string,
+      series: number[],
+      opts: { inverted?: boolean } = {}
+    ): KpiData => ({
+      label,
+      icon,
+      value,
+      hint,
+      delta: this.delta(series, opts.inverted),
+      spark: this.spark(series, 90, 26)
+    });
+
+    return {
+      totalDeals: make('Total Deals Value', 'payments', this.moneyCompact(this.last(dealValue)), 'cumulative booked', dealValue),
+      newDeals: make('New Deals', 'handshake', `${this.last(newDeals)}`, 'closed this month', newDeals),
+      totalProspects: make('Prospects', 'person_search', `${prospects.length}`, `${this.last(prospectSeries)} added this month`, prospectSeries),
+      openTickets: make('Open Tickets', 'confirmation_number', `${openTickets}`, 'open or in progress', ticketSeries, { inverted: true }),
+      activeCampaigns: make('Active Campaigns', 'campaign', `${activeCampaigns}`, 'running now', campaignSeries),
+      marketingSpend: make('Campaign Reach', 'send', this.compact(this.last(reachSeries)), 'messages sent this month', reachSeries),
+      newTasksWeek: make('New Tasks', 'assignment_add', `${this.last(taskSeries)}`, 'created this week', taskSeries),
+      newProspects: make('New Prospects', 'group_add', `${this.last(prospectSeries)}`, 'added this month', prospectSeries),
+      lostProspects: make('Lost Deals', 'trending_down', this.moneyCompact(this.last(lostSeries)), 'value lost this month', lostSeries, { inverted: true }),
+      todaysDeal: make(
+        "Today's Best Deal",
+        'star',
+        todaysDeals[0] ? this.moneyCompact(todaysDeals[0].amount) : '—',
+        todaysDeals.length ? `${todaysDeals.length} closed today` : 'nothing closed yet',
+        dailyDeals
+      )
+    };
+  });
+
+  kpi(tileId: string): KpiData {
+    const key = tileId.slice(4); // strip "kpi:"
+    return (
+      this.kpiData()[key] ?? {
+        label: key,
+        icon: 'help',
+        value: '—',
+        hint: '',
+        delta: null,
+        spark: { line: '', area: '' }
+      }
+    );
+  }
+
+  // ────────────────────────────────────────────────────────
+  // Presentation helpers
+  // ────────────────────────────────────────────────────────
+
+  /** Maps a delta onto good/bad rather than up/down — fewer overdue invoices is good news. */
+  dirOf(d: Delta): 'good' | 'bad' | 'flat' {
+    if (d.direction === 'flat') return 'flat';
+    const good = d.direction === 'up' ? !d.inverted : !!d.inverted;
+    return good ? 'good' : 'bad';
+  }
+
+  arrow(d: Delta): string {
+    return d.direction === 'up' ? 'arrow_upward' : d.direction === 'down' ? 'arrow_downward' : 'remove';
+  }
+
+  pctLabel(d: Delta): string {
+    return `${Math.abs(d.pct)}%`;
+  }
+
+  openDeal(id: string) {
+    this.router.navigate(['/sales/deals', id]);
+  }
+
+  private partnerName(id: string): string {
+    return this.state.partners().find(p => p.id === id)?.name || 'Unknown partner';
+  }
+
+  private isClosed(stage: string): boolean {
+    return stage === 'Closed Won' || stage === 'Closed Lost';
+  }
+
+  private isoToday(): string {
+    return new Date().toISOString().split('T')[0];
+  }
+
+  private daysSince(date: string): number {
+    const d = this.parseDate(date);
+    if (!d) return 0;
+    return Math.max(0, Math.round((Date.now() - d.getTime()) / 86400000));
+  }
+
+  formatDate(date: string | undefined): string {
+    if (!date) return '';
+    const d = this.parseDate(date);
+    return d ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+  }
+
+  private money(value: number): string {
+    return `${new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(value)} MAD`;
+  }
+
+  /** Compact form so a seven-figure number still fits a 190px tile instead of truncating. */
+  private moneyCompact(value: number): string {
+    if (!value) return '0 MAD';
+    return `${this.compact(value)} MAD`;
+  }
+
+  private compact(value: number): string {
+    return new Intl.NumberFormat('fr-FR', {
+      notation: 'compact',
+      compactDisplay: 'short',
+      maximumFractionDigits: 1
+    }).format(value);
+  }
+
+  private last(series: number[]): number {
+    return series[series.length - 1] || 0;
+  }
+
+  // ────────────────────────────────────────────────────────
+  // Time series
+  // ────────────────────────────────────────────────────────
+
   private parseDate(date: string | undefined): Date | null {
     if (!date) return null;
     const d = new Date(date.length <= 10 ? `${date}T00:00:00` : date);
     return isNaN(d.getTime()) ? null : d;
   }
 
-  /** 12 monthly buckets (oldest to newest, current month last) summing `value` per item's `date`. */
+  /** 12 monthly buckets, oldest first, current month last. */
   private monthlySeries(items: { date: string | undefined; value: number }[], months = 12): number[] {
     const now = new Date();
     const buckets = new Array(months).fill(0);
@@ -930,7 +981,7 @@ export class DashboardComponent {
     return buckets;
   }
 
-  /** 12 weekly buckets (Mon-Sun, oldest to newest, current week last) summing `value` per item's `date`. */
+  /** 12 weekly buckets (Mon-start), oldest first, current week last. */
   private weeklySeries(items: { date: string | undefined; value: number }[], weeks = 12): number[] {
     const startOfWeek = (d: Date) => {
       const x = new Date(d);
@@ -939,19 +990,19 @@ export class DashboardComponent {
       x.setHours(0, 0, 0, 0);
       return x;
     };
-    const thisWeekStart = startOfWeek(new Date());
+    const thisWeek = startOfWeek(new Date());
     const buckets = new Array(weeks).fill(0);
     for (const item of items) {
       const d = this.parseDate(item.date);
       if (!d) continue;
-      const diffWeeks = Math.round((thisWeekStart.getTime() - startOfWeek(d).getTime()) / (7 * 86400000));
-      const idx = weeks - 1 - diffWeeks;
+      const diff = Math.round((thisWeek.getTime() - startOfWeek(d).getTime()) / (7 * 86400000));
+      const idx = weeks - 1 - diff;
       if (idx >= 0 && idx < weeks) buckets[idx] += item.value;
     }
     return buckets;
   }
 
-  /** N daily buckets (oldest to newest, today last) summing `value` per item's `date`. */
+  /** N daily buckets, oldest first, today last. */
   private dailySeries(items: { date: string | undefined; value: number }[], days = 12): number[] {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -972,103 +1023,35 @@ export class DashboardComponent {
     return series.map(v => (sum += v));
   }
 
-  /** % change between the last two points of a series. Null when there's nothing real to report. */
-  private deltaFromSeries(series: number[]): { pct: number; direction: 'up' | 'down' | 'flat' } | null {
+  /** % change across the last two buckets. Null when there is nothing real to compare. */
+  private delta(series: number[], inverted = false): Delta | null {
     if (series.length < 2) return null;
     const curr = series[series.length - 1];
     const prev = series[series.length - 2];
     if (prev === 0) {
       if (curr === 0) return null;
-      return { pct: 100, direction: 'up' };
+      return { pct: 100, direction: 'up', inverted };
     }
     const pct = Math.round(((curr - prev) / Math.abs(prev)) * 100);
-    return { pct, direction: pct > 0 ? 'up' : pct < 0 ? 'down' : 'flat' };
+    return { pct, direction: pct > 0 ? 'up' : pct < 0 ? 'down' : 'flat', inverted };
   }
 
-  sparklinePoints(values: number[], w = 64, h = 24): string {
-    if (!values.length) return '';
+  /**
+   * Line + closed area path for a series. Both are precomputed here rather than called from
+   * the template, so change detection never re-walks the data to redraw an unchanged chart.
+   */
+  private spark(values: number[], w: number, h: number): Spark {
+    if (values.length < 2) return { line: '', area: '' };
+    const pad = 2;
     const max = Math.max(...values, 0);
     const min = Math.min(...values, 0);
     const range = max - min || 1;
-    const step = w / (values.length - 1 || 1);
-    return values.map((v, i) => `${(i * step).toFixed(1)},${(h - ((v - min) / range) * h).toFixed(1)}`).join(' ');
-  }
+    const step = w / (values.length - 1);
+    const y = (v: number) => pad + (h - pad * 2) - ((v - min) / range) * (h - pad * 2);
 
-  private areaPath(values: number[], w = 280, h = 70): string {
-    if (!values.length) return '';
-    const max = Math.max(...values, 0);
-    const min = Math.min(...values, 0);
-    const range = max - min || 1;
-    const step = w / (values.length - 1 || 1);
-    const pts = values.map((v, i) => [i * step, h - ((v - min) / range) * h]);
-    const line = pts.map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
-    return `${line} L${w},${h} L0,${h} Z`;
-  }
-
-  toggleTaskSelection(taskId: string) {
-    this.selectedTaskIds.update(set => {
-      const next = new Set(set);
-      if (next.has(taskId)) next.delete(taskId);
-      else next.add(taskId);
-      return next;
-    });
-  }
-
-  toggleTicketSelection(ticketId: string) {
-    this.selectedTicketIds.update(set => {
-      const next = new Set(set);
-      if (next.has(ticketId)) next.delete(ticketId);
-      else next.add(ticketId);
-      return next;
-    });
-  }
-
-  deadlineClass(deadline: string | undefined): string {
-    if (!deadline) return '';
-    const today = new Date().toISOString().split('T')[0];
-    return deadline < today ? 'text-red-500' : 'text-zinc-400';
-  }
-
-  formatDate(date: string | undefined): string {
-    if (!date) return '';
-    return new Date(date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  }
-
-  navigateToFilteredTasks(priority: string) {
-    this.state.taskFilter.set({ priority });
-    this.router.navigate(['/tasks']);
-  }
-
-  navigateToFilteredTickets(priority: string) {
-    this.state.ticketFilter.set({ priority });
-    this.router.navigate(['/tickets']);
-  }
-
-  navigateToTasks() {
-    this.router.navigate(['/tasks']);
-  }
-
-  navigateToTickets() {
-    this.router.navigate(['/tickets']);
-  }
-
-  formatCurrency(value: number) {
-    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'MAD' }).format(value);
-  }
-
-  formatNumber(value: number) {
-    return new Intl.NumberFormat('fr-FR', { style: 'decimal', maximumFractionDigits: 0 }).format(value);
-  }
-
-  isKpiActive(id: string) {
-    return this.state.dashboardKpis().includes(id);
-  }
-
-  toggleKpi(id: string) {
-    this.state.toggleDashboardKpi(id);
-  }
-
-  getPartnerName(id: string): string {
-    return this.state.partners().find(p => p.id === id)?.name || 'Unknown';
+    const line = values
+      .map((v, i) => `${i === 0 ? 'M' : 'L'}${(i * step).toFixed(1)},${y(v).toFixed(1)}`)
+      .join(' ');
+    return { line, area: `${line} L${w},${h} L0,${h} Z` };
   }
 }

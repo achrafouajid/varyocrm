@@ -4732,23 +4732,73 @@ export class CrmStateService {
 
   isCustomizing = signal(false);
 
-  /** Active KPI tile ids, in display order. Order doubles as the drag-to-rearrange order. */
-  dashboardKpis = signal<string[]>(['totalDeals', 'marketingSpend', 'openTickets', 'newTasksWeek']);
+  /**
+   * Visible dashboard tiles, in display order. Panels and KPIs share one list because they
+   * share one grid — the order is exactly what the bento grid renders.
+   */
+  readonly defaultDashboardLayout: readonly string[] = [
+    'today',
+    'pipeline',
+    'tasks-queue',
+    'schedule',
+    'tickets-queue',
+    'partner-mix',
+    'task-status',
+    'late-payers',
+    // Late Payers plus five KPIs is six 2-column tiles: exactly one full 12-column row, so
+    // the default board ends flush instead of on a half-empty row.
+    'kpi:totalDeals',
+    'kpi:newDeals',
+    'kpi:totalProspects',
+    'kpi:openTickets',
+    'kpi:newTasksWeek'
+  ];
 
-  toggleDashboardKpi(kpiId: string) {
-    this.dashboardKpis.update(kpis =>
-      kpis.includes(kpiId) ? kpis.filter(id => id !== kpiId) : [...kpis, kpiId]
-    );
+  private static readonly LAYOUT_KEY = 'bento_dashboard_layout_v1';
+
+  dashboardLayout = signal<string[]>(this.readStoredLayout());
+
+  private readStoredLayout(): string[] {
+    if (typeof localStorage === 'undefined') return [...this.defaultDashboardLayout];
+    try {
+      const raw = localStorage.getItem(CrmStateService.LAYOUT_KEY);
+      if (!raw) return [...this.defaultDashboardLayout];
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed) || parsed.some(id => typeof id !== 'string')) {
+        return [...this.defaultDashboardLayout];
+      }
+      return parsed as string[];
+    } catch {
+      return [...this.defaultDashboardLayout];
+    }
   }
 
-  /** Move an active KPI tile from one position to another (drag-to-rearrange). */
-  reorderDashboardKpis(previousIndex: number, currentIndex: number) {
-    this.dashboardKpis.update(kpis => {
-      const next = [...kpis];
-      const [moved] = next.splice(previousIndex, 1);
-      next.splice(currentIndex, 0, moved);
+  private persistLayout(layout: string[]) {
+    if (typeof localStorage === 'undefined') return;
+    try {
+      localStorage.setItem(CrmStateService.LAYOUT_KEY, JSON.stringify(layout));
+    } catch {
+      /* storage full or disabled — the layout just won't survive a reload */
+    }
+  }
+
+  /** Commit a new tile order (drag-to-rearrange). */
+  setDashboardLayout(layout: string[]) {
+    this.dashboardLayout.set([...layout]);
+    this.persistLayout(layout);
+  }
+
+  /** Show or hide a tile. Newly shown tiles land at the end of the board. */
+  toggleDashboardTile(id: string) {
+    this.dashboardLayout.update(layout => {
+      const next = layout.includes(id) ? layout.filter(x => x !== id) : [...layout, id];
+      this.persistLayout(next);
       return next;
     });
+  }
+
+  resetDashboardLayout() {
+    this.setDashboardLayout([...this.defaultDashboardLayout]);
   }
 
   // State transitions & helpers

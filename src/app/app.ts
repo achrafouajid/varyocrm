@@ -971,7 +971,7 @@ const SEARCH_ITEMS: SearchItem[] = [
               @if (profileMenuOpen()) {
                 <div class="profile-menu">
                   <a
-                    [routerLink]="['/settings/users', state.currentUserId()]"
+                    routerLink="/profile"
                     class="profile-menu-item"
                     (click)="closeProfileMenu()"
                   >
@@ -1061,7 +1061,7 @@ const SEARCH_ITEMS: SearchItem[] = [
                 <button
                   class="topbar-icon-btn"
                   (click)="state.isCustomizing.set(!state.isCustomizing())"
-                  [title]="state.isCustomizing() ? 'Done Customizing' : 'Customize KPIs'"
+                  [title]="state.isCustomizing() ? 'Done customising' : 'Customise dashboard'"
                 >
                   <mat-icon>{{ state.isCustomizing() ? 'check' : 'edit_square' }}</mat-icon>
                 </button>
@@ -1084,7 +1084,7 @@ const SEARCH_ITEMS: SearchItem[] = [
                 }
               </button>
               <a
-                [routerLink]="['/settings/users', state.currentUserId()]"
+                routerLink="/profile"
                 class="topbar-avatar"
                 title="View Profile"
               >
