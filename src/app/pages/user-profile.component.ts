@@ -76,7 +76,7 @@ import { MatIconModule } from '@angular/material/icon';
 
             <!-- Active / Inactive Badge -->
             <span
-              [class]="u.isActive ? 'bg-zinc-100 text-zinc-950 border-zinc-200' : 'bg-zinc-100 text-zinc-500 border-zinc-200'"
+              [class]="u.isActive ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-zinc-100 text-zinc-500 border-zinc-200'"
               class="inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold border uppercase tracking-wider"
             >
               {{ u.isActive ? 'Active' : 'Inactive' }}
@@ -413,13 +413,26 @@ export class UserProfileComponent {
     return meUser?.roleId === 'admin';
   }
 
+  isSelf(): boolean {
+    return this.state.currentUserId() === this.userId();
+  }
+
+  /** Self-edits go through the self-service endpoint (no USERS_WRITE needed); admins editing someone else use the admin endpoint. */
+  private saveUserPatch(userId: string, patch: { displayName?: string; jobTitle?: string; phone?: string }) {
+    if (this.isSelf()) {
+      this.state.updateOwnProfile(patch);
+    } else {
+      this.state.updateUser(userId, patch);
+    }
+  }
+
   // Toggles & Saves
   toggleEditName() {
     if (this.isEditingName()) {
       if (this.editName.trim()) {
         const u = this.user();
         if (u) {
-          this.state.updateUser(u.id, { displayName: this.editName });
+          this.saveUserPatch(u.id, { displayName: this.editName });
         }
       }
       this.isEditingName.set(false);
@@ -433,7 +446,7 @@ export class UserProfileComponent {
     if (this.isEditingJobTitle()) {
       const u = this.user();
       if (u) {
-        this.state.updateUser(u.id, { jobTitle: this.editJobTitle });
+        this.saveUserPatch(u.id, { jobTitle: this.editJobTitle });
       }
       this.isEditingJobTitle.set(false);
     } else {
@@ -446,7 +459,7 @@ export class UserProfileComponent {
     if (this.isEditingPhone()) {
       const u = this.user();
       if (u) {
-        this.state.updateUser(u.id, { phone: this.editPhone });
+        this.saveUserPatch(u.id, { phone: this.editPhone });
       }
       this.isEditingPhone.set(false);
     } else {
@@ -457,6 +470,10 @@ export class UserProfileComponent {
 
   togglePreference(user: CrmUser, key: 'notifyOnLeadAssign' | 'notifyOnDealUpdate' | 'notifyOnMention') {
     const currentVal = user.preferences[key];
+    if (this.isSelf()) {
+      this.state.updateOwnProfile({ language: user.preferences.language });
+      return;
+    }
     this.state.updateUser(user.id, {
       preferences: {
         ...user.preferences,
@@ -467,6 +484,10 @@ export class UserProfileComponent {
 
   changeLanguage(user: CrmUser, event: Event) {
     const val = (event.target as HTMLSelectElement).value as 'en' | 'fr' | 'ar' | 'es';
+    if (this.isSelf()) {
+      this.state.updateOwnProfile({ language: val });
+      return;
+    }
     this.state.updateUser(user.id, {
       preferences: {
         ...user.preferences,

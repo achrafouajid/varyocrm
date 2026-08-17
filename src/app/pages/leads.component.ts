@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { CrmStateService, Lead, LeadActivity, LeadAttachment } from '../services/crm-state.service';
+import { ApiService } from '../services/api.service';
 
 @Component({
   selector: 'app-leads',
@@ -491,12 +492,10 @@ import { CrmStateService, Lead, LeadActivity, LeadAttachment } from '../services
                 @if (activeDetailTab() === 'attachments') {
                   <div class="space-y-6 animate-in fade-in duration-100">
                     <div class="bg-white rounded-xl border border-zinc-200 p-4 space-y-3">
-                      <h3 class="text-xs font-bold text-zinc-700 uppercase">Upload Document (Mock)</h3>
-                      <div class="flex gap-3">
-                        <input [(ngModel)]="newAttachmentName" type="text" placeholder="e.g. Business_Card.png" class="flex-1 border border-zinc-200 rounded-lg p-2 text-xs focus:outline-blue-600">
-                        <button (click)="submitAttachment(lead.id)" class="bg-zinc-900 hover:bg-zinc-950 text-white px-3 py-2 rounded-lg text-xs font-semibold shadow-xs">
-                          Upload File
-                        </button>
+                      <h3 class="text-xs font-bold text-zinc-700 uppercase">Upload Document</h3>
+                      <div class="flex gap-3 items-center">
+                        <input type="file" (change)="onFileSelected($event, lead.id)" class="flex-1 text-xs">
+                        @if (uploading()) { <span class="text-[10px] text-zinc-400">Uploading&hellip;</span> }
                       </div>
                     </div>
 
@@ -508,11 +507,15 @@ import { CrmStateService, Lead, LeadActivity, LeadAttachment } from '../services
                             <div class="flex items-center gap-2.5">
                               <mat-icon class="text-zinc-400 text-[20px]! w-5 h-5">insert_drive_file</mat-icon>
                               <div>
-                                <div class="font-medium text-zinc-800">{{ file.fileName }}</div>
+                                <div class="font-medium text-zinc-800">
+                                  @if (file.fileId) {
+                                    <a [href]="getDownloadUrl(file.fileId)" target="_blank" class="hover:underline">{{ file.fileName }}</a>
+                                  } @else { {{ file.fileName }} }
+                                </div>
                                 <div class="text-[10px] text-zinc-400">Uploaded: {{ file.uploadedAt }} &bull; {{ file.fileSize || 'N/A' }}</div>
                               </div>
                             </div>
-                            <button class="text-zinc-400 hover:text-zinc-900 transition-colors">
+                            <button (click)="deleteAttachment(lead.id, file)" class="text-zinc-400 hover:text-zinc-900 transition-colors">
                               <mat-icon class="text-[16px]! w-4 h-4">delete_outline</mat-icon>
                             </button>
                           </div>
@@ -698,6 +701,8 @@ import { CrmStateService, Lead, LeadActivity, LeadAttachment } from '../services
 })
 export class LeadsComponent {
   state = inject(CrmStateService);
+  api = inject(ApiService);
+  uploading = signal(false);
 
   // Filters state
   searchQuery = '';
@@ -716,8 +721,6 @@ export class LeadsComponent {
     summary: '',
     detail: ''
   };
-
-  newAttachmentName = '';
 
   newLead = {
     name: '',
@@ -785,7 +788,6 @@ export class LeadsComponent {
       summary: '',
       detail: ''
     };
-    this.newAttachmentName = '';
   }
 
   closeDetails() {
@@ -827,20 +829,54 @@ export class LeadsComponent {
     };
   }
 
-  // Attachment submit
-  submitAttachment(leadId: string) {
-    if (!this.newAttachmentName.trim()) return;
-    this.state.addLeadAttachment(leadId, {
-      fileName: this.newAttachmentName,
-      fileSize: '1.5 MB',
-      uploadedAt: new Date().toISOString().split('T')[0]
+  // Attachment upload
+  onFileSelected(event: Event, leadId: string) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    this.uploading.set(true);
+    this.api.uploadFile(file, 'PARTNER', leadId).subscribe({
+      next: (dto) => {
+        this.uploading.set(false);
+        this.state.addLeadAttachment(leadId, {
+          fileName: dto.fileName,
+          fileSize: this.formatFileSize(dto.sizeBytes),
+          uploadedAt: new Date().toISOString().split('T')[0],
+          fileId: dto.id
+        });
+        const updated = this.state.leadsData().find(l => l.id === leadId);
+        if (updated) {
+          this.selectedLead.set(updated);
+        }
+        input.value = '';
+      },
+      error: () => {
+        this.uploading.set(false);
+        input.value = '';
+      }
     });
+  }
 
+  formatFileSize(bytes?: number): string {
+    if (!bytes) return 'N/A';
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  getDownloadUrl(fileId: string): string {
+    return this.api.getFileDownloadUrl(fileId);
+  }
+
+  deleteAttachment(leadId: string, file: LeadAttachment) {
+    this.state.removeLeadAttachment(leadId, file.id);
+    if (file.fileId) {
+      this.api.deleteFile(file.fileId).subscribe({ error: () => {} });
+    }
     const updated = this.state.leadsData().find(l => l.id === leadId);
     if (updated) {
       this.selectedLead.set(updated);
     }
-    this.newAttachmentName = '';
   }
 
   // Add Lead Modal handlers
@@ -931,23 +967,23 @@ export class LeadsComponent {
 
   getStatusClass(status: string): string {
     switch (status) {
-      case 'New': return 'bg-zinc-200 text-zinc-950';
-      case 'Contacted': return 'bg-zinc-200 text-zinc-950';
-      case 'Attempted Contact': return 'bg-zinc-200 text-zinc-950';
-      case 'Meeting Scheduled': return 'bg-zinc-200 text-zinc-950';
-      case 'Qualified': return 'bg-zinc-200 text-zinc-950';
-      case 'Proposal Requested': return 'bg-zinc-200 text-zinc-950';
-      case 'Converted': return 'bg-zinc-200 text-zinc-950';
-      case 'Lost': return 'bg-zinc-200 text-zinc-950';
-      case 'Disqualified': return 'bg-zinc-100 text-zinc-800';
+      case 'New': return 'bg-slate-100 text-slate-700';
+      case 'Contacted': return 'bg-sky-50 text-sky-700';
+      case 'Attempted Contact': return 'bg-sky-50 text-sky-700';
+      case 'Meeting Scheduled': return 'bg-indigo-50 text-indigo-700';
+      case 'Qualified': return 'bg-violet-50 text-violet-700';
+      case 'Proposal Requested': return 'bg-purple-50 text-purple-700';
+      case 'Converted': return 'bg-emerald-50 text-emerald-700';
+      case 'Lost': return 'bg-red-50 text-red-700';
+      case 'Disqualified': return 'bg-red-50 text-red-600';
       default: return 'bg-zinc-100 text-zinc-800';
     }
   }
 
   getPriorityBadge(priority: string): string {
     switch(priority) {
-      case 'High': return 'bg-zinc-100 text-zinc-900 border border-zinc-200';
-      case 'Medium': return 'bg-zinc-100 text-zinc-900 border border-zinc-200';
+      case 'High': return 'bg-red-50 text-red-700 border border-red-200';
+      case 'Medium': return 'bg-amber-50 text-amber-700 border border-amber-200';
       case 'Low': return 'bg-zinc-50 text-zinc-600 border border-zinc-100';
       default: return 'bg-zinc-50 text-zinc-600';
     }
@@ -955,9 +991,9 @@ export class LeadsComponent {
 
   getTempBadge(temp: string): string {
     switch(temp) {
-      case 'Hot': return 'bg-zinc-100 text-zinc-900 border border-zinc-200';
-      case 'Warm': return 'bg-zinc-100 text-zinc-900 border border-zinc-200';
-      case 'Cold': return 'bg-zinc-100 text-zinc-900 border border-zinc-200';
+      case 'Hot': return 'bg-red-50 text-red-700 border border-red-200';
+      case 'Warm': return 'bg-amber-50 text-amber-700 border border-amber-200';
+      case 'Cold': return 'bg-sky-50 text-sky-700 border border-sky-200';
       default: return 'bg-zinc-50 text-zinc-600';
     }
   }

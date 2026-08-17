@@ -143,9 +143,9 @@ export class MarketingComponent {
 
   getStatusColor(status: string) {
     switch(status) {
-      case 'Active': return 'bg-zinc-200 text-zinc-950';
+      case 'Active': return 'bg-emerald-50 text-emerald-700';
       case 'Draft': return 'bg-zinc-100 text-zinc-800';
-      default: return 'bg-zinc-200 text-zinc-950';
+      default: return 'bg-sky-50 text-sky-700';
     }
   }
 }

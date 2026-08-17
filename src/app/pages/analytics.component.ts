@@ -442,15 +442,16 @@ export class AnalyticsComponent implements AfterViewInit {
     switch (stage) {
       case 'Confirmed':
       case 'Closed Won':
-        return 'bg-zinc-100 text-zinc-950 border-zinc-200';
+        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
       case 'Awaiting Invoicing':
       case 'Invoiced':
-        return 'bg-zinc-100 text-zinc-950 border-zinc-200';
+        return 'bg-sky-50 text-sky-700 border-sky-200';
       case 'New':
+        return 'bg-slate-100 text-slate-700 border-slate-200';
       case 'Proposal sent':
-        return 'bg-zinc-100 text-zinc-950 border-zinc-200';
+        return 'bg-violet-50 text-violet-700 border-violet-200';
       case 'Closed Lost':
-        return 'bg-zinc-100 text-zinc-950 border-zinc-200';
+        return 'bg-red-50 text-red-700 border-red-200';
       default:
         return 'bg-zinc-50 text-zinc-700 border-zinc-100';
     }
@@ -460,11 +461,11 @@ export class AnalyticsComponent implements AfterViewInit {
     switch (status) {
       case 'Resolved':
       case 'Closed':
-        return 'bg-zinc-100 text-zinc-950 border-zinc-200';
+        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
       case 'In Progress':
-        return 'bg-zinc-100 text-zinc-950 border-zinc-200';
+        return 'bg-sky-50 text-sky-700 border-sky-200';
       case 'Open':
-        return 'bg-zinc-100 text-zinc-950 border-zinc-200';
+        return 'bg-amber-50 text-amber-700 border-amber-200';
       default:
         return 'bg-zinc-50 text-zinc-700 border-zinc-100';
     }
@@ -472,8 +473,8 @@ export class AnalyticsComponent implements AfterViewInit {
 
   getPriorityBadgeClass(priority: string): string {
     switch (priority) {
-      case 'High': return 'bg-zinc-100 text-zinc-950 border-zinc-200';
-      case 'Medium': return 'bg-zinc-100 text-zinc-950 border-zinc-200';
+      case 'High': return 'bg-red-50 text-red-700 border-red-200';
+      case 'Medium': return 'bg-amber-50 text-amber-700 border-amber-200';
       case 'Low': return 'bg-zinc-50 text-zinc-600 border-zinc-200';
       default: return 'bg-zinc-50 text-zinc-700 border-zinc-100';
     }
@@ -481,9 +482,9 @@ export class AnalyticsComponent implements AfterViewInit {
 
   getInvoiceStatusBadgeClass(status: string): string {
     switch (status) {
-      case 'Paid': return 'bg-zinc-100 text-zinc-950 border-zinc-200';
-      case 'Pending': return 'bg-zinc-100 text-zinc-950 border-zinc-200';
-      case 'Overdue': return 'bg-zinc-100 text-zinc-950 border-zinc-200';
+      case 'Paid': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      case 'Pending': return 'bg-amber-50 text-amber-700 border-amber-200';
+      case 'Overdue': return 'bg-red-50 text-red-700 border-red-200';
       case 'Draft': return 'bg-zinc-50 text-zinc-600 border-zinc-200';
       default: return 'bg-zinc-50 text-zinc-700 border-zinc-100';
     }

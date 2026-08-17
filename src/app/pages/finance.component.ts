@@ -55,12 +55,14 @@ type InvoiceLine = {
         </button>
       </div>
 
+        @if (canCreate()) {
         <div class="flex justify-end">
           <button (click)="openCreateInvoiceModal()" class="bg-zinc-900 hover:bg-zinc-950 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm shadow-lg shadow-zinc-300">
             <mat-icon class="w-5 h-5 text-[20px]! leading-none! flex items-center justify-center">receipt_long</mat-icon>
             New Invoice
           </button>
         </div>
+        }
 
         <!-- Invoices View -->
         @if (activeTab() !== 'Recovery') {
@@ -102,7 +104,7 @@ type InvoiceLine = {
                       </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-xs font-semibold space-x-1">
-                      @if (invoice.status !== 'Paid') {
+                      @if (invoice.status !== 'Paid' && canWrite()) {
                         <button (click)="markInvoicePaid(invoice)" class="bg-zinc-100 hover:bg-zinc-200 text-zinc-950 border border-zinc-300 px-2.5 py-1.5 rounded-lg transition-colors">Mark Paid</button>
                       }
                       @if (state.currentUserPermissions().canDeleteRecords) {
@@ -164,7 +166,7 @@ type InvoiceLine = {
                         </p>
                       </div>
                     </div>
-                    <span class="bg-zinc-200 text-zinc-950 text-[10px] font-bold px-2 py-0.5 rounded border border-zinc-300 uppercase">Overdue</span>
+                    <span class="bg-red-50 text-red-700 text-[10px] font-bold px-2 py-0.5 rounded border border-red-200 uppercase">Overdue</span>
                   </div>
                 } @empty {
                   <div class="card rounded-xl p-8 text-center text-zinc-500">
@@ -620,11 +622,17 @@ export class FinanceComponent {
   invoicesService = inject(InvoicesService);
   activeTab = signal<'Customer' | 'Vendor' | 'Recovery'>('Customer');
 
+  canCreate(): boolean { return this.state.hasAuthority('INVOICES_CREATE'); }
+  canWrite(): boolean { return this.state.hasAuthority('INVOICES_WRITE'); }
+  canDelete(): boolean { return this.state.hasAuthority('INVOICES_DELETE'); }
+
   markInvoicePaid(invoice: Invoice) {
+    if (!this.canWrite()) return;
     this.invoicesService.updateInvoice(invoice.id, { ...invoice, status: 'Paid' });
   }
 
   deleteInvoice(invoice: Invoice) {
+    if (!this.canDelete()) return;
     if (confirm(`Delete invoice "${invoice.id}"? This cannot be undone.`)) {
       this.invoicesService.deleteInvoice(invoice.id);
     }
@@ -882,6 +890,7 @@ export class FinanceComponent {
    * @param status 'Draft' → save-only; 'Pending' → save & send
    */
   saveInvoice(status: 'Draft' | 'Pending' = 'Pending') {
+    if (!this.canCreate()) return;
     // Prospect guard (belt-and-suspenders, dropdown is already filtered)
     if (this.newInvoiceData.partnerId) {
       const partner = this.state.partners().find(p => p.id === this.newInvoiceData.partnerId);
@@ -966,9 +975,9 @@ export class FinanceComponent {
 
   getStatusColor(status: string) {
     switch (status) {
-      case 'Paid':    return 'bg-zinc-200 text-zinc-950 border-zinc-300';
-      case 'Overdue': return 'bg-zinc-200    text-zinc-950    border-zinc-300';
-      case 'Pending': return 'bg-zinc-200   text-zinc-950   border-zinc-300';
+      case 'Paid':    return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      case 'Overdue': return 'bg-red-50 text-red-700 border-red-200';
+      case 'Pending': return 'bg-amber-50 text-amber-700 border-amber-200';
       case 'Draft':   return 'bg-zinc-100   text-zinc-600   border-zinc-200';
       default:        return 'bg-zinc-100   text-zinc-800   border-zinc-200';
     }
@@ -981,6 +990,7 @@ export class FinanceComponent {
   }
 
   openCreateInvoiceModal() {
+    if (!this.canCreate()) return;
     this.newInvoiceData = this.blankForm();
     // Default the type based on the active sidebar tab
     this.newInvoiceData.type = this.activeTab() === 'Vendor' ? 'Vendor' : 'Customer';

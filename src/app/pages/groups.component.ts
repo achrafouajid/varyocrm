@@ -40,13 +40,15 @@ import { MatIconModule } from '@angular/material/icon';
         <!-- Panel Header -->
         <div class="p-4 border-b border-white/30 flex items-center justify-between">
           <h2 class="text-sm font-bold text-zinc-800 uppercase tracking-wide">Collaboration Groups</h2>
-          <button
-            (click)="toggleCreateGroupForm()"
-            class="text-blue-700 hover:bg-zinc-100 p-1.5 rounded-lg transition-colors cursor-pointer flex items-center"
-            title="Create Group"
-          >
-            <mat-icon class="text-base w-4.5 h-4.5 flex items-center justify-center">add_circle</mat-icon>
-          </button>
+          @if (canCreateGroup()) {
+            <button
+              (click)="toggleCreateGroupForm()"
+              class="text-blue-700 hover:bg-zinc-100 p-1.5 rounded-lg transition-colors cursor-pointer flex items-center"
+              title="Create Group"
+            >
+              <mat-icon class="text-base w-4.5 h-4.5 flex items-center justify-center">add_circle</mat-icon>
+            </button>
+          }
         </div>
 
         <!-- Inline Create Group Form -->
@@ -236,22 +238,24 @@ import { MatIconModule } from '@angular/material/icon';
               </div>
 
               <!-- Input row -->
-              <div class="p-4 card border-t border-white/30 flex gap-2 shrink-0">
-                <input
-                  [(ngModel)]="chatInputValue"
-                  (keydown.enter)="sendMessage(grp.id)"
-                  type="text"
-placeholder="Type your message..."
-                   class="flex-1 input-field rounded-xl px-4 py-2 text-xs focus:outline-blue-700"
-                />
-                <button
-                  (click)="sendMessage(grp.id)"
-                  [disabled]="!chatInputValue.trim()"
-                  class="bg-zinc-900 hover:bg-zinc-950 disabled:bg-zinc-200 disabled:text-zinc-400 disabled:cursor-not-allowed text-white px-4 py-2 rounded-xl text-xs font-semibold shadow-sm transition-all cursor-pointer font-sans"
-                >
-                  Send
-                </button>
-              </div>
+              @if (canWriteGroup()) {
+                <div class="p-4 card border-t border-white/30 flex gap-2 shrink-0">
+                  <input
+                    [(ngModel)]="chatInputValue"
+                    (keydown.enter)="sendMessage(grp.id)"
+                    type="text"
+                    placeholder="Type your message..."
+                    class="flex-1 input-field rounded-xl px-4 py-2 text-xs focus:outline-blue-700"
+                  />
+                  <button
+                    (click)="sendMessage(grp.id)"
+                    [disabled]="!chatInputValue.trim()"
+                    class="bg-zinc-900 hover:bg-zinc-950 disabled:bg-zinc-200 disabled:text-zinc-400 disabled:cursor-not-allowed text-white px-4 py-2 rounded-xl text-xs font-semibold shadow-sm transition-all cursor-pointer font-sans"
+                  >
+                    Send
+                  </button>
+                </div>
+              }
             </div>
           }
 
@@ -260,16 +264,19 @@ placeholder="Type your message..."
             <div class="flex-1 overflow-y-auto p-4 space-y-4">
               <div class="flex items-center justify-between">
                 <h3 class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Meetings ({{ getMeetingsList(grp.id).length }})</h3>
-                <button
-                  (click)="toggleScheduleForm()"
-                  class="bg-zinc-100 hover:bg-zinc-200 text-zinc-950 border border-zinc-200/50 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-3xs cursor-pointer flex items-center gap-1"
-                >
-                  <mat-icon class="text-sm w-4 h-4 flex items-center justify-center">event</mat-icon>
-                  Schedule Meeting
-                </button>
+                @if (canWriteGroup()) {
+                  <button
+                    (click)="toggleScheduleForm()"
+                    class="bg-zinc-100 hover:bg-zinc-200 text-zinc-950 border border-zinc-200/50 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-3xs cursor-pointer flex items-center gap-1"
+                  >
+                    <mat-icon class="text-sm w-4 h-4 flex items-center justify-center">event</mat-icon>
+                    Schedule Meeting
+                  </button>
+                }
               </div>
 
               <!-- Inline Schedule form -->
+              @if (canWriteGroup()) {
               <div [class.open]="showScheduleForm()" class="panel card rounded-2xl shadow-3xs">
                 <div class="p-5 space-y-3">
                   <h4 class="font-bold text-zinc-800 text-xs">Schedule New Meeting</h4>
@@ -354,6 +361,7 @@ placeholder="Type your message..."
                   </div>
                 </div>
               </div>
+              }
 
               <!-- Meetings Cards -->
               <div class="space-y-4">
@@ -466,6 +474,14 @@ export class GroupsComponent implements AfterViewChecked {
     });
   }
 
+  canCreateGroup(): boolean {
+    return this.state.hasAuthority('GROUPS_CREATE');
+  }
+
+  canWriteGroup(): boolean {
+    return this.state.hasAuthority('GROUPS_WRITE');
+  }
+
   ngAfterViewChecked() {
     this.scrollChatToBottom();
   }
@@ -519,7 +535,7 @@ export class GroupsComponent implements AfterViewChecked {
 
   // Chat actions
   sendMessage(groupId: string) {
-    if (!this.chatInputValue.trim()) return;
+    if (!this.canWriteGroup() || !this.chatInputValue.trim()) return;
 
     this.state.sendGroupMessage(groupId, this.state.currentUserId(), this.chatInputValue.trim());
     this.chatInputValue = '';
@@ -538,6 +554,7 @@ export class GroupsComponent implements AfterViewChecked {
 
   // Schedule meeting actions
   toggleScheduleForm() {
+    if (!this.canWriteGroup()) return;
     this.showSchedule.set(!this.showSchedule());
     if (this.showSchedule()) {
       this.meetTitle = '';
@@ -571,7 +588,7 @@ export class GroupsComponent implements AfterViewChecked {
   }
 
   saveMeeting(groupId: string) {
-    if (!this.meetTitle.trim() || !this.meetDateStr) return;
+    if (!this.canWriteGroup() || !this.meetTitle.trim() || !this.meetDateStr) return;
 
     this.state.scheduleMeeting({
       groupId,
@@ -588,6 +605,7 @@ export class GroupsComponent implements AfterViewChecked {
 
   // Create group actions
   toggleCreateGroupForm() {
+    if (!this.canCreateGroup()) return;
     this.showCreateGroup.set(!this.showCreateGroup());
     if (this.showCreateGroup()) {
       this.newGroupName = '';
@@ -637,7 +655,7 @@ export class GroupsComponent implements AfterViewChecked {
   }
 
   saveGroup() {
-    if (!this.newGroupName.trim()) return;
+    if (!this.canCreateGroup() || !this.newGroupName.trim()) return;
 
     const meId = this.state.currentUserId();
     const members = Array.from(new Set([
@@ -663,11 +681,11 @@ export class GroupsComponent implements AfterViewChecked {
 
   getMeetingStatusClass(status: string): string {
     switch (status) {
-      case 'completed': return 'bg-zinc-100 text-zinc-950 border-zinc-200';
-      case 'cancelled': return 'bg-zinc-100 text-zinc-500 border-zinc-200';
+      case 'completed': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      case 'cancelled': return 'bg-red-50 text-red-600 border-red-200';
       case 'scheduled':
       default:
-        return 'bg-zinc-100 text-zinc-950 border-zinc-200';
+        return 'bg-sky-50 text-sky-700 border-sky-200';
     }
   }
 

@@ -404,12 +404,12 @@ export class Customer360Component {
   stageBadgeClass(stage: string): string {
     switch (stage) {
       case 'Confirmed':
-      case 'Closed Won': return 'bg-zinc-100 text-zinc-950 border-zinc-200';
+      case 'Closed Won': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
       case 'Awaiting Invoicing':
-      case 'Invoiced': return 'bg-zinc-100 text-zinc-950 border-zinc-200';
-      case 'New':
-      case 'Proposal sent': return 'bg-zinc-100 text-zinc-950 border-zinc-200';
-      case 'Closed Lost': return 'bg-zinc-100 text-zinc-950 border-zinc-200';
+      case 'Invoiced': return 'bg-sky-50 text-sky-700 border-sky-200';
+      case 'New': return 'bg-slate-100 text-slate-700 border-slate-200';
+      case 'Proposal sent': return 'bg-violet-50 text-violet-700 border-violet-200';
+      case 'Closed Lost': return 'bg-red-50 text-red-700 border-red-200';
       default: return 'bg-zinc-50 text-zinc-700 border-zinc-100';
     }
   }

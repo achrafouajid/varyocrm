@@ -113,7 +113,7 @@ import { AuthApiService } from '../core/services/auth-api.service';
     .login-btn {
       width: 100%;
       padding: 10px 16px;
-      background: var(--color-accent);
+      background: var(--color-text-primary);
       color: #FFFFFF;
       border: none;
       border-radius: 8px;
@@ -125,7 +125,7 @@ import { AuthApiService } from '../core/services/auth-api.service';
     }
 
     .login-btn:hover {
-      background: var(--color-accent-hover);
+      background: #27272A;
     }
 
     .login-btn:disabled {
@@ -273,8 +273,7 @@ export class LoginComponent {
         localStorage.setItem('bento_auth', 'true');
         this.loading.set(false);
         // Set authentication state directly from API response
-        (this.state as any).isAuthenticated.set(true);
-        (this.state as any).currentUserId.set(response.user.id);
+        this.state.setCurrentUser(response.user.id);
         this.router.navigate(['/']);
       },
       error: (err) => {
