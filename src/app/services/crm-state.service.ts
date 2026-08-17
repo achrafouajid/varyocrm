@@ -170,6 +170,63 @@ export const CRM_ROLES: CrmRole[] = [
   }
 ];
 
+// Mirrors the backend's Permission.forRole() (com.bento.crm.common.model.Permission) exactly,
+// authority name for authority name, so the UI can proactively hide/disable actions the backend
+// would 403 on instead of only finding out after the request round-trips. There is no endpoint
+// that serves this matrix today, so it's duplicated here by hand -- if a role's authorities
+// change on the backend, this map must be updated to match.
+export const AUTHORITIES_BY_ROLE: Record<RoleId, ReadonlySet<string>> = {
+  admin: new Set([
+    'PARTNERS_READ', 'PARTNERS_CREATE', 'PARTNERS_WRITE', 'PARTNERS_DELETE',
+    'DEALS_READ', 'DEALS_CREATE', 'DEALS_WRITE', 'DEALS_DELETE',
+    'DEAL_ACTIVITIES_READ', 'DEAL_ACTIVITIES_CREATE', 'DEAL_ACTIVITIES_WRITE', 'DEAL_ACTIVITIES_DELETE',
+    'PROPOSALS_READ', 'PROPOSALS_CREATE', 'PROPOSALS_WRITE', 'PROPOSALS_DELETE',
+    'PURCHASE_ORDERS_READ', 'PURCHASE_ORDERS_CREATE', 'PURCHASE_ORDERS_WRITE', 'PURCHASE_ORDERS_DELETE',
+    'INVOICES_READ', 'INVOICES_CREATE', 'INVOICES_WRITE', 'INVOICES_DELETE',
+    'TICKETS_READ', 'TICKETS_CREATE', 'TICKETS_WRITE', 'TICKETS_DELETE',
+    'TASKS_READ', 'TASKS_CREATE', 'TASKS_WRITE', 'TASKS_DELETE',
+    'CAMPAIGNS_READ', 'CAMPAIGNS_CREATE', 'CAMPAIGNS_WRITE', 'CAMPAIGNS_DELETE',
+    'AUTOMATION_RULES_READ', 'AUTOMATION_RULES_CREATE', 'AUTOMATION_RULES_WRITE', 'AUTOMATION_RULES_DELETE',
+    'USERS_READ', 'USERS_WRITE',
+    'TEAMS_READ', 'TEAMS_WRITE', 'TEAMS_CREATE', 'TEAMS_DELETE',
+    'GROUPS_READ', 'GROUPS_CREATE', 'GROUPS_WRITE', 'GROUPS_DELETE',
+    'ANALYTICS_READ', 'ADMIN_ACCESS'
+  ]),
+  manager: new Set([
+    'PARTNERS_READ', 'PARTNERS_CREATE', 'PARTNERS_WRITE',
+    'DEALS_READ', 'DEALS_CREATE', 'DEALS_WRITE',
+    'DEAL_ACTIVITIES_READ', 'DEAL_ACTIVITIES_CREATE', 'DEAL_ACTIVITIES_WRITE',
+    'PROPOSALS_READ', 'PROPOSALS_CREATE', 'PROPOSALS_WRITE',
+    'PURCHASE_ORDERS_READ', 'PURCHASE_ORDERS_CREATE', 'PURCHASE_ORDERS_WRITE',
+    'INVOICES_READ', 'INVOICES_CREATE', 'INVOICES_WRITE',
+    'TICKETS_READ', 'TICKETS_WRITE',
+    'TASKS_READ', 'TASKS_CREATE', 'TASKS_WRITE',
+    'CAMPAIGNS_READ', 'CAMPAIGNS_CREATE', 'CAMPAIGNS_WRITE',
+    'AUTOMATION_RULES_READ', 'AUTOMATION_RULES_CREATE', 'AUTOMATION_RULES_WRITE',
+    'USERS_READ', 'TEAMS_READ', 'TEAMS_WRITE',
+    'GROUPS_READ', 'GROUPS_CREATE', 'GROUPS_WRITE',
+    'ANALYTICS_READ'
+  ]),
+  salesperson: new Set([
+    'PARTNERS_READ', 'PARTNERS_CREATE', 'PARTNERS_WRITE',
+    'DEALS_READ', 'DEALS_CREATE', 'DEALS_WRITE',
+    'DEAL_ACTIVITIES_READ', 'DEAL_ACTIVITIES_CREATE', 'DEAL_ACTIVITIES_WRITE',
+    'PROPOSALS_READ', 'PROPOSALS_CREATE', 'PROPOSALS_WRITE',
+    'TASKS_READ', 'TASKS_CREATE', 'TASKS_WRITE',
+    'GROUPS_READ', 'ANALYTICS_READ'
+  ]),
+  support: new Set([
+    'PARTNERS_READ', 'PARTNERS_WRITE',
+    'TICKETS_READ', 'TICKETS_CREATE', 'TICKETS_WRITE',
+    'TASKS_READ', 'TASKS_CREATE', 'TASKS_WRITE',
+    'GROUPS_READ', 'ANALYTICS_READ'
+  ]),
+  viewer: new Set([
+    'PARTNERS_READ', 'DEALS_READ', 'DEAL_ACTIVITIES_READ', 'PROPOSALS_READ',
+    'TICKETS_READ', 'TASKS_READ', 'GROUPS_READ', 'ANALYTICS_READ'
+  ])
+};
+
 const AVATAR_COLORS = [
   '#7F77DD',  // purple
   '#1D9E75',  // teal
@@ -453,6 +510,7 @@ export interface LeadAttachment {
   fileName: string;
   fileSize?: string;
   uploadedAt: string;
+  fileId?: string;
 }
 
 export interface LeadStatusHistory {
@@ -870,7 +928,7 @@ export class CrmStateService {
 
   // Auth
   isAuthenticated = signal<boolean>(this.loadAuthState());
-  currentUserId = signal<string>('usr_rachid');
+  currentUserId = signal<string>(this.loadCurrentUserId());
 
   // Config signals - initialize with seed data, will be replaced by API data
   organization = signal<Organization>(SEED_ORG);
@@ -950,6 +1008,16 @@ export class CrmStateService {
     };
   });
 
+  currentUserAuthorities = computed(() => {
+    const user = this.users().find(u => u.id === this.currentUserId());
+    return AUTHORITIES_BY_ROLE[user?.roleId ?? 'viewer'] ?? AUTHORITIES_BY_ROLE['viewer'];
+  });
+
+  /** Mirrors the backend's @PreAuthorize("hasAuthority('X')") checks -- see AUTHORITIES_BY_ROLE. */
+  hasAuthority(authority: string): boolean {
+    return this.currentUserAuthorities().has(authority);
+  }
+
   // Utility helpers
   usersByTeam(teamId: string): CrmUser[] {
     return this.users().filter(u => u.teamId === teamId);
@@ -998,23 +1066,23 @@ export class CrmStateService {
     ADMIN: 'admin', MANAGER: 'manager', SALESPERSON: 'salesperson', SUPPORT: 'support', VIEWER: 'viewer'
   };
 
-  // Maps the backend's UserResponseDto (mixed snake_case/camelCase JSON) into a CrmUser
+  // Maps the backend's UserResponseDto (snake_case JSON) into a CrmUser
   private userFromDto(dto: any): CrmUser {
-    const displayName = dto.display_name ?? dto.displayName ?? '';
+    const displayName = dto.display_name ?? '';
     const user: CrmUser = {
       id: dto.id,
       displayName,
       name: displayName,
       email: dto.email,
       initials: dto.initials || this.deriveInitials(displayName || 'U U'),
-      avatarColor: dto.avatar_color ?? dto.avatarColor ?? this.getAvatarColor(dto.id),
+      avatarColor: dto.avatar_color ?? this.getAvatarColor(dto.id),
       roleId: CrmStateService.BACKEND_TO_ROLE_ID[dto.role] || 'viewer',
       role: '',
-      teamId: dto.team_id ?? dto.teamId ?? null,
+      teamId: dto.team_id ?? null,
       team: null,
-      isActive: dto.is_active ?? dto.isActive ?? true,
+      isActive: dto.is_active ?? true,
       phone: dto.phone,
-      jobTitle: dto.job_title ?? dto.jobTitle,
+      jobTitle: dto.job_title,
       preferences: {
         language: (dto.language as CrmUser['preferences']['language']) || 'en',
         notifyOnLeadAssign: true,
@@ -1022,7 +1090,7 @@ export class CrmStateService {
         notifyOnMention: true
       },
       createdAt: dto.created_at ? new Date(dto.created_at) : new Date(),
-      lastActiveAt: (dto.last_active_at ?? dto.lastActiveAt) ? new Date(dto.last_active_at ?? dto.lastActiveAt) : new Date()
+      lastActiveAt: dto.last_active_at ? new Date(dto.last_active_at) : new Date()
     };
     return this.patchUserCompatibility(user);
   }
@@ -1052,10 +1120,10 @@ export class CrmStateService {
       name: dto.name,
       department: CrmStateService.BACKEND_TO_DEPARTMENT[dto.department] || 'Custom',
       description: dto.description,
-      leadUserId: dto.leadUserId ?? dto.lead_user_id ?? '',
+      leadUserId: dto.lead_user_id ?? '',
       memberUserIds: this.users().filter(u => u.teamId === dto.id).map(u => u.id),
       color: dto.color || '#7F77DD',
-      createdAt: dto.createdAt ? new Date(dto.createdAt) : new Date()
+      createdAt: dto.created_at ? new Date(dto.created_at) : new Date()
     };
   }
 
@@ -1066,6 +1134,50 @@ export class CrmStateService {
       description: team.description,
       lead_user_id: team.leadUserId || null,
       color: team.color
+    };
+  }
+
+  private static readonly PARTNER_TYPE_TO_BACKEND: Record<PartnerType, string> = {
+    Lead: 'LEAD', Prospect: 'PROSPECT', Customer: 'CUSTOMER', Vendor: 'VENDOR'
+  };
+  private static readonly BACKEND_TO_PARTNER_TYPE: Record<string, PartnerType> = {
+    LEAD: 'Lead', PROSPECT: 'Prospect', CUSTOMER: 'Customer', VENDOR: 'Vendor'
+  };
+
+  // Maps the backend's PartnerResponse (snake_case JSON) into the thin UI-facing Partner shape
+  // used for the customers/prospects/vendors lists. Lead-specific detail (leadsData signal) is
+  // seeded/managed separately client-side and isn't hydrated from this endpoint.
+  private partnerFromDto(dto: any): Partner {
+    return {
+      id: dto.id,
+      name: dto.name,
+      type: CrmStateService.BACKEND_TO_PARTNER_TYPE[dto.type] || 'Lead',
+      email: dto.email,
+      phone: dto.phone,
+      comments: dto.comments,
+      city: dto.city,
+      score: dto.score,
+      source: dto.source,
+      assignedTo: dto.assigned_to_user_id,
+      createdBy: dto.created_by,
+      createdAt: dto.created_at ? new Date(dto.created_at).toISOString().split('T')[0] : ''
+    };
+  }
+
+  // Builds a CreatePartnerRequest/UpdatePartnerRequest-shaped payload (snake_case, uppercase
+  // enums) from the local Partner shape so writes round-trip through the same field names
+  // partnerFromDto reads back.
+  private partnerToApiPayload(partner: Partial<Partner> & { name: string }): any {
+    return {
+      type: partner.type ? CrmStateService.PARTNER_TYPE_TO_BACKEND[partner.type] : undefined,
+      name: partner.name,
+      email: partner.email,
+      phone: partner.phone,
+      comments: partner.comments,
+      city: partner.city,
+      score: partner.score,
+      source: partner.source,
+      assigned_to_user_id: partner.assignedTo || undefined
     };
   }
 
@@ -1157,7 +1269,7 @@ export class CrmStateService {
     this.api.getPartners().subscribe({
       next: (partners) => {
         if (partners && partners.length > 0) {
-          this.partners.set(partners);
+          this.partners.set(partners.map(p => this.partnerFromDto(p)));
         }
         this.partnersLoaded.set(true);
         this.partnersLoading.set(false);
@@ -1443,6 +1555,27 @@ export class CrmStateService {
     });
   }
 
+  /** Self-service profile update -- doesn't require USERS_WRITE, and can't touch role or team. */
+  updateOwnProfile(patch: { displayName?: string; phone?: string; jobTitle?: string; language?: string }): void {
+    const id = this.currentUserId();
+    const current = this.users().find(u => u.id === id);
+    if (!current) return;
+    const payload = {
+      display_name: patch.displayName,
+      phone: patch.phone,
+      job_title: patch.jobTitle,
+      language: patch.language
+    };
+    this.api.updateOwnProfile(payload).subscribe({
+      next: (dto) => {
+        const updated = this.userFromDto(dto);
+        this.users.update(list => list.map(u => u.id === id ? updated : u));
+        this.toast.show(`Profile updated`, { type: 'info' });
+      },
+      error: () => this.toast.show('Failed to update profile', { type: 'error' })
+    });
+  }
+
   deactivateUser(id: string): void {
     this.assertNotLastAdmin(id);
     const user = this.users().find(u => u.id === id);
@@ -1527,14 +1660,51 @@ export class CrmStateService {
   }
 
   createGroup(draft: Omit<CrmGroup, 'id' | 'createdAt'>): CrmGroup {
-    const id = 'grp_' + Math.random().toString(36).substring(2, 9);
+    const tempId = 'grp_' + Math.random().toString(36).substring(2, 9);
     const newGroup: CrmGroup = {
       ...draft,
-      id,
+      id: tempId,
       createdAt: new Date()
     };
     this.groups.update(list => [...list, newGroup]);
+    this.api.createGroup({ name: draft.name, description: draft.description }).subscribe({
+      next: (dto) => {
+        this.groups.update(list => list.map(g => g.id === tempId ? { ...g, id: dto.id } : g));
+      },
+      error: () => {
+        this.groups.update(list => list.filter(g => g.id !== tempId));
+        this.toast.show('Failed to save group to the server', { type: 'error' });
+      }
+    });
     return newGroup;
+  }
+
+  updateGroup(groupId: string, updates: Partial<Pick<CrmGroup, 'name' | 'description' | 'memberUserIds'>>): void {
+    const prev = this.groups().find(g => g.id === groupId);
+    if (!prev) return;
+    this.groups.update(list => list.map(g => g.id === groupId ? { ...g, ...updates } : g));
+    this.api.updateGroup(groupId, {
+      name: updates.name ?? prev.name,
+      description: updates.description ?? prev.description
+    }).subscribe({
+      error: () => {
+        this.groups.update(list => list.map(g => g.id === groupId ? prev : g));
+        this.toast.show('Failed to update group', { type: 'error' });
+      }
+    });
+  }
+
+  deleteGroup(groupId: string): void {
+    const removed = this.groups().find(g => g.id === groupId);
+    this.groups.update(list => list.filter(g => g.id !== groupId));
+    this.api.deleteGroup(groupId).subscribe({
+      error: () => {
+        if (removed) {
+          this.groups.update(list => [...list, removed]);
+        }
+        this.toast.show('Failed to delete group', { type: 'error' });
+      }
+    });
   }
 
   sendGroupMessage(groupId: string, senderUserId: string, content: string): void {
@@ -1612,17 +1782,84 @@ export class CrmStateService {
     }
   }
 
+  private loadCurrentUserId(): string {
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      return localStorage.getItem('bento_current_user_id') || 'usr_rachid';
+    }
+    return 'usr_rachid';
+  }
+
+  private saveCurrentUserId(userId: string): void {
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      localStorage.setItem('bento_current_user_id', userId);
+    }
+  }
+
+  /** Sets the authenticated user's id and persists it across page refreshes. */
+  setCurrentUser(userId: string): void {
+    this.currentUserId.set(userId);
+    this.isAuthenticated.set(true);
+    this.saveAuthState(true);
+    this.saveCurrentUserId(userId);
+  }
+
   login(email: string): boolean {
     const user = this.users().find(
       u => u.email.toLowerCase() === email.toLowerCase() && u.isActive
     );
     if (user) {
-      this.currentUserId.set(user.id);
-      this.isAuthenticated.set(true);
-      this.saveAuthState(true);
+      this.setCurrentUser(user.id);
       return true;
     }
     return false;
+  }
+
+  syncCurrentUserFromApi(): void {
+    // Fetch the current user data from the API and update the state
+    if (this.isAuthenticated()) {
+      this.api.getMe().subscribe({
+        next: (user) => {
+          // Map CurrentUser to CrmUser
+          const crmUser: CrmUser = {
+            id: user.id,
+            displayName: user.display_name,
+            name: user.display_name,
+            email: user.email,
+            initials: user.initials,
+            avatarColor: user.avatar_color,
+            roleId: user.role as RoleId,
+            role: user.role,
+            teamId: user.team_id,
+            team: null,
+            isActive: user.is_active,
+            phone: user.phone || undefined,
+            jobTitle: user.job_title || undefined,
+            preferences: {
+              language: (user.language || 'en') as 'en' | 'fr' | 'ar' | 'es',
+              notifyOnLeadAssign: true,
+              notifyOnDealUpdate: true,
+              notifyOnMention: true,
+            },
+            createdAt: new Date(),
+            lastActiveAt: new Date(),
+          };
+
+          // Update the current user in the users list
+          this.users.update(users => {
+            const index = users.findIndex(u => u.id === user.id);
+            if (index >= 0) {
+              users[index] = { ...users[index], ...crmUser };
+            } else {
+              users.push(crmUser);
+            }
+            return users;
+          });
+        },
+        error: (err) => {
+          console.error('Failed to sync current user from API:', err);
+        }
+      });
+    }
   }
 
   logout(): void {
@@ -1632,6 +1869,7 @@ export class CrmStateService {
     if (typeof localStorage !== 'undefined') {
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
+      localStorage.removeItem('bento_current_user_id');
     }
   }
 
@@ -4017,6 +4255,64 @@ export class CrmStateService {
   // ────────────────────────────────────────────────────────
   // Lead CRUD (automation-aware)
   // ────────────────────────────────────────────────────────
+  private leadStatusToPartnerStage(status: Lead['status']): string {
+    const map: Record<Lead['status'], string> = {
+      'New': 'NEW',
+      'Contacted': 'CONTACTED',
+      'Attempted Contact': 'ATTEMPTED_CONTACT',
+      'Meeting Scheduled': 'MEETING_SCHEDULED',
+      'Qualified': 'QUALIFIED',
+      'Proposal Requested': 'PROPOSAL_SENT',
+      'Converted': 'CONFIRMED',
+      'Lost': 'LOST',
+      'Disqualified': 'DISQUALIFIED'
+    };
+    return map[status] || 'NEW';
+  }
+
+  private leadSourceToPartnerSource(source?: string): string | undefined {
+    const map: Record<string, string> = {
+      'Website form': 'WEBSITE',
+      'Landing Page': 'WEBSITE',
+      'Trade show': 'TRADE_SHOW',
+      'LinkedIn': 'LINKEDIN',
+      'Marketing campaign': 'CAMPAIGN',
+      'Marketing Campaign': 'CAMPAIGN',
+      'Referral': 'REFERRAL',
+      'Email': 'INBOUND',
+      'WhatsApp': 'INBOUND',
+      'Facebook': 'OTHER',
+      'Other': 'OTHER'
+    };
+    return source ? map[source] : undefined;
+  }
+
+  private leadToPartnerPayload(lead: Partial<Lead> & { name: string }): any {
+    return {
+      type: 'LEAD',
+      name: lead.name,
+      company_name: lead.companyName,
+      email: lead.email || lead.contacts?.[0]?.email,
+      phone: lead.phone || lead.contacts?.[0]?.phone,
+      city: lead.company?.city,
+      country: lead.company?.country,
+      source: this.leadSourceToPartnerSource(lead.source || lead.campaigns?.[0]?.source),
+      score: lead.score,
+      temperature: lead.temperature?.toUpperCase(),
+      priority: lead.priority?.toUpperCase(),
+      qualification: lead.qualification?.toUpperCase(),
+      stage: lead.status ? this.leadStatusToPartnerStage(lead.status) : undefined,
+      estimated_deal_value: lead.estimatedDealValue,
+      probability: lead.probability,
+      expected_close_date: lead.expectedCloseDate,
+      comments: lead.notes,
+      company: lead.company,
+      product_interests: lead.productInterests,
+      campaigns: lead.campaigns,
+      notes: lead.notes
+    };
+  }
+
   addLead(lead: Omit<Lead, 'id' | 'createdDate' | 'createdBy' | 'createdAt' | 'modifiedDate' | 'modifiedBy' | 'statusHistory'>) {
     const newId = 'LEAD-' + String(this.leadsData().length + 1).padStart(6, '0');
     const nowStr = new Date().toISOString().split('T')[0];
@@ -4046,12 +4342,39 @@ export class CrmStateService {
     // Fire automation rules after lead is persisted
     setTimeout(() => this.evaluateRules('LeadCreated', newLead as unknown as Record<string, any>, `Lead: ${newLead.name} (${newLead.companyName})`), 0);
     const leadName = newLead.name;
+    this.api.createPartner(this.leadToPartnerPayload(newLead)).subscribe({
+      next: (dto) => {
+        this.leadsData.update(list => list.map(l => l.id === newLead.id ? { ...l, id: dto.id } : l));
+      },
+      error: () => this.toast.show('Failed to save lead to the server', { type: 'error' })
+    });
     this.toast.show(`Lead <strong>${leadName}</strong> created`, {
       undo: () => {
-        this.leadsData.update(list => list.filter(l => l.id !== newLead.id));
+        const current = this.leadsData().find(l => l === newLead || l.name === leadName);
+        this.leadsData.update(list => list.filter(l => l !== current));
+        if (current) {
+          this.api.deletePartner(current.id).subscribe({ error: () => {} });
+        }
       }
     });
     return newLead;
+  }
+
+  deleteLead(leadId: string): void {
+    const removed = this.leadsData().find(l => l.id === leadId);
+    if (!removed) return;
+    this.leadsData.update(list => list.filter(l => l.id !== leadId));
+    this.api.deletePartner(leadId).subscribe({
+      error: () => {
+        this.leadsData.update(list => [...list, removed]);
+        this.toast.show('Failed to delete lead', { type: 'error' });
+      }
+    });
+    this.toast.show(`Lead <strong>${removed.name}</strong> deleted`, {
+      undo: () => {
+        this.leadsData.update(list => [...list, removed]);
+      }
+    });
   }
 
   updateLeadStatus(leadId: string, status: Lead['status']) {
@@ -4080,6 +4403,12 @@ export class CrmStateService {
       }
       return l;
     }));
+    this.api.createLeadStatusHistory(leadId, { status }).subscribe({
+      error: () => this.toast.show('Failed to record status change on the server', { type: 'error' })
+    });
+    this.api.updatePartner(leadId, this.leadToPartnerPayload({ ...(lead || { name: leadId }), status })).subscribe({
+      error: () => {}
+    });
     this.toast.show(`Lead <strong>${lead?.name || leadId}</strong> status changed to ${status}`, {
       undo: () => {
         if (prevStatus) {
@@ -4118,6 +4447,9 @@ export class CrmStateService {
     const updatedLead = this.leadsData().find(l => l.id === leadId);
     if (updatedLead) {
       setTimeout(() => this.evaluateRules('LeadUpdated', updatedLead as unknown as Record<string, any>, `Lead: ${updatedLead.name} (${updatedLead.companyName})`), 0);
+      this.api.updatePartner(leadId, this.leadToPartnerPayload(updatedLead)).subscribe({
+        error: () => this.toast.show('Failed to sync lead update to the server', { type: 'error' })
+      });
     }
     this.toast.show(`Lead <strong>${updatedLead?.name || leadId}</strong> updated`, { type: 'info' });
   }
@@ -4140,6 +4472,15 @@ export class CrmStateService {
       }
       return l;
     }));
+    this.api.createLeadActivity(leadId, {
+      type: activity.type.toUpperCase(),
+      summary: activity.summary,
+      detail: activity.detail,
+      occurred_at: activity.date ? new Date(activity.date).toISOString() : undefined,
+      next_follow_up_at: activity.nextFollowUp ? new Date(activity.nextFollowUp).toISOString() : undefined
+    }).subscribe({
+      error: () => this.toast.show('Failed to save activity to the server', { type: 'error' })
+    });
     this.toast.show(`${activity.type} added to <strong>${lead?.name || leadId}</strong>`);
   }
 
@@ -4156,6 +4497,18 @@ export class CrmStateService {
           attachments: [...attachments, newAtt],
           modifiedDate: new Date().toISOString().split('T')[0],
           modifiedBy: this.currentUserId()
+        };
+      }
+      return l;
+    }));
+  }
+
+  removeLeadAttachment(leadId: string, attachmentId: string) {
+    this.leadsData.update(list => list.map(l => {
+      if (l.id === leadId) {
+        return {
+          ...l,
+          attachments: (l.attachments || []).filter(a => a.id !== attachmentId)
         };
       }
       return l;
@@ -4384,6 +4737,12 @@ export class CrmStateService {
   }
 
   // State transitions & helpers
+  private persistPartnerUpdate(partner: Partner): void {
+    this.api.updatePartner(partner.id, this.partnerToApiPayload(partner)).subscribe({
+      error: () => this.toast.show('Failed to sync partner change to the server', { type: 'error' })
+    });
+  }
+
   convertToCustomer(partnerId: string) {
     let prevType = '';
     this.partners.update(partners =>
@@ -4396,11 +4755,14 @@ export class CrmStateService {
       })
     );
     const partner = this.partners().find(p => p.id === partnerId);
+    if (partner) this.persistPartnerUpdate(partner);
     this.toast.show(`<strong>${partner?.name || 'Partner'}</strong> converted to Customer`, {
       undo: () => {
         this.partners.update(partners =>
           partners.map(p => p.id === partnerId ? { ...p, type: prevType as PartnerType } : p)
         );
+        const reverted = this.partners().find(p => p.id === partnerId);
+        if (reverted) this.persistPartnerUpdate(reverted);
       },
       action: {
         label: 'View in Customers',
@@ -4417,11 +4779,14 @@ export class CrmStateService {
       partners.map(p => p.id === partnerId ? { ...p, type: 'Prospect' } : p)
     );
     const partner = this.partners().find(p => p.id === partnerId);
+    if (partner) this.persistPartnerUpdate(partner);
     this.toast.show(`<strong>${partner?.name || 'Partner'}</strong> converted to Prospect`, {
       undo: () => {
         this.partners.update(partners =>
           partners.map(p => p.id === partnerId ? { ...p, type: 'Lead' } : p)
         );
+        const reverted = this.partners().find(p => p.id === partnerId);
+        if (reverted) this.persistPartnerUpdate(reverted);
       },
       action: {
         label: 'View in Prospects',
@@ -4558,11 +4923,12 @@ export class CrmStateService {
     partner: Omit<Partner, 'id' | 'createdBy' | 'createdAt'> & { createdBy?: string; createdAt?: string },
     onCreated: (id: string) => void
   ): void {
-    this.api.createPartner(partner).subscribe({
+    this.api.createPartner(this.partnerToApiPayload(partner)).subscribe({
       next: (dto) => {
-        this.partners.update(pList => [...pList, dto]);
-        this.toast.show(`Partner <strong>${dto.name}</strong> added`);
-        onCreated(dto.id);
+        const created = this.partnerFromDto(dto);
+        this.partners.update(pList => [...pList, created]);
+        this.toast.show(`Partner <strong>${created.name}</strong> added`);
+        onCreated(created.id);
       },
       error: () => this.toast.show('Failed to save partner to the server', { type: 'error' })
     });
@@ -4581,9 +4947,10 @@ export class CrmStateService {
         this.partners.update(pList => pList.filter(p => p.id !== newPartner.id));
       }
     });
-    this.api.createPartner(partner).subscribe({
+    this.api.createPartner(this.partnerToApiPayload(partner)).subscribe({
       next: (dto) => {
-        this.partners.update(pList => pList.map(p => p === newPartner ? dto : p));
+        const created = this.partnerFromDto(dto);
+        this.partners.update(pList => pList.map(p => p === newPartner ? created : p));
       },
       error: () => {
         this.partners.update(pList => pList.filter(p => p !== newPartner));
@@ -4763,123 +5130,148 @@ export class CrmStateService {
     });
   }
 
+  private toIso(dateStr?: string, timeStr?: string): string | undefined {
+    if (!dateStr) return undefined;
+    const d = timeStr ? new Date(`${dateStr}T${timeStr}`) : new Date(dateStr);
+    return isNaN(d.getTime()) ? undefined : d.toISOString();
+  }
+
+  private reconcileDealActivityId(dealId: string, kind: keyof NonNullable<Deal['activityLog']>, localId: string, remoteId: string) {
+    this.deals.update(deals => deals.map(d => {
+      if (d.id !== dealId || !d.activityLog) return d;
+      const items = (d.activityLog[kind] as any[]).map(item => item.id === localId ? { ...item, id: remoteId } : item);
+      return { ...d, activityLog: { ...d.activityLog, [kind]: items } };
+    }));
+  }
+
   addCallLog(dealId: string, call: Omit<CallLog, 'id'>) {
+    const localId = 'c' + Date.now();
     this.deals.update(deals =>
       deals.map(d => {
         if (d.id === dealId) {
           const log = d.activityLog || { calls: [], emails: [], meetings: [], recordings: [], notes: [], followUps: [] };
-          const newCall = { ...call, id: 'c' + (log.calls.length + 1) + '_' + Date.now() };
-          return {
-            ...d,
-            activityLog: {
-              ...log,
-              calls: [...log.calls, newCall]
-            }
-          };
+          const newCall = { ...call, id: localId };
+          return { ...d, activityLog: { ...log, calls: [...log.calls, newCall] } };
         }
         return d;
       })
     );
+    this.api.createDealActivity(dealId, {
+      type: 'CALL', occurred_at: this.toIso(call.date), duration_minutes: call.duration,
+      caller_name: call.callerName, outcome: call.outcome, summary: call.summary
+    }).subscribe({
+      next: (dto) => this.reconcileDealActivityId(dealId, 'calls', localId, dto.id),
+      error: () => this.toast.show('Failed to save call log to the server', { type: 'error' })
+    });
     this.toast.show('Call logged');
   }
 
   addEmailLog(dealId: string, email: Omit<EmailLog, 'id'>) {
+    const localId = 'e' + Date.now();
     this.deals.update(deals =>
       deals.map(d => {
         if (d.id === dealId) {
           const log = d.activityLog || { calls: [], emails: [], meetings: [], recordings: [], notes: [], followUps: [] };
-          const newEmail = { ...email, id: 'e' + (log.emails.length + 1) + '_' + Date.now() };
-          return {
-            ...d,
-            activityLog: {
-              ...log,
-              emails: [...log.emails, newEmail]
-            }
-          };
+          const newEmail = { ...email, id: localId };
+          return { ...d, activityLog: { ...log, emails: [...log.emails, newEmail] } };
         }
         return d;
       })
     );
+    this.api.createDealActivity(dealId, {
+      type: 'EMAIL', occurred_at: this.toIso(email.date), email_from: email.from, email_to: email.to,
+      subject: email.subject, body: email.body, direction: email.direction
+    }).subscribe({
+      next: (dto) => this.reconcileDealActivityId(dealId, 'emails', localId, dto.id),
+      error: () => this.toast.show('Failed to save email log to the server', { type: 'error' })
+    });
     this.toast.show('Email logged');
   }
 
   addMeeting(dealId: string, meeting: Omit<Meeting, 'id'>) {
+    const localId = 'm' + Date.now();
     this.deals.update(deals =>
       deals.map(d => {
         if (d.id === dealId) {
           const log = d.activityLog || { calls: [], emails: [], meetings: [], recordings: [], notes: [], followUps: [] };
-          const newMeeting = { ...meeting, id: 'm' + (log.meetings.length + 1) + '_' + Date.now() };
-          return {
-            ...d,
-            activityLog: {
-              ...log,
-              meetings: [...log.meetings, newMeeting]
-            }
-          };
+          const newMeeting = { ...meeting, id: localId };
+          return { ...d, activityLog: { ...log, meetings: [...log.meetings, newMeeting] } };
         }
         return d;
       })
     );
+    this.api.createDealActivity(dealId, {
+      type: 'MEETING', occurred_at: this.toIso(meeting.date, meeting.time), title: meeting.title,
+      attendees: meeting.attendees, location: meeting.location, summary: meeting.summary, meeting_type: meeting.type
+    }).subscribe({
+      next: (dto) => this.reconcileDealActivityId(dealId, 'meetings', localId, dto.id),
+      error: () => this.toast.show('Failed to save meeting to the server', { type: 'error' })
+    });
     this.toast.show('Meeting logged');
   }
 
   addRecording(dealId: string, recording: Omit<TeamsRecording, 'id'>) {
+    const localId = 'r' + Date.now();
     this.deals.update(deals =>
       deals.map(d => {
         if (d.id === dealId) {
           const log = d.activityLog || { calls: [], emails: [], meetings: [], recordings: [], notes: [], followUps: [] };
-          const newRecording = { ...recording, id: 'r' + (log.recordings.length + 1) + '_' + Date.now() };
-          return {
-            ...d,
-            activityLog: {
-              ...log,
-              recordings: [...log.recordings, newRecording]
-            }
-          };
+          const newRecording = { ...recording, id: localId };
+          return { ...d, activityLog: { ...log, recordings: [...log.recordings, newRecording] } };
         }
         return d;
       })
     );
+    this.api.createDealActivity(dealId, {
+      type: 'RECORDING', occurred_at: this.toIso(recording.date), title: recording.title,
+      meeting_link: recording.meetingLink, recording_link: recording.recordingLink, duration_text: recording.duration
+    }).subscribe({
+      next: (dto) => this.reconcileDealActivityId(dealId, 'recordings', localId, dto.id),
+      error: () => this.toast.show('Failed to save recording to the server', { type: 'error' })
+    });
     this.toast.show('Recording logged');
   }
 
   addNote(dealId: string, note: Omit<Note, 'id'>) {
+    const localId = 'n' + Date.now();
     this.deals.update(deals =>
       deals.map(d => {
         if (d.id === dealId) {
           const log = d.activityLog || { calls: [], emails: [], meetings: [], recordings: [], notes: [], followUps: [] };
-          const newNote = { ...note, id: 'n' + (log.notes.length + 1) + '_' + Date.now() };
-          return {
-            ...d,
-            activityLog: {
-              ...log,
-              notes: [...log.notes, newNote]
-            }
-          };
+          const newNote = { ...note, id: localId };
+          return { ...d, activityLog: { ...log, notes: [...log.notes, newNote] } };
         }
         return d;
       })
     );
+    this.api.createDealActivity(dealId, {
+      type: 'NOTE', occurred_at: this.toIso(note.date), author: note.author, content: note.content
+    }).subscribe({
+      next: (dto) => this.reconcileDealActivityId(dealId, 'notes', localId, dto.id),
+      error: () => this.toast.show('Failed to save note to the server', { type: 'error' })
+    });
     this.toast.show('Note added');
   }
 
   addFollowUp(dealId: string, followUp: Omit<FollowUp, 'id'>) {
+    const localId = 'f' + Date.now();
     this.deals.update(deals =>
       deals.map(d => {
         if (d.id === dealId) {
           const log = d.activityLog || { calls: [], emails: [], meetings: [], recordings: [], notes: [], followUps: [] };
-          const newFollowUp = { ...followUp, id: 'f' + (log.followUps.length + 1) + '_' + Date.now() };
-          return {
-            ...d,
-            activityLog: {
-              ...log,
-              followUps: [...log.followUps, newFollowUp]
-            }
-          };
+          const newFollowUp = { ...followUp, id: localId };
+          return { ...d, activityLog: { ...log, followUps: [...log.followUps, newFollowUp] } };
         }
         return d;
       })
     );
+    this.api.createDealActivity(dealId, {
+      type: 'FOLLOW_UP', due_date: this.toIso(followUp.dueDate), title: followUp.title,
+      assigned_to: followUp.assignedTo, status: followUp.status
+    }).subscribe({
+      next: (dto) => this.reconcileDealActivityId(dealId, 'followUps', localId, dto.id),
+      error: () => this.toast.show('Failed to save follow-up to the server', { type: 'error' })
+    });
     this.toast.show('Follow-up added');
   }
 
@@ -4899,7 +5291,27 @@ export class CrmStateService {
         return d;
       })
     );
+    const followUp = this.deals().find(d => d.id === dealId)?.activityLog?.followUps.find(f => f.id === followUpId);
+    if (followUp) {
+      this.api.updateDealActivity(dealId, followUpId, {
+        type: 'FOLLOW_UP', due_date: this.toIso(followUp.dueDate), title: followUp.title,
+        assigned_to: followUp.assignedTo, status
+      }).subscribe({
+        error: () => this.toast.show('Failed to sync follow-up status to the server', { type: 'error' })
+      });
+    }
     this.toast.show(`Follow-up marked as ${status}`);
+  }
+
+  deleteDealActivityItem(dealId: string, kind: keyof NonNullable<Deal['activityLog']>, itemId: string) {
+    this.deals.update(deals => deals.map(d => {
+      if (d.id !== dealId || !d.activityLog) return d;
+      const items = (d.activityLog[kind] as any[]).filter(item => item.id !== itemId);
+      return { ...d, activityLog: { ...d.activityLog, [kind]: items } };
+    }));
+    this.api.deleteDealActivity(dealId, itemId).subscribe({
+      error: () => this.toast.show('Failed to delete activity from the server', { type: 'error' })
+    });
   }
 
 

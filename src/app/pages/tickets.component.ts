@@ -15,12 +15,14 @@ import { PaginatorComponent } from '../shared/paginator.component';
   template: `
     <div class="space-y-8">
       <app-data-status-banner [loading]="ticketsService.isLoading$()" [error]="ticketsService.error$()" />
+      @if (canCreate()) {
       <div class="flex justify-end">
         <button (click)="openNewTicketModal()" class="bg-zinc-900 hover:bg-zinc-950 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm shadow-lg shadow-zinc-300">
           <mat-icon class="w-5 h-5 text-[20px]! leading-none! flex items-center justify-center">add</mat-icon>
           New Ticket
         </button>
       </div>
+      }
 
       <!-- Filters -->
       <div class="flex flex-wrap items-center gap-3">
@@ -272,6 +274,11 @@ import { PaginatorComponent } from '../shared/paginator.component';
 export class TicketsComponent {
   state = inject(CrmStateService);
   ticketsService = inject(TicketsService);
+
+  canCreate(): boolean { return this.state.hasAuthority('TICKETS_CREATE'); }
+  canWrite(): boolean { return this.state.hasAuthority('TICKETS_WRITE'); }
+  canDelete(): boolean { return this.state.hasAuthority('TICKETS_DELETE'); }
+
   modalOpen = signal(false);
   isEditing = signal(false);
   editingTicketId = signal<string | null>(null);
@@ -320,6 +327,7 @@ export class TicketsComponent {
   ticketToDelete = signal<Ticket | null>(null);
 
   openDeleteModal(ticket: Ticket) {
+    if (!this.canDelete()) return;
     this.ticketToDelete.set(ticket);
     this.deleteModalOpen.set(true);
   }
@@ -330,6 +338,7 @@ export class TicketsComponent {
   }
 
   deleteConfirm() {
+    if (!this.canDelete()) return;
     const ticket = this.ticketToDelete();
     if (ticket) {
       this.ticketsService.deleteTicket(ticket.id);
@@ -349,6 +358,7 @@ export class TicketsComponent {
   };
 
   openNewTicketModal() {
+    if (!this.canCreate()) return;
     this.isEditing.set(false);
     this.editingTicketId.set(null);
     this.newTicket = {
@@ -364,6 +374,7 @@ export class TicketsComponent {
   }
 
   openEditTicketModal(ticket: Ticket) {
+    if (!this.canWrite()) return;
     this.isEditing.set(true);
     this.editingTicketId.set(ticket.id);
     this.newTicket = {
@@ -379,7 +390,8 @@ export class TicketsComponent {
   }
 
   saveTicket() {
-    if (!this.newTicket.title.trim()) return;
+    const allowed = this.isEditing() ? this.canWrite() : this.canCreate();
+    if (!allowed || !this.newTicket.title.trim()) return;
 
     if (this.isEditing() && this.editingTicketId()) {
       this.ticketsService.updateTicket(this.editingTicketId()!, {

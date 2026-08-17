@@ -135,6 +135,10 @@ export class AutomationComponent {
   state = inject(CrmStateService);
   automationRulesService = inject(AutomationRulesService);
 
+  canCreate(): boolean { return this.state.hasAuthority('AUTOMATION_RULES_CREATE'); }
+  canWrite(): boolean { return this.state.hasAuthority('AUTOMATION_RULES_WRITE'); }
+  canDelete(): boolean { return this.state.hasAuthority('AUTOMATION_RULES_DELETE'); }
+
   activeTab = signal<'rules' | 'templates' | 'logs'>('rules');
 
   rulesPage = signal(1);
@@ -227,6 +231,7 @@ export class AutomationComponent {
 
   // Builder Methods
   openNewBuilder() {
+    if (!this.canCreate()) return;
     this.resetBuilder();
     this.isBuilderOpen.set(true);
   }
@@ -307,6 +312,7 @@ export class AutomationComponent {
   }
 
   cloneTemplate(tpl: any) {
+    if (!this.canCreate()) return;
     this.resetBuilder();
     this.ruleName.set(`Clone: ${tpl.name}`);
     this.ruleDescription.set(tpl.description || '');
@@ -320,6 +326,7 @@ export class AutomationComponent {
   }
 
   editRule(rule: AutomationRule) {
+    if (!this.canWrite()) return;
     this.editingRuleId.set(rule.id);
     this.ruleName.set(rule.name);
     this.ruleDescription.set(rule.description || '');
@@ -333,6 +340,8 @@ export class AutomationComponent {
   }
 
   saveRule() {
+    const allowed = this.editingRuleId() ? this.canWrite() : this.canCreate();
+    if (!allowed) return;
     if (!this.ruleName()) {
       alert('Please enter a rule name.');
       return;
@@ -361,6 +370,7 @@ export class AutomationComponent {
   }
 
   toggleActive(ruleId: string) {
+    if (!this.canWrite()) return;
     const rule = this.automationRulesService.getRuleById(ruleId);
     if (rule) {
       this.automationRulesService.updateRule(ruleId, { isActive: !rule.isActive });
@@ -368,12 +378,14 @@ export class AutomationComponent {
   }
 
   deleteRule(ruleId: string) {
+    if (!this.canDelete()) return;
     if (confirm('Are you sure you want to delete this automation rule?')) {
       this.automationRulesService.deleteRule(ruleId);
     }
   }
 
   duplicateRule(rule: AutomationRule) {
+    if (!this.canCreate()) return;
     const copy = {
       ...rule,
       name: `${rule.name} (Copy)`,

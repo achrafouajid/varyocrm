@@ -12,11 +12,25 @@ export interface LoginRequest {
 export interface LoginResponse {
   access_token: string;
   refresh_token?: string;
-  user: {
-    id: string;
-    email: string;
-    name: string;
-  };
+  token_type?: string;
+  expires_in?: number;
+  user: CurrentUser;
+}
+
+export interface CurrentUser {
+  id: string;
+  organization_id: string;
+  email: string;
+  display_name: string;
+  initials: string;
+  avatar_color: string;
+  role: string;
+  team_id: string | null;
+  is_active: boolean;
+  phone: string | null;
+  job_title: string | null;
+  language: string;
+  last_active_at: string | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -33,11 +47,11 @@ export class AuthApiService extends BaseApiService {
     return this.post<any>(API_CONFIG.endpoints.auth.logout, {});
   }
 
-  refresh(): Observable<LoginResponse> {
-    return this.post<LoginResponse>(API_CONFIG.endpoints.auth.refresh, {});
+  refresh(refreshToken: string): Observable<LoginResponse> {
+    return this.post<LoginResponse>(API_CONFIG.endpoints.auth.refresh, { refresh_token: refreshToken });
   }
 
-  me(): Observable<any> {
-    return this.get<any>(API_CONFIG.endpoints.auth.me);
+  me(): Observable<CurrentUser> {
+    return this.get<CurrentUser>(API_CONFIG.endpoints.auth.me);
   }
 }

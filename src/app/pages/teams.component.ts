@@ -26,6 +26,7 @@ import { MatIconModule } from '@angular/material/icon';
   template: `
     <div class="space-y-6 font-sans">
       <!-- Header -->
+      @if (canCreate()) {
       <div class="flex justify-end">
         <button
           (click)="toggleCreateForm()"
@@ -35,6 +36,7 @@ import { MatIconModule } from '@angular/material/icon';
           Create Team
         </button>
       </div>
+      }
 
       <!-- Create Team Form (Inline) -->
       <div [class.open]="showCreateForm()" class="panel bg-zinc-50 border border-zinc-200/80 rounded-2xl p-0 shadow-xs">
@@ -206,13 +208,15 @@ import { MatIconModule } from '@angular/material/icon';
                         <div class="flex items-center gap-1.5">
                           @if (user.id === team.leadUserId) {
                             <i class="ti ti-crown text-zinc-700 text-base leading-none" title="Team Lead"></i>
-                            <button
-                              (click)="startTransferLead(team.id)"
-                              class="text-[10px] text-zinc-900 hover:text-zinc-950 font-bold hover:underline cursor-pointer"
-                            >
-                              Transfer Lead
-                            </button>
-                          } @else {
+                            @if (canWrite()) {
+                              <button
+                                (click)="startTransferLead(team.id)"
+                                class="text-[10px] text-zinc-900 hover:text-zinc-950 font-bold hover:underline cursor-pointer"
+                              >
+                                Transfer Lead
+                              </button>
+                            }
+                          } @else if (canWrite()) {
                             <button
                               (click)="removeMember(team.id, user.id)"
                               class="text-zinc-400 hover:text-zinc-900 p-1 rounded transition-colors cursor-pointer"
@@ -265,6 +269,7 @@ import { MatIconModule } from '@angular/material/icon';
                 }
 
                 <!-- Add member row -->
+                @if (canWrite()) {
                 <div class="pt-2 border-t border-zinc-100/50">
                   <div class="relative">
                     <input
@@ -293,6 +298,7 @@ import { MatIconModule } from '@angular/material/icon';
                     }
                   </div>
                 </div>
+                }
               </div>
             </div>
           </div>
@@ -338,7 +344,16 @@ export class TeamsComponent {
     return this.state.users().filter(u => u.isActive && u.roleId === 'manager');
   }
 
+  canCreate(): boolean {
+    return this.state.hasAuthority('TEAMS_CREATE');
+  }
+
+  canWrite(): boolean {
+    return this.state.hasAuthority('TEAMS_WRITE');
+  }
+
   toggleCreateForm() {
+    if (!this.canCreate()) return;
     this.showCreateForm.set(!this.showCreateForm());
     if (this.showCreateForm()) {
       this.newTeamName = '';
@@ -354,7 +369,7 @@ export class TeamsComponent {
   }
 
   saveTeam() {
-    if (!this.newTeamName.trim() || !this.newTeamLeadId) return;
+    if (!this.canCreate() || !this.newTeamName.trim() || !this.newTeamLeadId) return;
 
     this.state.addTeam({
       name: this.newTeamName,
@@ -381,11 +396,13 @@ export class TeamsComponent {
 
   // Lead Transfer
   startTransferLead(teamId: string) {
+    if (!this.canWrite()) return;
     this.transferLeadTeamId.set(teamId);
     this.leadTransferError.set(null);
   }
 
   executeLeadTransfer(teamId: string, event: Event) {
+    if (!this.canWrite()) return;
     const selectedUserId = (event.target as HTMLSelectElement).value;
     if (!selectedUserId) return;
 
@@ -404,6 +421,7 @@ export class TeamsComponent {
 
   // Member Management
   removeMember(teamId: string, userId: string) {
+    if (!this.canWrite()) return;
     try {
       this.state.removeTeamMember(teamId, userId);
       this.memberErrorTeamId.set(null);
@@ -445,6 +463,7 @@ export class TeamsComponent {
   }
 
   addMember(teamId: string, userId: string) {
+    if (!this.canWrite()) return;
     this.state.addTeamMember(teamId, userId);
     this.activeTeamSearchId.set(null);
     this.searchMatches.set([]);

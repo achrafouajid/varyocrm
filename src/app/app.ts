@@ -1317,6 +1317,9 @@ export class App implements OnInit, OnDestroy {
         this.activeRoute.set(newRoute);
         this.state.breadcrumbLabel.set(null);
       });
+
+    // Sync current user data from API on app initialization
+    this.state.syncCurrentUserFromApi();
   }
 
   breadcrumbs = computed(() => {
