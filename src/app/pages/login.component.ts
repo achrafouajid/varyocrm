@@ -5,11 +5,13 @@ import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { CrmStateService } from '../services/crm-state.service';
 import { AuthApiService } from '../core/services/auth-api.service';
+import { TranslatePipe } from '../pipes/translate.pipe';
+import { TranslationService } from '../services/translation.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule, CommonModule, MatIconModule, RouterLink],
+  imports: [FormsModule, CommonModule, MatIconModule, RouterLink, TranslatePipe],
   styles: [`
     :host {
       display: block;
@@ -186,8 +188,8 @@ import { AuthApiService } from '../core/services/auth-api.service';
         </div>
 
         <div class="login-title">
-          <h1>Welcome back</h1>
-          <p>Sign in to your account to continue</p>
+          <h1>{{ 'login.title' | translate }}</h1>
+          <p>{{ 'login.subtitle' | translate }}</p>
         </div>
 
         @if (error()) {
@@ -196,32 +198,32 @@ import { AuthApiService } from '../core/services/auth-api.service';
 
         <form (ngSubmit)="onLogin()">
           <div class="form-group">
-            <label for="email">Email</label>
+            <label for="email">{{ 'login.email' | translate }}</label>
             <input
               id="email"
               type="email"
               [(ngModel)]="email"
               name="email"
               class="form-input"
-              placeholder="Enter your email"
+              [placeholder]="'login.emailPlaceholder' | translate"
               autocomplete="email"
               required
             />
           </div>
 
           <div class="form-group">
-            <label for="password">Password</label>
+            <label for="password">{{ 'login.password' | translate }}</label>
             <input
               id="password"
               type="password"
               [(ngModel)]="password"
               name="password"
               class="form-input"
-              placeholder="Enter your password"
+              [placeholder]="'login.passwordPlaceholder' | translate"
               autocomplete="current-password"
               required
             />
-            <a class="forgot-link">Forgot password?</a>
+            <a class="forgot-link">{{ 'login.forgotPassword' | translate }}</a>
           </div>
 
           <button
@@ -229,13 +231,13 @@ import { AuthApiService } from '../core/services/auth-api.service';
             class="login-btn"
             [disabled]="loading()"
           >
-            {{ loading() ? 'Signing in...' : 'Sign in' }}
+            {{ loading() ? ('login.signingIn' | translate) : ('login.signIn' | translate) }}
           </button>
         </form>
 
         <p class="signup-link">
-          New to Bento?
-          <a routerLink="/onboarding">Create an organization</a>
+          {{ 'login.newToBento' | translate }}
+          <a routerLink="/onboarding">{{ 'login.createOrg' | translate }}</a>
         </p>
       </div>
     </div>
@@ -245,6 +247,7 @@ export class LoginComponent {
   private state = inject(CrmStateService);
   private router = inject(Router);
   private authApi = inject(AuthApiService);
+  private translation = inject(TranslationService);
 
   email = signal('');
   password = signal('');
@@ -256,7 +259,7 @@ export class LoginComponent {
     const password = this.password().trim();
 
     if (!email || !password) {
-      this.error.set('Please enter email and password');
+      this.error.set(this.translation.t('login.errorRequired'));
       return;
     }
 
@@ -269,16 +272,14 @@ export class LoginComponent {
         if (response.refresh_token) {
           localStorage.setItem('refreshToken', response.refresh_token);
         }
-        // Set auth flag for persistence across page refreshes
         localStorage.setItem('bento_auth', 'true');
         this.loading.set(false);
-        // Set authentication state directly from API response
         this.state.setCurrentUser(response.user.id);
         this.router.navigate(['/']);
       },
       error: (err) => {
         console.error('Login failed:', err);
-        this.error.set('Invalid email or password. Please try again.');
+        this.error.set(this.translation.t('login.errorInvalid'));
         this.loading.set(false);
       }
     });

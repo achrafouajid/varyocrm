@@ -9,6 +9,8 @@ import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
 import { RouterModule } from '@angular/router';
 import { DataStatusBannerComponent } from '../shared/data-status-banner.component';
 import { PaginatorComponent } from '../shared/paginator.component';
+import { TranslatePipe } from '../pipes/translate.pipe';
+import { TranslationService } from '../services/translation.service';
 
 const MODULE_SUB_MODULES: Record<string, string[]> = {
   Sales: ['Deal', 'Proposal', 'PurchaseOrder'],
@@ -35,7 +37,7 @@ const SUB_MODULE_LABELS: Record<string, string> = {
 
 @Component({
   selector: 'app-tasks',
-  imports: [MatIconModule, CommonModule, FormsModule, DragDropModule, CreatedByBadgeComponent, RouterModule, DataStatusBannerComponent, PaginatorComponent],
+  imports: [MatIconModule, CommonModule, FormsModule, DragDropModule, CreatedByBadgeComponent, RouterModule, DataStatusBannerComponent, PaginatorComponent, TranslatePipe],
   styles: [`
     .kanban-column.cdk-drop-list-dragging .kanban-card:not(.cdk-drag-placeholder) {
       transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
@@ -65,7 +67,7 @@ const SUB_MODULE_LABELS: Record<string, string> = {
       <div class="flex justify-end">
         <button (click)="openCreateTaskModal()" class="bg-zinc-900 hover:bg-zinc-950 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm shadow-lg shadow-zinc-300">
           <mat-icon class="w-5 h-5 text-[20px]! leading-none! flex items-center justify-center">add</mat-icon>
-          New Task
+          {{ 'tasks.newTask' | translate }}
         </button>
       </div>
       }
@@ -75,7 +77,7 @@ const SUB_MODULE_LABELS: Record<string, string> = {
         <div class="flex items-center gap-2">
           <div class="bg-white border border-zinc-200 rounded-xl px-4 py-2 flex items-center gap-2 text-sm">
             <mat-icon class="text-[18px] w-4.5 h-4.5 text-zinc-700">filter_alt</mat-icon>
-            <span class="font-semibold text-zinc-700">Filtered by priority:</span>
+            <span class="font-semibold text-zinc-700">{{ 'tasks.filteredBy' | translate }}</span>
             <span [class]="activePriorityFilter() === 'Urgent' ? 'text-red-600' : activePriorityFilter() === 'Medium' ? 'text-amber-600' : 'text-emerald-600'" class="px-2 py-0.5 rounded text-xs font-medium">{{activePriorityFilter()}}</span>
             <button (click)="clearFilter()" title="Clear filter" class="text-zinc-400 hover:text-zinc-600 ml-1 transition-colors">
               <mat-icon class="text-[16px] w-4 h-4">close</mat-icon>
@@ -93,7 +95,7 @@ const SUB_MODULE_LABELS: Record<string, string> = {
           class="px-1 py-3 -mb-px border-b-2 text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap"
         >
           <mat-icon class="text-[18px] w-[18px] h-[18px]">list_alt</mat-icon>
-          List
+          {{ 'tasks.list' | translate }}
         </button>
         <button
           (click)="activeView.set('kanban')"
@@ -101,7 +103,7 @@ const SUB_MODULE_LABELS: Record<string, string> = {
           class="px-1 py-3 -mb-px border-b-2 text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap"
         >
           <mat-icon class="text-[18px] w-[18px] h-[18px]">view_column</mat-icon>
-          Kanban
+          {{ 'tasks.kanban' | translate }}
         </button>
       </div>
 
@@ -148,7 +150,7 @@ const SUB_MODULE_LABELS: Record<string, string> = {
                 </div>
                 <div class="flex justify-between items-center text-xs">
                   <span class="text-zinc-400 font-medium">Assigned Person:</span>
-                  <span class="font-bold text-zinc-700">{{task.assignedTo || 'Unassigned'}}</span>
+                  <span class="font-bold text-zinc-700">{{ task.assignedTo || ('leads.unassigned' | translate) }}</span>
                 </div>
 
                 <div class="flex gap-2 pt-2 border-t border-zinc-50">
@@ -181,7 +183,7 @@ const SUB_MODULE_LABELS: Record<string, string> = {
             </div>
           } @empty {
             <div class="col-span-full text-center py-12 text-zinc-500 card rounded-2xl">
-              No tasks found. Create a new task to get started.
+              {{ 'tasks.noTasks' | translate }}
             </div>
           }
         </div>
@@ -202,7 +204,7 @@ const SUB_MODULE_LABELS: Record<string, string> = {
             <div class="flex items-center justify-between mb-4 px-1">
               <div class="flex items-center gap-2">
                 <div class="w-2.5 h-2.5 rounded-full bg-zinc-400"></div>
-                <h3 class="text-sm font-bold text-zinc-700 uppercase tracking-wide">Pending</h3>
+                <h3 class="text-sm font-bold text-zinc-700 uppercase tracking-wide">{{ 'tasks.pending' | translate }}</h3>
               </div>
               <span class="text-xs font-semibold text-zinc-400 bg-white px-2 py-0.5 rounded-full border border-white/30">{{pendingTasks().length}}</span>
             </div>
@@ -232,7 +234,7 @@ const SUB_MODULE_LABELS: Record<string, string> = {
                   }
                   <div class="flex items-center gap-2 text-meta text-zinc-500 pt-2 border-t border-zinc-100">
                     <mat-icon class="text-[14px] w-3.5 h-3.5">person</mat-icon>
-                    <span class="font-medium truncate">{{task.assignedTo || 'Unassigned'}}</span>
+                    <span class="font-medium truncate">{{ task.assignedTo || ('leads.unassigned' | translate) }}</span>
                     @if (task.assignedTeam) {
                       <span class="ml-auto text-meta font-semibold text-zinc-400 bg-zinc-100 px-1.5 py-0.5 rounded">{{task.assignedTeam}}</span>
                     }
@@ -242,7 +244,7 @@ const SUB_MODULE_LABELS: Record<string, string> = {
                   </div>
                 </div>
               } @empty {
-                <div class="text-center py-8 text-xs text-zinc-400 italic">No tasks</div>
+                <div class="text-center py-8 text-xs text-zinc-400 italic">{{ 'tasks.noTasks' | translate }}</div>
               }
             </div>
           </div>
@@ -251,7 +253,7 @@ const SUB_MODULE_LABELS: Record<string, string> = {
             <div class="flex items-center justify-between mb-4 px-1">
               <div class="flex items-center gap-2">
                 <div class="w-2.5 h-2.5 rounded-full bg-zinc-700"></div>
-                <h3 class="text-sm font-bold text-zinc-700 uppercase tracking-wide">In Progress</h3>
+                <h3 class="text-sm font-bold text-zinc-700 uppercase tracking-wide">{{ 'tasks.inProgress' | translate }}</h3>
               </div>
               <span class="text-xs font-semibold text-zinc-400 bg-white px-2 py-0.5 rounded-full border border-white/30">{{inProgressTasks().length}}</span>
             </div>
@@ -281,7 +283,7 @@ const SUB_MODULE_LABELS: Record<string, string> = {
                   }
                   <div class="flex items-center gap-2 text-meta text-zinc-500 pt-2 border-t border-zinc-100">
                     <mat-icon class="text-[14px] w-3.5 h-3.5">person</mat-icon>
-                    <span class="font-medium truncate">{{task.assignedTo || 'Unassigned'}}</span>
+                    <span class="font-medium truncate">{{ task.assignedTo || ('leads.unassigned' | translate) }}</span>
                     @if (task.assignedTeam) {
                       <span class="ml-auto text-meta font-semibold text-zinc-400 bg-zinc-100 px-1.5 py-0.5 rounded">{{task.assignedTeam}}</span>
                     }
@@ -291,7 +293,7 @@ const SUB_MODULE_LABELS: Record<string, string> = {
                   </div>
                 </div>
               } @empty {
-                <div class="text-center py-8 text-xs text-zinc-400 italic">No tasks</div>
+                <div class="text-center py-8 text-xs text-zinc-400 italic">{{ 'tasks.noTasks' | translate }}</div>
               }
             </div>
           </div>
@@ -300,7 +302,7 @@ const SUB_MODULE_LABELS: Record<string, string> = {
             <div class="flex items-center justify-between mb-4 px-1">
               <div class="flex items-center gap-2">
                 <div class="w-2.5 h-2.5 rounded-full bg-zinc-700"></div>
-                <h3 class="text-sm font-bold text-zinc-700 uppercase tracking-wide">Completed</h3>
+                <h3 class="text-sm font-bold text-zinc-700 uppercase tracking-wide">{{ 'tasks.completed' | translate }}</h3>
               </div>
               <span class="text-xs font-semibold text-zinc-400 bg-white px-2 py-0.5 rounded-full border border-white/30">{{completedTasks().length}}</span>
             </div>
@@ -330,7 +332,7 @@ const SUB_MODULE_LABELS: Record<string, string> = {
                   }
                   <div class="flex items-center gap-2 text-meta text-zinc-500 pt-2 border-t border-zinc-100">
                     <mat-icon class="text-[14px] w-3.5 h-3.5">person</mat-icon>
-                    <span class="font-medium truncate">{{task.assignedTo || 'Unassigned'}}</span>
+                    <span class="font-medium truncate">{{ task.assignedTo || ('leads.unassigned' | translate) }}</span>
                     @if (task.assignedTeam) {
                       <span class="ml-auto text-meta font-semibold text-zinc-400 bg-zinc-100 px-1.5 py-0.5 rounded">{{task.assignedTeam}}</span>
                     }
@@ -340,7 +342,7 @@ const SUB_MODULE_LABELS: Record<string, string> = {
                   </div>
                 </div>
               } @empty {
-                <div class="text-center py-8 text-xs text-zinc-400 italic">No tasks</div>
+                <div class="text-center py-8 text-xs text-zinc-400 italic">{{ 'tasks.noTasks' | translate }}</div>
               }
             </div>
           </div>
@@ -356,7 +358,7 @@ const SUB_MODULE_LABELS: Record<string, string> = {
     @if (taskModalOpen()) {
       <div class="fixed inset-0 z-50 bg-zinc-900/40 backdrop-blur-xs flex items-center justify-center p-4">
         <div class="bg-white shadow-xl rounded-2xl max-w-sm w-full p-6 space-y-4 animate-in zoom-in-95 duration-200">
-          <h3 class="text-lg font-bold text-zinc-950">Create New Task</h3>
+          <h3 class="text-lg font-bold text-zinc-950">{{ 'tasks.newTask' | translate }}</h3>
 
           <div class="space-y-3">
             <div>
@@ -382,7 +384,7 @@ const SUB_MODULE_LABELS: Record<string, string> = {
               <div>
                 <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Assigned Person</label>
                 <select [(ngModel)]="newTaskData.assignedTo" class="w-full input-field rounded-lg p-2 text-sm bg-white focus:outline-blue-600">
-                  <option value="">Unassigned</option>
+                  <option value="">{{ 'leads.unassigned' | translate }}</option>
                   @for (user of state.users(); track user.name) {
                     <option [value]="user.name">{{user.name}}</option>
                   }
@@ -426,8 +428,8 @@ const SUB_MODULE_LABELS: Record<string, string> = {
           </div>
 
           <div class="flex justify-end gap-2 pt-4 border-t border-zinc-100">
-            <button (click)="closeTaskModal()" class="px-4 py-2 border border-zinc-200 text-zinc-600 text-sm font-semibold rounded-lg hover:bg-zinc-50 font-sans">Cancel</button>
-            <button (click)="saveTask()" class="px-4 py-2 bg-zinc-900 hover:bg-zinc-950 text-white text-sm font-semibold rounded-lg shadow-sm shadow-lg shadow-zinc-300 font-sans">Save Task</button>
+            <button (click)="closeTaskModal()" class="px-4 py-2 border border-zinc-200 text-zinc-600 text-sm font-semibold rounded-lg hover:bg-zinc-50 font-sans">{{ 'common.cancel' | translate }}</button>
+            <button (click)="saveTask()" class="px-4 py-2 bg-zinc-900 hover:bg-zinc-950 text-white text-sm font-semibold rounded-lg shadow-sm shadow-lg shadow-zinc-300 font-sans">{{ 'common.save' | translate }}</button>
           </div>
         </div>
       </div>
@@ -458,6 +460,7 @@ const SUB_MODULE_LABELS: Record<string, string> = {
 export class TasksComponent {
   state = inject(CrmStateService);
   tasksService = inject(TasksService);
+  translation = inject(TranslationService);
 
   canCreate(): boolean { return this.state.hasAuthority('TASKS_CREATE'); }
   canWrite(): boolean { return this.state.hasAuthority('TASKS_WRITE'); }

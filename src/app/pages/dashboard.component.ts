@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router } from '@angular/router';
 import { CrmStateService, Task, Ticket, TaskStatus } from '../services/crm-state.service';
 import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-calendar.component';
@@ -111,7 +112,7 @@ const CATALOG: TileDef[] = [
 @Component({
   selector: 'app-dashboard',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MatIconModule, PartnerScheduleCalendarComponent, BentoGrid, BentoTile, CountUpDirective],
+  imports: [MatIconModule, MatTooltipModule, PartnerScheduleCalendarComponent, BentoGrid, BentoTile, CountUpDirective],
   template: `
     <div class="dash">
       <!-- Customise tray -->
@@ -158,7 +159,11 @@ const CATALOG: TileDef[] = [
             <!-- ── Shared tile header ── -->
             <header class="bento-tile__head">
               <span class="bento-icon"><mat-icon>{{ tile.icon }}</mat-icon></span>
-              <h3 class="bento-tile__title">{{ tile.title }}</h3>
+              @if (tile.kind === 'kpi') {
+                <h3 class="bento-tile__title bento-tile__title--help" [matTooltip]="kpi(tile.id).hint" matTooltipPosition="above">{{ tile.title }}</h3>
+              } @else {
+                <h3 class="bento-tile__title">{{ tile.title }}</h3>
+              }
               @switch (tile.kind) {
                 @case ('today') {
                   @if (todayItems().length) { <span class="dash-count">{{ todayItems().length }}</span> }
@@ -332,7 +337,6 @@ const CATALOG: TileDef[] = [
                   @let k = kpi(tile.id);
                   <div class="kpi">
                     <span class="dash-value dash-value--kpi" [countUp]="k.raw" [countUpFormat]="k.format">0</span>
-                    <span class="kpi__hint">{{ k.hint }}</span>
                   </div>
                   <div class="kpi__foot">
                     @if (k.delta; as delta) {
@@ -540,7 +544,6 @@ const CATALOG: TileDef[] = [
 
     /* ── KPI ── */
     .kpi { display: flex; flex-direction: column; justify-content: center; flex: 1; min-height: 0; }
-    .kpi__hint { font-size: 10.5px; color: var(--color-text-tertiary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .kpi__foot { display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; margin-top: 4px; }
     .kpi__spark { width: 72px; height: 24px; flex-shrink: 0; opacity: 0.85; }
   `]
@@ -1087,17 +1090,30 @@ export class DashboardComponent {
    * the template, so change detection never re-walks the data to redraw an unchanged chart.
    */
   private spark(values: number[], w: number, h: number): Spark {
-    if (values.length < 2) return { line: '', area: '' };
+    const trimmed = this.trimLeadingZeros(values);
+    if (trimmed.length < 2) return { line: '', area: '' };
     const pad = 2;
-    const max = Math.max(...values, 0);
-    const min = Math.min(...values, 0);
+    const max = Math.max(...trimmed, 0);
+    const min = Math.min(...trimmed, 0);
     const range = max - min || 1;
-    const step = w / (values.length - 1);
+    const step = w / (trimmed.length - 1);
     const y = (v: number) => pad + (h - pad * 2) - ((v - min) / range) * (h - pad * 2);
 
-    const line = values
+    const line = trimmed
       .map((v, i) => `${i === 0 ? 'M' : 'L'}${(i * step).toFixed(1)},${y(v).toFixed(1)}`)
       .join(' ');
     return { line, area: `${line} L${w},${h} L0,${h} Z` };
+  }
+
+  /**
+   * Drops leading zero-only buckets (bar one, kept as a baseline anchor) so a series that's
+   * mostly empty because activity only started recently doesn't plot as a flat plateau
+   * punctured by a single distorted spike — the whole point of the trailing window is lost
+   * once nine of twelve months carry no data.
+   */
+  private trimLeadingZeros(values: number[]): number[] {
+    const firstNonZero = values.findIndex(v => v !== 0);
+    if (firstNonZero <= 0) return values;
+    return values.slice(firstNonZero - 1);
   }
 }

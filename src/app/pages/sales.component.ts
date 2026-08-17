@@ -15,12 +15,14 @@ import { PurchaseOrdersService } from '../services/domains/purchase-orders.servi
 import { PartnersService } from '../services/domains/partners.service';
 import { TasksService } from '../services/domains/tasks.service';
 import { CrmStateService } from '../services/crm-state.service';
+import { TranslatePipe } from '../pipes/translate.pipe';
+import { TranslationService } from '../services/translation.service';
 
 export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Proposal Sent' | 'Negotiation' | 'Won / Lost';
 
 @Component({
   selector: 'app-sales',
-  imports: [MatIconModule, CommonModule, FormsModule, RouterLink, CreatedByBadgeComponent, DataStatusBannerComponent, PaginatorComponent, AttachmentsComponent, SalesPipelineBoardComponent],
+  imports: [MatIconModule, CommonModule, FormsModule, RouterLink, CreatedByBadgeComponent, DataStatusBannerComponent, PaginatorComponent, AttachmentsComponent, SalesPipelineBoardComponent, TranslatePipe],
   template: `
     <div class="space-y-8">
       @if (activeTab() !== 'deals') {
@@ -28,25 +30,25 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
       }
       <div class="flex gap-5 sm:gap-6 border-b border-zinc-200">
         <button
-          (click)="activeTab.set('deals'); breadcrumbLabel.set('Deals')"
+          (click)="setActiveTab('deals', 'sales.deals')"
           [class]="activeTab() === 'deals' ? 'border-zinc-900 text-zinc-900' : 'border-transparent text-zinc-400 hover:text-zinc-600'"
           class="px-1 py-3 -mb-px border-b-2 text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap"
         >
           <mat-icon class="text-[18px] w-[18px] h-[18px]">monetization_on</mat-icon>
-          Deals
+          {{ 'sales.deals' | translate }}
           <span class="text-xs">{{ dealsService.allDeals().length }}</span>
         </button>
         <button
-          (click)="activeTab.set('proposals'); breadcrumbLabel.set('Proposals')"
+          (click)="setActiveTab('proposals', 'sales.proposals')"
           [class]="activeTab() === 'proposals' ? 'border-zinc-900 text-zinc-900' : 'border-transparent text-zinc-400 hover:text-zinc-600'"
           class="px-1 py-3 -mb-px border-b-2 text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap"
         >
           <mat-icon class="text-[18px] w-[18px] h-[18px]">description</mat-icon>
-          Proposals
+          {{ 'sales.proposals' | translate }}
           <span class="text-xs">{{ proposalsService.allProposals().length }}</span>
         </button>
         <button
-          (click)="activeTab.set('pos'); breadcrumbLabel.set('Purchase Orders')"
+          (click)="setActiveTab('pos', 'sales.purchaseOrders')"
           [class]="activeTab() === 'pos' ? 'border-zinc-900 text-zinc-900' : 'border-transparent text-zinc-400 hover:text-zinc-600'"
           class="px-1 py-3 -mb-px border-b-2 text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap"
         >
@@ -2329,6 +2331,12 @@ export class SalesComponent {
   private tasksService = inject(TasksService);
   state = inject(CrmStateService);
   private router = inject(Router);
+  translation = inject(TranslationService);
+
+  setActiveTab(tab: 'deals' | 'proposals' | 'pos', labelKey: string): void {
+    this.activeTab.set(tab);
+    this.breadcrumbLabel.set(this.translation.t(labelKey));
+  }
 
   canCreateDeal(): boolean { return this.state.hasAuthority('DEALS_CREATE'); }
   canWriteDeal(): boolean { return this.state.hasAuthority('DEALS_WRITE'); }

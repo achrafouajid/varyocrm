@@ -814,6 +814,10 @@ body {
   text-overflow: ellipsis;
 }
 
+.bento-tile__title--help {
+  cursor: help;
+}
+
 .bento-tile__body {
   flex: 1;
   min-height: 0;

@@ -4,17 +4,19 @@ import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { CrmStateService, Lead, LeadActivity, LeadAttachment } from '../services/crm-state.service';
 import { ApiService } from '../services/api.service';
+import { TranslatePipe } from '../pipes/translate.pipe';
+import { TranslationService } from '../services/translation.service';
 
 @Component({
   selector: 'app-leads',
-  imports: [CommonModule, FormsModule, MatIconModule],
+  imports: [CommonModule, FormsModule, MatIconModule, TranslatePipe],
   template: `
     <div class="max-w-7xl mx-auto space-y-8 animate-in fade-in duration-200">
       <!-- Page Header -->
       <div class="flex justify-end">
         <button (click)="openAddLeadModal()" class="bg-zinc-900 hover:bg-zinc-950 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150 flex items-center gap-2 shadow-md hover:shadow-lg focus:outline-none">
           <mat-icon class="w-5 h-5 text-[20px]! leading-none!">add</mat-icon>
-          Add New Lead
+          {{ 'leads.addNew' | translate }}
         </button>
       </div>
 
@@ -23,7 +25,7 @@ import { ApiService } from '../services/api.service';
         <!-- Metric 1: Total Leads -->
         <div class="bg-white rounded-2xl border border-zinc-200 p-4 lg:p-6 flex items-center justify-between shadow-xs">
           <div class="space-y-1">
-            <span class="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Total Leads</span>
+            <span class="text-xs font-semibold text-zinc-400 uppercase tracking-wider">{{ 'leads.totalLeads' | translate }}</span>
             <div class="text-lg sm:text-xl lg:text-2xl font-bold text-zinc-900 truncate">{{ totalLeadsCount() }}</div>
           </div>
           <div class="p-3 bg-zinc-100 text-zinc-900 rounded-xl">
@@ -34,7 +36,7 @@ import { ApiService } from '../services/api.service';
         <!-- Metric 2: Qualified Leads -->
         <div class="bg-white rounded-2xl border border-zinc-200 p-4 lg:p-6 flex items-center justify-between shadow-xs">
           <div class="space-y-1">
-            <span class="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Qualified Leads</span>
+            <span class="text-xs font-semibold text-zinc-400 uppercase tracking-wider">{{ 'leads.qualifiedLeads' | translate }}</span>
             <div class="text-lg sm:text-xl lg:text-2xl font-bold text-zinc-900 truncate">{{ qualifiedLeadsCount() }}</div>
           </div>
           <div class="p-3 bg-zinc-100 text-zinc-900 rounded-xl">
@@ -45,7 +47,7 @@ import { ApiService } from '../services/api.service';
         <!-- Metric 3: Avg Score -->
         <div class="bg-white rounded-2xl border border-zinc-200 p-4 lg:p-6 flex items-center justify-between shadow-xs">
           <div class="space-y-1">
-            <span class="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Avg Lead Score</span>
+            <span class="text-xs font-semibold text-zinc-400 uppercase tracking-wider">{{ 'leads.avgScore' | translate }}</span>
             <div class="text-lg sm:text-xl lg:text-2xl font-bold text-zinc-900 truncate">{{ avgLeadScore() }}%</div>
           </div>
           <div class="p-3 bg-zinc-100 text-zinc-900 rounded-xl">
@@ -56,7 +58,7 @@ import { ApiService } from '../services/api.service';
         <!-- Metric 4: Conversion Rate -->
         <div class="bg-white rounded-2xl border border-zinc-200 p-4 lg:p-6 flex items-center justify-between shadow-xs">
           <div class="space-y-1">
-            <span class="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Conversion Rate</span>
+            <span class="text-xs font-semibold text-zinc-400 uppercase tracking-wider">{{ 'leads.conversionRate' | translate }}</span>
             <div class="text-lg sm:text-xl lg:text-2xl font-bold text-zinc-900 truncate">{{ conversionRate() }}%</div>
           </div>
           <div class="p-3 bg-zinc-100 text-zinc-900 rounded-xl">
@@ -78,13 +80,13 @@ import { ApiService } from '../services/api.service';
               <input
                 [(ngModel)]="searchQuery"
                 type="text"
-                placeholder="Search name, company..."
+                [placeholder]="'leads.searchPlaceholder' | translate"
                 class="w-full border border-zinc-200 rounded-xl pl-10 pr-4 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-zinc-700/20 focus:border-zinc-700 transition-all placeholder:text-zinc-400"
               >
             </div>
             <!-- Status Filter -->
             <select [(ngModel)]="statusFilter" class="border border-zinc-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-zinc-700/20 focus:border-zinc-700">
-              <option value="">All Statuses</option>
+              <option value="">{{ 'leads.allStatuses' | translate }}</option>
               <option value="New">New</option>
               <option value="Contacted">Contacted</option>
               <option value="Attempted Contact">Attempted Contact</option>
@@ -97,7 +99,7 @@ import { ApiService } from '../services/api.service';
             </select>
             <!-- Priority Filter -->
             <select [(ngModel)]="priorityFilter" class="border border-zinc-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-zinc-700/20 focus:border-zinc-700">
-              <option value="">All Priorities</option>
+              <option value="">{{ 'leads.allPriorities' | translate }}</option>
               <option value="High">High</option>
               <option value="Medium">Medium</option>
               <option value="Low">Low</option>
@@ -116,13 +118,13 @@ import { ApiService } from '../services/api.service';
                 <th scope="col" class="px-6 py-3 text-left">
                   <input type="checkbox" [checked]="allLeadsSelected()" (click)="toggleSelectAllLeads($event)" class="rounded border-zinc-300 cursor-pointer">
                 </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-zinc-400 uppercase tracking-wider">Lead</th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-zinc-400 uppercase tracking-wider">Company & Job</th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-zinc-400 uppercase tracking-wider">Qualification</th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-zinc-400 uppercase tracking-wider">Lead Score</th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-zinc-400 uppercase tracking-wider">Origin</th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-zinc-400 uppercase tracking-wider">Owner</th>
-                <th scope="col" class="px-6 py-3 class-left text-xs font-bold text-zinc-400 uppercase tracking-wider">Status</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-zinc-400 uppercase tracking-wider">{{ 'leads.lead' | translate }}</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-zinc-400 uppercase tracking-wider">{{ 'leads.company' | translate }}</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-zinc-400 uppercase tracking-wider">{{ 'leads.qualification' | translate }}</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-zinc-400 uppercase tracking-wider">{{ 'leads.leadScore' | translate }}</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-zinc-400 uppercase tracking-wider">{{ 'leads.origin' | translate }}</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-zinc-400 uppercase tracking-wider">{{ 'leads.owner' | translate }}</th>
+                <th scope="col" class="px-6 py-3 class-left text-xs font-bold text-zinc-400 uppercase tracking-wider">{{ 'leads.status' | translate }}</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-200/80 bg-white">
@@ -144,7 +146,7 @@ import { ApiService } from '../services/api.service';
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm font-medium text-zinc-800">{{ lead.companyName }}</div>
-                    <div class="text-xs text-zinc-400">{{ lead.company?.city || 'No city' }}, {{ lead.company?.country || 'No country' }}</div>
+                    <div class="text-xs text-zinc-400">{{ lead.company?.city || ('leads.noCity' | translate) }}, {{ lead.company?.country || ('leads.noCountry' | translate) }}</div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="flex items-center gap-1.5">
@@ -175,7 +177,7 @@ import { ApiService } from '../services/api.service';
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm text-zinc-600 flex items-center gap-1.5">
                       <mat-icon class="w-4 h-4 text-[16px]! text-zinc-400">person_outline</mat-icon>
-                      {{ lead.assignedSalesperson || 'Unassigned' }}
+                      {{ lead.assignedSalesperson || ('leads.unassigned' | translate) }}
                     </div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
@@ -188,8 +190,8 @@ import { ApiService } from '../services/api.service';
                 <tr>
                   <td colspan="8" class="px-6 py-12 text-center text-zinc-400">
                     <mat-icon class="text-[48px]! w-12 h-12 mb-3 text-zinc-300 block mx-auto">people_alt</mat-icon>
-                    <p class="font-semibold text-zinc-500">No leads found</p>
-                    <p class="text-xs text-zinc-400 mt-1">Try resetting filters or adding a new lead record.</p>
+                    <p class="font-semibold text-zinc-500">{{ 'leads.noLeads' | translate }}</p>
+                    <p class="text-xs text-zinc-400 mt-1">{{ 'leads.noLeadsHint' | translate }}</p>
                   </td>
                 </tr>
               }
@@ -200,18 +202,18 @@ import { ApiService } from '../services/api.service';
 
       @if (selectedLeadIds().size > 0) {
         <div class="bulk-action-bar">
-          <span class="text-body font-semibold">{{ selectedLeadIds().size }} selected</span>
+          <span class="text-body font-semibold">{{ selectedLeadIds().size }} {{ 'leads.selected' | translate }}</span>
           <div class="w-px h-4 bg-white/20"></div>
           <select class="text-body bg-white/10 text-white rounded-md px-2 py-1.5 border-none outline-none cursor-pointer" (change)="bulkAssignLeadOwner($event)">
-            <option value="">Assign owner…</option>
+            <option value="">{{ 'leads.assignOwner' | translate }}</option>
             @for (u of state.users(); track u.id) { <option [value]="u.name">{{u.name}}</option> }
           </select>
           <select class="text-body bg-white/10 text-white rounded-md px-2 py-1.5 border-none outline-none cursor-pointer" (change)="bulkChangeLeadStage($event)">
-            <option value="">Change stage…</option>
+            <option value="">{{ 'leads.changeStage' | translate }}</option>
             @for (s of leadStatusOptions; track s) { <option [value]="s">{{s}}</option> }
           </select>
-          <button class="text-body font-semibold px-3 py-1.5 rounded-md hover:bg-white/10 transition-colors" (click)="bulkExportLeads()">Export CSV</button>
-          <button class="text-meta ml-2 opacity-70 hover:opacity-100 transition-opacity" (click)="clearLeadSelection()">Clear</button>
+          <button class="text-body font-semibold px-3 py-1.5 rounded-md hover:bg-white/10 transition-colors" (click)="bulkExportLeads()">{{ 'leads.exportCSV' | translate }}</button>
+          <button class="text-meta ml-2 opacity-70 hover:opacity-100 transition-opacity" (click)="clearLeadSelection()">{{ 'leads.clear' | translate }}</button>
         </div>
       }
     </div>
@@ -240,17 +242,17 @@ import { ApiService } from '../services/api.service';
                 <div class="flex items-center gap-3">
                   <!-- Change Status Quick Dropdown -->
                   <div class="flex items-center gap-1.5 bg-white border border-zinc-200 rounded-lg px-2 py-1">
-                    <span class="text-meta uppercase font-bold text-zinc-400">Status:</span>
+                    <span class="text-meta uppercase font-bold text-zinc-400">{{ 'leads.status' | translate }}:</span>
                     <select [ngModel]="lead.status" (ngModelChange)="onStatusChange(lead.id, $event)" class="text-xs font-semibold text-zinc-700 bg-transparent border-none focus:outline-none cursor-pointer">
-                      <option value="New">New</option>
-                      <option value="Contacted">Contacted</option>
-                      <option value="Attempted Contact">Attempted Contact</option>
-                      <option value="Meeting Scheduled">Meeting Scheduled</option>
-                      <option value="Qualified">Qualified</option>
-                      <option value="Proposal Requested">Proposal Requested</option>
-                      <option value="Converted">Converted</option>
-                      <option value="Lost">Lost</option>
-                      <option value="Disqualified">Disqualified</option>
+                      <option value="New">{{ 'leads.new' | translate }}</option>
+                      <option value="Contacted">{{ 'leads.contacted' | translate }}</option>
+                      <option value="Attempted Contact">{{ 'leads.attemptedContact' | translate }}</option>
+                      <option value="Meeting Scheduled">{{ 'leads.meetingScheduled' | translate }}</option>
+                      <option value="Qualified">{{ 'leads.qualified' | translate }}</option>
+                      <option value="Proposal Requested">{{ 'leads.proposalRequested' | translate }}</option>
+                      <option value="Converted">{{ 'leads.converted' | translate }}</option>
+                      <option value="Lost">{{ 'leads.lost' | translate }}</option>
+                      <option value="Disqualified">{{ 'leads.disqualified' | translate }}</option>
                     </select>
                   </div>
 
@@ -262,10 +264,10 @@ import { ApiService } from '../services/api.service';
 
               <!-- Tabs Nav -->
               <div class="px-6 border-b border-zinc-100 flex gap-6 bg-zinc-50/50">
-                <button (click)="activeDetailTab.set('info')" [class.border-zinc-900]="activeDetailTab() === 'info'" [class.text-zinc-900]="activeDetailTab() === 'info'" class="py-3 border-b-2 border-transparent text-sm font-semibold text-zinc-500 hover:text-zinc-800 transition-all">Info</button>
-                <button (click)="activeDetailTab.set('activities')" [class.border-zinc-900]="activeDetailTab() === 'activities'" [class.text-zinc-900]="activeDetailTab() === 'activities'" class="py-3 border-b-2 border-transparent text-sm font-semibold text-zinc-500 hover:text-zinc-800 transition-all">Activities & Notes</button>
-                <button (click)="activeDetailTab.set('attachments')" [class.border-zinc-900]="activeDetailTab() === 'attachments'" [class.text-zinc-900]="activeDetailTab() === 'attachments'" class="py-3 border-b-2 border-transparent text-sm font-semibold text-zinc-500 hover:text-zinc-800 transition-all">Attachments</button>
-                <button (click)="activeDetailTab.set('history')" [class.border-zinc-900]="activeDetailTab() === 'history'" [class.text-zinc-900]="activeDetailTab() === 'history'" class="py-3 border-b-2 border-transparent text-sm font-semibold text-zinc-500 hover:text-zinc-800 transition-all">Status History</button>
+                <button (click)="activeDetailTab.set('info')" [class.border-zinc-900]="activeDetailTab() === 'info'" [class.text-zinc-900]="activeDetailTab() === 'info'" class="py-3 border-b-2 border-transparent text-sm font-semibold text-zinc-500 hover:text-zinc-800 transition-all">{{ 'leads.info' | translate }}</button>
+                <button (click)="activeDetailTab.set('activities')" [class.border-zinc-900]="activeDetailTab() === 'activities'" [class.text-zinc-900]="activeDetailTab() === 'activities'" class="py-3 border-b-2 border-transparent text-sm font-semibold text-zinc-500 hover:text-zinc-800 transition-all">{{ 'leads.activitiesNotes' | translate }}</button>
+                <button (click)="activeDetailTab.set('attachments')" [class.border-zinc-900]="activeDetailTab() === 'attachments'" [class.text-zinc-900]="activeDetailTab() === 'attachments'" class="py-3 border-b-2 border-transparent text-sm font-semibold text-zinc-500 hover:text-zinc-800 transition-all">{{ 'leads.attachments' | translate }}</button>
+                <button (click)="activeDetailTab.set('history')" [class.border-zinc-900]="activeDetailTab() === 'history'" [class.text-zinc-900]="activeDetailTab() === 'history'" class="py-3 border-b-2 border-transparent text-sm font-semibold text-zinc-500 hover:text-zinc-800 transition-all">{{ 'leads.statusHistory' | translate }}</button>
               </div>
 
               <!-- Scrollable content -->
@@ -584,9 +586,9 @@ import { ApiService } from '../services/api.service';
     @if (addLeadModalOpen()) {
       <div class="fixed inset-0 z-50 bg-zinc-900/40 backdrop-blur-xs flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-zinc-100 animate-in zoom-in-95 duration-200 overflow-y-auto max-h-[90vh]">
-          
+
           <div class="flex justify-between items-center pb-3 border-b border-zinc-100">
-            <h3 class="text-lg font-bold text-zinc-950">Add New Lead Record</h3>
+            <h3 class="text-lg font-bold text-zinc-950">{{ 'leads.addNew' | translate }}</h3>
             <button (click)="addLeadModalOpen.set(false)" class="text-zinc-400 hover:text-zinc-600 transition-colors">
               <mat-icon class="w-5 h-5 text-[20px]! leading-none!">close</mat-icon>
             </button>
@@ -725,6 +727,7 @@ import { ApiService } from '../services/api.service';
 export class LeadsComponent {
   state = inject(CrmStateService);
   api = inject(ApiService);
+  translation = inject(TranslationService);
   uploading = signal(false);
 
   // Filters state

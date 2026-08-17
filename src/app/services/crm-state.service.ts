@@ -3,6 +3,8 @@ import { Router } from '@angular/router';
 import { SEED_ORG, SEED_USERS, SEED_TEAMS, SEED_GROUPS, SEED_MESSAGES, SEED_MEETINGS } from '../data/seed-data';
 import { ToastService } from './toast.service';
 import { ApiService } from './api.service';
+import { TranslationService } from './translation.service';
+import { isSupportedLanguage } from '../core/i18n/language';
 
 export interface Organization {
   id: string;
@@ -47,7 +49,7 @@ export interface CrmUser {
   phone?: string;
   jobTitle?: string;
   preferences: {
-    language: 'en' | 'fr' | 'ar' | 'es';
+    language: 'en' | 'fr' | 'ar';
     notifyOnLeadAssign: boolean;
     notifyOnDealUpdate: boolean;
     notifyOnMention: boolean;
@@ -925,6 +927,7 @@ export class CrmStateService {
   private toast = inject(ToastService);
   private router = inject(Router);
   private api = inject(ApiService);
+  private translation = inject(TranslationService);
 
   // Auth
   isAuthenticated = signal<boolean>(this.loadAuthState());
@@ -1839,7 +1842,7 @@ export class CrmStateService {
             phone: user.phone || undefined,
             jobTitle: user.job_title || undefined,
             preferences: {
-              language: (user.language || 'en') as 'en' | 'fr' | 'ar' | 'es',
+              language: isSupportedLanguage(user.language) ? user.language : 'en',
               notifyOnLeadAssign: true,
               notifyOnDealUpdate: true,
               notifyOnMention: true,
@@ -4754,7 +4757,10 @@ export class CrmStateService {
     'task-status'
   ];
 
-  private static readonly LAYOUT_KEY = 'bento_dashboard_layout_v1';
+  // Bumped to v2 when the default tile order changed to lead with KPIs — this
+  // invalidates layouts saved under the old default so returning users pick up
+  // the new order instead of being stuck on a stale arrangement.
+  private static readonly LAYOUT_KEY = 'bento_dashboard_layout_v2';
 
   dashboardLayout = signal<string[]>(this.readStoredLayout());
 
@@ -5752,6 +5758,19 @@ export class CrmStateService {
         this.loadEagerDataFromApi();
       } else if (!authenticated) {
         this.eagerDataLoadedFor = authenticated;
+      }
+    });
+
+    // Whenever the current user's saved language preference changes (initial
+    // load, sync from API, or a profile edit), reflect it in the interface.
+    // Keeping this here -- rather than in TranslationService or the profile
+    // component -- means neither of those needs to know about the other.
+    effect(() => {
+      const id = this.currentUserId();
+      const user = this.users().find(u => u.id === id);
+      const lang = user?.preferences.language;
+      if (lang && lang !== this.translation.currentLang()) {
+        this.translation.setLanguage(lang).subscribe();
       }
     });
   }

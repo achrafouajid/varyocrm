@@ -1,213 +1,106 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, inject, signal, computed } from '@angular/core';
+import { Observable, of, tap } from 'rxjs';
+import { TranslationLoader, TranslationDictionary } from '../core/i18n/translation-loader';
+import {
+  DEFAULT_LANGUAGE,
+  LANGUAGES,
+  LanguageCode,
+  LanguageDefinition,
+  getLanguageDefinition,
+  isSupportedLanguage,
+} from '../core/i18n/language';
 
-export type Language = 'en' | 'fr' | 'ar';
+const STORAGE_KEY = 'bento_lang';
 
-const translations: Record<Language, Record<string, string>> = {
-  en: {
-    // Nav
-    'nav.sales': 'Sales',
-    'nav.marketing': 'Marketing',
-    'nav.inbox': 'Inbox',
-    'nav.analytics': 'Analytics',
-    'nav.partners': 'Partners',
-    'nav.finance': 'Finance',
-    'nav.sales.deals': 'Deals & Proposals',
-    'nav.sales.tasks': 'Tasks',
-    'nav.marketing.email': 'Email',
-    'nav.marketing.whatsapp': 'WhatsApp',
-    'nav.marketing.sms': 'SMS',
-    'nav.inbox.tickets': 'My Tickets',
-    // Profile Menu
-    'profile.language': 'Language',
-    'profile.profile': 'My Profile',
-    'profile.settings': 'Settings',
-    'profile.logout': 'Sign Out',
-    'profile.changeLanguage': 'Change Language',
-    // Dashboard
-    'dashboard.title': 'Home',
-    'dashboard.subtitle': 'Your customizable daily summary. Select which KPIs to track.',
-    'dashboard.customize': 'Customize KPIs',
-    'dashboard.doneCustomizing': 'Done Customizing',
-    'dashboard.selectKpis': 'Select KPIs to display',
-    'dashboard.newDeal': 'New Deal',
-    'dashboard.addPartner': 'Add Partner',
-    'dashboard.newCampaign': 'New Campaign',
-    'dashboard.createTicket': 'Create Ticket',
-    'dashboard.kpi.totalDeals': 'Total Deals Value',
-    'dashboard.kpi.totalDeals.label': 'Total Deals',
-    'dashboard.kpi.marketingSpend': 'Marketing Spend',
-    'dashboard.kpi.marketingSpend.label': 'Marketing Spend',
-    'dashboard.kpi.latePayers': 'Late Payers',
-    'dashboard.kpi.latePayers.label': 'Late Payers',
-    'dashboard.kpi.activeCampaigns': 'Active Campaigns',
-    'dashboard.kpi.activeCampaigns.label': 'Active Campaigns',
-    'dashboard.kpi.openTickets': 'Open Tickets',
-    'dashboard.kpi.openTickets.label': 'Open Tickets',
-    'dashboard.kpi.totalProspects': 'Total Prospects',
-    'dashboard.kpi.totalProspects.label': 'Total Prospects',
-    'dashboard.kpi.activePipeline': 'Active Pipeline',
-    'dashboard.kpi.stableChannels': 'Stable across channels',
-    'dashboard.kpi.needsAttention': 'Needs attention',
-    'dashboard.kpi.runningSmoothly': 'Running smoothly',
-    'dashboard.kpi.pendingResolution': 'Pending resolution',
-    'dashboard.kpi.growingPipeline': 'Growing pipeline',
-    'dashboard.chart.partnerDirectory': 'Partner Directory',
-    'dashboard.chart.tasksStatus': 'Tasks Status',
-    'dashboard.chart.customers': 'Customers',
-    'dashboard.chart.prospects': 'Prospects',
-    'dashboard.chart.vendors': 'Vendors',
-    'dashboard.chart.completed': 'Completed',
-    'dashboard.chart.inProgress': 'In Progress',
-    'dashboard.chart.pending': 'Pending',
-    // Languages
-    'lang.en': 'English',
-    'lang.fr': 'Français',
-    'lang.ar': 'العربية',
-  },
-  fr: {
-    // Nav
-    'nav.sales': 'Ventes',
-    'nav.marketing': 'Marketing',
-    'nav.inbox': 'Boîte de réception',
-    'nav.analytics': 'Analytique',
-    'nav.partners': 'Partenaires',
-    'nav.finance': 'Finance',
-    'nav.sales.deals': 'Offres & Propositions',
-    'nav.sales.tasks': 'Tâches',
-    'nav.marketing.email': 'E-mail',
-    'nav.marketing.whatsapp': 'WhatsApp',
-    'nav.marketing.sms': 'SMS',
-    'nav.inbox.tickets': 'Mes tickets',
-    // Profile Menu
-    'profile.language': 'Langue',
-    'profile.profile': 'Mon profil',
-    'profile.settings': 'Paramètres',
-    'profile.logout': 'Déconnexion',
-    'profile.changeLanguage': 'Changer de langue',
-    // Dashboard
-    'dashboard.title': 'Accueil',
-    'dashboard.subtitle': 'Votre résumé quotidien personnalisable. Sélectionnez les KPIs à suivre.',
-    'dashboard.customize': 'Personnaliser les KPIs',
-    'dashboard.doneCustomizing': 'Terminé',
-    'dashboard.selectKpis': 'Sélectionner les KPIs à afficher',
-    'dashboard.newDeal': 'Nouvelle affaire',
-    'dashboard.addPartner': 'Ajouter un partenaire',
-    'dashboard.newCampaign': 'Nouvelle campagne',
-    'dashboard.createTicket': 'Créer un ticket',
-    'dashboard.kpi.totalDeals': 'Valeur totale des affaires',
-    'dashboard.kpi.totalDeals.label': 'Total affaires',
-    'dashboard.kpi.marketingSpend': 'Dépenses marketing',
-    'dashboard.kpi.marketingSpend.label': 'Dépenses marketing',
-    'dashboard.kpi.latePayers': 'Retardataires',
-    'dashboard.kpi.latePayers.label': 'Retardataires',
-    'dashboard.kpi.activeCampaigns': 'Campagnes actives',
-    'dashboard.kpi.activeCampaigns.label': 'Campagnes actives',
-    'dashboard.kpi.openTickets': 'Tickets ouverts',
-    'dashboard.kpi.openTickets.label': 'Tickets ouverts',
-    'dashboard.kpi.totalProspects': 'Total prospects',
-    'dashboard.kpi.totalProspects.label': 'Total prospects',
-    'dashboard.kpi.activePipeline': 'Pipeline actif',
-    'dashboard.kpi.stableChannels': 'Stable sur tous les canaux',
-    'dashboard.kpi.needsAttention': 'Nécessite attention',
-    'dashboard.kpi.runningSmoothly': 'Fonctionne bien',
-    'dashboard.kpi.pendingResolution': 'En attente de résolution',
-    'dashboard.kpi.growingPipeline': 'Pipeline en croissance',
-    'dashboard.chart.partnerDirectory': 'Répertoire partenaires',
-    'dashboard.chart.tasksStatus': 'Statut des tâches',
-    'dashboard.chart.customers': 'Clients',
-    'dashboard.chart.prospects': 'Prospects',
-    'dashboard.chart.vendors': 'Fournisseurs',
-    'dashboard.chart.completed': 'Complétées',
-    'dashboard.chart.inProgress': 'En cours',
-    'dashboard.chart.pending': 'En attente',
-    // Languages
-    'lang.en': 'English',
-    'lang.fr': 'Français',
-    'lang.ar': 'العربية',
-  },
-  ar: {
-    // Nav
-    'nav.sales': 'المبيعات',
-    'nav.marketing': 'التسويق',
-    'nav.inbox': 'البريد الوارد',
-    'nav.analytics': 'التحليلات',
-    'nav.partners': 'الشركاء',
-    'nav.finance': 'المالية',
-    'nav.sales.deals': 'الصفقات والعروض',
-    'nav.sales.tasks': 'المهام',
-    'nav.marketing.email': 'البريد الإلكتروني',
-    'nav.marketing.whatsapp': 'واتساب',
-    'nav.marketing.sms': 'رسائل نصية',
-    'nav.inbox.tickets': 'تذاكري',
-    // Profile Menu
-    'profile.language': 'اللغة',
-    'profile.profile': 'ملفي الشخصي',
-    'profile.settings': 'الإعدادات',
-    'profile.logout': 'تسجيل الخروج',
-    'profile.changeLanguage': 'تغيير اللغة',
-    // Dashboard
-    'dashboard.title': 'الرئيسية',
-    'dashboard.subtitle': 'ملخصك اليومي القابل للتخصيص. اختر مؤشرات الأداء التي تريد تتبعها.',
-    'dashboard.customize': 'تخصيص مؤشرات الأداء',
-    'dashboard.doneCustomizing': 'تم التخصيص',
-    'dashboard.selectKpis': 'اختر مؤشرات الأداء للعرض',
-    'dashboard.newDeal': 'صفقة جديدة',
-    'dashboard.addPartner': 'إضافة شريك',
-    'dashboard.newCampaign': 'حملة جديدة',
-    'dashboard.createTicket': 'إنشاء تذكرة',
-    'dashboard.kpi.totalDeals': 'إجمالي قيمة الصفقات',
-    'dashboard.kpi.totalDeals.label': 'إجمالي الصفقات',
-    'dashboard.kpi.marketingSpend': 'الإنفاق التسويقي',
-    'dashboard.kpi.marketingSpend.label': 'الإنفاق التسويقي',
-    'dashboard.kpi.latePayers': 'المتأخرون في الدفع',
-    'dashboard.kpi.latePayers.label': 'المتأخرون في الدفع',
-    'dashboard.kpi.activeCampaigns': 'الحملات النشطة',
-    'dashboard.kpi.activeCampaigns.label': 'الحملات النشطة',
-    'dashboard.kpi.openTickets': 'التذاكر المفتوحة',
-    'dashboard.kpi.openTickets.label': 'التذاكر المفتوحة',
-    'dashboard.kpi.totalProspects': 'إجمالي العملاء المحتملين',
-    'dashboard.kpi.totalProspects.label': 'إجمالي العملاء المحتملين',
-    'dashboard.kpi.activePipeline': 'خط أنابيب نشط',
-    'dashboard.kpi.stableChannels': 'مستقر عبر جميع القنوات',
-    'dashboard.kpi.needsAttention': 'يحتاج اهتماماً',
-    'dashboard.kpi.runningSmoothly': 'يعمل بسلاسة',
-    'dashboard.kpi.pendingResolution': 'في انتظار الحل',
-    'dashboard.kpi.growingPipeline': 'خط أنابيب متنامٍ',
-    'dashboard.chart.partnerDirectory': 'دليل الشركاء',
-    'dashboard.chart.tasksStatus': 'حالة المهام',
-    'dashboard.chart.customers': 'العملاء',
-    'dashboard.chart.prospects': 'العملاء المحتملون',
-    'dashboard.chart.vendors': 'الموردون',
-    'dashboard.chart.completed': 'مكتملة',
-    'dashboard.chart.inProgress': 'جارية',
-    'dashboard.chart.pending': 'معلقة',
-    // Languages
-    'lang.en': 'English',
-    'lang.fr': 'Français',
-    'lang.ar': 'العربية',
-  }
-};
-
+/** Single source of truth for the active interface language.
+ *
+ *  Responsibilities are deliberately narrow (SRP): track the current
+ *  language, load/cache its dictionary via an injected TranslationLoader
+ *  (DIP -- the loader is swappable), and reflect the choice onto
+ *  `<html dir/lang>` and localStorage. It knows nothing about user
+ *  profiles or backend persistence; CrmStateService is responsible for
+ *  keeping the authenticated user's saved preference in sync with this
+ *  service, so the two concerns stay decoupled. */
 @Injectable({ providedIn: 'root' })
 export class TranslationService {
-  currentLang = signal<Language>((localStorage.getItem('crm_lang') as Language) || 'en');
+  private loader = inject(TranslationLoader);
+  private cache = new Map<LanguageCode, TranslationDictionary>();
 
-  isRtl = computed(() => this.currentLang() === 'ar');
+  readonly availableLanguages: readonly LanguageDefinition[] = LANGUAGES;
 
-  setLanguage(lang: Language) {
-    this.currentLang.set(lang);
-    localStorage.setItem('crm_lang', lang);
-    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-    document.documentElement.lang = lang;
+  private readonly langSignal = signal<LanguageCode>(this.readStoredLanguage());
+  private readonly dictionarySignal = signal<TranslationDictionary>({});
+  readonly isLoading = signal(false);
+
+  readonly currentLang = this.langSignal.asReadonly();
+  readonly currentLanguageDefinition = computed(() => getLanguageDefinition(this.langSignal()));
+  readonly dir = computed(() => this.currentLanguageDefinition().dir);
+  readonly isRtl = computed(() => this.dir() === 'rtl');
+
+  /** Resolves the language to boot with, in priority order: a previously
+   *  chosen language in localStorage, then the browser's language, then
+   *  the app default. The authenticated user's saved preference (if any)
+   *  takes over once CrmStateService loads it. */
+  private readStoredLanguage(): LanguageCode {
+    if (typeof localStorage === 'undefined') return DEFAULT_LANGUAGE;
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (isSupportedLanguage(stored)) return stored;
+    const browserLang = typeof navigator !== 'undefined' ? navigator.language.split('-')[0] : undefined;
+    return isSupportedLanguage(browserLang) ? browserLang : DEFAULT_LANGUAGE;
   }
 
-  t(key: string): string {
-    return translations[this.currentLang()][key] ?? translations['en'][key] ?? key;
+  /** Loads (or reuses the cached) dictionary for `lang`, applies it, and
+   *  reflects the choice on `<html>` and localStorage. Call once at
+   *  bootstrap via an app initializer, and again whenever the user
+   *  changes their language. */
+  setLanguage(lang: LanguageCode): Observable<TranslationDictionary> {
+    const cached = this.cache.get(lang);
+    if (cached) {
+      this.applyLanguage(lang, cached);
+      return of(cached);
+    }
+
+    this.isLoading.set(true);
+    return this.loader.load(lang).pipe(
+      tap({
+        next: (dict) => {
+          this.cache.set(lang, dict);
+          this.applyLanguage(lang, dict);
+          this.isLoading.set(false);
+        },
+        error: () => this.isLoading.set(false),
+      })
+    );
   }
 
-  initFromStorage() {
-    const lang = this.currentLang();
-    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-    document.documentElement.lang = lang;
+  /** Boot-time entry point for the app initializer. */
+  init(): Observable<TranslationDictionary> {
+    return this.setLanguage(this.langSignal());
+  }
+
+  private applyLanguage(lang: LanguageCode, dict: TranslationDictionary): void {
+    this.langSignal.set(lang);
+    this.dictionarySignal.set(dict);
+    if (typeof localStorage !== 'undefined') localStorage.setItem(STORAGE_KEY, lang);
+    if (typeof document !== 'undefined') {
+      document.documentElement.dir = getLanguageDefinition(lang).dir;
+      document.documentElement.lang = lang;
+    }
+  }
+
+  /** Translates `key`, optionally interpolating `{{token}}` placeholders
+   *  from `params`. Falls back to the default language, then the raw key,
+   *  so missing translations never render blank. */
+  t(key: string, params?: Record<string, string | number>): string {
+    const dict = this.dictionarySignal();
+    const fallback = this.cache.get(DEFAULT_LANGUAGE);
+    const raw = dict[key] ?? fallback?.[key] ?? key;
+    return params ? this.interpolate(raw, params) : raw;
+  }
+
+  private interpolate(text: string, params: Record<string, string | number>): string {
+    return text.replace(/{{\s*(\w+)\s*}}/g, (_match, token) =>
+      token in params ? String(params[token]) : _match
+    );
   }
 }

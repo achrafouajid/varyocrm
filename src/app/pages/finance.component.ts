@@ -9,6 +9,8 @@ import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
 import { DataStatusBannerComponent } from '../shared/data-status-banner.component';
 import { PaginatorComponent } from '../shared/paginator.component';
 import { AttachmentsComponent } from '../shared/attachments.component';
+import { TranslatePipe } from '../pipes/translate.pipe';
+import { TranslationService } from '../services/translation.service';
 
 // ── Local type alias for invoice line items ────────────────────────────────
 type InvoiceLine = {
@@ -21,35 +23,35 @@ type InvoiceLine = {
 
 @Component({
   selector: 'app-finance',
-  imports: [MatIconModule, MatTooltipModule, CommonModule, FormsModule, CreatedByBadgeComponent, DataStatusBannerComponent, PaginatorComponent, AttachmentsComponent],
+  imports: [MatIconModule, MatTooltipModule, CommonModule, FormsModule, CreatedByBadgeComponent, DataStatusBannerComponent, PaginatorComponent, AttachmentsComponent, TranslatePipe],
   template: `
     <div class="space-y-8">
       <div class="flex gap-5 sm:gap-6 border-b border-zinc-200">
         <button
-          (click)="activeTab.set('Customer'); state.breadcrumbLabel.set('Customer Invoices'); invoicesPage.set(1)"
+          (click)="setFinanceTab('Customer'); invoicesPage.set(1)"
           [class]="activeTab() === 'Customer' ? 'border-zinc-900 text-zinc-900' : 'border-transparent text-zinc-400 hover:text-zinc-600'"
           class="px-1 py-3 -mb-px border-b-2 text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap"
         >
           <mat-icon class="text-[18px] w-[18px] h-[18px]">receipt</mat-icon>
-          Customer
+          {{ 'finance.customer' | translate }}
           <span class="text-xs">{{ customerInvoices().length }}</span>
         </button>
         <button
-          (click)="activeTab.set('Vendor'); state.breadcrumbLabel.set('Vendor Invoices'); invoicesPage.set(1)"
+          (click)="setFinanceTab('Vendor'); invoicesPage.set(1)"
           [class]="activeTab() === 'Vendor' ? 'border-zinc-900 text-zinc-900' : 'border-transparent text-zinc-400 hover:text-zinc-600'"
           class="px-1 py-3 -mb-px border-b-2 text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap"
         >
           <mat-icon class="text-[18px] w-[18px] h-[18px]">receipt_long</mat-icon>
-          Vendor
+          {{ 'finance.vendor' | translate }}
           <span class="text-xs">{{ vendorInvoices().length }}</span>
         </button>
         <button
-          (click)="activeTab.set('Recovery'); state.breadcrumbLabel.set('Recovery')"
+          (click)="setFinanceTab('Recovery')"
           [class]="activeTab() === 'Recovery' ? 'border-zinc-900 text-zinc-900' : 'border-transparent text-zinc-400 hover:text-zinc-600'"
           class="px-1 py-3 -mb-px border-b-2 text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap"
         >
           <mat-icon class="text-[18px] w-[18px] h-[18px]">healing</mat-icon>
-          Recovery
+          {{ 'finance.recovery' | translate }}
           @if (overdueInvoices().length > 0) {
             <span class="text-xs">{{ overdueInvoices().length }}</span>
           }
@@ -650,7 +652,18 @@ type InvoiceLine = {
 export class FinanceComponent {
   state = inject(CrmStateService);
   invoicesService = inject(InvoicesService);
+  translation = inject(TranslationService);
   activeTab = signal<'Customer' | 'Vendor' | 'Recovery'>('Customer');
+
+  setFinanceTab(tab: 'Customer' | 'Vendor' | 'Recovery'): void {
+    this.activeTab.set(tab);
+    const labelMap: Record<string, string> = {
+      'Customer': 'finance.customerInvoices',
+      'Vendor': 'finance.vendorInvoices',
+      'Recovery': 'finance.recovery'
+    };
+    this.state.breadcrumbLabel.set(this.translation.t(labelMap[tab]));
+  }
 
   canCreate(): boolean { return this.state.hasAuthority('INVOICES_CREATE'); }
   canWrite(): boolean { return this.state.hasAuthority('INVOICES_WRITE'); }

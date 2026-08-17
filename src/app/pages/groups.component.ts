@@ -6,11 +6,13 @@ import { CrmStateService, CrmGroup, GroupMessage, GroupMeeting, CrmUser } from '
 import { UserAvatarComponent } from '../shared/user-avatar.component';
 import { AvatarStackComponent } from '../shared/avatar-stack.component';
 import { MatIconModule } from '@angular/material/icon';
+import { TranslatePipe } from '../pipes/translate.pipe';
+import { TranslationService } from '../services/translation.service';
 
 @Component({
   selector: 'app-groups',
   standalone: true,
-  imports: [CommonModule, FormsModule, UserAvatarComponent, AvatarStackComponent, MatIconModule],
+  imports: [CommonModule, FormsModule, UserAvatarComponent, AvatarStackComponent, MatIconModule, TranslatePipe],
   styles: [`
     .panel {
       max-height: 0;

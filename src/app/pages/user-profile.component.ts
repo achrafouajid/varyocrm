@@ -6,6 +6,7 @@ import { CrmStateService, CrmUser, RoleId } from '../services/crm-state.service'
 import { UserAvatarComponent } from '../shared/user-avatar.component';
 import { RoleBadgeComponent } from '../shared/role-badge.component';
 import { MatIconModule } from '@angular/material/icon';
+import { TranslationService } from '../services/translation.service';
 
 @Component({
   selector: 'app-user-profile',
@@ -241,10 +242,9 @@ import { MatIconModule } from '@angular/material/icon';
               (change)="changeLanguage(u, $event)"
               class="border border-zinc-200 rounded-xl px-3 py-2 text-xs bg-white text-zinc-700 font-semibold cursor-pointer w-full max-w-xs focus:outline-blue-600 focus:ring-zinc-700"
             >
-              <option value="en">English (en)</option>
-              <option value="fr">Français (fr)</option>
-              <option value="ar">العربية (ar)</option>
-              <option value="es">Español (es)</option>
+              @for (lang of translation.availableLanguages; track lang.code) {
+                <option [value]="lang.code">{{ lang.nativeLabel }} ({{ lang.code }})</option>
+              }
             </select>
           </div>
         </div>
@@ -355,6 +355,7 @@ import { MatIconModule } from '@angular/material/icon';
 })
 export class UserProfileComponent {
   state = inject(CrmStateService);
+  translation = inject(TranslationService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
@@ -484,7 +485,7 @@ export class UserProfileComponent {
   }
 
   changeLanguage(user: CrmUser, event: Event) {
-    const val = (event.target as HTMLSelectElement).value as 'en' | 'fr' | 'ar' | 'es';
+    const val = (event.target as HTMLSelectElement).value as 'en' | 'fr' | 'ar';
     if (this.isSelf()) {
       this.state.updateOwnProfile({ language: val });
       return;

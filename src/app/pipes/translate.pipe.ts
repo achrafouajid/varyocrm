@@ -9,9 +9,9 @@ import { TranslationService } from '../services/translation.service';
 export class TranslatePipe implements PipeTransform {
   private t = inject(TranslationService);
 
-  transform(key: string): string {
+  transform(key: string, params?: Record<string, string | number>): string {
     // Access the signal so Angular tracks dependency
     this.t.currentLang();
-    return this.t.t(key);
+    return this.t.t(key, params);
   }
 }
