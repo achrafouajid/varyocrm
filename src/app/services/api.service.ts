@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { BaseApiService } from '../core/services/base-api.service';
+import { CurrentUser } from '../core/services/auth-api.service';
 
 export interface PageResponse<T> {
   content: T[];
@@ -15,6 +16,11 @@ export interface PageResponse<T> {
   providedIn: 'root'
 })
 export class ApiService extends BaseApiService {
+
+  // Auth
+  getMe(): Observable<CurrentUser> {
+    return this.get<CurrentUser>(`/auth/me`);
+  }
 
   // Organization
   getOrganization(): Observable<any> {
@@ -42,6 +48,10 @@ export class ApiService extends BaseApiService {
 
   updateUser(id: string, user: any): Observable<any> {
     return this.patch(`/users/${id}`, user);
+  }
+
+  updateOwnProfile(patch: any): Observable<any> {
+    return this.patch(`/users/me`, patch);
   }
 
   deactivateUser(id: string): Observable<any> {
@@ -117,9 +127,23 @@ export class ApiService extends BaseApiService {
   }
 
   // Partners/Leads
-  getPartners(type?: string): Observable<any[]> {
-    const endpoint = type ? `/partners?type=${type}` : `/partners`;
-    return this.get<PageResponse<any>>(endpoint).pipe(
+  // NOTE: the backend does not support filtering /partners by a `type` query
+  // param — it only accepts Pageable params on that route. Type/stage
+  // filtering is exposed via dedicated path-variable endpoints instead.
+  getPartners(): Observable<any[]> {
+    return this.get<PageResponse<any>>(`/partners`).pipe(
+      map(response => response.content || [])
+    );
+  }
+
+  getPartnersByType(type: string): Observable<any[]> {
+    return this.get<PageResponse<any>>(`/partners/type/${type}`).pipe(
+      map(response => response.content || [])
+    );
+  }
+
+  getPartnersByStage(stage: string): Observable<any[]> {
+    return this.get<PageResponse<any>>(`/partners/stage/${stage}`).pipe(
       map(response => response.content || [])
     );
   }
@@ -138,6 +162,43 @@ export class ApiService extends BaseApiService {
 
   deletePartner(id: string): Observable<any> {
     return this.delete(`/partners/${id}`);
+  }
+
+  // Lead (Partner) sub-resources
+  getLeadContacts(partnerId: string): Observable<any[]> {
+    return this.get<any[]>(`/partners/${partnerId}/contacts`);
+  }
+
+  createLeadContact(partnerId: string, contact: any): Observable<any> {
+    return this.post(`/partners/${partnerId}/contacts`, contact);
+  }
+
+  updateLeadContact(partnerId: string, contactId: string, contact: any): Observable<any> {
+    return this.patch(`/partners/${partnerId}/contacts/${contactId}`, contact);
+  }
+
+  deleteLeadContact(partnerId: string, contactId: string): Observable<any> {
+    return this.delete(`/partners/${partnerId}/contacts/${contactId}`);
+  }
+
+  getLeadActivities(partnerId: string): Observable<any[]> {
+    return this.get<any[]>(`/partners/${partnerId}/activities`);
+  }
+
+  createLeadActivity(partnerId: string, activity: any): Observable<any> {
+    return this.post(`/partners/${partnerId}/activities`, activity);
+  }
+
+  deleteLeadActivity(partnerId: string, activityId: string): Observable<any> {
+    return this.delete(`/partners/${partnerId}/activities/${activityId}`);
+  }
+
+  getLeadStatusHistory(partnerId: string): Observable<any[]> {
+    return this.get<any[]>(`/partners/${partnerId}/status-history`);
+  }
+
+  createLeadStatusHistory(partnerId: string, entry: any): Observable<any> {
+    return this.post(`/partners/${partnerId}/status-history`, entry);
   }
 
   // Deals
@@ -161,6 +222,23 @@ export class ApiService extends BaseApiService {
 
   deleteDeal(id: string): Observable<any> {
     return this.delete(`/deals/${id}`);
+  }
+
+  // Deal Activities
+  getDealActivities(dealId: string): Observable<any[]> {
+    return this.get<any[]>(`/deals/${dealId}/activities`);
+  }
+
+  createDealActivity(dealId: string, activity: any): Observable<any> {
+    return this.post(`/deals/${dealId}/activities`, activity);
+  }
+
+  updateDealActivity(dealId: string, activityId: string, activity: any): Observable<any> {
+    return this.patch(`/deals/${dealId}/activities/${activityId}`, activity);
+  }
+
+  deleteDealActivity(dealId: string, activityId: string): Observable<any> {
+    return this.delete(`/deals/${dealId}/activities/${activityId}`);
   }
 
   // Proposals
@@ -350,6 +428,10 @@ export class ApiService extends BaseApiService {
     formData.append('ownerEntityType', ownerEntityType);
     formData.append('ownerEntityId', ownerEntityId);
     return this.post(`/files`, formData);
+  }
+
+  getFilesForOwner(ownerEntityType: string, ownerEntityId: string): Observable<any[]> {
+    return this.get<any[]>(`/files`, { ownerEntityType, ownerEntityId });
   }
 
   getFileDownloadUrl(id: string): string {

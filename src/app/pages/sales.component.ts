@@ -7,6 +7,7 @@ import { Router, RouterLink } from '@angular/router';
 import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
 import { DataStatusBannerComponent } from '../shared/data-status-banner.component';
 import { PaginatorComponent } from '../shared/paginator.component';
+import { SalesPipelineBoardComponent } from './sales-pipeline-board.component';
 import { DealsService } from '../services/domains/deals.service';
 import { ProposalsService } from '../services/domains/proposals.service';
 import { PurchaseOrdersService } from '../services/domains/purchase-orders.service';
@@ -18,7 +19,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
 
 @Component({
   selector: 'app-sales',
-  imports: [MatIconModule, CommonModule, FormsModule, RouterLink, CreatedByBadgeComponent, DataStatusBannerComponent, PaginatorComponent],
+  imports: [MatIconModule, CommonModule, FormsModule, RouterLink, CreatedByBadgeComponent, DataStatusBannerComponent, PaginatorComponent, SalesPipelineBoardComponent],
   template: `
     <div class="space-y-8">
       <app-data-status-banner [loading]="activeTabLoading()" [error]="activeTabError()" />
@@ -69,6 +70,31 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
 
       <!-- Deals View -->
       @if (activeTab() === 'deals') {
+        <div class="flex gap-5 sm:gap-6 border-b border-zinc-200">
+          <button
+            (click)="dealsView.set('table')"
+            [class]="dealsView() === 'table' ? 'border-zinc-900 text-zinc-900' : 'border-transparent text-zinc-400 hover:text-zinc-600'"
+            class="px-1 py-3 -mb-px border-b-2 text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap"
+          >
+            <mat-icon class="text-[18px] w-[18px] h-[18px]">list_alt</mat-icon>
+            Table
+          </button>
+          <button
+            (click)="dealsView.set('board')"
+            [class]="dealsView() === 'board' ? 'border-zinc-900 text-zinc-900' : 'border-transparent text-zinc-400 hover:text-zinc-600'"
+            class="px-1 py-3 -mb-px border-b-2 text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap"
+          >
+            <mat-icon class="text-[18px] w-[18px] h-[18px]">view_column</mat-icon>
+            Board
+          </button>
+        </div>
+      }
+
+      @if (activeTab() === 'deals' && dealsView() === 'board') {
+        <app-sales-pipeline-board />
+      }
+
+      @if (activeTab() === 'deals' && dealsView() === 'table') {
         <div class="card rounded-2xl overflow-x-auto">
           <table class="min-w-full divide-y divide-slate-200">
             <thead class="bg-zinc-50">
@@ -2240,6 +2266,7 @@ export class SalesComponent {
   breadcrumbLabel = signal('Deals');
   navigateTab = signal<string | null>(null);
   activeTab = signal<'deals' | 'proposals' | 'pos'>('deals');
+  dealsView = signal<'table' | 'board'>('table');
 
   // Expose state properties for template and non-domain operations
   users = computed(() => this.state.users());

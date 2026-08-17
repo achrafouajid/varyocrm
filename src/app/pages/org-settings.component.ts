@@ -27,22 +27,26 @@ import { MatIconModule } from '@angular/material/icon';
         <button (click)="orgTab.set('metrics')" [class]="orgTab() === 'metrics' ? 'border-zinc-900 text-zinc-900' : 'border-transparent text-zinc-400 hover:text-zinc-600'" class="px-1 py-3 -mb-px border-b-2 text-sm font-medium transition-all whitespace-nowrap">
           Metrics
         </button>
-        <button (click)="orgTab.set('danger')" [class]="orgTab() === 'danger' ? 'border-zinc-900 text-zinc-900' : 'border-transparent text-zinc-400 hover:text-zinc-600'" class="px-1 py-3 -mb-px border-b-2 text-sm font-medium transition-all whitespace-nowrap">
-          Danger Zone
-        </button>
+        @if (isAdmin()) {
+          <button (click)="orgTab.set('danger')" [class]="orgTab() === 'danger' ? 'border-zinc-900 text-zinc-900' : 'border-transparent text-zinc-400 hover:text-zinc-600'" class="px-1 py-3 -mb-px border-b-2 text-sm font-medium transition-all whitespace-nowrap">
+            Danger Zone
+          </button>
+        }
       </div>
 
       @if (orgTab() === 'profile') {
       <div class="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-xs space-y-6 max-w-2xl">
         <div class="flex items-center justify-between pb-4 border-b border-zinc-100">
           <h3 class="font-bold text-zinc-800 text-base">Profile Details</h3>
-          <button
-            (click)="toggleEdit()"
-            class="text-zinc-900 hover:bg-zinc-100 p-1.5 rounded-lg transition-colors flex items-center cursor-pointer"
-            title="Edit Profile"
-          >
-            <mat-icon class="text-lg w-5 h-5 flex items-center justify-center">{{ isEditing() ? 'close' : 'edit' }}</mat-icon>
-          </button>
+          @if (isAdmin()) {
+            <button
+              (click)="toggleEdit()"
+              class="text-zinc-900 hover:bg-zinc-100 p-1.5 rounded-lg transition-colors flex items-center cursor-pointer"
+              title="Edit Profile"
+            >
+              <mat-icon class="text-lg w-5 h-5 flex items-center justify-center">{{ isEditing() ? 'close' : 'edit' }}</mat-icon>
+            </button>
+          }
         </div>
 
         <div class="flex items-center gap-4">
@@ -199,7 +203,12 @@ export class OrgSettingsComponent {
     { value: 12, name: 'December' }
   ];
 
+  isAdmin(): boolean {
+    return this.state.hasAuthority('ADMIN_ACCESS');
+  }
+
   toggleEdit() {
+    if (!this.isAdmin()) return;
     if (this.isEditing()) {
       this.isEditing.set(false);
     } else {
@@ -213,6 +222,7 @@ export class OrgSettingsComponent {
   }
 
   saveOrgDetails() {
+    if (!this.isAdmin()) return;
     this.state.updateOrganization({
       name: this.editName,
       industry: this.editIndustry,

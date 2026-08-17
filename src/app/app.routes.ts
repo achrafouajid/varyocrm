@@ -25,6 +25,9 @@ export const routes: Routes = [
       { path: '', redirectTo: 'organization', pathMatch: 'full' },
       { path: 'users', canActivate: [permissionGuard('canManageUsers')], loadComponent: () => import('./pages/users.component').then(m => m.UsersComponent) },
       { path: 'teams', canActivate: [permissionGuard('canManageTeams')], loadComponent: () => import('./pages/teams.component').then(m => m.TeamsComponent) },
+      // Same component as the top-level 'groups' route below, intentionally:
+      // this one renders inside the settings shell's sidebar layout, the
+      // other is the standalone main-nav entry point.
       { path: 'groups', loadComponent: () => import('./pages/groups.component').then(m => m.GroupsComponent) }
     ]
   },

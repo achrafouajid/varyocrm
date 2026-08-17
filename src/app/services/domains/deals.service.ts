@@ -109,6 +109,16 @@ export class DealsService {
     }
   }
 
+  /** Optimistically moves a deal to a new stage (no toast) and persists silently in the background. Used by the pipeline board, which drives its own toast/undo. */
+  moveDealStage(dealId: string, stage: Deal['stage']): void {
+    const deal = this.getDealById(dealId);
+    if (!deal) return;
+    this.deals.update(deals => deals.map(d => d.id === dealId ? { ...d, stage } : d));
+    this.api.updateDeal(dealId, { ...deal, stage } as any).subscribe({
+      error: () => this.toast.show('Failed to sync stage change with server', { type: 'error' })
+    });
+  }
+
   addEmailLog(dealId: string, emailLog: any): void {
     // Stub method for adding email log to deal
   }

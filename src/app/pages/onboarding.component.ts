@@ -287,10 +287,8 @@ export class OnboardingComponent {
             if (response.refresh_token) {
               localStorage.setItem('refreshToken', response.refresh_token);
             }
-            localStorage.setItem('bento_auth', 'true');
             this.loading.set(false);
-            this.state.isAuthenticated.set(true);
-            this.state.currentUserId.set(response.user.id);
+            this.state.setCurrentUser(response.user.id);
             this.router.navigate(['/']);
           },
           error: (err) => {
