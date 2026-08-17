@@ -169,26 +169,79 @@ import { MatIconModule } from '@angular/material/icon';
               <h2 class="text-sm font-bold text-zinc-900">{{ grp.name }}</h2>
               <p class="text-meta text-zinc-400 font-medium mt-0.5">{{ grp.memberUserIds.length }} members in sync</p>
             </div>
-            
-            <div class="flex items-center gap-1 bg-white border border-zinc-200 p-0.5 rounded-lg">
-              <button
-                (click)="activeTab.set('chat')"
-                [class.bg-white]="activeTab() === 'chat'"
-                [class.text-blue-700]="activeTab() === 'chat'"
-                [class.shadow-xs]="activeTab() === 'chat'"
-                class="px-3 py-1 rounded-md text-meta font-bold text-zinc-650 cursor-pointer transition-all"
-              >
-                Chat
-              </button>
-              <button
-                (click)="activeTab.set('meetings')"
-                [class.bg-white]="activeTab() === 'meetings'"
-                [class.text-blue-700]="activeTab() === 'meetings'"
-                [class.shadow-xs]="activeTab() === 'meetings'"
-                class="px-3 py-1 rounded-md text-meta font-bold text-zinc-650 cursor-pointer transition-all"
-              >
-                Meetings
-              </button>
+
+            <div class="flex items-center gap-2">
+              @if (canWriteGroup()) {
+                <button
+                  (click)="toggleEditGroupForm(grp)"
+                  class="text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 p-1.5 rounded-lg transition-colors cursor-pointer flex items-center"
+                  title="Edit Group"
+                >
+                  <mat-icon class="text-base w-4.5 h-4.5 flex items-center justify-center">edit</mat-icon>
+                </button>
+              }
+              @if (canDeleteGroup()) {
+                <button
+                  (click)="openDeleteGroupModal(grp)"
+                  class="text-zinc-400 hover:text-red-600 hover:bg-red-50 p-1.5 rounded-lg transition-colors cursor-pointer flex items-center"
+                  title="Delete Group"
+                >
+                  <mat-icon class="text-base w-4.5 h-4.5 flex items-center justify-center">delete</mat-icon>
+                </button>
+              }
+              <div class="flex items-center gap-1 bg-white border border-zinc-200 p-0.5 rounded-lg">
+                <button
+                  (click)="activeTab.set('chat')"
+                  [class.bg-white]="activeTab() === 'chat'"
+                  [class.text-blue-700]="activeTab() === 'chat'"
+                  [class.shadow-xs]="activeTab() === 'chat'"
+                  class="px-3 py-1 rounded-md text-meta font-bold text-zinc-650 cursor-pointer transition-all"
+                >
+                  Chat
+                </button>
+                <button
+                  (click)="activeTab.set('meetings')"
+                  [class.bg-white]="activeTab() === 'meetings'"
+                  [class.text-blue-700]="activeTab() === 'meetings'"
+                  [class.shadow-xs]="activeTab() === 'meetings'"
+                  class="px-3 py-1 rounded-md text-meta font-bold text-zinc-650 cursor-pointer transition-all"
+                >
+                  Meetings
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Inline Edit Group Form -->
+          <div [class.open]="showEditGroupForm()" class="panel bg-white border-b border-white/30">
+            <div class="p-4 space-y-3">
+              <h3 class="font-bold text-zinc-700 text-xs">Edit Group</h3>
+              <input
+                [(ngModel)]="editGroupName"
+                placeholder="Group name"
+                class="w-full input-field rounded-xl px-2.5 py-1.5 text-xs focus:outline-blue-600 text-zinc-850"
+              />
+              <textarea
+                [(ngModel)]="editGroupDesc"
+                placeholder="Description (Optional)"
+                rows="2"
+                class="w-full input-field rounded-xl px-2.5 py-1.5 text-xs focus:outline-blue-600 text-zinc-850"
+              ></textarea>
+              <div class="flex justify-end gap-2 pt-2 border-t border-white/30">
+                <button
+                  (click)="closeEditGroupForm()"
+                  class="px-2.5 py-1 border border-zinc-200 text-zinc-500 text-meta font-bold rounded-lg hover:bg-zinc-100 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  (click)="saveGroupEdit(grp)"
+                  [disabled]="!editGroupName.trim()"
+                  class="px-2.5 py-1 bg-zinc-900 hover:bg-zinc-950 disabled:bg-zinc-200 disabled:text-zinc-400 disabled:cursor-not-allowed text-white text-meta font-bold rounded-lg shadow-xs transition-colors cursor-pointer font-sans"
+                >
+                  Save
+                </button>
+              </div>
             </div>
           </div>
 
@@ -432,6 +485,35 @@ import { MatIconModule } from '@angular/material/icon';
         }
       </main>
     </div>
+
+    <!-- Delete Group Confirmation Modal -->
+    @if (deleteGroupModalOpen() && groupToDelete()) {
+      <div class="fixed inset-0 z-50 bg-zinc-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="bg-white shadow-xl rounded-2xl max-w-sm w-full p-6 space-y-4 animate-in zoom-in-95 duration-200">
+          <div class="flex justify-between items-center">
+            <h3 class="text-lg font-bold text-zinc-950">Delete Group</h3>
+            <button (click)="cancelDeleteGroup()" class="text-zinc-400 hover:text-zinc-600 transition-colors">
+              <mat-icon class="w-5 h-5 text-[20px]! leading-none!">close</mat-icon>
+            </button>
+          </div>
+          <p class="text-sm text-zinc-600 leading-relaxed">
+            Are you sure you want to delete this group? Its chat history and meetings will be removed.
+          </p>
+          <div class="bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3">
+            <div class="text-sm font-semibold text-zinc-900">{{ groupToDelete()?.name }}</div>
+          </div>
+          <div class="flex justify-end gap-2 pt-2 border-t border-white/30">
+            <button (click)="cancelDeleteGroup()" class="px-4 py-2 border border-zinc-200 text-zinc-600 text-sm font-semibold rounded-lg hover:bg-zinc-50">
+              Cancel
+            </button>
+            <button (click)="confirmDeleteGroup()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-lg transition-colors flex items-center gap-1.5">
+              <mat-icon class="w-4 h-4 text-[16px]! leading-none!">delete</mat-icon>
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    }
   `
 })
 export class GroupsComponent implements AfterViewChecked {
@@ -480,6 +562,58 @@ export class GroupsComponent implements AfterViewChecked {
 
   canWriteGroup(): boolean {
     return this.state.hasAuthority('GROUPS_WRITE');
+  }
+
+  canDeleteGroup(): boolean {
+    return this.state.hasAuthority('GROUPS_DELETE');
+  }
+
+  // Edit group
+  showEditGroupForm = signal(false);
+  editGroupName = '';
+  editGroupDesc = '';
+
+  toggleEditGroupForm(group: CrmGroup) {
+    if (!this.canWriteGroup()) return;
+    this.editGroupName = group.name;
+    this.editGroupDesc = group.description || '';
+    this.showEditGroupForm.set(!this.showEditGroupForm());
+  }
+
+  closeEditGroupForm() {
+    this.showEditGroupForm.set(false);
+  }
+
+  saveGroupEdit(group: CrmGroup) {
+    if (!this.canWriteGroup() || !this.editGroupName.trim()) return;
+    this.state.updateGroup(group.id, { name: this.editGroupName.trim(), description: this.editGroupDesc.trim() });
+    this.showEditGroupForm.set(false);
+  }
+
+  // Delete group
+  deleteGroupModalOpen = signal(false);
+  groupToDelete = signal<CrmGroup | null>(null);
+
+  openDeleteGroupModal(group: CrmGroup) {
+    if (!this.canDeleteGroup()) return;
+    this.groupToDelete.set(group);
+    this.deleteGroupModalOpen.set(true);
+  }
+
+  cancelDeleteGroup() {
+    this.deleteGroupModalOpen.set(false);
+    this.groupToDelete.set(null);
+  }
+
+  confirmDeleteGroup() {
+    if (!this.canDeleteGroup()) return;
+    const group = this.groupToDelete();
+    if (group) {
+      if (this.selectedGroupId() === group.id) this.selectedGroupId.set(null);
+      this.state.deleteGroup(group.id);
+    }
+    this.deleteGroupModalOpen.set(false);
+    this.groupToDelete.set(null);
   }
 
   ngAfterViewChecked() {

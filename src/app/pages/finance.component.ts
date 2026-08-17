@@ -1,5 +1,6 @@
 import { Component, inject, signal, computed, effect } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { CrmStateService, Deal, Invoice } from '../services/crm-state.service';
 import { InvoicesService } from '../services/domains/invoices.service';
 import { CommonModule } from '@angular/common';
@@ -7,6 +8,7 @@ import { FormsModule } from '@angular/forms';
 import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
 import { DataStatusBannerComponent } from '../shared/data-status-banner.component';
 import { PaginatorComponent } from '../shared/paginator.component';
+import { AttachmentsComponent } from '../shared/attachments.component';
 
 // ── Local type alias for invoice line items ────────────────────────────────
 type InvoiceLine = {
@@ -19,7 +21,7 @@ type InvoiceLine = {
 
 @Component({
   selector: 'app-finance',
-  imports: [MatIconModule, CommonModule, FormsModule, CreatedByBadgeComponent, DataStatusBannerComponent, PaginatorComponent],
+  imports: [MatIconModule, MatTooltipModule, CommonModule, FormsModule, CreatedByBadgeComponent, DataStatusBannerComponent, PaginatorComponent, AttachmentsComponent],
   template: `
     <div class="space-y-8">
       <div class="flex gap-5 sm:gap-6 border-b border-zinc-200">
@@ -106,6 +108,9 @@ type InvoiceLine = {
                       </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-xs font-semibold space-x-1">
+                      <button (click)="openInvoiceAttachments(invoice)" title="Attachments" class="bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 text-zinc-500 px-2 py-1.5 rounded-lg transition-colors">
+                        <mat-icon class="text-[16px] w-4 h-4 align-middle">attach_file</mat-icon>
+                      </button>
                       @if (invoice.status !== 'Paid' && canWrite()) {
                         <button (click)="markInvoicePaid(invoice)" class="bg-zinc-100 hover:bg-zinc-200 text-zinc-950 border border-zinc-300 px-2.5 py-1.5 rounded-lg transition-colors">Mark Paid</button>
                       }
@@ -123,6 +128,21 @@ type InvoiceLine = {
                 }
               </tbody>
             </table>
+
+            <!-- Invoice Attachments Modal -->
+            @if (attachmentsInvoice(); as invoiceForAttachments) {
+              <div class="fixed inset-0 z-50 bg-zinc-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+                <div class="bg-white shadow-xl rounded-2xl max-w-md w-full p-6 space-y-4 animate-in zoom-in-95 duration-200">
+                  <div class="flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-zinc-950">Invoice #{{ invoiceForAttachments.id }}</h3>
+                    <button (click)="attachmentsInvoice.set(null)" class="text-zinc-400 hover:text-zinc-600 transition-colors">
+                      <mat-icon class="w-5 h-5 text-[20px]! leading-none!">close</mat-icon>
+                    </button>
+                  </div>
+                  <app-attachments ownerEntityType="INVOICE" [ownerEntityId]="invoiceForAttachments.id" [canWrite]="canWrite()" />
+                </div>
+              </div>
+            }
             @if (filteredInvoices().length > 0) {
               <app-paginator
                 [currentPage]="invoicesPage()"
@@ -144,8 +164,10 @@ type InvoiceLine = {
             <div class="bg-zinc-100 border border-zinc-300 rounded-xl p-5 flex items-start shadow-xs">
               <mat-icon class="text-zinc-700 mr-3 mt-0.5">warning</mat-icon>
               <div>
-                <h4 class="text-zinc-950 font-semibold text-sm">Late Payment Recovery / استخلاص الديون</h4>
-                <p class="text-zinc-950 text-xs mt-1">Select one or more customers with overdue invoices below, choose a channel, and trigger a friendly Moroccan reminder.</p>
+                <h4 class="text-zinc-950 font-semibold text-sm flex items-center gap-1.5 cursor-help w-fit" matTooltip="Select overdue customers, choose a channel, and send a reminder" matTooltipPosition="above">
+                  Late Payment Recovery / استخلاص الديون
+                  <mat-icon class="text-[14px] w-3.5 h-3.5 flex items-center justify-center text-zinc-300">info</mat-icon>
+                </h4>
               </div>
             </div>
 
@@ -262,8 +284,10 @@ type InvoiceLine = {
                 </mat-icon>
               </div>
               <div>
-                <h3 class="text-base font-bold text-zinc-950 leading-tight">Create New Invoice</h3>
-                <p class="text-meta text-zinc-400 mt-0.5">Only verified Customers are eligible for invoicing.</p>
+                <h3 class="text-base font-bold text-zinc-950 leading-tight flex items-center gap-1.5 cursor-help w-fit" matTooltip="Only verified customers are eligible for invoicing" matTooltipPosition="above">
+                  Create New Invoice
+                  <mat-icon class="text-[14px] w-3.5 h-3.5 flex items-center justify-center text-zinc-300">info</mat-icon>
+                </h3>
               </div>
             </div>
             <button (click)="invoiceModalOpen.set(false)" class="p-1.5 rounded-lg hover:bg-zinc-100 text-zinc-400 hover:text-zinc-600 transition-colors">
@@ -635,6 +659,12 @@ export class FinanceComponent {
   markInvoicePaid(invoice: Invoice) {
     if (!this.canWrite()) return;
     this.invoicesService.updateInvoice(invoice.id, { ...invoice, status: 'Paid' });
+  }
+
+  attachmentsInvoice = signal<Invoice | null>(null);
+
+  openInvoiceAttachments(invoice: Invoice) {
+    this.attachmentsInvoice.set(invoice);
   }
 
   deleteInvoice(invoice: Invoice) {

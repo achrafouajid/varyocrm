@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { CrmStateService, Task, Ticket, TaskStatus } from '../services/crm-state.service';
 import { PartnerScheduleCalendarComponent } from '../shared/partner-schedule-calendar.component';
 import { BentoGrid, BentoTile } from '../shared/bento-grid';
+import { CountUpDirective } from '../shared/count-up.directive';
 
 type Tone = 'slate' | 'blue' | 'sky' | 'violet' | 'emerald' | 'amber' | 'rose';
 type TileKind = 'today' | 'pipeline' | 'late' | 'donut' | 'schedule' | 'queue' | 'kpi';
@@ -35,7 +36,8 @@ interface Spark {
 interface KpiData {
   label: string;
   icon: string;
-  value: string;
+  raw: number;
+  format: (v: number) => string;
   hint: string;
   delta: Delta | null;
   spark: Spark;
@@ -109,7 +111,7 @@ const CATALOG: TileDef[] = [
 @Component({
   selector: 'app-dashboard',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MatIconModule, PartnerScheduleCalendarComponent, BentoGrid, BentoTile],
+  imports: [MatIconModule, PartnerScheduleCalendarComponent, BentoGrid, BentoTile, CountUpDirective],
   template: `
     <div class="dash">
       <!-- Customise tray -->
@@ -205,7 +207,7 @@ const CATALOG: TileDef[] = [
                 <!-- ── Pipeline ── -->
                 @case ('pipeline') {
                   <div class="dash-figure">
-                    <span class="dash-value">{{ pipelineValue() }}</span>
+                    <span class="dash-value" [countUp]="pipelineValueNum()" [countUpFormat]="moneyFormat">0</span>
                     @if (pipelineDelta(); as d) {
                       <span class="dash-delta" [attr.data-dir]="dirOf(d)">
                         <mat-icon class="dash-delta__icon">{{ arrow(d) }}</mat-icon>{{ pctLabel(d) }}
@@ -221,8 +223,8 @@ const CATALOG: TileDef[] = [
                         <stop offset="100%" stop-color="var(--tile)" stop-opacity="0" />
                       </linearGradient>
                     </defs>
-                    <path [attr.d]="pipelineSpark().area" fill="url(#grad-pipeline)" />
-                    <path [attr.d]="pipelineSpark().line" fill="none" stroke="var(--tile)" stroke-width="2"
+                    <path class="dash-area__fill" [attr.d]="pipelineSpark().area" fill="url(#grad-pipeline)" />
+                    <path class="dash-area__line" [attr.d]="pipelineSpark().line" pathLength="1" fill="none" stroke="var(--tile)" stroke-width="2"
                           stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" />
                   </svg>
 
@@ -243,7 +245,7 @@ const CATALOG: TileDef[] = [
                 <!-- ── Late payers ── -->
                 @case ('late') {
                   <div class="dash-figure">
-                    <span class="dash-value">{{ latePayers().count }}</span>
+                    <span class="dash-value" [countUp]="latePayers().count" [countUpFormat]="intFormat">0</span>
                     @if (latePayers().delta; as d) {
                       <span class="dash-delta" [attr.data-dir]="dirOf(d)">
                         <mat-icon class="dash-delta__icon">{{ arrow(d) }}</mat-icon>{{ pctLabel(d) }}
@@ -264,6 +266,7 @@ const CATALOG: TileDef[] = [
                       <circle cx="18" cy="18" r="15.9155" class="donut__track" stroke-width="4.2" fill="none" />
                       @for (s of d.slices; track s.label) {
                         <circle
+                          class="donut__slice"
                           cx="18" cy="18" r="15.9155" fill="none"
                           stroke="var(--tile)" stroke-width="4.2"
                           [attr.stroke-opacity]="s.opacity"
@@ -273,7 +276,7 @@ const CATALOG: TileDef[] = [
                       }
                     </svg>
                     <div class="donut__center">
-                      <span class="donut__total">{{ d.total }}</span>
+                      <span class="donut__total" [countUp]="d.total" [countUpFormat]="intFormat">0</span>
                       <span class="donut__unit">{{ d.unit }}</span>
                     </div>
                   </div>
@@ -328,7 +331,7 @@ const CATALOG: TileDef[] = [
                 @case ('kpi') {
                   @let k = kpi(tile.id);
                   <div class="kpi">
-                    <span class="dash-value dash-value--kpi">{{ k.value }}</span>
+                    <span class="dash-value dash-value--kpi" [countUp]="k.raw" [countUpFormat]="k.format">0</span>
                     <span class="kpi__hint">{{ k.hint }}</span>
                   </div>
                   <div class="kpi__foot">
@@ -340,7 +343,7 @@ const CATALOG: TileDef[] = [
                       <span class="dash-delta" data-dir="flat">—</span>
                     }
                     <svg class="kpi__spark" viewBox="0 0 90 26" preserveAspectRatio="none" aria-hidden="true">
-                      <path [attr.d]="k.spark.line" fill="none" stroke="var(--tile)" stroke-width="1.75"
+                      <path class="kpi__spark-line" [attr.d]="k.spark.line" pathLength="1" fill="none" stroke="var(--tile)" stroke-width="1.75"
                             stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" />
                     </svg>
                   </div>
@@ -421,6 +424,23 @@ const CATALOG: TileDef[] = [
     .dash-area { display: block; width: calc(100% + 28px); margin: 6px -14px 0; height: 58px; }
     .dash-area--bleed { margin-top: auto; margin-bottom: -12px; height: 34px; }
 
+    /* ── Graph entrance animation ──
+       pathLength="1" normalises every path to a unit length, so the same
+       dash-based "draw" keyframe works regardless of the real path length. */
+    @keyframes spark-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+    @keyframes area-fade { from { opacity: 0; transform: scaleY(0.85); } to { opacity: 1; transform: scaleY(1); } }
+    .dash-area__line, .kpi__spark-line {
+      stroke-dasharray: 1; stroke-dashoffset: 1;
+      animation: spark-draw 900ms cubic-bezier(0.16, 0.84, 0.44, 1) forwards;
+    }
+    .dash-area__fill {
+      opacity: 0; transform-origin: bottom; transform-box: fill-box;
+      animation: area-fade 700ms cubic-bezier(0.16, 0.84, 0.44, 1) 250ms forwards;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .dash-area__line, .kpi__spark-line, .dash-area__fill { animation: none; stroke-dashoffset: 0; opacity: 1; transform: none; }
+    }
+
     /* ── Focus rows ── */
     .focus-row {
       display: flex; align-items: center; gap: 9px;
@@ -476,6 +496,13 @@ const CATALOG: TileDef[] = [
     .donut { position: relative; width: 104px; height: 104px; margin: auto auto 10px; flex-shrink: 0; }
     .donut__svg { width: 100%; height: 100%; transform: rotate(-90deg); }
     .donut__track { stroke: var(--color-border); }
+    .donut__slice {
+      transition: stroke-dasharray 800ms cubic-bezier(0.16, 0.84, 0.44, 1),
+                  stroke-dashoffset 800ms cubic-bezier(0.16, 0.84, 0.44, 1);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .donut__slice { transition: none; }
+    }
     .donut__center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     .donut__total { font-size: 19px; font-weight: 700; line-height: 1; color: var(--color-text-primary); font-variant-numeric: tabular-nums; }
     .donut__unit { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-tertiary); }
@@ -521,6 +548,19 @@ const CATALOG: TileDef[] = [
 export class DashboardComponent {
   state = inject(CrmStateService);
   private router = inject(Router);
+
+  constructor() {
+    // Every tile below reads directly off CrmStateService signals; without these
+    // lazy-loads the dashboard shows stale/seed data whenever it's the first
+    // page visited in a session (loadX() is idempotent, so this is safe to
+    // call even if another page already triggered it).
+    this.state.loadDeals();
+    this.state.loadPartners();
+    this.state.loadTasks();
+    this.state.loadTickets();
+    this.state.loadInvoices();
+    this.state.loadCampaigns();
+  }
 
   // ────────────────────────────────────────────────────────
   // Layout
@@ -632,9 +672,11 @@ export class DashboardComponent {
 
   openDealCount = computed(() => this.openDeals().length);
 
-  pipelineValue = computed(() =>
-    this.money(this.openDeals().reduce((sum, d) => sum + d.amount, 0))
-  );
+  pipelineValueNum = computed(() => this.openDeals().reduce((sum, d) => sum + d.amount, 0));
+
+  /** Stable references so the count-up directive doesn't see a "new" formatter every tick. */
+  moneyFormat = (v: number) => this.money(v);
+  intFormat = (v: number) => `${Math.round(v)}`;
 
   private pipelineSeries = computed(() =>
     this.monthlySeries(this.openDeals().map(d => ({ date: d.orderDate || d.createdAt, value: d.amount })))
@@ -841,33 +883,36 @@ export class DashboardComponent {
     const make = (
       label: string,
       icon: string,
-      value: string,
+      raw: number,
+      format: (v: number) => string,
       hint: string,
       series: number[],
       opts: { inverted?: boolean } = {}
     ): KpiData => ({
       label,
       icon,
-      value,
+      raw,
+      format,
       hint,
       delta: this.delta(series, opts.inverted),
       spark: this.spark(series, 90, 26)
     });
 
     return {
-      totalDeals: make('Total Deals Value', 'payments', this.moneyCompact(this.last(dealValue)), 'cumulative booked', dealValue),
-      newDeals: make('New Deals', 'handshake', `${this.last(newDeals)}`, 'closed this month', newDeals),
-      totalProspects: make('Prospects', 'person_search', `${prospects.length}`, `${this.last(prospectSeries)} added this month`, prospectSeries),
-      openTickets: make('Open Tickets', 'confirmation_number', `${openTickets}`, 'open or in progress', ticketSeries, { inverted: true }),
-      activeCampaigns: make('Active Campaigns', 'campaign', `${activeCampaigns}`, 'running now', campaignSeries),
-      marketingSpend: make('Campaign Reach', 'send', this.compact(this.last(reachSeries)), 'messages sent this month', reachSeries),
-      newTasksWeek: make('New Tasks', 'assignment_add', `${this.last(taskSeries)}`, 'created this week', taskSeries),
-      newProspects: make('New Prospects', 'group_add', `${this.last(prospectSeries)}`, 'added this month', prospectSeries),
-      lostProspects: make('Lost Deals', 'trending_down', this.moneyCompact(this.last(lostSeries)), 'value lost this month', lostSeries, { inverted: true }),
+      totalDeals: make('Total Deals Value', 'payments', this.last(dealValue), v => this.moneyCompact(v), 'cumulative booked', dealValue),
+      newDeals: make('New Deals', 'handshake', this.last(newDeals), this.intFormat, 'closed this month', newDeals),
+      totalProspects: make('Prospects', 'person_search', prospects.length, this.intFormat, `${this.last(prospectSeries)} added this month`, prospectSeries),
+      openTickets: make('Open Tickets', 'confirmation_number', openTickets, this.intFormat, 'open or in progress', ticketSeries, { inverted: true }),
+      activeCampaigns: make('Active Campaigns', 'campaign', activeCampaigns, this.intFormat, 'running now', campaignSeries),
+      marketingSpend: make('Campaign Reach', 'send', this.last(reachSeries), v => this.compact(v), 'messages sent this month', reachSeries),
+      newTasksWeek: make('New Tasks', 'assignment_add', this.last(taskSeries), this.intFormat, 'created this week', taskSeries),
+      newProspects: make('New Prospects', 'group_add', this.last(prospectSeries), this.intFormat, 'added this month', prospectSeries),
+      lostProspects: make('Lost Deals', 'trending_down', this.last(lostSeries), v => this.moneyCompact(v), 'value lost this month', lostSeries, { inverted: true }),
       todaysDeal: make(
         "Today's Best Deal",
         'star',
-        todaysDeals[0] ? this.moneyCompact(todaysDeals[0].amount) : '—',
+        todaysDeals[0]?.amount ?? 0,
+        v => (todaysDeals[0] ? this.moneyCompact(v) : '—'),
         todaysDeals.length ? `${todaysDeals.length} closed today` : 'nothing closed yet',
         dailyDeals
       )
@@ -880,7 +925,8 @@ export class DashboardComponent {
       this.kpiData()[key] ?? {
         label: key,
         icon: 'help',
-        value: '—',
+        raw: 0,
+        format: () => '—',
         hint: '',
         delta: null,
         spark: { line: '', area: '' }

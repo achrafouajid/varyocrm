@@ -4737,21 +4737,21 @@ export class CrmStateService {
    * share one grid — the order is exactly what the bento grid renders.
    */
   readonly defaultDashboardLayout: readonly string[] = [
+    // KPIs lead the board — five 2-column tiles filling one full 12-column row up top,
+    // followed by Late Payers to close that row before the larger panels begin.
+    'kpi:totalDeals',
+    'kpi:newDeals',
+    'kpi:totalProspects',
+    'kpi:openTickets',
+    'kpi:newTasksWeek',
+    'late-payers',
     'today',
     'pipeline',
     'tasks-queue',
     'schedule',
     'tickets-queue',
     'partner-mix',
-    'task-status',
-    'late-payers',
-    // Late Payers plus five KPIs is six 2-column tiles: exactly one full 12-column row, so
-    // the default board ends flush instead of on a half-empty row.
-    'kpi:totalDeals',
-    'kpi:newDeals',
-    'kpi:totalProspects',
-    'kpi:openTickets',
-    'kpi:newTasksWeek'
+    'task-status'
   ];
 
   private static readonly LAYOUT_KEY = 'bento_dashboard_layout_v1';
@@ -4896,6 +4896,76 @@ export class CrmStateService {
     return this.customerCards().find(c => c.partnerId === partnerId);
   }
 
+  private customerCardToApiPayload(card: Partial<CustomerCard> & { name: string }): any {
+    return {
+      account_id: card.accountId,
+      record_type: card.recordType ? card.recordType.toUpperCase() : undefined,
+      name: card.name,
+      search_name: card.searchName,
+      erp_account: card.erpAccount,
+      ice: card.ice,
+      if_field: card.ifField,
+      rc: card.rc,
+      rc_city: card.rcCity,
+      tp: card.tp,
+      vat_status: card.vatStatus,
+      org_type: card.orgType ? card.orgType.toUpperCase() : undefined,
+      parent_account_id: card.parentAccountId || undefined,
+      addresses: card.addresses,
+      main_phone: card.mainPhone,
+      corporate_email: card.corporateEmail,
+      website_url: card.websiteUrl,
+      personnel: card.personnel
+    };
+  }
+
+  private customerCardFromDto(dto: any, id: string): CustomerCard {
+    return {
+      id,
+      partnerId: dto.partner_id,
+      accountId: dto.account_id,
+      recordType: dto.record_type === 'INDIVIDUAL' ? 'Individual' : 'Organization',
+      name: dto.name,
+      searchName: dto.search_name || '',
+      erpAccount: dto.erp_account || '',
+      ice: dto.ice || '',
+      ifField: dto.if_field || '',
+      rc: dto.rc || '',
+      rcCity: dto.rc_city || '',
+      tp: dto.tp || '',
+      vatStatus: dto.vat_status || [],
+      orgType: dto.org_type ? (dto.org_type.charAt(0) + dto.org_type.slice(1).toLowerCase()) as OrgType : 'Headquarter',
+      parentAccountId: dto.parent_account_id || null,
+      addresses: dto.addresses || [],
+      mainPhone: dto.main_phone || '',
+      corporateEmail: dto.corporate_email || '',
+      websiteUrl: dto.website_url || '',
+      personnel: dto.personnel || [],
+      createdBy: dto.created_by,
+      createdAt: dto.created_at ? String(dto.created_at).split('T')[0] : ''
+    };
+  }
+
+  /** Lazy-loads a partner's customer card from the backend into the local cache. No-op (and leaves any local draft in place) if the partner has none saved yet. */
+  loadCustomerCard(partnerId: string): void {
+    this.api.getCustomerCard(partnerId).subscribe({
+      next: (dto) => {
+        if (!dto) return;
+        const card = this.customerCardFromDto(dto, dto.id);
+        this.customerCards.update(cards => {
+          const existing = cards.findIndex(c => c.partnerId === partnerId);
+          if (existing >= 0) {
+            const updated = [...cards];
+            updated[existing] = card;
+            return updated;
+          }
+          return [...cards, card];
+        });
+      },
+      error: () => { /* no saved card yet for this partner */ }
+    });
+  }
+
   getCustomer360(partnerId: string): Customer360View | null {
     const partner = this.partners().find(p => p.id === partnerId);
     if (!partner) return null;
@@ -4973,6 +5043,13 @@ export class CrmStateService {
       }
       return [...cards, fullCard];
     });
+    this.api.saveCustomerCard(card.partnerId, this.customerCardToApiPayload(card)).subscribe({
+      next: (dto) => {
+        const saved = this.customerCardFromDto(dto, dto.id);
+        this.customerCards.update(cards => cards.map(c => c.partnerId === saved.partnerId ? saved : c));
+      },
+      error: () => this.toast.show('Failed to save customer card to the server', { type: 'error' })
+    });
   }
 
   generateAccountId(): string {
@@ -5023,6 +5100,19 @@ export class CrmStateService {
       }
     });
     return newPartner;
+  }
+
+  updatePartner(id: string, changes: Partial<Partner>) {
+    const prev = this.partners().find(p => p.id === id);
+    if (!prev) return;
+    const updated = { ...prev, ...changes };
+    this.partners.update(list => list.map(p => p.id === id ? updated : p));
+    this.api.updatePartner(id, this.partnerToApiPayload(updated)).subscribe({
+      error: () => {
+        this.partners.update(list => list.map(p => p.id === id ? prev : p));
+        this.toast.show('Failed to update partner', { type: 'error' });
+      }
+    });
   }
 
   addTask(task: Omit<Task, 'id' | 'createdBy' | 'createdAt'> & { createdBy?: string; createdAt?: string }) {

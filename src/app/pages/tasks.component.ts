@@ -153,11 +153,11 @@ const SUB_MODULE_LABELS: Record<string, string> = {
 
                 <div class="flex gap-2 pt-2 border-t border-zinc-50">
                   @if (task.status === 'Pending' && canWrite()) {
-                    <button (click)="state.updateTaskStatus(task.id, 'In Progress')" class="w-full bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 text-zinc-900 py-1.5 rounded-lg text-xs font-semibold transition-colors">
+                    <button (click)="tasksService.updateStatus(task.id, 'In Progress')" class="w-full bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 text-zinc-900 py-1.5 rounded-lg text-xs font-semibold transition-colors">
                       Start Task
                     </button>
                   } @else if (task.status === 'In Progress' && canWrite()) {
-                    <button (click)="state.updateTaskStatus(task.id, 'Completed')" class="w-full bg-zinc-900 hover:bg-zinc-950 text-white py-1.5 rounded-lg text-xs font-semibold transition-colors">
+                    <button (click)="tasksService.updateStatus(task.id, 'Completed')" class="w-full bg-zinc-900 hover:bg-zinc-950 text-white py-1.5 rounded-lg text-xs font-semibold transition-colors">
                       Complete Task
                     </button>
                   } @else if (task.status === 'Completed') {
@@ -574,7 +574,7 @@ export class TasksComponent {
       event.previousIndex,
       event.currentIndex
     );
-    this.state.updateTaskStatus(task.id, targetStatus);
+    this.tasksService.updateStatus(task.id, targetStatus);
   }
 
   onModuleChange() {
@@ -648,7 +648,7 @@ export class TasksComponent {
     if (!this.canWrite()) return;
     const task = this.selectedTask();
     if (task) {
-      this.state.updateTaskStatus(task.id, task.status, this.reassignedUser);
+      this.tasksService.updateStatus(task.id, task.status, this.reassignedUser);
       this.assignModalOpen.set(false);
     }
   }

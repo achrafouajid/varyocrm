@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Component, inject, signal, computed, effect, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
@@ -355,9 +355,23 @@ export class CustomerCardComponent implements OnInit {
 
   existingCards = computed(() => this.state.customerCards());
 
+  constructor() {
+    // Applies the card once it arrives from the backend, covering the case where
+    // loadCustomerCard() (fired from ngOnInit) resolves after the form has already
+    // been initialized with defaults.
+    effect(() => {
+      const existing = this.state.customerCards().find(c => c.partnerId === this.partnerId);
+      if (existing && !this.isExisting()) {
+        this.form.set({ ...existing, addresses: [...existing.addresses], personnel: [...existing.personnel] });
+        this.isExisting.set(true);
+      }
+    });
+  }
+
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
       this.partnerId = params.get('id') || '';
+      this.state.loadCustomerCard(this.partnerId);
       const existing = this.state.getCustomerCard(this.partnerId);
       if (existing) {
         this.form.set({ ...existing, addresses: [...existing.addresses], personnel: [...existing.personnel] });

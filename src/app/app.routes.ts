@@ -23,6 +23,7 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/settings-shell.component').then(m => m.SettingsShellComponent),
     children: [
       { path: '', redirectTo: 'organization', pathMatch: 'full' },
+      { path: 'organization', loadComponent: () => import('./pages/org-settings.component').then(m => m.OrgSettingsComponent) },
       { path: 'users', canActivate: [permissionGuard('canManageUsers')], loadComponent: () => import('./pages/users.component').then(m => m.UsersComponent) },
       { path: 'teams', canActivate: [permissionGuard('canManageTeams')], loadComponent: () => import('./pages/teams.component').then(m => m.TeamsComponent) },
       // Same component as the top-level 'groups' route below, intentionally:
@@ -32,7 +33,6 @@ export const routes: Routes = [
     ]
   },
   { path: 'groups', canActivate: [authGuard], loadComponent: () => import('./pages/groups.component').then(m => m.GroupsComponent) },
-  { path: 'settings/organization', canActivate: [authGuard], loadComponent: () => import('./pages/org-settings.component').then(m => m.OrgSettingsComponent) },
   { path: 'profile', canActivate: [authGuard], loadComponent: () => import('./pages/user-profile.component').then(m => m.UserProfileComponent) },
   { path: 'settings/users/:userId', canActivate: [authGuard], loadComponent: () => import('./pages/user-profile.component').then(m => m.UserProfileComponent) }
 ];

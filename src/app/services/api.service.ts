@@ -201,6 +201,14 @@ export class ApiService extends BaseApiService {
     return this.post(`/partners/${partnerId}/status-history`, entry);
   }
 
+  getCustomerCard(partnerId: string): Observable<any> {
+    return this.get(`/partners/${partnerId}/customer-card`);
+  }
+
+  saveCustomerCard(partnerId: string, card: any): Observable<any> {
+    return this.post(`/partners/${partnerId}/customer-card`, card);
+  }
+
   // Deals
   getDeals(): Observable<any[]> {
     return this.get<PageResponse<any>>(`/deals`).pipe(

@@ -1,13 +1,14 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CrmStateService } from '../services/crm-state.service';
 import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-org-settings',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatIconModule],
+  imports: [CommonModule, FormsModule, MatIconModule, MatTooltipModule],
   template: `
     <div class="space-y-8 font-sans">
 
@@ -134,27 +135,176 @@ import { MatIconModule } from '@angular/material/icon';
       }
 
       @if (orgTab() === 'metrics') {
-      <div class="space-y-6">
-        <h3 class="font-bold text-zinc-800 text-base">Organization Metrics</h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div class="bg-white border border-zinc-200/80 rounded-2xl p-4 lg:p-5 shadow-xs hover:shadow-md transition-shadow">
-            <div class="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Total Users</div>
-            <div class="text-2xl sm:text-3xl font-extrabold text-zinc-900 mt-2 font-sans">{{ state.users().length }}</div>
-          </div>
+      <div class="space-y-8">
 
-          <div class="bg-white border border-zinc-200/80 rounded-2xl p-4 lg:p-5 shadow-xs hover:shadow-md transition-shadow">
-            <div class="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Active Users</div>
-            <div class="text-2xl sm:text-3xl font-extrabold text-zinc-900 mt-2 font-sans">{{ state.activeUsers().length }}</div>
-          </div>
+        <div class="space-y-3">
+          <h3 class="font-bold text-zinc-800 text-base">Team</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="card tone-card rounded-2xl p-4 lg:p-6 flex flex-col justify-between hover:shadow-md transition-all" data-tone="blue">
+              <div class="flex items-center justify-between mb-4">
+                <h4 class="text-meta font-bold text-zinc-400 uppercase tracking-wider font-sans flex items-center gap-1 cursor-help" matTooltip="All member accounts" matTooltipPosition="above">
+                  Total Users
+                  <mat-icon class="text-[13px] w-3.5 h-3.5 flex items-center justify-center text-zinc-300">info</mat-icon>
+                </h4>
+                <div class="h-9 w-9 tone-icon rounded-xl flex items-center justify-center">
+                  <mat-icon class="text-base w-4.5 h-4.5 flex items-center justify-center">group</mat-icon>
+                </div>
+              </div>
+              <div class="text-base sm:text-lg lg:text-xl font-bold text-zinc-900 font-sans truncate">{{ state.users().length }}</div>
+            </div>
 
-          <div class="bg-white border border-zinc-200/80 rounded-2xl p-4 lg:p-5 shadow-xs hover:shadow-md transition-shadow">
-            <div class="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Active Teams</div>
-            <div class="text-2xl sm:text-3xl font-extrabold text-zinc-900 mt-2 font-sans">{{ state.teams().length }}</div>
-          </div>
+            <div class="card tone-card rounded-2xl p-4 lg:p-6 flex flex-col justify-between hover:shadow-md transition-all" data-tone="emerald">
+              <div class="flex items-center justify-between mb-4">
+                <h4 class="text-meta font-bold text-zinc-400 uppercase tracking-wider font-sans flex items-center gap-1 cursor-help" matTooltip="Currently enabled accounts" matTooltipPosition="above">
+                  Active Users
+                  <mat-icon class="text-[13px] w-3.5 h-3.5 flex items-center justify-center text-zinc-300">info</mat-icon>
+                </h4>
+                <div class="h-9 w-9 tone-icon rounded-xl flex items-center justify-center">
+                  <mat-icon class="text-base w-4.5 h-4.5 flex items-center justify-center">how_to_reg</mat-icon>
+                </div>
+              </div>
+              <div class="text-base sm:text-lg lg:text-xl font-bold text-zinc-900 font-sans truncate">{{ state.activeUsers().length }}</div>
+            </div>
 
-          <div class="bg-white border border-zinc-200/80 rounded-2xl p-4 lg:p-5 shadow-xs hover:shadow-md transition-shadow">
-            <div class="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Collaboration Groups</div>
-            <div class="text-2xl sm:text-3xl font-extrabold text-zinc-900 mt-2 font-sans">{{ state.groups().length }}</div>
+            <div class="card tone-card rounded-2xl p-4 lg:p-6 flex flex-col justify-between hover:shadow-md transition-all" data-tone="slate">
+              <div class="flex items-center justify-between mb-4">
+                <h4 class="text-meta font-bold text-zinc-400 uppercase tracking-wider font-sans flex items-center gap-1 cursor-help" matTooltip="Departments in org" matTooltipPosition="above">
+                  Active Teams
+                  <mat-icon class="text-[13px] w-3.5 h-3.5 flex items-center justify-center text-zinc-300">info</mat-icon>
+                </h4>
+                <div class="h-9 w-9 tone-icon rounded-xl flex items-center justify-center">
+                  <mat-icon class="text-base w-4.5 h-4.5 flex items-center justify-center">groups</mat-icon>
+                </div>
+              </div>
+              <div class="text-base sm:text-lg lg:text-xl font-bold text-zinc-900 font-sans truncate">{{ state.teams().length }}</div>
+            </div>
+
+            <div class="card tone-card rounded-2xl p-4 lg:p-6 flex flex-col justify-between hover:shadow-md transition-all" data-tone="sky">
+              <div class="flex items-center justify-between mb-4">
+                <h4 class="text-meta font-bold text-zinc-400 uppercase tracking-wider font-sans flex items-center gap-1 cursor-help" matTooltip="Shared chat spaces" matTooltipPosition="above">
+                  Collaboration Groups
+                  <mat-icon class="text-[13px] w-3.5 h-3.5 flex items-center justify-center text-zinc-300">info</mat-icon>
+                </h4>
+                <div class="h-9 w-9 tone-icon rounded-xl flex items-center justify-center">
+                  <mat-icon class="text-base w-4.5 h-4.5 flex items-center justify-center">forum</mat-icon>
+                </div>
+              </div>
+              <div class="text-base sm:text-lg lg:text-xl font-bold text-zinc-900 font-sans truncate">{{ state.groups().length }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-3">
+          <h3 class="font-bold text-zinc-800 text-base">Sales &amp; Pipeline</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="card tone-card rounded-2xl p-4 lg:p-6 flex flex-col justify-between hover:shadow-md transition-all" data-tone="violet">
+              <div class="flex items-center justify-between mb-4">
+                <h4 class="text-meta font-bold text-zinc-400 uppercase tracking-wider font-sans flex items-center gap-1 cursor-help" matTooltip="Leads, customers &amp; vendors" matTooltipPosition="above">
+                  Total Partners
+                  <mat-icon class="text-[13px] w-3.5 h-3.5 flex items-center justify-center text-zinc-300">info</mat-icon>
+                </h4>
+                <div class="h-9 w-9 tone-icon rounded-xl flex items-center justify-center">
+                  <mat-icon class="text-base w-4.5 h-4.5 flex items-center justify-center">handshake</mat-icon>
+                </div>
+              </div>
+              <div class="text-base sm:text-lg lg:text-xl font-bold text-zinc-900 font-sans truncate">{{ state.partners().length }}</div>
+            </div>
+
+            <div class="card tone-card rounded-2xl p-4 lg:p-6 flex flex-col justify-between hover:shadow-md transition-all" data-tone="blue">
+              <div class="flex items-center justify-between mb-4">
+                <h4 class="text-meta font-bold text-zinc-400 uppercase tracking-wider font-sans flex items-center gap-1 cursor-help" matTooltip="In active pipeline" matTooltipPosition="above">
+                  Open Deals
+                  <mat-icon class="text-[13px] w-3.5 h-3.5 flex items-center justify-center text-zinc-300">info</mat-icon>
+                </h4>
+                <div class="h-9 w-9 tone-icon rounded-xl flex items-center justify-center">
+                  <mat-icon class="text-base w-4.5 h-4.5 flex items-center justify-center">point_of_sale</mat-icon>
+                </div>
+              </div>
+              <div class="text-base sm:text-lg lg:text-xl font-bold text-zinc-900 font-sans truncate">{{ openDeals() }}</div>
+            </div>
+
+            <div class="card tone-card rounded-2xl p-4 lg:p-6 flex flex-col justify-between hover:shadow-md transition-all" data-tone="emerald">
+              <div class="flex items-center justify-between mb-4">
+                <h4 class="text-meta font-bold text-zinc-400 uppercase tracking-wider font-sans flex items-center gap-1 cursor-help" matTooltip="Won/confirmed revenue" matTooltipPosition="above">
+                  Sales This Month
+                  <mat-icon class="text-[13px] w-3.5 h-3.5 flex items-center justify-center text-zinc-300">info</mat-icon>
+                </h4>
+                <div class="h-9 w-9 tone-icon rounded-xl flex items-center justify-center">
+                  <mat-icon class="text-base w-4.5 h-4.5 flex items-center justify-center">paid</mat-icon>
+                </div>
+              </div>
+              <div class="text-base sm:text-lg lg:text-xl font-bold text-zinc-900 font-sans truncate">{{ formatCurrency(state.salesThisMonth()) }}</div>
+            </div>
+
+            <div class="card tone-card rounded-2xl p-4 lg:p-6 flex flex-col justify-between hover:shadow-md transition-all" data-tone="amber">
+              <div class="flex items-center justify-between mb-4">
+                <h4 class="text-meta font-bold text-zinc-400 uppercase tracking-wider font-sans flex items-center gap-1 cursor-help" matTooltip="Won vs lost deals" matTooltipPosition="above">
+                  Win Rate
+                  <mat-icon class="text-[13px] w-3.5 h-3.5 flex items-center justify-center text-zinc-300">info</mat-icon>
+                </h4>
+                <div class="h-9 w-9 tone-icon rounded-xl flex items-center justify-center">
+                  <mat-icon class="text-base w-4.5 h-4.5 flex items-center justify-center">emoji_events</mat-icon>
+                </div>
+              </div>
+              <div class="text-base sm:text-lg lg:text-xl font-bold text-zinc-900 font-sans truncate">{{ state.winRate() }}%</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-3">
+          <h3 class="font-bold text-zinc-800 text-base">Operations</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="card tone-card rounded-2xl p-4 lg:p-6 flex flex-col justify-between hover:shadow-md transition-all" data-tone="sky">
+              <div class="flex items-center justify-between mb-4">
+                <h4 class="text-meta font-bold text-zinc-400 uppercase tracking-wider font-sans flex items-center gap-1 cursor-help" matTooltip="Open or in progress" matTooltipPosition="above">
+                  Open Tickets
+                  <mat-icon class="text-[13px] w-3.5 h-3.5 flex items-center justify-center text-zinc-300">info</mat-icon>
+                </h4>
+                <div class="h-9 w-9 tone-icon rounded-xl flex items-center justify-center">
+                  <mat-icon class="text-base w-4.5 h-4.5 flex items-center justify-center">support_agent</mat-icon>
+                </div>
+              </div>
+              <div class="text-base sm:text-lg lg:text-xl font-bold text-zinc-900 font-sans truncate">{{ openTickets() }}</div>
+            </div>
+
+            <div class="card tone-card rounded-2xl p-4 lg:p-6 flex flex-col justify-between hover:shadow-md transition-all" data-tone="amber">
+              <div class="flex items-center justify-between mb-4">
+                <h4 class="text-meta font-bold text-zinc-400 uppercase tracking-wider font-sans flex items-center gap-1 cursor-help" matTooltip="Across all teams" matTooltipPosition="above">
+                  Pending Tasks
+                  <mat-icon class="text-[13px] w-3.5 h-3.5 flex items-center justify-center text-zinc-300">info</mat-icon>
+                </h4>
+                <div class="h-9 w-9 tone-icon rounded-xl flex items-center justify-center">
+                  <mat-icon class="text-base w-4.5 h-4.5 flex items-center justify-center">checklist</mat-icon>
+                </div>
+              </div>
+              <div class="text-base sm:text-lg lg:text-xl font-bold text-zinc-900 font-sans truncate">{{ pendingTasks() }}</div>
+            </div>
+
+            <div class="card tone-card rounded-2xl p-4 lg:p-6 flex flex-col justify-between hover:shadow-md transition-all" data-tone="rose">
+              <div class="flex items-center justify-between mb-4">
+                <h4 class="text-meta font-bold text-zinc-400 uppercase tracking-wider font-sans flex items-center gap-1 cursor-help" matTooltip="Needs collection" matTooltipPosition="above">
+                  Overdue Invoices
+                  <mat-icon class="text-[13px] w-3.5 h-3.5 flex items-center justify-center text-zinc-300">info</mat-icon>
+                </h4>
+                <div class="h-9 w-9 tone-icon rounded-xl flex items-center justify-center">
+                  <mat-icon class="text-base w-4.5 h-4.5 flex items-center justify-center">receipt_long</mat-icon>
+                </div>
+              </div>
+              <div class="text-base sm:text-lg lg:text-xl font-bold text-zinc-900 font-sans truncate">{{ state.overdueInvoices().length }}</div>
+            </div>
+
+            <div class="card tone-card rounded-2xl p-4 lg:p-6 flex flex-col justify-between hover:shadow-md transition-all" data-tone="violet">
+              <div class="flex items-center justify-between mb-4">
+                <h4 class="text-meta font-bold text-zinc-400 uppercase tracking-wider font-sans flex items-center gap-1 cursor-help" matTooltip="Currently running" matTooltipPosition="above">
+                  Active Campaigns
+                  <mat-icon class="text-[13px] w-3.5 h-3.5 flex items-center justify-center text-zinc-300">info</mat-icon>
+                </h4>
+                <div class="h-9 w-9 tone-icon rounded-xl flex items-center justify-center">
+                  <mat-icon class="text-base w-4.5 h-4.5 flex items-center justify-center">campaign</mat-icon>
+                </div>
+              </div>
+              <div class="text-base sm:text-lg lg:text-xl font-bold text-zinc-900 font-sans truncate">{{ activeCampaigns() }}</div>
+            </div>
           </div>
         </div>
       </div>
@@ -238,5 +388,27 @@ export class OrgSettingsComponent {
 
   getMonthName(val: number): string {
     return this.months.find(m => m.value === val)?.name || 'January';
+  }
+
+  openDeals = computed(() =>
+    this.state.deals().filter(d => !['Closed Won', 'Closed Lost'].includes(d.stage)).length
+  );
+
+  openTickets = computed(() =>
+    this.state.tickets().filter(t => t.status === 'OPEN' || t.status === 'IN_PROGRESS').length
+  );
+
+  pendingTasks = computed(() =>
+    this.state.tasks().filter(t => t.status === 'Pending' || t.status === 'In Progress').length
+  );
+
+  activeCampaigns = computed(() =>
+    this.state.campaigns().filter(c => c.status === 'Active').length
+  );
+
+  formatCurrency(value: number) {
+    const cur = this.state.globalCurrency();
+    const locale = cur === 'MAD' ? 'fr-MA' : cur === 'EUR' ? 'fr-FR' : 'en-US';
+    return new Intl.NumberFormat(locale, { style: 'currency', currency: cur, maximumFractionDigits: 0 }).format(value);
   }
 }

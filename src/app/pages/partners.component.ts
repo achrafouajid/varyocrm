@@ -16,15 +16,15 @@ import { PaginatorComponent } from '../shared/paginator.component';
   imports: [MatIconModule, CommonModule, FormsModule, CreatedByBadgeComponent, UserAvatarComponent, DataStatusBannerComponent, PaginatorComponent],
   template: `
     <div class="space-y-8">
-      @if (partnersService.isLoading$()) {
+      @if (state.partnersLoading()) {
         @if (activeTab() === 'Lead') {
           <app-data-status-banner [loading]="true" [variant]="'rows'" [columns]="10" [rows]="8" />
         } @else {
           <app-data-status-banner [loading]="true" [variant]="'tiles'" [tiles]="6" />
         }
       }
-      @if (partnersService.error$()) {
-        <app-data-status-banner [error]="partnersService.error$()" />
+      @if (state.partnersError()) {
+        <app-data-status-banner [error]="state.partnersError()" />
       }
       <div class="flex gap-5 sm:gap-6 border-b border-zinc-200">
         <button
@@ -82,7 +82,7 @@ import { PaginatorComponent } from '../shared/paginator.component';
         }
       </div>
 
-      @if (!partnersService.isLoading$()) {
+      @if (!state.partnersLoading()) {
         @if (activeTab() === 'Lead') {
           <!-- Leads Management -->
           <div class="space-y-6">
@@ -93,7 +93,7 @@ import { PaginatorComponent } from '../shared/paginator.component';
                   <span class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Total Leads</span>
                   <div class="text-lg sm:text-xl lg:text-2xl font-bold text-zinc-900 truncate">{{ totalLeadsCount() }}</div>
                 </div>
-                <div class="p-3 bg-zinc-100 text-zinc-900 rounded-xl">
+                <div class="p-3 icon-badge-primary rounded-xl">
                   <mat-icon class="w-6 h-6 text-[24px]! leading-none!">people_outline</mat-icon>
                 </div>
               </div>
@@ -102,7 +102,7 @@ import { PaginatorComponent } from '../shared/paginator.component';
                   <span class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Qualified Leads</span>
                   <div class="text-lg sm:text-xl lg:text-2xl font-bold text-zinc-900 truncate">{{ qualifiedLeadsCount() }}</div>
                 </div>
-                <div class="p-3 bg-zinc-100 text-zinc-900 rounded-xl">
+                <div class="p-3 icon-badge-primary rounded-xl">
                   <mat-icon class="w-6 h-6 text-[24px]! leading-none!">verified_user</mat-icon>
                 </div>
               </div>
@@ -111,7 +111,7 @@ import { PaginatorComponent } from '../shared/paginator.component';
                   <span class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Avg Lead Score</span>
                   <div class="text-lg sm:text-xl lg:text-2xl font-bold text-zinc-900 truncate">{{ avgLeadScore() }}%</div>
                 </div>
-                <div class="p-3 bg-zinc-100 text-zinc-900 rounded-xl">
+                <div class="p-3 icon-badge-primary rounded-xl">
                   <mat-icon class="w-6 h-6 text-[24px]! leading-none!">star_outline</mat-icon>
                 </div>
               </div>
@@ -120,7 +120,7 @@ import { PaginatorComponent } from '../shared/paginator.component';
                   <span class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Conversion Rate</span>
                   <div class="text-lg sm:text-xl lg:text-2xl font-bold text-zinc-900 truncate">{{ conversionRate() }}%</div>
                 </div>
-                <div class="p-3 bg-zinc-100 text-zinc-900 rounded-xl">
+                <div class="p-3 icon-badge-primary rounded-xl">
                   <mat-icon class="w-6 h-6 text-[24px]! leading-none!">trending_up</mat-icon>
                 </div>
               </div>
@@ -723,7 +723,7 @@ import { PaginatorComponent } from '../shared/paginator.component';
 
                 <div class="mt-6 pt-4 border-t border-white/30 flex gap-2">
                   @if(partner.type === 'Lead' && canWrite()) {
-                    <button (click)="partnersService.updatePartner(partner.id, { status: 'prospect' })" class="w-full btn-secondary rounded-xl px-3 py-2 text-sm font-semibold text-zinc-900 transition-all flex items-center justify-center">
+                    <button (click)="state.updatePartner(partner.id, { status: 'prospect' })" class="w-full btn-secondary rounded-xl px-3 py-2 text-sm font-semibold text-zinc-900 transition-all flex items-center justify-center">
                       <mat-icon class="mr-2 text-[16px] w-4 h-4">arrow_forward</mat-icon>
                       Convert to Prospect
                     </button>
@@ -908,7 +908,7 @@ export class PartnersComponent {
   deletePartner(partner: any) {
     if (!this.state.hasAuthority('PARTNERS_DELETE')) return;
     if (confirm(`Delete "${partner.name}"? This cannot be undone.`)) {
-      this.partnersService.deletePartner(partner.id);
+      this.state.deletePartner(partner.id);
     }
   }
 
@@ -958,6 +958,7 @@ export class PartnersComponent {
 
   constructor() {
     this.partnersService.load();
+    this.state.loadPartners();
     effect(() => {
       const tab = this.state.navigateTab();
       if (tab) {
@@ -1227,7 +1228,7 @@ export class PartnersComponent {
     if (!value) return;
     const ids = this.selectedPartnerIds();
     for (const id of ids) {
-      this.partnersService.updatePartner(id, { assignedTo: value });
+      this.state.updatePartner(id, { assignedTo: value });
     }
     (event.target as HTMLSelectElement).value = '';
   }
@@ -1237,14 +1238,14 @@ export class PartnersComponent {
     if (!value) return;
     const ids = this.selectedPartnerIds();
     for (const id of ids) {
-      this.partnersService.updatePartner(id, { status: value });
+      this.state.updatePartner(id, { status: value });
     }
     (event.target as HTMLSelectElement).value = '';
   }
 
   bulkExportPartners() {
     const ids = this.selectedPartnerIds();
-    const rows = this.partnersService.allPartners().filter(p => ids.has(p.id));
+    const rows = this.state.partners().filter(p => ids.has(p.id));
     const header = ['Name', 'Type', 'Status', 'Email', 'Phone'];
     const csvRows = [header.join(',')];
     for (const p of rows) {
@@ -1273,14 +1274,15 @@ export class PartnersComponent {
       }
 
       if (this.newPartner.id) {
-        this.partnersService.updatePartner(this.newPartner.id, { status: 'active' });
+        this.state.updatePartner(this.newPartner.id, { status: 'active' });
       } else {
-        this.partnersService.addPartner({
+        this.state.addPartner({
+          type: this.newPartner.type,
           name: this.newPartner.name,
           email: this.newPartner.email,
           phone: this.newPartner.phone,
           city: this.newPartner.city,
-          description: this.newPartner.comments,
+          comments: this.newPartner.comments,
           status: 'active'
         } as any);
       }

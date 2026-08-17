@@ -1,5 +1,6 @@
 import { Component, inject, ViewChild, ElementRef, AfterViewInit, signal, computed } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { CrmStateService } from '../services/crm-state.service';
 import { CommonModule } from '@angular/common';
 import { Customer360Component } from './customer-360-card.component';
@@ -8,7 +9,7 @@ declare var Chart: any;
 
 @Component({
   selector: 'app-analytics',
-  imports: [MatIconModule, CommonModule, Customer360Component],
+  imports: [MatIconModule, MatTooltipModule, CommonModule, Customer360Component],
   template: `
     <div class="space-y-8">
 
@@ -45,7 +46,7 @@ declare var Chart: any;
           <div class="card rounded-2xl p-4 lg:p-6 flex flex-col justify-between hover:shadow-md transition-all">
             <div class="flex items-center justify-between mb-4">
               <h3 class="text-meta font-bold text-zinc-400 uppercase tracking-wider font-sans">New Deals</h3>
-              <div class="h-9 w-9 bg-zinc-100 text-zinc-900 rounded-xl flex items-center justify-center border border-zinc-200">
+              <div class="h-9 w-9 icon-badge-primary rounded-xl flex items-center justify-center">
                 <mat-icon class="text-base" style="width:18px;height:18px;font-size:18px;display:flex;align-items:center">handshake</mat-icon>
               </div>
             </div>
@@ -62,7 +63,7 @@ declare var Chart: any;
           <div class="card rounded-2xl p-4 lg:p-6 flex flex-col justify-between hover:shadow-md transition-all">
             <div class="flex items-center justify-between mb-4">
               <h3 class="text-meta font-bold text-zinc-400 uppercase tracking-wider font-sans">New Prospects</h3>
-              <div class="h-9 w-9 bg-zinc-100 text-zinc-900 rounded-xl flex items-center justify-center border border-zinc-200">
+              <div class="h-9 w-9 icon-badge-primary rounded-xl flex items-center justify-center">
                 <mat-icon class="text-base" style="width:18px;height:18px;font-size:18px;display:flex;align-items:center">group_add</mat-icon>
               </div>
             </div>
@@ -79,7 +80,7 @@ declare var Chart: any;
           <div class="card rounded-2xl p-4 lg:p-6 flex flex-col justify-between hover:shadow-md transition-all">
             <div class="flex items-center justify-between mb-4">
               <h3 class="text-meta font-bold text-zinc-400 uppercase tracking-wider font-sans">Lost Prospects</h3>
-              <div class="h-9 w-9 bg-zinc-100 text-zinc-700 rounded-xl flex items-center justify-center border border-zinc-200">
+              <div class="h-9 w-9 icon-badge-primary rounded-xl flex items-center justify-center">
                 <mat-icon class="text-base" style="width:18px;height:18px;font-size:18px;display:flex;align-items:center">do_not_disturb_on</mat-icon>
               </div>
             </div>
@@ -96,7 +97,7 @@ declare var Chart: any;
           <div class="card rounded-2xl p-4 lg:p-6 flex flex-col justify-between hover:shadow-md transition-all">
             <div class="flex items-center justify-between mb-4">
               <h3 class="text-meta font-bold text-zinc-400 uppercase tracking-wider font-sans">Today's Deal</h3>
-              <div class="h-9 w-9 bg-zinc-100 text-zinc-900 rounded-xl flex items-center justify-center border border-zinc-200">
+              <div class="h-9 w-9 icon-badge-primary rounded-xl flex items-center justify-center">
                 <mat-icon class="text-base" style="width:18px;height:18px;font-size:18px;display:flex;align-items:center">star</mat-icon>
               </div>
             </div>
@@ -143,57 +144,57 @@ declare var Chart: any;
           <!-- Sales This Month -->
           <div class="card rounded-2xl p-4 lg:p-6 flex flex-col justify-between hover:shadow-md transition-all">
             <div class="flex items-center justify-between mb-4">
-              <h3 class="text-meta font-bold text-zinc-400 uppercase tracking-wider font-sans">Sales This Month</h3>
-              <div class="h-9 w-9 bg-zinc-100 text-zinc-900 rounded-xl flex items-center justify-center border border-zinc-200">
+              <h3 class="text-meta font-bold text-zinc-400 uppercase tracking-wider font-sans flex items-center gap-1 cursor-help" matTooltip="Current month won / confirmed deals" matTooltipPosition="above">
+                Sales This Month
+                <mat-icon class="text-[13px] w-3.5 h-3.5 flex items-center justify-center text-zinc-300">info</mat-icon>
+              </h3>
+              <div class="h-9 w-9 icon-badge-primary rounded-xl flex items-center justify-center">
                 <mat-icon class="text-base w-4.5 h-4.5 flex items-center justify-center">paid</mat-icon>
               </div>
             </div>
             <div class="text-base sm:text-lg lg:text-xl font-bold text-zinc-900 font-sans truncate">{{ formatCurrency(state.salesThisMonth()) }}</div>
-            <div class="text-meta text-zinc-900 font-bold mt-2 flex items-center gap-0.5 font-sans">
-              <mat-icon class="text-[12px] w-3 h-3 flex items-center justify-center">trending_up</mat-icon> Current month won/confirmed
-            </div>
           </div>
 
           <!-- Conversion Rate -->
           <div class="card rounded-2xl p-4 lg:p-6 flex flex-col justify-between hover:shadow-md transition-all">
             <div class="flex items-center justify-between mb-4">
-              <h3 class="text-meta font-bold text-zinc-400 uppercase tracking-wider font-sans">Conversion Rate</h3>
-              <div class="h-9 w-9 bg-zinc-100 text-zinc-900 rounded-xl flex items-center justify-center border border-zinc-200">
+              <h3 class="text-meta font-bold text-zinc-400 uppercase tracking-wider font-sans flex items-center gap-1 cursor-help" matTooltip="Share of pipeline still active vs total pipeline" matTooltipPosition="above">
+                Conversion Rate
+                <mat-icon class="text-[13px] w-3.5 h-3.5 flex items-center justify-center text-zinc-300">info</mat-icon>
+              </h3>
+              <div class="h-9 w-9 icon-badge-primary rounded-xl flex items-center justify-center">
                 <mat-icon class="text-base w-4.5 h-4.5 flex items-center justify-center">query_stats</mat-icon>
               </div>
             </div>
             <div class="text-base sm:text-lg lg:text-xl font-bold text-zinc-900 font-sans truncate">{{ state.conversionRate() }}%</div>
-            <div class="text-meta text-zinc-900 font-bold mt-2 flex items-center gap-0.5 font-sans">
-              <mat-icon class="text-[12px] w-3 h-3 flex items-center justify-center">insights</mat-icon> Active vs Total pipeline
-            </div>
           </div>
 
           <!-- Win Rate -->
           <div class="card rounded-2xl p-4 lg:p-6 flex flex-col justify-between hover:shadow-md transition-all">
             <div class="flex items-center justify-between mb-4">
-              <h3 class="text-meta font-bold text-zinc-400 uppercase tracking-wider font-sans">Win Rate</h3>
-              <div class="h-9 w-9 bg-zinc-100 text-zinc-900 rounded-xl flex items-center justify-center border border-zinc-200">
+              <h3 class="text-meta font-bold text-zinc-400 uppercase tracking-wider font-sans flex items-center gap-1 cursor-help" matTooltip="Won deals vs lost deals" matTooltipPosition="above">
+                Win Rate
+                <mat-icon class="text-[13px] w-3.5 h-3.5 flex items-center justify-center text-zinc-300">info</mat-icon>
+              </h3>
+              <div class="h-9 w-9 icon-badge-primary rounded-xl flex items-center justify-center">
                 <mat-icon class="text-base w-4.5 h-4.5 flex items-center justify-center">emoji_events</mat-icon>
               </div>
             </div>
             <div class="text-base sm:text-lg lg:text-xl font-bold text-zinc-900 font-sans truncate">{{ state.winRate() }}%</div>
-            <div class="text-meta text-zinc-900 font-bold mt-2 flex items-center gap-0.5 font-sans">
-              <mat-icon class="text-[12px] w-3 h-3 flex items-center justify-center">check_circle</mat-icon> Won vs Lost deals
-            </div>
           </div>
 
           <!-- Average Deal Size -->
           <div class="card rounded-2xl p-4 lg:p-6 flex flex-col justify-between hover:shadow-md transition-all">
             <div class="flex items-center justify-between mb-4">
-              <h3 class="text-meta font-bold text-zinc-400 uppercase tracking-wider font-sans">Avg Deal Size</h3>
-              <div class="h-9 w-9 bg-zinc-100 text-zinc-900 rounded-xl flex items-center justify-center border border-zinc-200">
+              <h3 class="text-meta font-bold text-zinc-400 uppercase tracking-wider font-sans flex items-center gap-1 cursor-help" matTooltip="Average value per deal, excludes lost opportunities" matTooltipPosition="above">
+                Avg Deal Size
+                <mat-icon class="text-[13px] w-3.5 h-3.5 flex items-center justify-center text-zinc-300">info</mat-icon>
+              </h3>
+              <div class="h-9 w-9 icon-badge-primary rounded-xl flex items-center justify-center">
                 <mat-icon class="text-base w-4.5 h-4.5 flex items-center justify-center">monetization_on</mat-icon>
               </div>
             </div>
             <div class="text-base sm:text-lg lg:text-xl font-bold text-zinc-900 font-sans truncate">{{ formatCurrency(state.avgDealSize()) }}</div>
-            <div class="text-meta text-zinc-900 font-bold mt-2 flex items-center gap-0.5 font-sans">
-              <mat-icon class="text-[12px] w-3 h-3 flex items-center justify-center">analytics</mat-icon> Excludes lost opportunities
-            </div>
           </div>
         </div>
 
@@ -202,8 +203,10 @@ declare var Chart: any;
           <!-- Sales Forecasting -->
           <div class="card rounded-2xl p-6 space-y-4">
             <div>
-              <h3 class="text-base font-semibold text-zinc-900 font-sans">Sales Forecasting</h3>
-              <p class="text-xs text-zinc-500 mt-0.5 font-sans">Expected monthly revenue per salesperson (excludes lost deals)</p>
+              <h3 class="text-base font-semibold text-zinc-900 font-sans flex items-center gap-1.5 cursor-help w-fit" matTooltip="Expected monthly revenue per salesperson (excludes lost deals)" matTooltipPosition="above">
+                Sales Forecasting
+                <mat-icon class="text-[14px] w-3.5 h-3.5 flex items-center justify-center text-zinc-300">info</mat-icon>
+              </h3>
             </div>
             <div class="h-64 relative">
               <canvas #forecastChart></canvas>
@@ -213,8 +216,10 @@ declare var Chart: any;
           <!-- Sales by Region -->
           <div class="card rounded-2xl p-6 space-y-4">
             <div>
-              <h3 class="text-base font-semibold text-zinc-900 font-sans">Sales by Region</h3>
-              <p class="text-xs text-zinc-500 mt-0.5 font-sans">Total won &amp; confirmed sales volume by geographical region</p>
+              <h3 class="text-base font-semibold text-zinc-900 font-sans flex items-center gap-1.5 cursor-help w-fit" matTooltip="Total won &amp; confirmed sales volume by geographical region" matTooltipPosition="above">
+                Sales by Region
+                <mat-icon class="text-[14px] w-3.5 h-3.5 flex items-center justify-center text-zinc-300">info</mat-icon>
+              </h3>
             </div>
             <div class="h-64 relative">
               <canvas #regionChart></canvas>
@@ -227,8 +232,10 @@ declare var Chart: any;
           <!-- Top Customers -->
           <div class="card rounded-2xl p-6 space-y-4">
             <div>
-              <h3 class="text-base font-semibold text-zinc-900 font-sans">Top Customers</h3>
-              <p class="text-xs text-zinc-500 mt-0.5 font-sans">Ranked by total confirmed deal value</p>
+              <h3 class="text-base font-semibold text-zinc-900 font-sans flex items-center gap-1.5 cursor-help w-fit" matTooltip="Ranked by total confirmed deal value" matTooltipPosition="above">
+                Top Customers
+                <mat-icon class="text-[14px] w-3.5 h-3.5 flex items-center justify-center text-zinc-300">info</mat-icon>
+              </h3>
             </div>
             <div class="space-y-3 pt-2">
               @for (cust of state.topCustomers(); track cust.name) {
@@ -253,8 +260,10 @@ declare var Chart: any;
           <!-- Lost Opportunities -->
           <div class="card rounded-2xl p-6 space-y-4">
             <div>
-              <h3 class="text-base font-semibold text-zinc-900 font-sans">Lost Opportunities</h3>
-              <p class="text-xs text-zinc-500 mt-0.5 font-sans">Pipelines marked as Closed Lost</p>
+              <h3 class="text-base font-semibold text-zinc-900 font-sans flex items-center gap-1.5 cursor-help w-fit" matTooltip="Pipelines marked as Closed Lost" matTooltipPosition="above">
+                Lost Opportunities
+                <mat-icon class="text-[14px] w-3.5 h-3.5 flex items-center justify-center text-zinc-300">info</mat-icon>
+              </h3>
             </div>
             <div class="bg-white border border-zinc-200 rounded-xl overflow-x-auto">
               <table class="min-w-full divide-y divide-slate-200">

@@ -868,6 +868,44 @@ body {
   color: var(--tile);
 }
 
+/* Same tone tokens as .bento-tile, reusable on cards outside the dashboard grid (e.g. Settings metrics). */
+.tone-card { --tile: var(--color-text-secondary); --tile-soft: var(--color-surface-hover); }
+.tone-card[data-tone='slate']   { --tile: #475569; --tile-soft: #F1F5F9; }
+.tone-card[data-tone='blue']    { --tile: #2563EB; --tile-soft: #EFF6FF; }
+.tone-card[data-tone='sky']     { --tile: #0284C7; --tile-soft: #F0F9FF; }
+.tone-card[data-tone='violet']  { --tile: #7C3AED; --tile-soft: #F5F3FF; }
+.tone-card[data-tone='emerald'] { --tile: #059669; --tile-soft: #ECFDF5; }
+.tone-card[data-tone='amber']   { --tile: #B45309; --tile-soft: #FFFBEB; }
+.tone-card[data-tone='rose']    { --tile: #E11D48; --tile-soft: #FFF1F2; }
+
+:root[data-theme='dark'] .tone-card[data-tone='slate'],
+:root[data-theme='dark'] .tone-card[data-tone='blue'],
+:root[data-theme='dark'] .tone-card[data-tone='sky'],
+:root[data-theme='dark'] .tone-card[data-tone='violet'],
+:root[data-theme='dark'] .tone-card[data-tone='emerald'],
+:root[data-theme='dark'] .tone-card[data-tone='amber'],
+:root[data-theme='dark'] .tone-card[data-tone='rose'] {
+  --tile-soft: color-mix(in srgb, var(--tile) 18%, transparent);
+}
+:root[data-theme='dark'] .tone-card[data-tone='slate']   { --tile: #94A3B8; }
+:root[data-theme='dark'] .tone-card[data-tone='blue']    { --tile: #60A5FA; }
+:root[data-theme='dark'] .tone-card[data-tone='sky']     { --tile: #38BDF8; }
+:root[data-theme='dark'] .tone-card[data-tone='violet']  { --tile: #A78BFA; }
+:root[data-theme='dark'] .tone-card[data-tone='emerald'] { --tile: #34D399; }
+:root[data-theme='dark'] .tone-card[data-tone='amber']   { --tile: #FBBF24; }
+:root[data-theme='dark'] .tone-card[data-tone='rose']    { --tile: #FB7185; }
+
+.tone-icon {
+  background: var(--tile-soft);
+  color: var(--tile);
+}
+
+/* Primary-blue icon badge for stat/KPI cards on pages that don't need per-metric tones. */
+.icon-badge-primary {
+  background: var(--color-info-light);
+  color: var(--color-info);
+}
+
 .bento-icon .mat-icon,
 .bento-icon mat-icon {
   font-size: 15px;

@@ -5,10 +5,11 @@ import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { CrmStateService, Deal, PurchaseOrder, Task } from '../services/crm-state.service';
 import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
+import { AttachmentsComponent } from '../shared/attachments.component';
 
 @Component({
   selector: 'app-deal-detail',
-  imports: [CommonModule, FormsModule, MatIconModule, RouterLink, CreatedByBadgeComponent],
+  imports: [CommonModule, FormsModule, MatIconModule, RouterLink, CreatedByBadgeComponent, AttachmentsComponent],
   template: `
     <div class="space-y-6 font-sans max-w-5xl mx-auto">
       <a routerLink="/sales" class="inline-flex items-center gap-1 text-xs font-semibold text-zinc-500 hover:text-zinc-800 transition-colors">
@@ -440,6 +441,10 @@ import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
                 </div>
               </div>
             }
+
+            <div class="mt-6 pt-4 border-t border-zinc-100">
+              <app-attachments ownerEntityType="DEAL" [ownerEntityId]="deal.id" [canWrite]="canWriteDeal()" />
+            </div>
 
           </div>
         </div>

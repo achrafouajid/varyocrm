@@ -92,8 +92,4 @@ export class ProposalsService {
       this.updateProposal(id, { ...proposal, status: status as any });
     }
   }
-
-  proposalTemplates = (): any[] => {
-    return [];
-  }
 }

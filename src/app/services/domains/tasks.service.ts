@@ -65,6 +65,27 @@ export class TasksService {
     });
   }
 
+  updateStatus(id: string, status: Task['status'], assignedTo?: string): void {
+    const current = this.tasks().find(t => t.id === id);
+    if (!current) return;
+    const prevStatus = current.status;
+    const payload: any = { status };
+    if (assignedTo !== undefined) payload.assignedTo = assignedTo;
+    this.api.updateTask(id, payload).subscribe({
+      next: (dto) => {
+        this.tasks.update(tasks => tasks.map(t => t.id === id ? dto : t));
+        this.toast.show(`Task status updated`, {
+          undo: () => {
+            this.tasks.update(tasks =>
+              tasks.map(t => t.id === id ? { ...t, status: prevStatus } : t)
+            );
+          }
+        });
+      },
+      error: () => this.toast.show('Failed to update task status', { type: 'error' })
+    });
+  }
+
   deleteTask(id: string): void {
     const deleted = this.tasks().find(t => t.id === id);
     this.api.deleteTask(id).subscribe({

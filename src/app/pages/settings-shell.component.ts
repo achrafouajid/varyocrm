@@ -1,62 +1,56 @@
 import { Component, inject } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { MatIconModule } from '@angular/material/icon';
 import { CrmStateService } from '../services/crm-state.service';
 
 @Component({
   selector: 'app-settings-shell',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule, MatIconModule],
   template: `
-    <div class="flex flex-col md:flex-row gap-8 max-w-6xl mx-auto font-sans">
-      <!-- Left Sidebar Nav -->
-      <aside class="w-full md:w-56 shrink-0 card rounded-2xl p-4 self-start">
-        <h2 class="text-xs font-bold text-zinc-400 uppercase tracking-wider px-3 mb-3">Settings</h2>
-        <nav class="space-y-1">
+    <div class="space-y-8 font-sans">
+      <div class="flex gap-5 sm:gap-6 border-b border-zinc-200">
+        <a
+          routerLink="/settings/organization"
+          routerLinkActive="border-zinc-900 text-zinc-900"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="px-1 py-3 -mb-px border-b-2 border-transparent text-zinc-400 hover:text-zinc-600 text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap"
+        >
+          <mat-icon class="text-[18px] w-[18px] h-[18px]">business</mat-icon>
+          Organization
+        </a>
+        @if (state.currentUserPermissions().canManageUsers) {
           <a
-            routerLink="/settings/organization"
-            routerLinkActive="bg-zinc-100 text-zinc-900 border-l-2 border-zinc-900 font-semibold"
-            [routerLinkActiveOptions]="{ exact: true }"
-            class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg btn-secondary text-zinc-500 hover:text-zinc-900 transition-colors border-l-2 border-transparent"
+            routerLink="/settings/users"
+            routerLinkActive="border-zinc-900 text-zinc-900"
+            class="px-1 py-3 -mb-px border-b-2 border-transparent text-zinc-400 hover:text-zinc-600 text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap"
           >
-            <i class="ti ti-building text-base leading-none"></i>
-            Organization
+            <mat-icon class="text-[18px] w-[18px] h-[18px]">group</mat-icon>
+            Users
           </a>
-          @if (state.currentUserPermissions().canManageUsers) {
-            <a
-              routerLink="/settings/users"
-              routerLinkActive="bg-zinc-100 text-zinc-900 border-l-2 border-zinc-900 font-semibold"
-              class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg btn-secondary text-zinc-500 hover:text-zinc-900 transition-colors border-l-2 border-transparent"
-            >
-              <i class="ti ti-users text-base leading-none"></i>
-              Users
-            </a>
-          }
-          @if (state.currentUserPermissions().canManageTeams) {
-            <a
-              routerLink="/settings/teams"
-              routerLinkActive="bg-zinc-100 text-zinc-900 border-l-2 border-zinc-900 font-semibold"
-              class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg btn-secondary text-zinc-500 hover:text-zinc-900 transition-colors border-l-2 border-transparent"
-            >
-              <i class="ti ti-users-group text-base leading-none"></i>
-              Teams
-            </a>
-          }
+        }
+        @if (state.currentUserPermissions().canManageTeams) {
           <a
-            routerLink="/settings/groups"
-            routerLinkActive="bg-zinc-100 text-zinc-900 border-l-2 border-zinc-900 font-semibold"
-            class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg btn-secondary text-zinc-500 hover:text-zinc-900 transition-colors border-l-2 border-transparent"
+            routerLink="/settings/teams"
+            routerLinkActive="border-zinc-900 text-zinc-900"
+            class="px-1 py-3 -mb-px border-b-2 border-transparent text-zinc-400 hover:text-zinc-600 text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap"
           >
-            <i class="ti ti-messages text-base leading-none"></i>
-            Groups
+            <mat-icon class="text-[18px] w-[18px] h-[18px]">groups</mat-icon>
+            Teams
           </a>
-        </nav>
-      </aside>
+        }
+        <a
+          routerLink="/settings/groups"
+          routerLinkActive="border-zinc-900 text-zinc-900"
+          class="px-1 py-3 -mb-px border-b-2 border-transparent text-zinc-400 hover:text-zinc-600 text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap"
+        >
+          <mat-icon class="text-[18px] w-[18px] h-[18px]">forum</mat-icon>
+          Groups
+        </a>
+      </div>
 
-      <!-- Right Side Content -->
-      <main class="flex-1 min-w-0">
-        <router-outlet></router-outlet>
-      </main>
+      <router-outlet></router-outlet>
     </div>
   `
 })

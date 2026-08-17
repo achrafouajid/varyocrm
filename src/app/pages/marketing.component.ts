@@ -1,7 +1,7 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { CrmStateService } from '../services/crm-state.service';
-import { CampaignsService } from '../services/domains';
+import { CampaignsService, Campaign } from '../services/domains';
 import { WhatsAppCampaignsService } from '../services/domains/whatsapp-campaigns.service';
 import { CommonModule } from '@angular/common';
 import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
@@ -9,11 +9,12 @@ import { DataStatusBannerComponent } from '../shared/data-status-banner.componen
 import { PaginatorComponent } from '../shared/paginator.component';
 import { WhatsAppCampaignModalComponent } from '../shared/whatsapp-campaign-modal.component';
 import { WhatsAppCampaignDetailComponent } from '../shared/whatsapp-campaign-detail.component';
+import { SimpleCampaignModalComponent } from '../shared/simple-campaign-modal.component';
 
 @Component({
   selector: 'app-marketing',
   imports: [MatIconModule, CommonModule, CreatedByBadgeComponent, DataStatusBannerComponent, PaginatorComponent,
-            WhatsAppCampaignModalComponent, WhatsAppCampaignDetailComponent],
+            WhatsAppCampaignModalComponent, WhatsAppCampaignDetailComponent, SimpleCampaignModalComponent],
   template: `
     <div class="space-y-8">
       <app-data-status-banner [loading]="campaignsService.isLoading$()" [error]="campaignsService.error$()" />
@@ -93,6 +94,7 @@ import { WhatsAppCampaignDetailComponent } from '../shared/whatsapp-campaign-det
               <th scope="col" class="px-6 py-3 text-left test-xs font-medium text-zinc-500 uppercase tracking-wider text-xs">Sent/Delivery</th>
               <th scope="col" class="px-6 py-3 text-left test-xs font-medium text-zinc-500 uppercase tracking-wider text-xs">Status</th>
               <th scope="col" class="px-6 py-3 text-left test-xs font-medium text-zinc-500 uppercase tracking-wider text-xs">Created By</th>
+              <th scope="col" class="px-6 py-3 text-right test-xs font-medium text-zinc-500 uppercase tracking-wider text-xs">Actions</th>
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-slate-200">
@@ -122,10 +124,24 @@ import { WhatsAppCampaignDetailComponent } from '../shared/whatsapp-campaign-det
                 <td class="px-6 py-4 whitespace-nowrap">
                   <app-created-by-badge [createdBy]="campaign.createdBy" [createdAt]="campaign.createdAt" />
                 </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right" (click)="$event.stopPropagation()">
+                  <div class="flex items-center justify-end gap-1">
+                    @if (canWriteCampaign() && !isWhatsApp(campaign)) {
+                      <button (click)="openEditCampaign(campaign)" class="text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 p-1.5 rounded-lg transition-colors" title="Edit Campaign">
+                        <mat-icon class="text-base w-4.5 h-4.5 flex items-center justify-center">edit</mat-icon>
+                      </button>
+                    }
+                    @if (canDeleteCampaign()) {
+                      <button (click)="openDeleteCampaignModal(campaign)" class="text-zinc-400 hover:text-red-600 hover:bg-red-50 p-1.5 rounded-lg transition-colors" title="Delete Campaign">
+                        <mat-icon class="text-base w-4.5 h-4.5 flex items-center justify-center">delete</mat-icon>
+                      </button>
+                    }
+                  </div>
+                </td>
               </tr>
             } @empty {
               <tr>
-                <td colspan="5" class="px-6 py-8 text-center text-zinc-500 text-sm">No {{activeTab()}} campaigns found.</td>
+                <td colspan="6" class="px-6 py-8 text-center text-zinc-500 text-sm">No {{activeTab()}} campaigns found.</td>
               </tr>
             }
           </tbody>
@@ -149,6 +165,42 @@ import { WhatsAppCampaignDetailComponent } from '../shared/whatsapp-campaign-det
         [campaignId]="detailCampaignId()"
         [campaignTitle]="detailCampaignTitle()"
         (close)="onDetailClosed()" />
+
+      <app-simple-campaign-modal
+        [open]="showSimpleComposer()"
+        [channel]="simpleComposerChannel()"
+        [campaign]="editingCampaign()"
+        (close)="showSimpleComposer.set(false)"
+        (saved)="refreshCampaigns()" />
+
+      <!-- Delete Campaign Confirmation Modal -->
+      @if (deleteCampaignModalOpen() && campaignToDelete()) {
+        <div class="fixed inset-0 z-50 bg-zinc-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div class="bg-white shadow-xl rounded-2xl max-w-sm w-full p-6 space-y-4 animate-in zoom-in-95 duration-200">
+            <div class="flex justify-between items-center">
+              <h3 class="text-lg font-bold text-zinc-950">Delete Campaign</h3>
+              <button (click)="cancelDeleteCampaign()" class="text-zinc-400 hover:text-zinc-600 transition-colors">
+                <mat-icon class="w-5 h-5 text-[20px]! leading-none!">close</mat-icon>
+              </button>
+            </div>
+            <p class="text-sm text-zinc-600 leading-relaxed">
+              Are you sure you want to delete this campaign?
+            </p>
+            <div class="bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3">
+              <div class="text-sm font-semibold text-zinc-900">{{ campaignToDelete()?.title }}</div>
+            </div>
+            <div class="flex justify-end gap-2 pt-2 border-t border-white/30">
+              <button (click)="cancelDeleteCampaign()" class="px-4 py-2 border border-zinc-200 text-zinc-600 text-sm font-semibold rounded-lg hover:bg-zinc-50">
+                Cancel
+              </button>
+              <button (click)="confirmDeleteCampaign()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-lg transition-colors flex items-center gap-1.5">
+                <mat-icon class="w-4 h-4 text-[16px]! leading-none!">delete</mat-icon>
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      }
     </div>
     `})
 export class MarketingComponent {
@@ -160,6 +212,13 @@ export class MarketingComponent {
   showComposer = signal(false);
   detailCampaignId = signal<string | null>(null);
   detailCampaignTitle = signal<string>('Campaign');
+
+  showSimpleComposer = signal(false);
+  simpleComposerChannel = signal<'Email' | 'SMS'>('Email');
+  editingCampaign = signal<Campaign | null>(null);
+
+  deleteCampaignModalOpen = signal(false);
+  campaignToDelete = signal<Campaign | null>(null);
 
   campaignsPage = signal(1);
   campaignsPageSize = signal(10);
@@ -216,11 +275,49 @@ export class MarketingComponent {
   campaignCount = computed(() => this.filteredCampaigns().length);
 
   onNewCampaign(): void {
-    if (this.activeTab() !== 'WhatsApp') {
-      this.activeTab.set('WhatsApp');
-      this.state.breadcrumbLabel.set('WhatsApp');
+    if (this.activeTab() === 'WhatsApp') {
+      this.showComposer.set(true);
+      return;
     }
-    this.showComposer.set(true);
+    this.editingCampaign.set(null);
+    this.simpleComposerChannel.set(this.activeTab() as 'Email' | 'SMS');
+    this.showSimpleComposer.set(true);
+  }
+
+  canWriteCampaign(): boolean {
+    return this.state.hasAuthority('CAMPAIGNS_WRITE');
+  }
+
+  canDeleteCampaign(): boolean {
+    return this.state.hasAuthority('CAMPAIGNS_DELETE');
+  }
+
+  openEditCampaign(campaign: Campaign): void {
+    if (!this.canWriteCampaign()) return;
+    this.editingCampaign.set(campaign);
+    this.simpleComposerChannel.set(this.activeTab() as 'Email' | 'SMS');
+    this.showSimpleComposer.set(true);
+  }
+
+  openDeleteCampaignModal(campaign: Campaign): void {
+    if (!this.canDeleteCampaign()) return;
+    this.campaignToDelete.set(campaign);
+    this.deleteCampaignModalOpen.set(true);
+  }
+
+  cancelDeleteCampaign(): void {
+    this.deleteCampaignModalOpen.set(false);
+    this.campaignToDelete.set(null);
+  }
+
+  confirmDeleteCampaign(): void {
+    if (!this.canDeleteCampaign()) return;
+    const campaign = this.campaignToDelete();
+    if (campaign) {
+      this.campaignsService.deleteCampaign(campaign.id);
+    }
+    this.deleteCampaignModalOpen.set(false);
+    this.campaignToDelete.set(null);
   }
 
   onCampaignCreated(campaignId: string): void {
@@ -239,7 +336,7 @@ export class MarketingComponent {
     this.refreshCampaigns();
   }
 
-  private refreshCampaigns(): void {
+  refreshCampaigns(): void {
     this.campaignsService.isLoaded.set(false);
     this.campaignsService.load();
   }

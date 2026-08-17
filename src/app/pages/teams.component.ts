@@ -150,9 +150,20 @@ import { MatIconModule } from '@angular/material/icon';
                     {{ team.department }}
                   </span>
                 </div>
-                <span class="text-xs font-bold text-zinc-400 font-sans">
-                  {{ team.memberUserIds.length }} member{{ team.memberUserIds.length === 1 ? '' : 's' }}
-                </span>
+                <div class="flex items-center gap-2 shrink-0">
+                  <span class="text-xs font-bold text-zinc-400 font-sans">
+                    {{ team.memberUserIds.length }} member{{ team.memberUserIds.length === 1 ? '' : 's' }}
+                  </span>
+                  @if (canDelete()) {
+                    <button
+                      (click)="openDeleteModal(team)"
+                      class="text-zinc-400 hover:text-red-600 hover:bg-red-50 p-1 rounded-lg transition-colors"
+                      title="Delete Team"
+                    >
+                      <mat-icon class="text-sm w-4 h-4 flex items-center justify-center">delete</mat-icon>
+                    </button>
+                  }
+                </div>
               </div>
 
               <!-- Description -->
@@ -305,6 +316,35 @@ import { MatIconModule } from '@angular/material/icon';
         }
       </div>
     </div>
+
+    <!-- Delete Team Confirmation Modal -->
+    @if (deleteModalOpen() && teamToDelete()) {
+      <div class="fixed inset-0 z-50 bg-zinc-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="bg-white shadow-xl rounded-2xl max-w-sm w-full p-6 space-y-4 animate-in zoom-in-95 duration-200">
+          <div class="flex justify-between items-center">
+            <h3 class="text-lg font-bold text-zinc-950">Delete Team</h3>
+            <button (click)="cancelDelete()" class="text-zinc-400 hover:text-zinc-600 transition-colors">
+              <mat-icon class="w-5 h-5 text-[20px]! leading-none!">close</mat-icon>
+            </button>
+          </div>
+          <p class="text-sm text-zinc-600 leading-relaxed">
+            Are you sure you want to delete this team? Members will be unassigned.
+          </p>
+          <div class="bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3">
+            <div class="text-sm font-semibold text-zinc-900">{{ teamToDelete()?.name }}</div>
+          </div>
+          <div class="flex justify-end gap-2 pt-2 border-t border-white/30">
+            <button (click)="cancelDelete()" class="px-4 py-2 border border-zinc-200 text-zinc-600 text-sm font-semibold rounded-lg hover:bg-zinc-50">
+              Cancel
+            </button>
+            <button (click)="deleteConfirm()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-lg transition-colors flex items-center gap-1.5">
+              <mat-icon class="w-4 h-4 text-[16px]! leading-none!">delete</mat-icon>
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    }
   `
 })
 export class TeamsComponent {
@@ -350,6 +390,35 @@ export class TeamsComponent {
 
   canWrite(): boolean {
     return this.state.hasAuthority('TEAMS_WRITE');
+  }
+
+  canDelete(): boolean {
+    return this.state.hasAuthority('TEAMS_DELETE');
+  }
+
+  // Delete confirmation
+  deleteModalOpen = signal(false);
+  teamToDelete = signal<CrmTeam | null>(null);
+
+  openDeleteModal(team: CrmTeam) {
+    if (!this.canDelete()) return;
+    this.teamToDelete.set(team);
+    this.deleteModalOpen.set(true);
+  }
+
+  cancelDelete() {
+    this.deleteModalOpen.set(false);
+    this.teamToDelete.set(null);
+  }
+
+  deleteConfirm() {
+    if (!this.canDelete()) return;
+    const team = this.teamToDelete();
+    if (team) {
+      this.state.deleteTeam(team.id);
+    }
+    this.deleteModalOpen.set(false);
+    this.teamToDelete.set(null);
   }
 
   toggleCreateForm() {

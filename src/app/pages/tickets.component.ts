@@ -8,10 +8,11 @@ import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
 import { RouterModule } from '@angular/router';
 import { DataStatusBannerComponent } from '../shared/data-status-banner.component';
 import { PaginatorComponent } from '../shared/paginator.component';
+import { AttachmentsComponent } from '../shared/attachments.component';
 
 @Component({
   selector: 'app-tickets',
-  imports: [MatIconModule, CommonModule, FormsModule, CreatedByBadgeComponent, RouterModule, DataStatusBannerComponent, PaginatorComponent],
+  imports: [MatIconModule, CommonModule, FormsModule, CreatedByBadgeComponent, RouterModule, DataStatusBannerComponent, PaginatorComponent, AttachmentsComponent],
   template: `
     <div class="space-y-8">
       @if (canCreate()) {
@@ -252,6 +253,10 @@ import { PaginatorComponent } from '../shared/paginator.component';
                 class="w-full input-field rounded-lg p-2 text-sm focus:outline-blue-600"
               ></textarea>
             </div>
+
+            @if (isEditing() && editingTicketId()) {
+              <app-attachments ownerEntityType="TICKET" [ownerEntityId]="editingTicketId()!" [canWrite]="canWrite()" />
+            }
           </div>
 
           <div class="flex justify-end gap-2 pt-2 border-t border-white/30">

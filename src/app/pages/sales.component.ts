@@ -7,6 +7,7 @@ import { Router, RouterLink } from '@angular/router';
 import { CreatedByBadgeComponent } from '../shared/created-by-badge.component';
 import { DataStatusBannerComponent } from '../shared/data-status-banner.component';
 import { PaginatorComponent } from '../shared/paginator.component';
+import { AttachmentsComponent } from '../shared/attachments.component';
 import { SalesPipelineBoardComponent } from './sales-pipeline-board.component';
 import { DealsService } from '../services/domains/deals.service';
 import { ProposalsService } from '../services/domains/proposals.service';
@@ -19,7 +20,7 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
 
 @Component({
   selector: 'app-sales',
-  imports: [MatIconModule, CommonModule, FormsModule, RouterLink, CreatedByBadgeComponent, DataStatusBannerComponent, PaginatorComponent, SalesPipelineBoardComponent],
+  imports: [MatIconModule, CommonModule, FormsModule, RouterLink, CreatedByBadgeComponent, DataStatusBannerComponent, PaginatorComponent, AttachmentsComponent, SalesPipelineBoardComponent],
   template: `
     <div class="space-y-8">
       @if (activeTab() !== 'deals') {
@@ -323,6 +324,11 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                 <button (click)="openEditProposalModal(prop)" class="bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 text-zinc-650 p-2 rounded-lg transition-colors flex items-center justify-center shrink-0" title="Edit Proposal">
                   <mat-icon class="text-[18px] w-[18px] h-[18px] flex items-center justify-center">edit</mat-icon>
                 </button>
+                @if (canDeleteProposal()) {
+                  <button (click)="openProposalDeleteModal(prop)" class="bg-zinc-50 hover:bg-red-50 border border-zinc-200 text-zinc-700 hover:text-red-600 p-2 rounded-lg transition-colors flex items-center justify-center shrink-0" title="Delete Proposal">
+                    <mat-icon class="text-[18px] w-[18px] h-[18px] flex items-center justify-center">delete</mat-icon>
+                  </button>
+                }
 
                 @if (prop.status === 'Draft') {
                   <button (click)="openAssignTaskModal('proposal', prop.id, prop.title)" class="bg-white border border-zinc-200 text-zinc-900 hover:bg-zinc-100 p-2 rounded-lg transition-colors flex items-center justify-center shrink-0" title="Assign Task">
@@ -1638,6 +1644,10 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                 </div>
               }
 
+              <div class="border-t border-zinc-100 pt-3">
+                <app-attachments ownerEntityType="PROPOSAL" [ownerEntityId]="prop.id" [canWrite]="canWriteProposal()" />
+              </div>
+
               <div class="border-t border-zinc-100 pt-3 text-xs text-zinc-500 space-y-1">
                 <app-created-by-badge [createdBy]="prop.createdBy" [createdAt]="prop.createdAt" />
               </div>
@@ -1649,6 +1659,11 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
                 <button (click)="openEditProposalModal(prop); closeProposalDrawer()" class="bg-white border border-zinc-300 text-zinc-900 hover:bg-zinc-100 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
                   <mat-icon class="text-[16px] w-4 h-4">edit</mat-icon> Edit
                 </button>
+                @if (canDeleteProposal()) {
+                  <button (click)="openProposalDeleteModal(prop)" class="bg-white border border-zinc-300 text-zinc-700 hover:bg-red-50 hover:text-red-600 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                    <mat-icon class="text-[16px] w-4 h-4">delete</mat-icon> Delete
+                  </button>
+                }
                 @if (prop.status === 'Draft') {
                   <button (click)="openSendProposalModal(prop); closeProposalDrawer()" class="bg-zinc-900 hover:bg-zinc-950 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
                     Send to Prospect
@@ -2272,6 +2287,38 @@ export type SalesStage = 'New Lead' | 'Qualified' | 'Meeting Scheduled' | 'Propo
         </div>
       </div>
     }
+
+    <!-- Delete Proposal Confirmation Modal -->
+    @if (proposalDeleteModalOpen() && proposalToDelete()) {
+      <div class="fixed inset-0 z-50 bg-zinc-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="bg-white shadow-xl rounded-2xl max-w-sm w-full p-6 space-y-4 animate-in zoom-in-95 duration-200">
+          <div class="flex justify-between items-center">
+            <h3 class="text-lg font-bold text-zinc-950">Delete Proposal</h3>
+            <button (click)="cancelProposalDelete()" class="text-zinc-400 hover:text-zinc-600 transition-colors">
+              <mat-icon class="w-5 h-5 text-[20px]! leading-none!">close</mat-icon>
+            </button>
+          </div>
+          <p class="text-sm text-zinc-600 leading-relaxed">
+            Are you sure you want to delete this proposal?
+          </p>
+          <div class="bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3">
+            <div class="text-sm font-semibold text-zinc-900">{{ proposalToDelete()?.title }}</div>
+            @if (proposalToDelete()?.id) {
+              <div class="text-meta text-zinc-400 font-mono mt-0.5">#{{ proposalToDelete()?.id }}</div>
+            }
+          </div>
+          <div class="flex justify-end gap-2 pt-2 border-t border-white/30">
+            <button (click)="cancelProposalDelete()" class="px-4 py-2 border border-zinc-200 text-zinc-600 text-sm font-semibold rounded-lg hover:bg-zinc-50">
+              Cancel
+            </button>
+            <button (click)="confirmProposalDelete()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-lg transition-colors flex items-center gap-1.5">
+              <mat-icon class="w-4 h-4 text-[16px]! leading-none!">delete</mat-icon>
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    }
   `
 })
 export class SalesComponent {
@@ -2287,6 +2334,33 @@ export class SalesComponent {
   canWriteDeal(): boolean { return this.state.hasAuthority('DEALS_WRITE'); }
   canCreateProposal(): boolean { return this.state.hasAuthority('PROPOSALS_CREATE'); }
   canWriteProposal(): boolean { return this.state.hasAuthority('PROPOSALS_WRITE'); }
+  canDeleteProposal(): boolean { return this.state.hasAuthority('PROPOSALS_DELETE'); }
+
+  // Delete confirmation
+  proposalDeleteModalOpen = signal(false);
+  proposalToDelete = signal<Proposal | null>(null);
+
+  openProposalDeleteModal(proposal: Proposal) {
+    if (!this.canDeleteProposal()) return;
+    this.proposalToDelete.set(proposal);
+    this.proposalDeleteModalOpen.set(true);
+  }
+
+  cancelProposalDelete() {
+    this.proposalDeleteModalOpen.set(false);
+    this.proposalToDelete.set(null);
+  }
+
+  confirmProposalDelete() {
+    if (!this.canDeleteProposal()) return;
+    const proposal = this.proposalToDelete();
+    if (proposal) {
+      this.proposalsService.deleteProposal(proposal.id);
+    }
+    this.proposalDeleteModalOpen.set(false);
+    this.proposalToDelete.set(null);
+    this.closeProposalDrawer();
+  }
   canCreatePO(): boolean { return this.state.hasAuthority('PURCHASE_ORDERS_CREATE'); }
   canWritePO(): boolean { return this.state.hasAuthority('PURCHASE_ORDERS_WRITE'); }
   canCreateTask(): boolean { return this.state.hasAuthority('TASKS_CREATE'); }
@@ -2915,7 +2989,7 @@ export class SalesComponent {
 
   applyTemplate() {
     if (this.selectedTemplateId) {
-      const template = this.proposalsService.proposalTemplates().find(t => t.id === this.selectedTemplateId);
+      const template = this.state.proposalTemplates().find(t => t.id === this.selectedTemplateId);
       if (template) {
         this.newProposal.title = template.name;
         this.newProposal.lines = template.lines.map((l: any) => ({ ...l, vendor: l.vendor || '' }));
