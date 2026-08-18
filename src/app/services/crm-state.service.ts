@@ -4,6 +4,8 @@ import { SEED_ORG, SEED_USERS, SEED_TEAMS, SEED_GROUPS, SEED_MESSAGES, SEED_MEET
 import { ToastService } from './toast.service';
 import { ApiService } from './api.service';
 import { TranslationService } from './translation.service';
+import { TasksService } from './domains/tasks.service';
+import { TicketsService } from './domains/tickets.service';
 import { isSupportedLanguage } from '../core/i18n/language';
 
 export interface Organization {
@@ -50,6 +52,7 @@ export interface CrmUser {
   jobTitle?: string;
   preferences: {
     language: 'en' | 'fr' | 'ar';
+    theme: 'light' | 'dark' | 'system';
     notifyOnLeadAssign: boolean;
     notifyOnDealUpdate: boolean;
     notifyOnMention: boolean;
@@ -927,6 +930,8 @@ export class CrmStateService {
   private toast = inject(ToastService);
   private router = inject(Router);
   private api = inject(ApiService);
+  private tasksService = inject(TasksService);
+  private ticketsService = inject(TicketsService);
   private translation = inject(TranslationService);
 
   // Auth
@@ -948,8 +953,6 @@ export class CrmStateService {
   dealsLoaded = signal<boolean>(false);
   partnersLoaded = signal<boolean>(false);
   proposalsLoaded = signal<boolean>(false);
-  tasksLoaded = signal<boolean>(false);
-  ticketsLoaded = signal<boolean>(false);
   invoicesLoaded = signal<boolean>(false);
   purchaseOrdersLoaded = signal<boolean>(false);
   campaignsLoaded = signal<boolean>(false);
@@ -963,10 +966,6 @@ export class CrmStateService {
   partnersError = signal<string | null>(null);
   proposalsLoading = signal<boolean>(false);
   proposalsError = signal<string | null>(null);
-  tasksLoading = signal<boolean>(false);
-  tasksError = signal<string | null>(null);
-  ticketsLoading = signal<boolean>(false);
-  ticketsError = signal<string | null>(null);
   invoicesLoading = signal<boolean>(false);
   invoicesError = signal<string | null>(null);
   purchaseOrdersLoading = signal<boolean>(false);
@@ -1001,7 +1000,9 @@ export class CrmStateService {
 
   // Computeds
   activeUsers = computed(() => this.users().filter(u => u.isActive));
-  
+
+  currentUser = computed(() => this.users().find(u => u.id === this.currentUserId()) || this.users()[0]);
+
   currentUserPermissions = computed(() => {
     const user = this.users().find(u => u.id === this.currentUserId());
     return CRM_ROLES.find(r => r.id === user?.roleId)?.permissions ?? {
@@ -1092,6 +1093,7 @@ export class CrmStateService {
       jobTitle: dto.job_title,
       preferences: {
         language: (dto.language as CrmUser['preferences']['language']) || 'en',
+        theme: 'light',
         notifyOnLeadAssign: true,
         notifyOnDealUpdate: true,
         notifyOnMention: true
@@ -1312,48 +1314,15 @@ export class CrmStateService {
     });
   }
 
-  // Lazy-load: Tasks
+  // Tasks and tickets are now owned by TasksService/TicketsService (shared with the
+  // Tasks and Tickets modules) so the Dashboard reads the same live data instead of
+  // its own separate copy.
   loadTasks(): void {
-    if (this.tasksLoaded()) return;
-    this.tasksLoading.set(true);
-    this.tasksError.set(null);
-    this.api.getTasks().subscribe({
-      next: (tasks) => {
-        if (tasks && tasks.length > 0) {
-          this.tasks.set(tasks);
-        }
-        this.tasksLoaded.set(true);
-        this.tasksLoading.set(false);
-      },
-      error: (err) => {
-        console.warn('Failed to load tasks from API, using seed data:', err);
-        this.tasksLoaded.set(true);
-        this.tasksLoading.set(false);
-        this.tasksError.set('Failed to load tasks from the server. Showing local data.');
-      }
-    });
+    this.tasksService.load();
   }
 
-  // Lazy-load: Tickets
   loadTickets(): void {
-    if (this.ticketsLoaded()) return;
-    this.ticketsLoading.set(true);
-    this.ticketsError.set(null);
-    this.api.getTickets().subscribe({
-      next: (tickets) => {
-        if (tickets && tickets.length > 0) {
-          this.tickets.set(tickets);
-        }
-        this.ticketsLoaded.set(true);
-        this.ticketsLoading.set(false);
-      },
-      error: (err) => {
-        console.warn('Failed to load tickets from API, using seed data:', err);
-        this.ticketsLoaded.set(true);
-        this.ticketsLoading.set(false);
-        this.ticketsError.set('Failed to load tickets from the server. Showing local data.');
-      }
-    });
+    this.ticketsService.load();
   }
 
   // Lazy-load: Invoices
@@ -1560,6 +1529,14 @@ export class CrmStateService {
       },
       error: () => this.toast.show('Failed to update user', { type: 'error' })
     });
+  }
+
+  updateUserPreferences(preferences: Partial<CrmUser['preferences']>): void {
+    const id = this.currentUserId();
+    const current = this.users().find(u => u.id === id);
+    if (!current) return;
+    const merged = { ...current, preferences: { ...current.preferences, ...preferences } };
+    this.users.update(list => list.map(u => u.id === id ? merged : u));
   }
 
   /** Self-service profile update -- doesn't require USERS_WRITE, and can't touch role or team. */
@@ -1843,6 +1820,7 @@ export class CrmStateService {
             jobTitle: user.job_title || undefined,
             preferences: {
               language: isSupportedLanguage(user.language) ? user.language : 'en',
+              theme: 'light',
               notifyOnLeadAssign: true,
               notifyOnDealUpdate: true,
               notifyOnMention: true,
@@ -1913,33 +1891,9 @@ export class CrmStateService {
     { id: 'p5', name: 'ABC Technologies', type: 'Customer', email: 'contact@abctech.ma', phone: '+212-522-112233', city: 'Casablanca', createdBy: 'usr_rachid', createdAt: '2026-04-05' }
   ]);
 
-  tasks = signal<Task[]>([
-    { id: 't1', title: 'Assign prospect and follow up', description: 'Sales manager needs to assign Atlas Digital to a salesperson', assignedTeam: 'Sales', assignedTo: 'Achraf (Manager)', status: 'Pending', priority: 'Urgent', deadline: '2026-07-15', relatedTo: 'Atlas Digital S.A.R.L.', relatedModule: 'Partners', relatedSubModule: 'Prospect', relatedEntityId: 'p4', createdBy: 'usr_rachid', createdAt: '2026-03-15' },
-    { id: 't2', title: 'Review Q3 marketing budget', description: 'Approve the proposed marketing budget for Q3 campaigns', assignedTeam: 'Sales', assignedTo: 'Khadija (Ops Manager)', status: 'Pending', priority: 'Medium', deadline: '2026-07-25', createdBy: 'usr_rachid', createdAt: '2026-06-10' },
-    { id: 't3', title: 'Follow up with ABC Technologies', description: 'Contact ABC Technologies regarding the pending proposal', assignedTeam: 'Sales', assignedTo: 'Youssef El Alami', status: 'Pending', priority: 'Urgent', deadline: '2026-07-10', relatedTo: 'ABC Technologies', relatedModule: 'Partners', relatedSubModule: 'Customer', relatedEntityId: 'p5', createdBy: 'usr_fatima', createdAt: '2026-06-12' },
-    { id: 't4', title: 'Update invoice templates', description: 'Refresh the invoice template with new company branding', assignedTeam: 'Finance', assignedTo: 'Mehdi Benani', status: 'Pending', priority: 'Low', deadline: '2026-08-01', createdBy: 'usr_rachid', createdAt: '2026-06-01' },
-    { id: 't5', title: 'Prepare monthly sales report', description: 'Compile and analyze June sales data for management review', assignedTeam: 'Sales', assignedTo: 'Youssef El Alami', status: 'In Progress', priority: 'Urgent', deadline: '2026-07-05', createdBy: 'usr_fatima', createdAt: '2026-06-14' },
-    { id: 't6', title: 'Setup automated email sequences', description: 'Configure drip campaigns for new prospect onboarding', assignedTeam: 'Sales', assignedTo: 'Zineb Rami', status: 'Pending', priority: 'Medium', deadline: '2026-07-20', createdBy: 'usr_rachid', createdAt: '2026-06-08' },
-    { id: 't7', title: 'Vendor contract renewal', description: 'Review and renew the contract with Maroc Express Logistics', assignedTeam: 'Operations', assignedTo: 'Khadija (Ops Manager)', status: 'Pending', priority: 'Low', deadline: '2026-07-30', createdBy: 'usr_mehdi', createdAt: '2026-05-20' },
-    { id: 't8', title: 'Customer feedback survey analysis', description: 'Analyze results from the recent customer satisfaction survey', assignedTeam: 'Support', assignedTo: 'Fatima Chraibi', status: 'Pending', priority: 'Medium', deadline: '2026-07-18', createdBy: 'usr_aya', createdAt: '2026-06-13' },
-    { id: 't9', title: 'Follow up with Maroc Telecom on support renewal', description: 'Contact Maroc Telecom regarding the upcoming support contract renewal', assignedTeam: 'Sales', assignedTo: 'Amine Bennani', status: 'Pending', priority: 'Urgent', deadline: '2026-07-15', relatedTo: 'Maroc Telecom Systems', relatedModule: 'Sales', relatedSubModule: 'Deal', relatedEntityId: 'd2', createdBy: 'usr_ahmed', createdAt: '2026-07-06' },
-    { id: 't10', title: 'Prepare Q3 pipeline review deck', description: 'Create presentation deck for quarterly pipeline review meeting', assignedTeam: 'Sales', assignedTo: 'Fatima Zahra El Idrissi', status: 'In Progress', priority: 'Medium', deadline: '2026-07-14', createdBy: 'usr_rachid', createdAt: '2026-07-06' },
-    { id: 't11', title: 'Update vendor contact details for Maroc Express', description: 'Verify and update contact information for Maroc Express Logistics', assignedTeam: 'Operations', assignedTo: 'Layla Cherkaoui', status: 'Pending', priority: 'Low', deadline: '2026-07-20', createdBy: 'usr_youssef', createdAt: '2026-07-07' },
-    { id: 't12', title: 'Review ABC Technologies proposal revisions', description: 'Review the revised proposal changes for ABC Technologies Cloud ERP Migration', assignedTeam: 'Sales', assignedTo: 'Youssef El Alami', status: 'Pending', priority: 'Urgent', deadline: '2026-07-12', relatedTo: 'ABC Technologies', relatedModule: 'Sales', relatedSubModule: 'Proposal', createdBy: 'usr_fatima', createdAt: '2026-07-08' },
-    { id: 't13', title: 'Approve Q3 marketing budget', description: 'Review and approve the proposed marketing budget for Q3 campaigns', assignedTeam: 'Finance', assignedTo: 'Samira Benjelloun', status: 'Pending', priority: 'Medium', deadline: '2026-07-16', createdBy: 'usr_rachid', createdAt: '2026-07-08' },
-    { id: 't14', title: 'Resolve ticket #TK-0891 escalation', description: 'Coordinate with support team to resolve the critical SLA breach ticket', assignedTeam: 'Support', assignedTo: 'Mehdi Qadiri', status: 'In Progress', priority: 'Urgent', deadline: '2026-07-11', createdBy: 'usr_zineb', createdAt: '2026-07-08' },
-    { id: 't15', title: 'Prepare monthly commission report', description: 'Calculate and prepare sales commission figures for June', assignedTeam: 'Finance', assignedTo: 'Hassan El Amrani', status: 'Pending', priority: 'Medium', deadline: '2026-07-18', createdBy: 'usr_samira', createdAt: '2026-07-09' },
-    { id: 't16', title: 'Schedule client onboarding session for Atlas Digital', description: 'Coordinate with Atlas Digital for the post-sale onboarding session', assignedTeam: 'Operations', assignedTo: 'Omar Fassi', status: 'Pending', priority: 'Medium', deadline: '2026-07-17', relatedTo: 'Atlas Digital S.A.R.L.', relatedModule: 'Sales', relatedSubModule: 'Deal', relatedEntityId: 'd1', createdBy: 'usr_fatima', createdAt: '2026-07-09' },
-    { id: 't17', title: 'Send proposal to Fes Smart School', description: 'Deliver the finalized WiFi proposal to Fes Smart School administration', assignedTeam: 'Sales', assignedTo: 'Amine Bennani', status: 'Pending', priority: 'Urgent', deadline: '2026-07-12', createdBy: 'usr_fatima', createdAt: '2026-07-10' },
-    { id: 't18', title: 'Update invoice payment reminders', description: 'Configure automated payment reminder emails for overdue invoices', assignedTeam: 'Finance', assignedTo: 'Samira Benjelloun', status: 'Pending', priority: 'Low', deadline: '2026-07-25', createdBy: 'usr_rachid', createdAt: '2026-07-10' },
-    { id: 't19', title: 'Perform system backup verification', description: 'Verify that all critical system backups completed successfully over the weekend', assignedTeam: 'Operations', assignedTo: 'Youssef Alami', status: 'Pending', priority: 'Medium', deadline: '2026-07-13', createdBy: 'usr_rachid', createdAt: '2026-07-10' },
-    { id: 't20', title: 'Contact new lead from Casablanca Expo', description: 'Follow up with the prospect who visited the booth at the Casablanca Tech Expo', assignedTeam: 'Sales', assignedTo: 'Karim Tazi', status: 'Pending', priority: 'Medium', deadline: '2026-07-14', createdBy: 'usr_rachid', createdAt: '2026-07-11' },
-    { id: 't21', title: 'Submit expense reports for June', description: 'Compile and submit all outstanding expense reports for the month of June', assignedTeam: 'Finance', assignedTo: 'Samira Benjelloun', status: 'Pending', priority: 'Medium', deadline: '2026-07-14', createdBy: 'usr_samira', createdAt: '2026-07-11' },
-    { id: 't22', title: 'Update client SLA documentation', description: 'Refresh SLA documentation for all active support contracts', assignedTeam: 'Support', assignedTo: 'Aya Mansouri', status: 'In Progress', priority: 'Low', deadline: '2026-07-20', createdBy: 'usr_zineb', createdAt: '2026-07-11' },
-    { id: 't23', title: 'Review partner commission structure', description: 'Evaluate and propose updates to the partner commission structure for Q4', assignedTeam: 'Sales', assignedTo: 'Ahmed Bennani', status: 'Pending', priority: 'Medium', deadline: '2026-07-21', createdBy: 'usr_rachid', createdAt: '2026-07-11' },
-    { id: 't24', title: 'Prepare weekly support metrics report', description: 'Compile weekly ticket resolution metrics and response time statistics', assignedTeam: 'Support', assignedTo: 'Zineb Tahiri', status: 'Pending', priority: 'Low', deadline: '2026-07-13', createdBy: 'usr_mehdi', createdAt: '2026-07-11' },
-    { id: 't25', title: 'Audit vendor delivery performance', description: 'Review and audit delivery performance of all active vendors for June', assignedTeam: 'Operations', assignedTo: 'Layla Cherkaoui', status: 'Pending', priority: 'Medium', deadline: '2026-07-18', createdBy: 'usr_youssef', createdAt: '2026-07-11' }
-  ]);
+  // Shared with the Tasks module (TasksService) so the Dashboard always reflects
+  // the same live data instead of its own separately-seeded copy.
+  tasks = this.tasksService.tasks;
 
   proposals = signal<Proposal[]>([]);
   deals = signal<Deal[]>([
@@ -2177,22 +2131,9 @@ export class CrmStateService {
     { id: 'c3', title: 'SMS Offres Spéciales PME', type: 'SMS', status: 'Draft', targetAudience: 'Prospects', sentCount: 0, createdBy: 'usr_rachid', createdAt: '2026-06-25' }
   ]);
 
-  tickets = signal<Ticket[]>([
-    { id: 'tk1', title: 'Problème accès console Cloud', type: 'Software issue', status: 'IN_PROGRESS', priority: 'URGENT', relatedPartnerId: 'p3', assignedToUserId: 'usr_fatima', assignedByUserId: 'usr_zineb', createdAt: '2026-06-05', updatedAt: '2026-07-05' },
-    { id: 'tk-p5-1', title: 'ERP Login Issue', type: 'Software issue', status: 'OPEN', priority: 'URGENT', relatedPartnerId: 'p5', assignedToUserId: 'usr_fatima', assignedByUserId: 'usr_mehdi', createdAt: '2026-06-15', updatedAt: '2026-07-05' },
-    { id: 'tk-p5-2', title: 'Hardware Delivery Delay', type: 'Broken product', status: 'RESOLVED', priority: 'MEDIUM', relatedPartnerId: 'p5', assignedToUserId: 'usr_khadija', assignedByUserId: 'usr_aya', createdAt: '2026-06-10', updatedAt: '2026-07-05' },
-    { id: 'tk2', title: 'Email configuration not sending on Outlook', type: 'Software issue', status: 'OPEN', priority: 'MEDIUM', relatedPartnerId: 'p3', assignedToUserId: 'usr_mehdi', assignedByUserId: 'usr_aya', createdAt: '2026-06-20', updatedAt: '2026-07-05' },
-    { id: 'tk3', title: 'Billing discrepancy on June invoice', type: 'Billing issue', status: 'OPEN', priority: 'URGENT', relatedPartnerId: 'p3', assignedToUserId: 'usr_samira', assignedByUserId: 'usr_zineb', createdAt: '2026-06-22', updatedAt: '2026-07-05' },
-    { id: 'tk4', title: 'Vendor portal login not working', type: 'Software issue', status: 'IN_PROGRESS', priority: 'MEDIUM', relatedPartnerId: 'p2', assignedToUserId: 'usr_zineb', assignedByUserId: 'usr_mehdi', createdAt: '2026-06-25', updatedAt: '2026-07-05' },
-    { id: 'tk5', title: 'Server rack damaged during shipping', type: 'Broken product', status: 'OPEN', priority: 'URGENT', relatedPartnerId: 'p2', assignedToUserId: 'usr_fatima', assignedByUserId: 'usr_aya', createdAt: '2026-06-28', updatedAt: '2026-07-05' },
-    { id: 'tk6', title: 'Cloud migration SLA breach - response time', type: 'Software issue', status: 'IN_PROGRESS', priority: 'URGENT', relatedPartnerId: 'p1', assignedToUserId: 'usr_zineb', assignedByUserId: 'usr_zineb', createdAt: '2026-07-01', updatedAt: '2026-07-05' },
-    { id: 'tk7', title: 'Incorrect discount applied on proposal', type: 'Billing issue', status: 'OPEN', priority: 'MEDIUM', relatedPartnerId: 'p4', assignedToUserId: 'usr_samira', assignedByUserId: 'usr_mehdi', createdAt: '2026-07-02', updatedAt: '2026-07-05' },
-    { id: 'tk8', title: 'API integration failure - CRM sync', type: 'Software issue', status: 'OPEN', priority: 'URGENT', relatedPartnerId: 'p5', assignedToUserId: 'usr_mehdi', assignedByUserId: 'usr_zineb', createdAt: '2026-07-03', updatedAt: '2026-07-05' },
-    { id: 'tk9', title: 'Hardware warranty claim denied', type: 'Broken product', status: 'IN_PROGRESS', priority: 'LOW', relatedPartnerId: 'p5', assignedToUserId: 'usr_aya', assignedByUserId: 'usr_mehdi', createdAt: '2026-07-05', updatedAt: '2026-07-05' },
-    { id: 'tk10', title: 'Network latency issues on hosted platform', type: 'Software issue', status: 'OPEN', priority: 'MEDIUM', relatedPartnerId: 'p1', assignedToUserId: 'usr_mehdi', assignedByUserId: 'usr_aya', createdAt: '2026-07-07', updatedAt: '2026-07-05' },
-    { id: 'tk11', title: 'Overdue invoice payment not reflected', type: 'Billing issue', status: 'IN_PROGRESS', priority: 'MEDIUM', relatedPartnerId: 'p3', assignedToUserId: 'usr_aya', assignedByUserId: 'usr_zineb', createdAt: '2026-07-08', updatedAt: '2026-07-05' },
-    { id: 'tk12', title: 'Feature request: bulk user import', type: 'Software issue', status: 'OPEN', priority: 'LOW', relatedPartnerId: 'p4', assignedToUserId: undefined, assignedByUserId: 'usr_mehdi', createdAt: '2026-07-10', updatedAt: '2026-07-05' }
-  ]);
+  // Shared with the Tickets module (TicketsService) so the Dashboard always reflects
+  // the same live data instead of its own separately-seeded copy.
+  tickets = this.ticketsService.tickets;
 
   ticketTypes = signal<string[]>(['Software issue', 'Broken product', 'Billing issue']);
 
@@ -4770,7 +4711,7 @@ export class CrmStateService {
       const raw = localStorage.getItem(CrmStateService.LAYOUT_KEY);
       if (!raw) return [...this.defaultDashboardLayout];
       const parsed = JSON.parse(raw);
-      if (!Array.isArray(parsed) || parsed.some(id => typeof id !== 'string')) {
+      if (!Array.isArray(parsed) || parsed.length === 0 || parsed.some(id => typeof id !== 'string')) {
         return [...this.defaultDashboardLayout];
       }
       return parsed as string[];
