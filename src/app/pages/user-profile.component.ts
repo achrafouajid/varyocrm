@@ -190,7 +190,7 @@ import { TranslationService } from '../services/translation.service';
         <!-- PREFERENCES SECTION -->
         <div class="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-xs space-y-6">
           <h3 class="font-bold text-zinc-800 text-sm">Notification Preferences</h3>
-          
+
           <div class="space-y-3 max-w-md">
             <!-- Toggle 1 -->
             <label class="flex items-center justify-between p-2.5 rounded-xl border border-zinc-100 hover:bg-zinc-50/50 cursor-pointer select-none transition-colors">
@@ -233,6 +233,19 @@ import { TranslationService } from '../services/translation.service';
                 class="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-700 h-4 w-4"
               />
             </label>
+          </div>
+
+          <div class="pt-4 border-t border-zinc-100 space-y-2">
+            <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider">Appearance</label>
+            <select
+              [value]="u.preferences.theme"
+              (change)="changeTheme(u, $event)"
+              class="border border-zinc-200 rounded-xl px-3 py-2 text-xs bg-white text-zinc-700 font-semibold cursor-pointer w-full max-w-xs focus:outline-blue-600 focus:ring-zinc-700"
+            >
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+              <option value="system">System</option>
+            </select>
           </div>
 
           <div class="pt-4 border-t border-zinc-100 space-y-2">
@@ -484,6 +497,21 @@ export class UserProfileComponent {
     });
   }
 
+  changeTheme(user: CrmUser, event: Event) {
+    const val = (event.target as HTMLSelectElement).value as 'light' | 'dark' | 'system';
+    if (this.isSelf()) {
+      this.state.updateOwnProfile({ theme: val });
+      this.applyTheme(val);
+      return;
+    }
+    this.state.updateUser(user.id, {
+      preferences: {
+        ...user.preferences,
+        theme: val
+      }
+    });
+  }
+
   changeLanguage(user: CrmUser, event: Event) {
     const val = (event.target as HTMLSelectElement).value as 'en' | 'fr' | 'ar';
     if (this.isSelf()) {
@@ -496,6 +524,15 @@ export class UserProfileComponent {
         language: val
       }
     });
+  }
+
+  private applyTheme(theme: 'light' | 'dark' | 'system') {
+    const root = document.documentElement;
+    if (theme === 'system') {
+      root.removeAttribute('data-theme');
+    } else {
+      root.setAttribute('data-theme', theme);
+    }
   }
 
   updateUserRole(userId: string, event: Event) {

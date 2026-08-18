@@ -1540,7 +1540,7 @@ export class CrmStateService {
   }
 
   /** Self-service profile update -- doesn't require USERS_WRITE, and can't touch role or team. */
-  updateOwnProfile(patch: { displayName?: string; phone?: string; jobTitle?: string; language?: string }): void {
+  updateOwnProfile(patch: { displayName?: string; phone?: string; jobTitle?: string; language?: string; theme?: string }): void {
     const id = this.currentUserId();
     const current = this.users().find(u => u.id === id);
     if (!current) return;
@@ -1548,7 +1548,8 @@ export class CrmStateService {
       display_name: patch.displayName,
       phone: patch.phone,
       job_title: patch.jobTitle,
-      language: patch.language
+      language: patch.language,
+      theme: patch.theme
     };
     this.api.updateOwnProfile(payload).subscribe({
       next: (dto) => {
