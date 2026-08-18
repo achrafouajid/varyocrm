@@ -79,6 +79,7 @@ export const SEED_USERS = rawUsers.map((u, i) => {
     phone: u.id === 'usr_rachid' ? '+212-661-123456' : `+212-661-0000${i + 1}`,
     preferences: {
       language: 'fr' as const,
+      theme: 'light' as const,
       notifyOnLeadAssign: true,
       notifyOnDealUpdate: true,
       notifyOnMention: true
