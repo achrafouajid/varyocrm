@@ -548,6 +548,7 @@ export class UsersComponent {
         isActive: true,
         preferences: {
           language: 'fr',
+          theme: 'light',
           notifyOnLeadAssign: true,
           notifyOnDealUpdate: true,
           notifyOnMention: true
